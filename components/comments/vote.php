@@ -10,36 +10,46 @@
 //                        LICENSED BY GNU/GPL v2                              //
 //                                                                            //
 /******************************************************************************/
+define('PATH', __DIR__ .'/../..');
 
-	define('PATH', $_SERVER['DOCUMENT_ROOT']);
-	include(PATH.'/core/ajax/ajax_core.php');
+include(PATH .'/core/ajax/ajax_core.php');
 
-	if(!$inUser->id) { cmsCore::halt(); }
+if (!$inUser->id) {
+    cmsCore::halt();
+}
 
-    if(!$inCore->isComponentEnable('comments')) { cmsCore::halt(); }
+if (!$inCore->isComponentEnable('comments')) {
+    cmsCore::halt();
+}
 
-	cmsCore::loadLib('karma');
+cmsCore::loadLib('karma');
 
-    $comment_id = cmsCore::request('comment_id', 'int');
-    $vote       = cmsCore::request('vote', 'int');
+$comment_id = cmsCore::request('comment_id', 'int');
+$vote       = cmsCore::request('vote', 'int');
 
-	if(!$comment_id || abs($vote) != 1) { cmsCore::halt(); }
+if (!$comment_id || abs($vote) != 1) {
+    cmsCore::halt();
+}
 
-	$com_user_id = $inDB->get_field('cms_comments', "id='$comment_id'", 'user_id');
-	if(!$com_user_id) { cmsCore::halt(); }
+$com_user_id = $inDB->get_field('cms_comments', "id='". $comment_id ."'", 'user_id');
 
-    if ($inUser->id != $com_user_id){
-        cmsSubmitKarma('comment', $comment_id, $vote);
-    }
+if (!$com_user_id) {
+    cmsCore::halt();
+}
 
-    $karma = cmsKarma('comment', $comment_id);
+if ($inUser->id != $com_user_id) {
+    cmsSubmitKarma('comment', $comment_id, $vote);
+}
 
-    if ($karma['points']>0){
-        $karma['points'] = '<span class="cmm_good">+'.$karma['points'].'</span>';
-    } elseif ($karma['points']<0){
-        $karma['points'] = '<span class="cmm_bad">'.$karma['points'].'</span>';
-    }
+$karma = cmsKarma('comment', $comment_id);
 
-    echo $karma['points'];
+if ($karma['points'] > 0)
+{
+    $karma['points'] = '<span class="cmm_good">+'. $karma['points'] .'</span>';
+}
+else if ($karma['points'] < 0)
+{
+    $karma['points'] = '<span class="cmm_bad">'. $karma['points'] .'</span>';
+}
 
-?>
+echo $karma['points'];

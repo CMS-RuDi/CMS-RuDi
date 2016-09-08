@@ -10,19 +10,19 @@
 //                        LICENSED BY GNU/GPL v2                              //
 //                                                                            //
 /******************************************************************************/
+define('PATH', __DIR__ .'/../../..');
 
-	define('PATH', $_SERVER['DOCUMENT_ROOT']);
-	include(PATH.'/core/ajax/ajax_core.php');
+include(PATH .'/core/ajax/ajax_core.php');
 
-    cmsCore::loadModel('board');
-    $model = new cms_model_board();
+$model = new cms_model_board();
 
-	$cat_id   = cmsCore::request('value', 'int', 0);	
-	$selected = cmsCore::request('obtype', 'str', '');
+$cat_id   = cmsCore::request('value', 'int', 0);	
+$selected = cmsCore::request('obtype', 'str', '');
 
-	$cat = $model->getCategory($cat_id);
-	if(!$cat) { cmsCore::halt(); }
+$cat = $model->getCategory($cat_id);
 
-	echo $model->getTypesOptions($cat['obtypes'], $selected);
+if (!$cat) {
+    cmsCore::halt();
+}
 
-?>
+echo $model->getTypesOptions($cat['obtypes'], $selected);

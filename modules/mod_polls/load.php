@@ -10,15 +10,18 @@
 //                        LICENSED BY GNU/GPL v2                              //
 //                                                                            //
 /******************************************************************************/
+define('PATH', __DIR__ .'/../..');
 
-define('PATH', $_SERVER['DOCUMENT_ROOT']);
-include(PATH.'/core/ajax/ajax_core.php');
+include(PATH .'/core/ajax/ajax_core.php');
 
 $module_id = cmsCore::request('module_id', 'int', 0);
-if(!$module_id){ cmsCore::halt(); }
+
+if (!$module_id) {
+    cmsCore::halt();
+}
 
 $cfg = $inCore->loadModuleConfig($module_id);
 
 cmsCore::includeFile('modules/mod_polls/module.php');
 
-mod_polls(array('id'=>$module_id), $cfg);
+mod_polls(array('id' => $module_id), $cfg);

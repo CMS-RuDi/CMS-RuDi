@@ -11,18 +11,22 @@
 //                                                                            //
 /******************************************************************************/
 
-	define('PATH', $_SERVER['DOCUMENT_ROOT']);
-	include(PATH.'/core/ajax/ajax_core.php');
+define('PATH', __DIR__ .'/../..');
 
-    if (!$inUser->is_admin) { cmsCore::halt(); }
+include(PATH .'/core/ajax/ajax_core.php');
 
-    $user_id = cmsCore::request('user_id', 'int');
-    if (!$user_id) { cmsCore::halt(); }
+if (!$inUser->is_admin) {
+    cmsCore::halt();
+}
 
-	$last_ip = $inDB->get_field('cms_users', "id = '$user_id'", 'last_ip');
+$user_id = cmsCore::request('user_id', 'int');
 
-	echo $last_ip;
+if (!$user_id) {
+    cmsCore::halt();
+}
 
-	cmsCore::halt();
+$last_ip = $inDB->get_field('cms_users', "id = '". $user_id ."'", 'last_ip');
 
-?>
+echo $last_ip;
+
+cmsCore::halt();

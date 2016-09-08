@@ -15,7 +15,7 @@ Error_Reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
 header('Content-Type: text/html; charset=utf-8');
 header('X-Powered-By: InstantCMS');
-define('PATH', $_SERVER['DOCUMENT_ROOT']);
+define('PATH', __DIR__);
 define('VALID_CMS', 1);
 
 // Проверяем, что система установлена
@@ -24,18 +24,14 @@ if (!file_exists(PATH.'/includes/config.inc.php')){
     die();
 }
 
+require(PATH .'/core/classes/autoload.php');
+
 session_start();
 
-require(PATH.'/core/cms.php');
 $inCore = cmsCore::getInstance();
 
-// Загружаем нужные классы
-cmsCore::loadClass('page');
-cmsCore::loadClass('user');
-cmsCore::loadClass('actions');
-
 // Проверяем что директории установки и миграции удалены
-if(is_dir(PATH.'/install') || is_dir(PATH.'/migrate')) {
+if (is_dir(PATH.'/install') || is_dir(PATH.'/migrate')) {
     cmsPage::includeTemplateFile('special/installation.php');
     cmsCore::halt();
 }
@@ -50,7 +46,9 @@ $inUser = cmsUser::getInstance();
 $inUser->autoLogin();
 
 // проверяем что пользователь не удален и не забанен и загружаем его данные
-if (!$inUser->update() && !$_SERVER['REQUEST_URI']!=='/logout') { cmsCore::halt(); }
+if (!$inUser->update() && !$_SERVER['REQUEST_URI'] !== '/logout') {
+    cmsCore::halt();
+}
 
 //Если сайт выключен и пользователь не администратор,
 //то показываем шаблон сообщения о том что сайт отключен
@@ -58,7 +56,7 @@ if ($inConf->siteoff &&
     !$inUser->is_admin &&
     $_SERVER['REQUEST_URI']!='/login' &&
     $_SERVER['REQUEST_URI']!='/logout'
-   ){
+   ) {
         cmsPage::includeTemplateFile('special/siteoff.php');
         cmsCore::halt();
 }
@@ -74,10 +72,13 @@ if ($inCore->checkMenuAccess()) {
 }
 
 //Проверяем нужно ли показать входную страницу (splash)
-if(cmsPage::isSplash()){
+if (cmsPage::isSplash())
+{
     //Показываем входную страницу
     cmsPage::showSplash();
-} else {
+}
+else
+{
     //показываем шаблон сайта
     $inPage->showTemplate();
 }

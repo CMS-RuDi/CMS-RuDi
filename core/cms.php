@@ -467,16 +467,15 @@ class cmsCore {
      * @param string $component Название компонента
      * @return bool
      */
-    public function isComponentEnable($component){
-
+    public function isComponentEnable($component)
+    {
         $enable = false;
 
-        if(isset($this->components[$component])){
+        if (isset($this->components[$component])) {
             $enable = (bool)$this->components[$component]['published'];
         }
 
         return $enable;
-
     }
 
     /**
