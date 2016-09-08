@@ -77,36 +77,49 @@ public function getCurrentTplInfo() {
     return $this->tpl_info;
 }
 
-/**
- * Производит инициализацию класса шаблонизатора
- * @return obj $tpl_info['renderer']
- */
-public static function initTemplate($tpl_folder, $tpl_file) {
+    /**
+     * Производит инициализацию класса шаблонизатора и возвращает его объект
+     * @param string $tpl_folder подпапка в папке шаблона, где лежит файл
+     * @param string $tpl_file название файла шаблона
+     * @param array $vars массив переменных для передачи в шаблон, может отсутствовать
+     * @return obj $tpl_info['renderer']
+     */
+    public static function initTemplate($tpl_folder, $tpl_file, $vars = false)
+    {
+        $thisObj = self::getInstance();
 
-    $thisObj = self::getInstance();
-    // чтобы не перезаписать
-    $tpl_info = $thisObj->tpl_info;
-    // имя файла без расширения (для совместимости)
-    $file_name = pathinfo($tpl_file, PATHINFO_FILENAME);
-    // есть ли файл в текущем шаблоне
-    $is_exists_tpl_file = file_exists(TEMPLATE_DIR . $tpl_folder.'/'.$file_name.'.'.$tpl_info['ext']);
-    // если нет, считаем что файл лежит в дефолтном, используем оригинальное имя с расширением
-    // если есть формируем полное имя файла с учетом параметров шаблона
-    if(!$is_exists_tpl_file){
-        $tpl_info = $thisObj->default_tpl_info;
+        // чтобы не перезаписать
+        $tpl_info = $thisObj->tpl_info;
+
+        // имя файла без расширения (для совместимости)
+        $file_name = pathinfo($tpl_file, PATHINFO_FILENAME);
+
+        // есть ли файл в текущем шаблоне
+        $is_exists_tpl_file = file_exists(TEMPLATE_DIR . $tpl_folder .'/'. $file_name .'.'. $tpl_info['ext']);
+
+        // если нет, считаем что файл лежит в дефолтном, используем оригинальное имя с расширением
+        // если есть формируем полное имя файла с учетом параметров шаблона
+        if (!$is_exists_tpl_file) {
+            $tpl_info = $thisObj->default_tpl_info;
+            
+            // Если в дефолтовом шаблоне тоже нет файла выдаем ошибку
+            if (!file_exists(DEFAULT_TEMPLATE_DIR . $tpl_folder .'/'. $file_name .'.'. $tpl_info['ext'])) {
+                throw new \RuntimeException('Template file «'. $tpl_folder .'/'. $file_name .'» not found');
+            }
+        }
+
+        $tpl_file = $tpl_folder .'/'. $file_name .'.'. $tpl_info['ext'];
+
+        // загружаем шаблонизатор текущего шаблона
+        if (!class_exists($tpl_info['renderer'])) {
+            global $_LANG;
+            cmsCore::halt(sprintf($_LANG['TEMPLATE_CLASS_NOTFOUND'], $tpl_info['renderer']));
+        }
+
+        $tpl_class = new $tpl_info['renderer']($tpl_file, $is_exists_tpl_file ? TEMPLATE : '_default_');
+
+        return $tpl_class->assign($vars);
     }
-    $tpl_file = $file_name.'.'.$tpl_info['ext'];
-
-    // загружаем шаблонизатор текущего шаблона
-    if(!cmsCore::includeFile('core/tpl_classes/'.$tpl_info['renderer'].'.php') ||
-            !class_exists($tpl_info['renderer'])){
-        global $_LANG;
-        cmsCore::halt(sprintf($_LANG['TEMPLATE_CLASS_NOTFOUND'], $tpl_info['renderer']));
-    }
-
-    return new $tpl_info['renderer']($tpl_folder, $tpl_file);
-
-}
 ////////////////////////////////////////////////////////////////////////////////
 
 public function setRequestIsAjax() {

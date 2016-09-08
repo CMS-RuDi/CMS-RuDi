@@ -2,57 +2,40 @@
 /**
  * Класс инициализации шаблонизатора Fenom
  */
-class fenomTpl
+class fenomTpl extends tplMainClass
 {
-    protected static $fenom;
-    
-    // Оставлены для совместимости
-    protected $tpl_folder;
-    protected $tpl_file;
-    
-    protected $tpl_vars;
+    protected static $provider;
 
-    public function __construct($tpl_folder = false, $tpl_file = false)
+    protected function initTemplateEngine()
     {
-        $this->loadFenom();
-        
-        if (!empty($tpl_folder)) {
-            $this->tpl_folder = $tpl_folder;
-        }
-        
-        if (!empty($tpl_file)) {
-            $this->tpl_file = $tpl_file;
-        }
-    }
-
-    protected function loadFenom()
-    {
-        if (!isset(self::$fenom)) {
+        if (!isset(self::$tpl)) {
             self::$provider = new \Fenom\MultiPathProvider(TEMPLATE_DIR);
             
             self::$provider->addPath(DEFAULT_TEMPLATE_DIR);
             
             self::$provider->addPath(PATH .'/templates');
             
-            self::$fenom = \Fenom::factory(self::$provider, PATH .'/cache');
+            self::$provider->setClearCachedStats(true);
             
-            self::$fenom->addFunction('csrf_token', function() {
+            self::$tpl = \Fenom::factory(self::$provider, PATH .'/cache');
+            
+            self::$tpl->addFunction('csrf_token', function() {
                 return \cmsUser::getCsrfToken();
             });
             
-            self::$fenom->addFunction('add_js', function($params) {
+            self::$tpl->addFunction('add_js', function($params) {
                 \cmsPage::getInstance()->addHeadJS($params['file']);
             });
 
-            self::$fenom->addFunction('add_css', function($params) {
+            self::$tpl->addFunction('add_css', function($params) {
                 \cmsPage::getInstance()->addHeadCSS($params['file']);
             });
 
-            self::$fenom->addModifier('str_to_url', function($string, $is_cyr = false) {
+            self::$tpl->addModifier('str_to_url', function($string, $is_cyr = false) {
                 return \cmsCore::strToUrl($string, $is_cyr);
             });
             
-            self::$fenom->addModifier('rating', function($rating, $with_icon = false) {
+            self::$tpl->addModifier('rating', function($rating, $with_icon = false) {
                 if ($rating == 0)
                 {
                     $html = '<span class="color_gray">0</span>';
@@ -69,11 +52,11 @@ class fenomTpl
                 return $html;
             });
             
-            self::$fenom->addModifier('spellcount', function($string, $one, $two, $many, $is_full = true) {
+            self::$tpl->addModifier('spellcount', function($string, $one, $two, $many, $is_full = true) {
                 return \cmsCore::strToUrl($string, $one, $two, $many, $is_full);
             });
             
-            self::$fenom->addModifier('NoSpam', function($email, $filterLevel = 'normal') {
+            self::$tpl->addModifier('NoSpam', function($email, $filterLevel = 'normal') {
                 $email = strrev($email);
                 
                 $email = preg_replace('[\.]', '/', $email, 1);
@@ -87,7 +70,7 @@ class fenomTpl
                 return $email;
             });
 
-            self::$fenom->addModifier('translit', function($string, $separator = false) {
+            self::$tpl->addModifier('translit', function($string, $separator = false) {
                 $string = preg_replace_callback('#(а|и|о|у|ы|э|ю|я|ъ|ь|\s)(е|ё)#isu', function ($matches) {
                     if ($matches[2] == 'е' || $matches[2] == 'ё')
                     {
@@ -121,85 +104,41 @@ class fenomTpl
             });
         }
     }
-    
+
     //==========================================================================
-    
-    /**
-     * Добавляет переменную в набор
-     */
-    public function assign($tpl_var, $value)
+    public function display()
     {
-        if (is_array($tpl_var))
-        {
-            foreach ($tpl_var as $key => $val) {
-                if ($key) {
-                    $this->tpl_vars[$key] = $val;
-                }
-            }
-        }
-        else
-        {
-            if ($tpl_var) {
-                $this->tpl_vars[$tpl_var] = $value;
-            }
-        }
+        $this->preInit();
 
-        return $this;
-    }
-
-    public function display($tpl, $vars = false)
-    {
-        $this->initVars($vars);
-
-        return self::$fenom->display($this->getTplFile($tpl), $this->tpl_vars);
+        return self::$tpl->display($this->tpl_file, $this->tpl_vars);
     }
     
-    public function fetch($tpl, $vars = false)
+    public function fetch()
     {
-        $this->initVars($vars);
+        $this->preInit();
         
-        return self::$fenom->fetch($this->getTplFile($tpl), $this->tpl_vars);
-    }
-    
-    protected function getTplFile($tpl_file)
-    {
-        if (!empty($this->tpl_folder))
-        {
-            $tpl = $this->tpl_folder .'/'. (!empty($tpl_file)) ? $tpl_file : $this->tpl_file;
-        }
-        else
-        {
-            $tpl = $tpl_file;
-        }
-
-        return $tpl;
+        return self::$tpl->fetch($this->tpl_file, $this->tpl_vars);
     }
 
-    protected function initVars($vars)
+    protected function preInit()
     {
         global $_LANG;
         
-        if (!empty($vars)) {
-            $this->assign($vars);
-        }
+        $this->tpl_vars['LANG']     = $_LANG;
+        $this->tpl_vars['template'] = $this->template;
+        $this->tpl_vars['is_auth']  = cmsUser::getInstance()->id;
+        $this->tpl_vars['user_id']  = cmsUser::getInstance()->id;
+        $this->tpl_vars['is_admin'] = cmsUser::getInstance()->is_admin;
+        $this->tpl_vars['is_ajax']  = cmsCore::isAjax();
         
-        $this->tpl_vars['LANG'] = $_LANG;
-    }
-    
-    //==========================================================================
+        $folders = explode('/', $this->tpl_file);
+        
+        self::$provider->addPath(PATH .'/templates/'. $this->template .'/'. $folders[0]);
+        
+        if (!file_exists(PATH .'/cache/tpl_'. $this->template)) {
+            mkdir(PATH .'/cache/tpl_'. $this->template, 0777);
+        }
 
-    public function __set($name, $value)
-    {
-        self::$fenom->{$name} = $value;
-    }
-    
-    public function __get($name)
-    {
-        return self::$fenom->{$name};
-    }
-
-    public function __call($name, $arguments)
-    {
-        return call_user_func_array(array($this->fenom, $name), $arguments);
+        self::$tpl->setCompileDir(PATH .'/cache/tpl_'. $this->template);
     }
 }

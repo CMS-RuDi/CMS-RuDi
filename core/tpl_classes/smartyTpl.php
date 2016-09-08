@@ -13,59 +13,85 @@
 /**
  * Класс инициализации шаблонизатора Smarty
  */
-class smartyTpl{
+class smartyTpl extends tplMainClass
+{
+    protected function initTemplateEngine()
+    {
+        if (!isset(self::$tpl)) {
+            self::$tpl = new \Smarty();
 
-    private static $i_smarty;
-    private $smarty;
+            self::$tpl->addTemplateDir(
+                array(
+                    'templates' => PATH .'/templates',
+                    TEMPLATE => TEMPLATE_DIR,
+                    '_default_' => DEFAULT_TEMPLATE_DIR
+                )
+            );
 
-    public function __construct($tpl_folder, $tpl_file){
-
-        global $_LANG;
-
-        $this->smarty = $this->loadSmarty();
-
-        $is_exists_tpl_file = file_exists(TEMPLATE_DIR . $tpl_folder.'/'.$tpl_file);
-
-        $template_dir = $is_exists_tpl_file ? TEMPLATE_DIR : DEFAULT_TEMPLATE_DIR;
-
-        $this->smarty->setTemplateDir($template_dir.'/'.$tpl_folder);
-
-        $this->smarty->compile_id = $is_exists_tpl_file ? TEMPLATE : pathinfo(DEFAULT_TEMPLATE_DIR, PATHINFO_BASENAME);
-        $this->smarty->assign('LANG', $_LANG);
-
+            self::$tpl->assign('is_ajax', cmsCore::isAjax());
+            self::$tpl->assign('is_auth', cmsUser::getInstance()->id);
+            self::$tpl->assign('user_id', cmsUser::getInstance()->id);
+            self::$tpl->assign('is_admin', cmsUser::getInstance()->is_admin);
+        }
     }
+    
+    //==========================================================================
+    
+    public function display()
+    {
+        $this->preInit();
+        
+        self::$tpl->fetch($this->tpl_file, null, null, null, true);
+        
+        $this->postInit();
+    }
+    
+    public function fetch()
+    {
+        $this->preInit();
+        
+        $html = self::$tpl->fetch($this->tpl_file);
+        
+        $this->postInit();
+        
+        return $html;
+    }
+    
+    /**
+     * Выставляет необходимые переменные и опции в шаблонизаторе smarty
+     * @global array $_LANG
+     */
+    protected function preInit()
+    {
+        global $_LANG;
+        
+        $this->tpl_vars['LANG']     = $_LANG;
+        $this->tpl_vars['template'] = $this->template;
 
-    private function loadSmarty(){
+        self::$tpl->assign($this->tpl_vars);
 
-        if(isset(self::$i_smarty)){
-            return self::$i_smarty;
+        if (!file_exists(PATH .'/cache/tpl_'. $this->template)) {
+            mkdir(PATH .'/cache/tpl_'. $this->template, 0777);
         }
 
-        cmsCore::includeFile('/includes/smarty/libs/Smarty.class.php');
-
-        $smarty = new Smarty();
-
-        $smarty->setCompileDir(PATH.'/cache/');
-        $smarty->setCacheDir(PATH.'/cache/');
-        $smarty->assign('is_ajax', cmsCore::isAjax());
-        $smarty->assign('is_auth', cmsUser::getInstance()->id);
-
-        self::$i_smarty = $smarty;
-
-        return $smarty;
-
+        self::$tpl->setCompileDir(PATH .'/cache/tpl_'. $this->template);
+        self::$tpl->setCacheDir(PATH .'/cache/tpl_'. $this->template);
+        
+        $folders = explode('/', $this->tpl_file);
+        self::$tpl->compile_id = $folders[0];
+        
+        self::$tpl->addTemplateDir(
+            array(
+                $this->template .'_'. $folders[0] => PATH .'/templates/'. $this->template .'/'. $folders[0]
+            )
+        );
     }
-
-    public function __set($name, $value){
-        $this->smarty->{$name} = $value;
+    
+    /**
+     * Выполняется после генерации html из шаблона smarty и удаляет переменные, чтобы к ним не было доступа из других шаблонов
+     */
+    protected function postInit()
+    {
+        self::$tpl->clearAssign(array_keys($this->tpl_vars));
     }
-
-    public function __get($name){
-        return $this->smarty->{$name};
-    }
-
-    public function __call($name, $arguments){
-        return call_user_func_array(array($this->smarty, $name), $arguments);
-    }
-
 }
