@@ -1,24 +1,23 @@
 <?php
-/******************************************************************************/
-//                                                                            //
-//                           InstantCMS v1.10.6                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/******************************************************************************/
 
-define('PATH', __DIR__ .'/../..');
+/*
+ *                           InstantCMS v1.10.6
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2015
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
+
+define('PATH', __DIR__ . '/../..');
 define('VALID_CMS_ADMIN', 1);
 
-include(PATH .'/core/ajax/ajax_core.php');
+include(PATH . '/core/ajax/ajax_core.php');
 
 cmsCore::loadLanguage('admin/lang');
 
-if (!$inUser->is_admin) {
+if ( !$inUser->is_admin ) {
     cmsCore::halt($_LANG['ACCESS_DENIED']);
 }
 
@@ -29,13 +28,13 @@ $field     = preg_replace('/[^a-z0-9_\-]/i', '', cmsCore::request('field', 'str'
 
 $langs = cmsCore::getDirsList('/languages');
 
-if (!in_array($lang, $langs) || !$target_id || !$target || !$field) {
+if ( !in_array($lang, $langs) || !$target_id || !$target || !$field ) {
     cmsCore::halt(1);
 }
 
 $fields = translations::getFields($target);
 
-if (!isset($fields[$field])) {
+if ( !isset($fields[$field]) ) {
     cmsCore::halt(2);
 }
 
@@ -45,57 +44,48 @@ $type = $fields[$field];
 $translation = translations::getTranslation($lang, $target, $target_id);
 
 // получаем текущее значение поля
-if ($translation && isset($translation['data'][$field]))
-{
+if ( $translation && isset($translation['data'][$field]) ) {
     $value = $translation['data'][$field];
 }
-else
-{
+else {
     $value = '';
 }
 
-if (cmsCore::inRequest('save'))
-{
-    if (!cmsUser::checkCsrfToken()) {
+if ( cmsCore::inRequest('save') ) {
+    if ( !cmsUser::checkCsrfToken() ) {
         cmsCore::halt();
     }
 
     $field_data = cmsCore::request('field_data', $type, '');
 
     // если есть запись, обновляем
-    if ($translation) {
-        if ($field_data) {
+    if ( $translation ) {
+        if ( $field_data ) {
             $translation['data'][$field] = $field_data;
         }
-        
-        if (!$field_data && isset($translation['data'][$field])) {
+
+        if ( !$field_data && isset($translation['data'][$field]) ) {
             unset($translation['data'][$field]);
         }
 
-        $inDB->update('cms_translations', array(
-            'data' => $inDB->escape_string(cmsCore::arrayToYaml($translation['data']))
-        ), $translation['id']);
+        $inDB->update('cms_translations', array( 'data' => $inDB->escape_string(cmsCore::arrayToYaml($translation['data'])) ), $translation['id']);
     }
     // нет - добавляем
-    else
-    {
+    else {
         $inDB->insert('cms_translations', array(
-            'data' => $inDB->escape_string(cmsCore::arrayToYaml(array(
-                $field => $field_data
-            ))),
-            'lang' => $lang,
+            'data'         => $inDB->escape_string(cmsCore::arrayToYaml(array( $field => $field_data ))),
+            'lang'         => $lang,
             'fieldsset_id' => translations::getFieldsetId($target),
-            'target_id' => $target_id,
+            'target_id'    => $target_id,
         ));
     }
 
     cmsCore::halt();
 }
-else
-{
+else {
     cmsPage::includeTemplateFile('admin/translations.php', array(
-        'type'=>$type,
-        'value'=>$value,
-        'action'=>$_SERVER['REQUEST_URI']
+        'type'   => $type,
+        'value'  => $value,
+        'action' => $_SERVER['REQUEST_URI']
     ));
 }

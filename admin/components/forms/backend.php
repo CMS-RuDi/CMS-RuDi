@@ -1,52 +1,60 @@
 <?php
-if (!defined('VALID_CMS_ADMIN')) { die('ACCESS DENIED'); }
-//****************************************************************************//
-//                                                                            //
-//                           InstantCMS v1.10.6                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-//****************************************************************************//
-function autoOrder($form_id) {
+/*
+ *                           InstantCMS v1.10.6
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2015
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
 
+if ( !defined('VALID_CMS_ADMIN') ) {
+    die('ACCESS DENIED');
+}
+
+function autoOrder($form_id)
+{
     $inDB = cmsDatabase::getInstance();
 
     $sql = "SELECT * FROM cms_form_fields WHERE form_id = '$form_id' ORDER BY ordering";
     $rs  = $inDB->query($sql);
 
-    if ($inDB->num_rows($rs)) {
-        $ord = 1;
-        while ($item = $inDB->fetch_assoc($rs)) {
+    if ( $inDB->num_rows($rs) ) {
+        $ord  = 1;
+        while ( $item = $inDB->fetch_assoc($rs) ) {
             $inDB->query("UPDATE cms_form_fields SET ordering = $ord WHERE id= '{$item['id']}'");
             $ord += 1;
         }
     }
+
     return true;
 }
-function moveField($id, $form_id, $dir) {
 
+function moveField($id, $form_id, $dir)
+{
     $inDB = cmsDatabase::getInstance();
 
-    $sign = $dir>0 ? '+' : '-';
+    $sign = $dir > 0 ? '+' : '-';
 
     $current = $inDB->get_field('cms_form_fields', "id='{$id}'", 'ordering');
-    if($current === false){ return false; }
 
-    if ($dir>0){
+    if ( $current === false ) {
+        return false;
+    }
 
+    if ( $dir > 0 ) {
         $sql = "UPDATE cms_form_fields
                 SET ordering = ordering-1
                 WHERE form_id='{$form_id}' AND ordering = ({$current}+1)
                 LIMIT 1";
         $inDB->query($sql);
     }
-    if ($dir<0){
 
-        if($current == 1) { return false; }
+    if ( $dir < 0 ) {
+        if ( $current == 1 ) {
+            return false;
+        }
 
         $sql = "UPDATE cms_form_fields
                 SET ordering = ordering+1
@@ -55,13 +63,12 @@ function moveField($id, $form_id, $dir) {
         $inDB->query($sql);
     }
 
-    $sql    = "UPDATE cms_form_fields
+    $sql = "UPDATE cms_form_fields
                SET ordering = ordering {$sign} 1
                WHERE id='{$id}'";
     $inDB->query($sql);
 
     return true;
-
 }
 
 require('../includes/jwtabs.php');
@@ -71,32 +78,27 @@ $GLOBALS['cp_page_head'][] = jwHeader();
 
 $opt = cmsCore::request('opt', 'str', 'list');
 
-$toolmenu[] = array('icon'=>'newform.gif','title'=>$_LANG['AD_NEW_FORM'],'link'=>'?view=components&do=config&id='.$id.'&opt=add');
-$toolmenu[] = array('icon'=>'listforms.gif','title'=>$_LANG['AD_FORMS'],'link'=>'?view=components&do=config&id='.$id.'&opt=list');
+$toolmenu[] = array( 'icon' => 'newform.gif', 'title' => $_LANG['AD_NEW_FORM'], 'link' => '?view=components&do=config&id=' . $id . '&opt=add' );
+$toolmenu[] = array( 'icon' => 'listforms.gif', 'title' => $_LANG['AD_FORMS'], 'link' => '?view=components&do=config&id=' . $id . '&opt=list' );
 
 cpToolMenu($toolmenu);
 
 cmsCore::loadClass('form');
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-if ($opt == 'up_field') {
-
+if ( $opt == 'up_field' ) {
     moveField(cmsCore::request('item_id', 'int'), cmsCore::request('form_id', 'int'), -1);
 
     cmsCore::redirectBack();
-
 }
 
-if ($opt == 'down_field') {
-
+if ( $opt == 'down_field' ) {
     moveField(cmsCore::request('item_id', 'int'), cmsCore::request('form_id', 'int'), 1);
 
     cmsCore::redirectBack();
-
 }
 
-if ($opt == 'del_field') {
-
+if ( $opt == 'del_field' ) {
     $item_id = cmsCore::request('item_id', 'int');
     $form_id = cmsCore::request('form_id', 'int');
 
@@ -107,137 +109,124 @@ if ($opt == 'del_field') {
     cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS']);
 
     cmsCore::redirectBack();
-
 }
 
-if (in_array($opt, array('add_field', 'update_field'))) {
-
-    $item['kind']     = cmsCore::request('kind', 'str', '');
-    $item['title']    = cmsCore::request('f_title', 'str', 'NO_TITLE');
+if ( in_array($opt, array( 'add_field', 'update_field' )) ) {
+    $item['kind']        = cmsCore::request('kind', 'str', '');
+    $item['title']       = cmsCore::request('f_title', 'str', 'NO_TITLE');
     $item['description'] = cmsCore::request('f_description', 'str', '');
-    $item['ordering'] = cmsCore::request('f_order', 'int');
-    $item['form_id']  = cmsCore::request('form_id', 'int');
-    $item['mustbe']   = cmsCore::request('mustbe', 'int');
+    $item['ordering']    = cmsCore::request('f_order', 'int');
+    $item['form_id']     = cmsCore::request('form_id', 'int');
+    $item['mustbe']      = cmsCore::request('mustbe', 'int');
 
     $item['config'] = array();
 
-    $item['config']['text_is_link'] = cmsCore::request('text_is_link', 'int');
+    $item['config']['text_is_link']     = cmsCore::request('text_is_link', 'int');
     $item['config']['text_link_prefix'] = cmsCore::request('text_link_prefix', 'str', '');
-	$item['config']['max'] = cmsCore::request('text_max', 'int');
+    $item['config']['max']              = cmsCore::request('text_max', 'int');
 
     switch ($item['kind']) {
         case 'text':
-
-            $item['config']['size']    = cmsCore::request('f_text_size', 'int');
+            $item['config']['size'] = cmsCore::request('f_text_size', 'int');
             break;
 
         case 'link':
-
-            $item['config']['size']    = cmsCore::request('f_link_size', 'int');
+            $item['config']['size'] = cmsCore::request('f_link_size', 'int');
             break;
 
         case 'textarea':
-
             $item['config']['size']    = cmsCore::request('f_ta_size', 'int');
             $item['config']['rows']    = cmsCore::request('f_ta_rows', 'int');
             $item['config']['default'] = cmsCore::request('f_ta_default', 'str', '');
             break;
 
         case 'checkbox':
-
             $item['config']['checked'] = cmsCore::request('f_checked', 'int');
             break;
 
         case 'radiogroup':
-
             $item['config']['items'] = cmsCore::request('f_rg_list', 'str', '');
             break;
 
         case 'list':
-
             $item['config']['items'] = cmsCore::request('f_list_list', 'str', '');
             $item['config']['size']  = cmsCore::request('f_list_size', 'int');
             break;
 
         case 'menu':
-
             $item['config']['items'] = cmsCore::request('f_menu_list', 'str', '');
             $item['config']['size']  = cmsCore::request('f_menu_size', 'int');
             break;
 
         case 'file':
-
             $exts = cmsCore::request('f_file_ext', 'str', '');
 
-            while (mb_strpos($exts, 'htm') ||
-                   mb_strpos($exts, 'php') ||
-                   mb_strpos($exts, 'ht')) {
-                $exts  = str_replace(array('htm','php','ht'), '', mb_strtolower($exts));
+            while ( mb_strpos($exts, 'htm') ||
+            mb_strpos($exts, 'php') ||
+            mb_strpos($exts, 'ht') ) {
+                $exts = str_replace(array( 'htm', 'php', 'ht' ), '', mb_strtolower($exts));
             }
-            $item['config']['ext']   = str_replace(' ', '', $exts);
-            $item['config']['size']  = cmsCore::request('f_file_size', 'int');
+            $item['config']['ext']  = str_replace(' ', '', $exts);
+            $item['config']['size'] = cmsCore::request('f_file_size', 'int');
             break;
     }
 
     $item['config'] = $inDB->escape_string(cmsCore::arrayToYaml($item['config']));
 
-    if (!cmsCore::request('is_public', 'int', 0)){
+    if ( !cmsCore::request('is_public', 'int', 0) ) {
         $item['show_for_group'] = cmsCore::arrayToYaml(cmsCore::request('show_for_group', 'array_int'));
-    } else {
+    }
+    else {
         $item['show_for_group'] = '';
     }
 
-    if($opt == 'add_field'){
-
+    if ( $opt == 'add_field' ) {
         $inDB->insert('cms_form_fields', cmsCore::callEvent('ADD_FORM_FIELD', $item));
-
-    } else {
-
-        $inDB->update('cms_form_fields', cmsCore::callEvent('UPDATE_FORM_FIELD', $item), cmsCore::request('field_id', 'int'));
-
     }
+    else {
+        $inDB->update('cms_form_fields', cmsCore::callEvent('UPDATE_FORM_FIELD', $item), cmsCore::request('field_id', 'int'));
+    }
+
     cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS']);
-    cmsCore::redirect('?view=components&do=config&id='.$id.'&opt=edit&item_id='.$item['form_id']);
+    cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=edit&item_id=' . $item['form_id']);
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-if (in_array($opt, array('submit', 'update'))) {
-
-    if (!cmsUser::checkCsrfToken()) { cmsCore::error404(); }
+if ( in_array($opt, array( 'submit', 'update' )) ) {
+    if ( !cmsUser::checkCsrfToken() ) {
+        cmsCore::error404();
+    }
 
     $item['title']       = cmsCore::request('title', 'str', $_LANG['AD_FORM_UNTITLED']);
     $item['description'] = $inDB->escape_string(cmsCore::request('description', 'html', ''));
 
-    $item['sendto']  = cmsCore::request('sendto', 'str', '');
-    $item['email']   = cmsCore::request('email', 'str', '');
-    $item['user_id'] = cmsCore::request('user_id', 'int', 0);
+    $item['sendto']      = cmsCore::request('sendto', 'str', '');
+    $item['email']       = cmsCore::request('email', 'str', '');
+    $item['user_id']     = cmsCore::request('user_id', 'int', 0);
     $item['form_action'] = cmsCore::request('form_action', 'str', '/forms/process');
     $item['only_fields'] = cmsCore::request('only_fields', 'int', 0);
-    $item['showtitle'] = cmsCore::request('showtitle', 'int', 0);
-    $item['tpl']       = cmsCore::request('tpl', 'str', 'form');
+    $item['showtitle']   = cmsCore::request('showtitle', 'int', 0);
+    $item['tpl']         = cmsCore::request('tpl', 'str', 'form');
 
-    if($opt == 'submit'){
-
+    if ( $opt == 'submit' ) {
         $form_id = $inDB->insert('cms_forms', cmsCore::callEvent('ADD_FORM', $item));
         cmsCore::addSessionMessage($_LANG['AD_FORM_SUCCESFULL_CREATED']);
-
-    } else {
-
+    }
+    else {
         $form_id = cmsCore::request('item_id', 'int');
 
         $inDB->update('cms_forms', cmsCore::callEvent('UPDATE_FORM', $item), $form_id);
-        cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'].'.');
-
+        cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'] . '.');
     }
 
-    cmsCore::redirect('?view=components&do=config&id='.$id.'&opt=edit&item_id='.$form_id);
-
+    cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=edit&item_id=' . $form_id);
 }
 
-if ($opt == 'delete') {
-
+if ( $opt == 'delete' ) {
     $item_id = cmsCore::request('item_id', 'int');
-    $mod = $inDB->get_fields('cms_forms', "id = '{$item_id}'", '*');
-    if(!$mod){ cmsCore::error404(); }
+    $mod     = $inDB->get_fields('cms_forms', "id = '{$item_id}'", '*');
+    if ( !$mod ) {
+        cmsCore::error404();
+    }
 
     cmsCore::callEvent('DELETE_FORM', $item_id);
 
@@ -245,60 +234,54 @@ if ($opt == 'delete') {
 
     $inDB->delete('cms_form_fields', "form_id = '{$item_id}'");
 
-    files_remove_directory(PATH.'/upload/forms/'.$item_id);
+    files_remove_directory(PATH . '/upload/forms/' . $item_id);
 
-    cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'].'.');
+    cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'] . '.');
 
-    cmsCore::redirect('?view=components&do=config&id='.$id.'&opt=list');
-
+    cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list');
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-if ($opt == 'list') {
+if ( $opt == 'list' ) {
+    $fields[] = array( 'title' => 'id', 'field' => 'id', 'width' => '30' );
+    $fields[] = array( 'title' => $_LANG['TITLE'], 'field' => 'title', 'width' => '', 'link' => '?view=components&do=config&id=' . $id . '&opt=edit&item_id=%id%' );
+    $fields[] = array( 'title' => $_LANG['AD_E-MAIL'], 'field' => 'email', 'width' => '150' );
 
-    $fields[] = array('title'=>'id', 'field'=>'id', 'width'=>'30');
-    $fields[] = array('title'=>$_LANG['TITLE'], 'field'=>'title', 'width'=>'', 'link'=>'?view=components&do=config&id='.$id.'&opt=edit&item_id=%id%');
-    $fields[] = array('title'=>$_LANG['AD_E-MAIL'], 'field'=>'email', 'width'=>'150');
-
-    $actions[] = array('title'=>$_LANG['EDIT'], 'icon'=>'edit.gif', 'link'=>'?view=components&do=config&id='.$id.'&opt=edit&item_id=%id%');
-    $actions[] = array('title'=>$_LANG['DELETE'], 'icon'=>'delete.gif', 'confirm'=>$_LANG['AD_FORM_DELETE'], 'link'=>'?view=components&do=config&id='.$id.'&opt=delete&item_id=%id%');
+    $actions[] = array( 'title' => $_LANG['EDIT'], 'icon' => 'edit.gif', 'link' => '?view=components&do=config&id=' . $id . '&opt=edit&item_id=%id%' );
+    $actions[] = array( 'title' => $_LANG['DELETE'], 'icon' => 'delete.gif', 'confirm' => $_LANG['AD_FORM_DELETE'], 'link' => '?view=components&do=config&id=' . $id . '&opt=delete&item_id=%id%' );
 
     cpListTable('cms_forms', $fields, $actions);
-
 }
 
-if (in_array($opt, array('add', 'edit'))) {
-
-    if ($opt == 'add') {
-
+if ( in_array($opt, array( 'add', 'edit' )) ) {
+    if ( $opt == 'add' ) {
         cpAddPathway($_LANG['AD_NEW_FORM']);
-        echo '<h3>'.$_LANG['AD_NEW_FORM'].'</h3>';
+        echo '<h3>' . $_LANG['AD_NEW_FORM'] . '</h3>';
 
         $mod['showtitle']   = 1;
         $mod['form_action'] = '/forms/process';
         $mod['tpl']         = 'form';
         $mod['only_fields'] = 0;
-
-    } else {
-
+    }
+    else {
         $item_id  = cmsCore::request('item_id', 'int');
         $field_id = cmsCore::request('field_id', 'int');
 
         $mod = $inDB->get_fields('cms_forms', "id = '{$item_id}'", '*');
 
         $field = $inDB->get_fields('cms_form_fields', "id='{$field_id}'", '*');
-        if($field){
+        if ( $field ) {
             $field['config'] = cmsCore::yamlToArray($field['config']);
         }
 
-        echo '<h3>'.$_LANG['AD_FORM']. ': ' . $mod['title'] . '</h3>';
+        echo '<h3>' . $_LANG['AD_FORM'] . ': ' . $mod['title'] . '</h3>';
         cpAddPathway($mod['title']);
 
         ob_start();
 
-        echo '{tab='.$_LANG['AD_FORM_PROPERTIES'].'}';
-
-    } ?>
+        echo '{tab=' . $_LANG['AD_FORM_PROPERTIES'] . '}';
+    }
+    ?>
 
     <form id="addform" name="addform" method="post" action="index.php?view=components&do=config&id=<?php echo $id; ?>">
         <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
@@ -311,8 +294,16 @@ if (in_array($opt, array('add', 'edit'))) {
                 <td><strong><?php echo $_LANG['AD_FORM_DESTINATION']; ?>: </strong></td>
                 <td>
                     <select name="sendto" id="sendto" style="width:220px;" onChange="toggleSendTo()">
-                        <option value="mail" <?php if (@$mod['sendto'] == 'mail' || !isset($mod['sendto'])) { echo 'selected'; } ?>><?php echo $_LANG['AD_EMAIL_ADDRESS']; ?></option>
-                        <option value="user" <?php if (@$mod['sendto'] == 'user') { echo 'selected'; } ?>><?php echo $_LANG['AD_PERSON_MESS']; ?></option>
+                        <option value="mail" <?php
+    if ( @$mod['sendto'] == 'mail' || !isset($mod['sendto']) ) {
+        echo 'selected';
+    }
+    ?>><?php echo $_LANG['AD_EMAIL_ADDRESS']; ?></option>
+                        <option value="user" <?php
+                    if ( @$mod['sendto'] == 'user' ) {
+                        echo 'selected';
+                    }
+    ?>><?php echo $_LANG['AD_PERSON_MESS']; ?></option>
                     </select>
                 </td>
             </tr>
@@ -320,8 +311,16 @@ if (in_array($opt, array('add', 'edit'))) {
             <tr>
                 <td width="200"><strong><?php echo $_LANG['AD_VIEW_FORM_TITLE']; ?>: </strong></td>
                 <td width="">
-                    <label><input name="showtitle" type="radio" value="1" <?php if ($mod['showtitle']) { echo 'checked="checked"'; } ?>/> <?php echo $_LANG['YES']; ?></label>
-                    <label><input name="showtitle" type="radio" value="0" <?php if (!$mod['showtitle']) { echo 'checked="checked"'; } ?>/> <?php echo $_LANG['NO']; ?></label>
+                    <label><input name="showtitle" type="radio" value="1" <?php
+                    if ( $mod['showtitle'] ) {
+                        echo 'checked="checked"';
+                    }
+    ?>/> <?php echo $_LANG['YES']; ?></label>
+                    <label><input name="showtitle" type="radio" value="0" <?php
+                    if ( !$mod['showtitle'] ) {
+                        echo 'checked="checked"';
+                    }
+    ?>/> <?php echo $_LANG['NO']; ?></label>
                 </td>
             </tr>
             <tr>
@@ -333,8 +332,16 @@ if (in_array($opt, array('add', 'edit'))) {
             <tr>
                 <td width="200"><strong><?php echo $_LANG['AD_FILED_ONLY']; ?>: </strong></td>
                 <td width="">
-                    <label><input name="only_fields" type="radio" value="1" <?php if ($mod['only_fields']) { echo 'checked="checked"'; } ?>/> <?php echo $_LANG['YES']; ?></label>
-                    <label><input name="only_fields" type="radio" value="0" <?php if (!$mod['only_fields']) { echo 'checked="checked"'; } ?>/> <?php echo $_LANG['NO']; ?></label>
+                    <label><input name="only_fields" type="radio" value="1" <?php
+                    if ( $mod['only_fields'] ) {
+                        echo 'checked="checked"';
+                    }
+    ?>/> <?php echo $_LANG['YES']; ?></label>
+                    <label><input name="only_fields" type="radio" value="0" <?php
+                    if ( !$mod['only_fields'] ) {
+                        echo 'checked="checked"';
+                    }
+    ?>/> <?php echo $_LANG['NO']; ?></label>
                 </td>
             </tr>
             <tr>
@@ -344,11 +351,14 @@ if (in_array($opt, array('add', 'edit'))) {
                 </td>
             </tr>
         </table>
-        <div id="sendto_mail" <?php if (@$mod['sendto'] == 'mail' || !isset($mod['sendto'])) {
-                            echo 'style="display:block"';
-                        } else {
-                            echo 'style="display:none"';
-                        } ?>>
+        <div id="sendto_mail" <?php
+                    if ( @$mod['sendto'] == 'mail' || !isset($mod['sendto']) ) {
+                        echo 'style="display:block"';
+                    }
+                    else {
+                        echo 'style="display:none"';
+                    }
+    ?>>
             <table width="605" border="0" cellspacing="5" class="proptable">
                 <tr>
                     <td width="16" valign="top"><img src="/admin/components/forms/email.gif" width="16" height="16"></td>
@@ -360,11 +370,14 @@ if (in_array($opt, array('add', 'edit'))) {
                 </tr>
             </table>
         </div>
-        <div id="sendto_user" <?php if (@$mod['sendto'] == 'user') {
-                            echo 'style="display:block"';
-                        } else {
-                            echo 'style="display:none"';
-                        } ?>>
+        <div id="sendto_user" <?php
+    if ( @$mod['sendto'] == 'user' ) {
+        echo 'style="display:block"';
+    }
+    else {
+        echo 'style="display:none"';
+    }
+    ?>>
             <table width="605" border="0" cellspacing="5" class="proptable">
                 <tr>
                     <td width="16"><img src="/admin/components/forms/user.gif" width="16" height="16"></td>
@@ -372,9 +385,10 @@ if (in_array($opt, array('add', 'edit'))) {
                     <td>
                         <select name="user_id" id="user_id" style="width:220px">
                             <?php
-                            if (isset($mod['user_id'])) {
+                            if ( isset($mod['user_id']) ) {
                                 echo $inCore->getListItems('cms_users', $mod['user_id'], 'nickname', 'ASC', 'is_deleted=0 AND is_locked=0', 'id', 'nickname');
-                            } else {
+                            }
+                            else {
                                 echo $inCore->getListItems('cms_users', 0, 'nickname', 'ASC', 'is_deleted=0 AND is_locked=0', 'id', 'nickname');
                             }
                             ?>
@@ -389,35 +403,53 @@ if (in_array($opt, array('add', 'edit'))) {
                     <p><strong><?php echo $_LANG['AD_FORM_EXPLANT']; ?>:</strong></p>
                     <?php $inCore->insertEditor('description', $mod['description'], '280', '100%'); ?>
                 </td>
-           </tr>
+            </tr>
         </table>
-        <?php if ($opt == 'add') {
-            echo '<p><b>'.$_LANG['AD_NOTE'].': </b>'.$_LANG['AD_AFTER_CREATE'].'. </p>';
-        } else {
-            echo '<p><b>'.$_LANG['AD_NOTE'].': </b>' .$_LANG['AD_TO_INSERT'];
+        <?php
+        if ( $opt == 'add' ) {
+            echo '<p><b>' . $_LANG['AD_NOTE'] . ': </b>' . $_LANG['AD_AFTER_CREATE'] . '. </p>';
+        }
+        else {
+            echo '<p><b>' . $_LANG['AD_NOTE'] . ': </b>' . $_LANG['AD_TO_INSERT'];
         }
         ?>
         <p>
             <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>" />
-            <input name="opt" type="hidden" id="do" <?php if ($opt == 'add') { echo 'value="submit"'; } else { echo 'value="update"'; } ?> />
-    <?php
-    if ($opt == 'edit') {
-        echo '<input name="item_id" type="hidden" value="' . $mod['id'] . '" />';
-    } ?>
+            <input name="opt" type="hidden" id="do" <?php
+    if ( $opt == 'add' ) {
+        echo 'value="submit"';
+    }
+    else {
+        echo 'value="update"';
+    }
+        ?> />
+                   <?php
+                   if ( $opt == 'edit' ) {
+                       echo '<input name="item_id" type="hidden" value="' . $mod['id'] . '" />';
+                   }
+                   ?>
 
         </p>
     </form>
-    <?php if ($opt == 'edit') {
-        $last_order = 1 + $inDB->get_field('cms_form_fields', "form_id='{$mod['id']}' ORDER BY ordering DESC", 'ordering'); ?>
+    <?php
+    if ( $opt == 'edit' ) {
+        $last_order = 1 + $inDB->get_field('cms_form_fields', "form_id='{$mod['id']}' ORDER BY ordering DESC", 'ordering');
+        ?>
 
         {tab=<?php echo $_LANG['AD_FIELDS']; ?>}
         <table width="761" cellpadding="8" cellspacing="5">
             <tr>
                 <td width="300" valign="top" class="proptable">
-                    <h4 style="border-bottom:solid 1px #CCC; font-size: 14px; margin-bottom: 10px"><b><?php if(!@$field){ ?><?php echo $_LANG['AD_FIELD_ADD']; ?><?php } else { ?><?php echo $_LANG['AD_FIELD_EDIT']; ?><?php } ?></b></h4>
+                    <h4 style="border-bottom:solid 1px #CCC; font-size: 14px; margin-bottom: 10px"><b><?php if ( !@$field ) { ?><?php echo $_LANG['AD_FIELD_ADD']; ?><?php
+        }
+        else {
+            ?><?php echo $_LANG['AD_FIELD_EDIT']; ?><?php } ?></b></h4>
                     <form id="fieldform" name="fieldform" method="post" action="index.php?view=components&do=config&id=<?php echo $id; ?>">
                         <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
-                        <input type="hidden" name="opt" value="<?php if(!@$field){ ?>add_field<?php } else { ?>update_field<?php } ?>"/>
+                        <input type="hidden" name="opt" value="<?php if ( !@$field ) { ?>add_field<?php
+                        }
+                        else {
+                            ?>update_field<?php } ?>"/>
                         <input name="form_id" type="hidden" id="form_id" value="<?php echo @$mod['id'] ?>"/>
                         <input name="field_id" type="hidden" value="<?php echo @$field['id'] ?>"/>
                         <table width="100%" border="0" cellspacing="2" cellpadding="2">
@@ -425,14 +457,46 @@ if (in_array($opt, array('add', 'edit'))) {
                                 <td width="100"><?php echo $_LANG['AD_FIELD_TYPE']; ?>:</td>
                                 <td>
                                     <select name="kind" id="kind" onchange="show()">
-                                        <option value="text" <?php if (@$field['kind'] == 'text' || !@$field['kind']) { echo 'selected="selected"'; } ?>><?php echo $_LANG['AD_TYPE_TEXT']; ?></option>
-                                        <option value="link" <?php if (@$field['kind'] == 'link') { echo 'selected="selected"'; } ?>><?php echo $_LANG['AD_TYPE_URL']; ?></option>
-                                        <option value="textarea" <?php if (@$field['kind'] == 'textarea') { echo 'selected="selected"'; } ?>><?php echo $_LANG['AD_TYPE_MILTILINE']; ?></option>
-                                        <option value="checkbox" <?php if (@$field['kind'] == 'checkbox') { echo 'selected="selected"'; } ?>><?php echo $_LANG['AD_TYPE_YES_NO']; ?></option>
-                                        <option value="radiogroup" <?php if (@$field['kind'] == 'radiogroup') { echo 'selected="selected"'; } ?>><?php echo $_LANG['AD_TYPE_GROUP_OPTIONS'] ; ?></option>
-                                        <option value="list" <?php if (@$field['kind'] == 'list') { echo 'selected="selected"'; } ?>><?php echo $_LANG['AD_TYPE_DROP_DOWN']; ?></option>
-                                        <option value="menu" <?php if (@$field['kind'] == 'menu') { echo 'selected="selected"'; } ?>><?php echo $_LANG['AD_TYPE_VISIBLE']; ?></option>
-                                        <option value="file" <?php if (@$field['kind'] == 'file') { echo 'selected="selected"'; } ?>><?php echo $_LANG['FILE']; ?></option>
+                                        <option value="text" <?php
+                                        if ( @$field['kind'] == 'text' || !@$field['kind'] ) {
+                                            echo 'selected="selected"';
+                                        }
+                                        ?>><?php echo $_LANG['AD_TYPE_TEXT']; ?></option>
+                                        <option value="link" <?php
+                                        if ( @$field['kind'] == 'link' ) {
+                                            echo 'selected="selected"';
+                                        }
+                                        ?>><?php echo $_LANG['AD_TYPE_URL']; ?></option>
+                                        <option value="textarea" <?php
+                                        if ( @$field['kind'] == 'textarea' ) {
+                                            echo 'selected="selected"';
+                                        }
+                                        ?>><?php echo $_LANG['AD_TYPE_MILTILINE']; ?></option>
+                                        <option value="checkbox" <?php
+                                        if ( @$field['kind'] == 'checkbox' ) {
+                                            echo 'selected="selected"';
+                                        }
+                                        ?>><?php echo $_LANG['AD_TYPE_YES_NO']; ?></option>
+                                        <option value="radiogroup" <?php
+                                        if ( @$field['kind'] == 'radiogroup' ) {
+                                            echo 'selected="selected"';
+                                        }
+                                        ?>><?php echo $_LANG['AD_TYPE_GROUP_OPTIONS']; ?></option>
+                                        <option value="list" <?php
+                                        if ( @$field['kind'] == 'list' ) {
+                                            echo 'selected="selected"';
+                                        }
+                                        ?>><?php echo $_LANG['AD_TYPE_DROP_DOWN']; ?></option>
+                                        <option value="menu" <?php
+                                        if ( @$field['kind'] == 'menu' ) {
+                                            echo 'selected="selected"';
+                                        }
+                                        ?>><?php echo $_LANG['AD_TYPE_VISIBLE']; ?></option>
+                                        <option value="file" <?php
+                                        if ( @$field['kind'] == 'file' ) {
+                                            echo 'selected="selected"';
+                                        }
+                                        ?>><?php echo $_LANG['FILE']; ?></option>
                                     </select>
                                 </td>
                             </tr>
@@ -446,13 +510,28 @@ if (in_array($opt, array('add', 'edit'))) {
                             </tr>
                             <tr>
                                 <td><?php echo $_LANG['AD_FIELD_ORDER']; ?>:</td>
-                                <td><input class="uispin" name="f_order" type="text" id="f_order" value="<?php if(!@$field) { echo $last_order; } else { echo @$field['ordering']; } ?>" size="6" /></td>
+                                <td><input class="uispin" name="f_order" type="text" id="f_order" value="<?php
+                                    if ( !@$field ) {
+                                        echo $last_order;
+                                    }
+                                    else {
+                                        echo @$field['ordering'];
+                                    }
+                                    ?>" size="6" /></td>
                             </tr>
                             <tr>
                                 <td><?php echo $_LANG['AD_FIELD_FILLING']; ?>:</td>
                                 <td><select name="mustbe" id="mustbe">
-                                        <option value="1" <?php if (@$field['mustbe']) { echo 'selected="selected"'; } ?>><?php echo $_LANG['AD_NECESSARILY']; ?></option>
-                                        <option value="0" <?php if (!@$field['mustbe']) { echo 'selected="selected"'; } ?>><?php echo $_LANG['AD_NOT_NECESSARILY']; ?></option>
+                                        <option value="1" <?php
+                                        if ( @$field['mustbe'] ) {
+                                            echo 'selected="selected"';
+                                        }
+                                        ?>><?php echo $_LANG['AD_NECESSARILY']; ?></option>
+                                        <option value="0" <?php
+                                        if ( !@$field['mustbe'] ) {
+                                            echo 'selected="selected"';
+                                        }
+                                        ?>><?php echo $_LANG['AD_NOT_NECESSARILY']; ?></option>
                                     </select>
                                 </td>
                             </tr>
@@ -461,13 +540,25 @@ if (in_array($opt, array('add', 'edit'))) {
                                 <td>
                                     <label><input name="text_is_link"
                                                   onclick="$('#text_link_prefix').show();"
-                                                  type="radio" value="1" <?php if (@$field['config']['text_is_link']) { echo 'checked="checked"'; } ?>/> <?php echo $_LANG['YES']; ?></label>
+                                                  type="radio" value="1" <?php
+                                                  if ( @$field['config']['text_is_link'] ) {
+                                                      echo 'checked="checked"';
+                                                  }
+                                                  ?>/> <?php echo $_LANG['YES']; ?></label>
                                     <label><input name="text_is_link"
                                                   onclick="$('#text_link_prefix').hide();"
-                                                  type="radio" value="0" <?php if (!@$field['config']['text_is_link']) { echo 'checked="checked"'; } ?>/> <?php echo $_LANG['NO']; ?></label>
+                                                  type="radio" value="0" <?php
+                                                  if ( !@$field['config']['text_is_link'] ) {
+                                                      echo 'checked="checked"';
+                                                  }
+                                                  ?>/> <?php echo $_LANG['NO']; ?></label>
                                 </td>
                             </tr>
-                            <tr id="text_link_prefix" <?php if(!@$field['config']['text_is_link']) { echo 'style="display:none"'; } ?>>
+                            <tr id="text_link_prefix" <?php
+                            if ( !@$field['config']['text_is_link'] ) {
+                                echo 'style="display:none"';
+                            }
+                            ?>>
                                 <td><?php echo $_LANG['AD_LINK_PREFIX']; ?>:</td>
                                 <td><input name="text_link_prefix" type="text" size="25" value="<?php echo (@$field['config']['text_link_prefix'] ? $field['config']['text_link_prefix'] : '/users/hobby/'); ?>" /></td>
                             </tr>
@@ -481,7 +572,7 @@ if (in_array($opt, array('add', 'edit'))) {
                             <table width="100%" border="0" cellspacing="2" cellpadding="2">
                                 <tr>
                                     <td width="100"><?php echo $_LANG['AD_WIDTH']; ?>:</td>
-                                    <td><input class="uispin" name="f_text_size" type="text" id="f_text_size" value="<?php echo (@$field['config']['size'] ? $field['config']['size'] : 160) ?>" size="6" />  <?php echo $_LANG['AD_PX'] ; ?> </td>
+                                    <td><input class="uispin" name="f_text_size" type="text" id="f_text_size" value="<?php echo (@$field['config']['size'] ? $field['config']['size'] : 160) ?>" size="6" />  <?php echo $_LANG['AD_PX']; ?> </td>
                                 </tr>
                             </table>
                         </div>
@@ -489,7 +580,7 @@ if (in_array($opt, array('add', 'edit'))) {
                             <table width="100%" border="0" cellspacing="2" cellpadding="2">
                                 <tr>
                                     <td width="100"><?php echo $_LANG['AD_WIDTH']; ?>:</td>
-                                    <td><input class="uispin" name="f_link_size" type="text" id="f_text_size" value="<?php echo (@$field['config']['size'] ? $field['config']['size'] : 160) ?>" size="6" />  <?php echo $_LANG['AD_PX'] ; ?> </td>
+                                    <td><input class="uispin" name="f_link_size" type="text" id="f_text_size" value="<?php echo (@$field['config']['size'] ? $field['config']['size'] : 160) ?>" size="6" />  <?php echo $_LANG['AD_PX']; ?> </td>
                                 </tr>
                             </table>
                         </div>
@@ -497,7 +588,7 @@ if (in_array($opt, array('add', 'edit'))) {
                             <table width="100%" border="0" cellspacing="2" cellpadding="2">
                                 <tr>
                                     <td width="100"><?php echo $_LANG['AD_WIDTH']; ?>:</td>
-                                    <td><input class="uispin" name="f_ta_size" type="text" id="f_ta_size" value="<?php echo (@$field['config']['size'] ? $field['config']['size'] : 160) ?>" size="6" /> <?php echo $_LANG['AD_PX'] ; ?> </td>
+                                    <td><input class="uispin" name="f_ta_size" type="text" id="f_ta_size" value="<?php echo (@$field['config']['size'] ? $field['config']['size'] : 160) ?>" size="6" /> <?php echo $_LANG['AD_PX']; ?> </td>
                                 </tr>
                                 <tr>
                                     <td><?php echo $_LANG['AD_STRINGS']; ?>:</td>
@@ -511,8 +602,16 @@ if (in_array($opt, array('add', 'edit'))) {
                                     <tr>
                                         <td width="100"><?php echo $_LANG['AD_MARK']; ?>:</td>
                                         <td><select name="f_checked" id="f_checked">
-                                                <option value="1" <?php if (@$field['config']['checked']) { echo 'selected="selected"'; } ?>><?php echo $_LANG['AD_MARKED']; ?></option>
-                                                <option value="0" <?php if (!@$field['config']['checked']) { echo 'selected="selected"'; } ?>><?php echo $_LANG['AD_NOT_MARKED']; ?></option>
+                                                <option value="1" <?php
+                                                if ( @$field['config']['checked'] ) {
+                                                    echo 'selected="selected"';
+                                                }
+                                                ?>><?php echo $_LANG['AD_MARKED']; ?></option>
+                                                <option value="0" <?php
+                                                if ( !@$field['config']['checked'] ) {
+                                                    echo 'selected="selected"';
+                                                }
+                                                ?>><?php echo $_LANG['AD_NOT_MARKED']; ?></option>
                                             </select>
                                         </td>
                                     </tr>
@@ -568,71 +667,75 @@ if (in_array($opt, array('add', 'edit'))) {
                             </table>
                         </div>
 
-                    <?php
-
+                        <?php
                         $groups = cmsUser::getGroups();
 
                         $style  = 'disabled="disabled"';
                         $public = 'checked="checked"';
 
-                        if (@$field){
+                        if ( @$field ) {
 
-                            if ($field['show_for_group']){
+                            if ( $field['show_for_group'] ) {
                                 $public = '';
                                 $style  = '';
 
                                 $show_for_group = cmsCore::yamlToArray($field['show_for_group']);
-
                             }
                         }
-                    ?>
+                        ?>
 
-                    <label><input name="is_public" type="checkbox" id="is_public" onclick="checkGroupList()" value="1" <?php echo $public?> /> Показывать всем группам</label>
+                        <label><input name="is_public" type="checkbox" id="is_public" onclick="checkGroupList()" value="1" <?php echo $public ?> /> Показывать всем группам</label>
 
-                    <div style="margin-top:10px;padding:5px;padding-right:0px;">
-                        <div>
-                            <?php echo $_LANG['AD_GROUPS_VIEW']; ?><br />
-                            <span class="hinttext">
-                                <?php echo $_LANG['AD_SELECT_MULTIPLE_CTRL']; ?>
-                            </span>
-                        </div>
-                        <div>
-                            <?php
-                                echo '<select style="width: 99%" name="show_for_group[]" id="showin" size="6" multiple="multiple" '.$style.'>';
+                        <div style="margin-top:10px;padding:5px;padding-right:0px;">
+                            <div>
+                                    <?php echo $_LANG['AD_GROUPS_VIEW']; ?><br />
+                                <span class="hinttext">
+        <?php echo $_LANG['AD_SELECT_MULTIPLE_CTRL']; ?>
+                                </span>
+                            </div>
+                            <div>
+                                <?php
+                                echo '<select style="width: 99%" name="show_for_group[]" id="showin" size="6" multiple="multiple" ' . $style . '>';
 
-                                if ($groups){
-									foreach($groups as $group){
-                                        echo '<option value="'.$group['id'].'"';
-                                        if (@$field && $field['show_for_group']){
-                                            if (inArray($show_for_group, $group['id'])){
+                                if ( $groups ) {
+                                    foreach ( $groups as $group ) {
+                                        echo '<option value="' . $group['id'] . '"';
+                                        if ( @$field && $field['show_for_group'] ) {
+                                            if ( inArray($show_for_group, $group['id']) ) {
                                                 echo 'selected="selected"';
                                             }
                                         }
 
                                         echo '>';
-                                        echo $group['title'].'</option>';
-									}
-
+                                        echo $group['title'] . '</option>';
+                                    }
                                 }
 
                                 echo '</select>';
-                            ?>
+                                ?>
+                            </div>
                         </div>
-                    </div>
 
                         <p>
-                            <input type="submit" name="Submit" value="<?php if(!@$field){  echo $_LANG['AD_FIELD_ADD']; } else { echo $_LANG['AD_FIELD_SAVE']; } ?>" />
+                            <input type="submit" name="Submit" value="<?php
+                            if ( !@$field ) {
+                                echo $_LANG['AD_FIELD_ADD'];
+                            }
+                            else {
+                                echo $_LANG['AD_FIELD_SAVE'];
+                            }
+                            ?>" />
                         </p>
                     </form>
 
                 </td>
                 <td width="440" valign="top" class="proptable"><h4 style="border-bottom:solid 1px black;font-size: 14px; margin-bottom: 5px"><b><?php echo $_LANG['AD_PREVIEV']; ?> </b></h4>
-                    <?php echo cmsForm::displayForm($item_id, array(), true); ?>
+        <?php echo cmsForm::displayForm($item_id, array(), true); ?>
                 </td>
             </tr>
         </table>
         <script type="text/javascript">
-            $(document).ready(function(){
+            $(document).ready(function () {
                 show();
                 checkGroupList();
             });

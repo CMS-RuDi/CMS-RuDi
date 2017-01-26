@@ -1,45 +1,45 @@
 <?php
-if(!defined('VALID_CMS_ADMIN')) { die('ACCESS DENIED'); }
-/******************************************************************************/
-//                                                                            //
-//                           InstantCMS v1.10.6                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/******************************************************************************/
+/*
+ *                           InstantCMS v1.10.6
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2015
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
 
-	$opt = cmsCore::request('opt', 'str', 'config');
+if ( !defined('VALID_CMS_ADMIN') ) {
+    die('ACCESS DENIED');
+}
 
-    $toolmenu[] = array('icon'=>'save.gif', 'title'=>$_LANG['SAVE'], 'link'=>'javascript:document.optform.submit();');
-    $toolmenu[] = array('icon'=>'cancel.gif', 'title'=>$_LANG['CANCEL'], 'link'=>'?view=components');
+$opt = cmsCore::request('opt', 'str', 'config');
 
-	cpToolMenu($toolmenu);
+$toolmenu[] = array( 'icon' => 'save.gif', 'title' => $_LANG['SAVE'], 'link' => 'javascript:document.optform.submit();' );
+$toolmenu[] = array( 'icon' => 'cancel.gif', 'title' => $_LANG['CANCEL'], 'link' => '?view=components' );
 
-	$cfg = $inCore->loadComponentConfig('files');
+cpToolMenu($toolmenu);
 
-	if($opt=='saveconfig'){
+$cfg = $inCore->loadComponentConfig('files');
 
-        if (!cmsUser::checkCsrfToken()) { cmsCore::error404(); }
+if ( $opt == 'saveconfig' ) {
+    if ( !cmsUser::checkCsrfToken() ) {
+        cmsCore::error404();
+    }
 
-		$cfg = array(
-            'check_link'    => cmsCore::request('check_link', 'int', 0),
-            'redirect_time' => cmsCore::request('redirect_time', 'int', 0),
-            'file_time'     => cmsCore::request('file_time', 'int', 0),
-            'white_list'    => cmsCore::request('white_list', 'str', '')
-        );
+    $cfg = array(
+        'check_link'    => cmsCore::request('check_link', 'int', 0),
+        'redirect_time' => cmsCore::request('redirect_time', 'int', 0),
+        'file_time'     => cmsCore::request('file_time', 'int', 0),
+        'white_list'    => cmsCore::request('white_list', 'str', '')
+    );
 
-		$inCore->saveComponentConfig('files', $cfg);
+    $inCore->saveComponentConfig('files', $cfg);
 
-		cmsCore::addSessionMessage($_LANG['AD_CONFIG_SAVE_SUCCESS'], 'success');
+    cmsCore::addSessionMessage($_LANG['AD_CONFIG_SAVE_SUCCESS'], 'success');
 
-		cmsCore::redirectBack();
-
-	}
-
+    cmsCore::redirectBack();
+}
 ?>
 <form action="index.php?view=components&amp;do=config&amp;id=<?php echo $id; ?>" method="post" name="optform" id="form1">
     <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
@@ -47,8 +47,16 @@ if(!defined('VALID_CMS_ADMIN')) { die('ACCESS DENIED'); }
         <tr>
             <td><strong><?php echo $_LANG['AD_FILES_CHECK_LINK']; ?>:</strong></td>
             <td width="300" valign="top">
-                <label><input name="check_link" type="radio" value="1" <?php if ($cfg['check_link']) { echo 'checked="checked"'; } ?>/> <?php echo $_LANG['YES']; ?></label>
-                <label><input name="check_link" type="radio" value="0" <?php if (!$cfg['check_link']) { echo 'checked="checked"'; } ?>/> <?php echo $_LANG['NO']; ?></label>
+                <label><input name="check_link" type="radio" value="1" <?php
+if ( $cfg['check_link'] ) {
+    echo 'checked="checked"';
+}
+?>/> <?php echo $_LANG['YES']; ?></label>
+                <label><input name="check_link" type="radio" value="0" <?php
+                              if ( !$cfg['check_link'] ) {
+                                  echo 'checked="checked"';
+                              }
+                              ?>/> <?php echo $_LANG['NO']; ?></label>
             </td>
         </tr>
         <tr>
@@ -73,6 +81,6 @@ if(!defined('VALID_CMS_ADMIN')) { die('ACCESS DENIED'); }
     <p>
         <input name="opt" type="hidden" value="saveconfig" />
         <input name="save" type="submit" id="save" value="<?php echo $_LANG['SAVE']; ?>" />
-        <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href='index.php?view=components';"/>
+        <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components';"/>
     </p>
 </form>

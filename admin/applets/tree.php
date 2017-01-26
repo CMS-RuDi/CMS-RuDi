@@ -1,28 +1,29 @@
 <?php
-/******************************************************************************/
-//                                                                            //
-//                           InstantCMS v1.10.6                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/******************************************************************************/
 
-function applet_tree(){
+/*
+ *                           InstantCMS v1.10.6
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2015
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
 
+function applet_tree()
+{
     $inCore = cmsCore::getInstance();
     $inUser = cmsUser::getInstance();
-	$inDB 	= cmsDatabase::getInstance();
-	$inPage = cmsPage::getInstance();
+    $inDB   = cmsDatabase::getInstance();
+    $inPage = cmsPage::getInstance();
 
-	cmsCore::loadLib('tags');
+    cmsCore::loadLib('tags');
 
     global $_LANG;
     global $adminAccess;
-	if (!cmsUser::isAdminCan('admin/content', $adminAccess)) { cpAccessDenied(); }
+    if ( !cmsUser::isAdminCan('admin/content', $adminAccess) ) {
+        cpAccessDenied();
+    }
 
     $cfg = $inCore->loadComponentConfig('content');
 
@@ -32,7 +33,7 @@ function applet_tree(){
     $GLOBALS['cp_page_title'] = $_LANG['AD_ARTICLES'];
     cpAddPathway($_LANG['AD_ARTICLES'], 'index.php?view=tree');
 
-	$GLOBALS['cp_page_head'][] = '<script language="JavaScript" type="text/javascript" src="js/content.js"></script>';
+    $GLOBALS['cp_page_head'][] = '<script language="JavaScript" type="text/javascript" src="js/content.js"></script>';
     echo '<script>';
     echo cmsPage::getLangJS('AD_NO_SELECTED_ARTICLES');
     echo cmsPage::getLangJS('AD_DELETE_SELECTED_ARTICLES');
@@ -47,38 +48,37 @@ function applet_tree(){
 //============================================================================//
 //============================================================================//
 
-	if ($do == 'tree'){
+    if ( $do == 'tree' ) {
+        $toolmenu[] = array( 'icon' => 'config.gif', 'title' => $_LANG['AD_SETUP_CATEGORY'], 'link' => '?view=components&do=config&link=content' );
+        $toolmenu[] = array( 'icon' => 'help.gif', 'title' => $_LANG['AD_HELP'], 'link' => '?view=components&do=config&link=content' );
 
-        $toolmenu[] = array('icon'=>'config.gif', 'title'=>$_LANG['AD_SETUP_CATEGORY'], 'link'=>'?view=components&do=config&link=content');
-        $toolmenu[] = array('icon'=>'help.gif', 'title'=>$_LANG['AD_HELP'], 'link'=>'?view=components&do=config&link=content');
+        cpToolMenu($toolmenu);
 
-		cpToolMenu($toolmenu);
+        $only_hidden = cmsCore::request('only_hidden', 'int', 0);
+        $category_id = cmsCore::request('cat_id', 'int', 0);
+        $base_uri    = 'index.php?view=tree';
 
-        $only_hidden    = cmsCore::request('only_hidden', 'int', 0);
-        $category_id    = cmsCore::request('cat_id', 'int', 0);
-        $base_uri       = 'index.php?view=tree';
+        $title_part = cmsCore::request('title', 'str', '');
 
-        $title_part     = cmsCore::request('title', 'str', '');
+        $def_order = $category_id ? 'con.ordering' : 'pubdate';
+        $orderby   = cmsCore::request('orderby', 'str', $def_order);
+        $orderto   = cmsCore::request('orderto', 'str', 'asc');
+        $page      = cmsCore::request('page', 'int', 1);
+        $perpage   = 20;
 
-        $def_order  = $category_id ? 'con.ordering' : 'pubdate';
-        $orderby    = cmsCore::request('orderby', 'str', $def_order);
-        $orderto    = cmsCore::request('orderto', 'str', 'asc');
-        $page       = cmsCore::request('page', 'int', 1);
-        $perpage    = 20;
+        $hide_cats = cmsCore::request('hide_cats', 'int', 0);
 
-        $hide_cats  = cmsCore::request('hide_cats', 'int', 0);
+        $cats = $model->getCatsTree();
 
-        $cats       = $model->getCatsTree();
-
-        if ($category_id) {
+        if ( $category_id ) {
             $model->whereCatIs($category_id);
         }
 
-        if ($title_part){
-            $inDB->where('LOWER(con.title) LIKE \'%'.mb_strtolower($title_part).'%\'');
+        if ( $title_part ) {
+            $inDB->where('LOWER(con.title) LIKE \'%' . mb_strtolower($title_part) . '%\'');
         }
 
-        if ($only_hidden){
+        if ( $only_hidden ) {
             $inDB->where('con.published = 0');
         }
 
@@ -93,11 +93,9 @@ function applet_tree(){
         $pages = ceil($total / $perpage);
 
 
-        $tpl_file   = 'admin/content.php';
-        $tpl_dir    = file_exists(TEMPLATE_DIR.$tpl_file) ? TEMPLATE_DIR : DEFAULT_TEMPLATE_DIR;
+        $tpl_file = 'admin/content.php';
+        $tpl_dir  = file_exists(TEMPLATE_DIR . $tpl_file) ? TEMPLATE_DIR : DEFAULT_TEMPLATE_DIR;
 
-        include($tpl_dir.$tpl_file);
-
-	}
-
+        include($tpl_dir . $tpl_file);
+    }
 }
