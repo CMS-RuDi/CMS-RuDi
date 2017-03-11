@@ -1,86 +1,94 @@
 <?php
-/******************************************************************************/
-//                                                                            //
-//                           InstantCMS v1.10.6                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/******************************************************************************/
 
-if(!defined('VALID_CMS')) { die('ACCESS DENIED'); }
+/*
+ *                           InstantCMS v1.10.6
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2015
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
 
-function rss_clubs($item_id, $cfg){
 
-    if(!cmsCore::getInstance()->isComponentEnable('clubs')) { return false; }
+if ( !defined('VALID_CMS') ) {
+    die('ACCESS DENIED');
+}
 
-	$inDB = cmsDatabase::getInstance();
+function rss_clubs($item_id, $cfg)
+{
+    if ( !cmsCore::getInstance()->isComponentEnable('clubs') ) {
+        return false;
+    }
 
-	global $_LANG;
+    $inDB = cmsDatabase::getInstance();
 
-	cmsCore::loadModel('clubs');
-	$model = new cms_model_clubs();
+    global $_LANG;
 
-	$inBlog = $model->initBlog();
+    cmsCore::loadModel('clubs');
+    $model = new cms_model_clubs();
 
-	$channel = array();
-	$items   = array();
+    $inBlog = $model->initBlog();
 
-	// Формируем канал
-	if ($item_id){
+    $channel = array();
+    $items   = array();
 
-		$blog = $inBlog->getBlog($item_id);
-		if (!$blog) { return false; }
+    // Формируем канал
+    if ( $item_id ) {
+        $blog = $inBlog->getBlog($item_id);
 
-		$club = $model->getClub($blog['user_id']);
-		if(!$club) { return false; }
+        if ( !$blog ) {
+            return false;
+        }
 
-		if(!$club['enabled_blogs']){ return false; }
-		if ($club['clubtype']=='private'){ return false; }
+        $club = $model->getClub($blog['user_id']);
 
-		$inBlog->whereBlogIs($blog['id']);
+        if ( !$club ) {
+            return false;
+        }
 
-		$channel['title']       = $blog['title'];
-		$channel['description'] = $_LANG['NEW_POSTS_IN_CLUB_BLOG'].' '.$club['title'];
-		$channel['link']        = HOST.'/clubs/'.$club['id'];
+        if ( !$club['enabled_blogs'] ) {
+            return false;
+        }
+        if ( $club['clubtype'] == 'private' ) {
+            return false;
+        }
 
-	} else {
+        $inBlog->whereBlogIs($blog['id']);
 
-		$channel['title']       = $_LANG['NEW_POSTS_IN_CLUB_BLOGS'];
-		$channel['description'] = $_LANG['NEW_POSTS_IN_CLUB_BLOGS'];
-		$channel['link']        = HOST.'/clubs';
+        $channel['title']       = $blog['title'];
+        $channel['description'] = $_LANG['NEW_POSTS_IN_CLUB_BLOG'] . ' ' . $club['title'];
+        $channel['link']        = HOST . '/clubs/' . $club['id'];
+    }
+    else {
+        $channel['title']       = $_LANG['NEW_POSTS_IN_CLUB_BLOGS'];
+        $channel['description'] = $_LANG['NEW_POSTS_IN_CLUB_BLOGS'];
+        $channel['link']        = HOST . '/clubs';
+    }
 
-	}
-
-	// В RSS всегда только публичные посты
-	$inBlog->whereOnlyPublic();
+    // В RSS всегда только публичные посты
+    $inBlog->whereOnlyPublic();
 
     $inDB->orderBy('p.pubdate', 'DESC');
 
     $inDB->limit($cfg['maxitems']);
 
-	$inDB->addSelect('b.user_id as bloglink');
+    $inDB->addSelect('b.user_id as bloglink');
 
-	$posts = $inBlog->getPosts(false, $model, true);
+    $posts = $inBlog->getPosts(false, $model, true);
 
-	if($posts){
-		foreach($posts as $post){
+    if ( $posts ) {
+        foreach ( $posts as $post ) {
+            $post['link']        = HOST . $post['url'];
+            $post['description'] = mb_substr(strip_tags($post['content_html']), 0, 350) . '...';
+            $post['comments']    = $post['link'] . '#c';
+            $post['category']    = $post['blog_title'];
+            $items[]             = $post;
+        }
+    }
 
-			$post['link']        = HOST . $post['url'];
-			$post['description'] = mb_substr(strip_tags($post['content_html']), 0, 350). '...';
-			$post['comments'] = $post['link'].'#c';
-			$post['category'] = $post['blog_title'];
-			$items[] = $post;
-
-		}
-	}
-
-	return array('channel' => $channel,
-				 'items' => $items);
-
+    return array(
+        'channel' => $channel,
+        'items'   => $items
+    );
 }
-
-?>
