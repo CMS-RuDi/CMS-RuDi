@@ -1,18 +1,17 @@
 <?php
-/******************************************************************************/
-//                                                                            //
-//                           InstantCMS v1.10.6                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/******************************************************************************/
 
-function search(){
+/*
+ *                           InstantCMS v1.10.6
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2015
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
 
+function search()
+{
     $inCore = cmsCore::getInstance();
     $inPage = cmsPage::getInstance();
     $inDB   = cmsDatabase::getInstance();
@@ -25,57 +24,52 @@ function search(){
 
     $pagetitle = $inCore->getComponentTitle();
 
-	$inPage->setTitle($pagetitle);
+    $inPage->setTitle($pagetitle);
     $inPage->addPathway($pagetitle, '/search');
 
-/* ==================================================================================================== */
-/* ==================================================================================================== */
-	if ($do == 'view'){
+    if ( $do == 'view' ) {
+        if ( mb_strlen($model->query) <= 3 && mb_strlen($model->query) >= 1 ) {
+            cmsCore::addSessionMessage($_LANG['ERROR'] . ': ' . $_LANG['SHORT_QUERY'], 'error');
+            $inCore->redirect('/search');
+        }
 
-		if (mb_strlen($model->query)<=3 && mb_strlen($model->query)>=1){
-			cmsCore::addSessionMessage($_LANG['ERROR'].': '.$_LANG['SHORT_QUERY'], 'error');
-			$inCore->redirect('/search');
-		}
+        if ( $model->query ) {
+            $inPage->addPathway($model->query);
 
-		if($model->query){
+            // если параметры запроса изменились
+            // делаем полный поиск, заполняя кеш
+            // иначе берем из кеша результаты
+            if ( !$model->isChangedParams() ) {
+                // Удаляем записи поиска от текущей сессии
+                $model->deleteResultsFromThisSession();
 
-			$inPage->addPathway($model->query);
+                // Готовим поиск
+                // выполняется поиск по индексу фултекст
+                if ( !$model->prepareSearch() ) {
+                    cmsCore::error404();
+                }
 
-			// если параметры запроса изменились
-			// делаем полный поиск, заполняя кеш
-			// иначе берем из кеша результаты
-			if(!$model->isChangedParams()){
+                // Кладем в сессию текущие параметры запроса
+                cmsUser::sessionPut('query_params', $model->parametrs_array);
+                // кладем в сессию слова запроса
+                cmsUser::sessionPut('searchquery', $model->words);
+            }
 
-				// Удаляем записи поиска от текущей сессии
-				$model->deleteResultsFromThisSession();
+            // формируем условия выборки
+            $model->whereSessionIs(session_id());
+            $model->wherePeriodIs();
+            $inDB->orderBy('pubdate', ($model->order_by_date ? 'DESC' : 'ASC'));
 
-				// Готовим поиск
-				// выполняется поиск по индексу фултекст
-				if(!$model->prepareSearch()) { cmsCore::error404(); }
+            // Получаем общее количество результатов
+            $total = $model->getCountResults();
 
-				// Кладем в сессию текущие параметры запроса
-				cmsUser::sessionPut('query_params', $model->parametrs_array);
-				// кладем в сессию слова запроса
-				cmsUser::sessionPut('searchquery', $model->words);
+            // Получаем сами результаты поиска
+            if ( $total ) {
+                $results = $model->getResults();
+            }
+        }
 
-			}
-
-			// формируем условия выборки
-			$model->whereSessionIs(session_id());
-			$model->wherePeriodIs();
-    		$inDB->orderBy('pubdate', ($model->order_by_date ? 'DESC' : 'ASC'));
-
-			// Получаем общее количество результатов
-			$total = $model->getCountResults();
-
-			// Получаем сами результаты поиска
-			if($total){
-				$results = $model->getResults();
-			}
-
-		}
-
-		cmsPage::initTemplate('components', 'com_search_text')->
+        cmsPage::initTemplate('components', 'com_search_text')->
                 assign('query', $model->query)->
                 assign('look', $model->look)->
                 assign('order_by_date', $model->order_by_date)->
@@ -86,43 +80,38 @@ function search(){
                 assign('from_component', $model->from_component)->
                 assign('external_link', str_replace('%q%', urlencode($model->query), $_LANG['FIND_EXTERNAL_URL']))->
                 assign('host', HOST)->
-                assign('res_count', (($model->page-1)*$model->config['perpage']+1))->
+                assign('res_count', (($model->page - 1) * $model->config['perpage'] + 1))->
                 assign('pagebar', cmsPage::getPagebar($total, $model->page, $model->config['perpage'], 'javascript:paginator(%page%)'))->
                 display('com_search_text.tpl');
+    }
 
-	}
+    if ( $do == 'tag' ) {
+        if ( mb_strlen($model->query) <= 3 && mb_strlen($model->query) >= 1 ) {
+            cmsCore::addSessionMessage($_LANG['EMPTY_QUERY'], 'error');
+            $inCore->redirect('/search');
+        }
 
-/* ==================================================================================================== */
-/* ==================================================================================================== */
-	if ($do == 'tag'){
+        $inPage->setTitle($_LANG['SEARCH_BY_TAG'] . ' "' . $model->query . '"');
 
-		if (mb_strlen($model->query)<=3 && mb_strlen($model->query)>=1){
-			cmsCore::addSessionMessage($_LANG['EMPTY_QUERY'], 'error');
-			$inCore->redirect('/search');
-		}
+        if ( $model->query ) {
+            $inPage->addPathway($_LANG['SEARCH_BY_TAG'] . ' "' . $model->query . '"');
+        }
 
-		$inPage->setTitle($_LANG['SEARCH_BY_TAG'].' "'.$model->query.'"');
+        $inPage->initAutocomplete();
 
-		if($model->query){
-			$inPage->addPathway($_LANG['SEARCH_BY_TAG'].' "'.$model->query.'"');
-		}
-		$inPage->initAutocomplete();
+        $total = $model->getCountTags();
 
-		$total   = $model->getCountTags();
+        $results = $model->searchByTag();
 
-		$results = $model->searchByTag();
-
-		cmsPage::initTemplate('components', 'com_search_tag')->
+        cmsPage::initTemplate('components', 'com_search_tag')->
                 assign('query', $model->query)->
                 assign('results', $results)->
                 assign('total', $total)->
                 assign('autocomplete_js', $inPage->getAutocompleteJS('tagsearch', 'query', false))->
-                assign('external_link', '/index.php?view=search&query='.urlencode($model->query).'&look=allwords')->
-                assign('pagebar', cmsPage::getPagebar($total, $model->page, $model->config['perpage'], '/search/tag/'.urlencode($model->query).'/page%page%.html'))->
+                assign('external_link', '/index.php?view=search&query=' . urlencode($model->query) . '&look=allwords')->
+                assign('pagebar', cmsPage::getPagebar($total, $model->page, $model->config['perpage'], '/search/tag/' . urlencode($model->query) . '/page%page%.html'))->
                 display('com_search_tag.tpl');
+    }
 
-	}
-
-	return true;
-
+    return true;
 }

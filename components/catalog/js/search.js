@@ -1,6 +1,4 @@
-function addTag(tagname){
-	
-	document.searchform.tags.value += (tagname+' ');
-	return;
-
+function addTag(tagname) {
+    document.searchform.tags.value += (tagname + ' ');
+    return;
 }
