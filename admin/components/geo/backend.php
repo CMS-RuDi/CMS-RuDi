@@ -158,17 +158,17 @@ if ( $opt == 'config' ) {
                 <td width="" valign="top">
                     <label>
                         <input name="autodetect" type="radio" value="1" <?php
-    if ( $cfg['autodetect'] ) {
-        echo 'checked="checked"';
-    }
-    ?>/> <?php echo $_LANG['YES']; ?>
+                        if ( $cfg['autodetect'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?>/> <?php echo $_LANG['YES']; ?>
                     </label>
                     <label>
                         <input name="autodetect" type="radio" value="0" <?php
-                    if ( !$cfg['autodetect'] ) {
-                        echo 'checked="checked"';
-                    }
-    ?>/> <?php echo $_LANG['NO']; ?>
+                        if ( !$cfg['autodetect'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?>/> <?php echo $_LANG['NO']; ?>
                     </label>
                 </td>
             </tr>
@@ -184,104 +184,104 @@ if ( $opt == 'config' ) {
             <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components&amp;do=config&amp;id=<?php echo $id; ?>';"/>
         </p>
     </form><?php
-                }
+}
 
 //=================================================================================================//
 
-                if ( $opt == 'saveconfig' ) {
-                    if ( !cmsUser::checkCsrfToken() ) {
-                        cmsCore::error404();
-                    }
+if ( $opt == 'saveconfig' ) {
+    if ( !cmsUser::checkCsrfToken() ) {
+        cmsCore::error404();
+    }
 
-                    $cfg               = array();
-                    $cfg['autodetect'] = cmsCore::request('autodetect', 'int', 0);
-                    $cfg['class']      = cmsCore::request('class', 'str', 'geo');
+    $cfg               = array();
+    $cfg['autodetect'] = cmsCore::request('autodetect', 'int', 0);
+    $cfg['class']      = cmsCore::request('class', 'str', 'geo');
 
-                    $inCore->saveComponentConfig('geo', $cfg);
+    $inCore->saveComponentConfig('geo', $cfg);
 
-                    cmsCore::addSessionMessage($_LANG['AD_CONFIG_SAVE_SUCCESS'], 'success');
+    cmsCore::addSessionMessage($_LANG['AD_CONFIG_SAVE_SUCCESS'], 'success');
 
-                    cmsCore::redirectBack();
-                }
-
-//=================================================================================================//
-
-                if ( mb_strstr($opt, 'do_') ) {
-                    if ( !cmsUser::checkCsrfToken() ) {
-                        cmsCore::error404();
-                    }
-
-                    $sub_opt = cmsCore::request('sub_opt', 'str', '');
-                    $item_id = cmsCore::request('item_id', 'int', 0);
-
-                    $table    = ($sub_opt == 'country') ? 'cms_geo_countries' : ($sub_opt == 'region' ? 'cms_geo_regions' : 'cms_geo_cities');
-                    $redirect = ($sub_opt == 'country') ? 'countries' : ($sub_opt == 'region' ? 'regions' : 'cities');
-
-                    $types = array( 'name'       => array( 'name', 'str', '' ),
-                        'alpha2'     => array( 'alpha2', 'str', '' ),
-                        'alpha3'     => array( 'alpha3', 'str', '' ),
-                        'iso'        => array( 'iso', 'str', '' ),
-                        'ordering'   => array( 'ordering', 'int', 0 ),
-                        'region_id'  => array( 'region_id', 'int', 0 ),
-                        'country_id' => array( 'country_id', 'int', 0 ) );
-
-                    $items = cmsCore::getArrayFromRequest($types);
-
-                    if ( $opt == 'do_add' ) {
-                        $inDB->insert($table, $items);
-                    }
-                    else {
-                        $inDB->update($table, $items, $item_id);
-                    }
-
-                    cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'], 'success');
-
-                    cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=' . $redirect);
-                }
+    cmsCore::redirectBack();
+}
 
 //=================================================================================================//
 
-                if ( $opt == 'delete' ) {
-                    $sub_opt = cmsCore::request('sub_opt', 'str', '');
-                    $item_id = cmsCore::request('item_id', 'int', 0);
+if ( mb_strstr($opt, 'do_') ) {
+    if ( !cmsUser::checkCsrfToken() ) {
+        cmsCore::error404();
+    }
 
-                    if ( !$sub_opt || !$item_id ) {
-                        cmsCore::error404();
-                    }
+    $sub_opt = cmsCore::request('sub_opt', 'str', '');
+    $item_id = cmsCore::request('item_id', 'int', 0);
 
-                    $table    = ($sub_opt == 'country') ? 'cms_geo_countries' : ($sub_opt == 'region' ? 'cms_geo_regions' : 'cms_geo_cities');
-                    $redirect = ($sub_opt == 'country') ? 'countries' : ($sub_opt == 'region' ? 'regions' : 'cities');
+    $table    = ($sub_opt == 'country') ? 'cms_geo_countries' : ($sub_opt == 'region' ? 'cms_geo_regions' : 'cms_geo_cities');
+    $redirect = ($sub_opt == 'country') ? 'countries' : ($sub_opt == 'region' ? 'regions' : 'cities');
 
-                    $inDB->delete($table, "id='$item_id'", 1);
+    $types = array( 'name'       => array( 'name', 'str', '' ),
+        'alpha2'     => array( 'alpha2', 'str', '' ),
+        'alpha3'     => array( 'alpha3', 'str', '' ),
+        'iso'        => array( 'iso', 'str', '' ),
+        'ordering'   => array( 'ordering', 'int', 0 ),
+        'region_id'  => array( 'region_id', 'int', 0 ),
+        'country_id' => array( 'country_id', 'int', 0 ) );
 
-                    cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'], 'success');
+    $items = cmsCore::getArrayFromRequest($types);
 
-                    cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=' . $redirect);
-                }
+    if ( $opt == 'do_add' ) {
+        $inDB->insert($table, $items);
+    }
+    else {
+        $inDB->update($table, $items, $item_id);
+    }
+
+    cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'], 'success');
+
+    cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=' . $redirect);
+}
 
 //=================================================================================================//
 
-                if ( $opt == 'add' || $opt == 'edit' ) {
-                    $sub_opt = cmsCore::request('sub_opt', 'str', '');
-                    $item_id = cmsCore::request('item_id', 'int', 0);
+if ( $opt == 'delete' ) {
+    $sub_opt = cmsCore::request('sub_opt', 'str', '');
+    $item_id = cmsCore::request('item_id', 'int', 0);
 
-                    if ( $item_id ) {
-                        $table = ($sub_opt == 'country') ? 'cms_geo_countries' : ($sub_opt == 'region' ? 'cms_geo_regions' : 'cms_geo_cities');
+    if ( !$sub_opt || !$item_id ) {
+        cmsCore::error404();
+    }
 
-                        $item = $inDB->get_fields($table, "id='$item_id'", '*');
-                        if ( !$item ) {
-                            cmsCore::error404();
-                        }
-                        cpAddPathway($_LANG['EDIT'] . ' ' . mb_strtolower($_LANG['AD_' . mb_strtoupper($sub_opt)]));
-                    }
-                    elseif ( $sub_opt ) {
-                        cpAddPathway($_LANG['ADD'] . ' ' . mb_strtolower($_LANG['AD_' . mb_strtoupper($sub_opt)]));
-                    }
-                    else {
-                        cpAddPathway($_LANG['ADD']);
-                    }
+    $table    = ($sub_opt == 'country') ? 'cms_geo_countries' : ($sub_opt == 'region' ? 'cms_geo_regions' : 'cms_geo_cities');
+    $redirect = ($sub_opt == 'country') ? 'countries' : ($sub_opt == 'region' ? 'regions' : 'cities');
 
-                    if ( !$sub_opt && !$item_id ) {
+    $inDB->delete($table, "id='$item_id'", 1);
+
+    cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'], 'success');
+
+    cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=' . $redirect);
+}
+
+//=================================================================================================//
+
+if ( $opt == 'add' || $opt == 'edit' ) {
+    $sub_opt = cmsCore::request('sub_opt', 'str', '');
+    $item_id = cmsCore::request('item_id', 'int', 0);
+
+    if ( $item_id ) {
+        $table = ($sub_opt == 'country') ? 'cms_geo_countries' : ($sub_opt == 'region' ? 'cms_geo_regions' : 'cms_geo_cities');
+
+        $item = $inDB->get_fields($table, "id='$item_id'", '*');
+        if ( !$item ) {
+            cmsCore::error404();
+        }
+        cpAddPathway($_LANG['EDIT'] . ' ' . mb_strtolower($_LANG['AD_' . mb_strtoupper($sub_opt)]));
+    }
+    elseif ( $sub_opt ) {
+        cpAddPathway($_LANG['ADD'] . ' ' . mb_strtolower($_LANG['AD_' . mb_strtoupper($sub_opt)]));
+    }
+    else {
+        cpAddPathway($_LANG['ADD']);
+    }
+
+    if ( !$sub_opt && !$item_id ) {
         ?>
 
         <h3><?php echo $_LANG['AD_WHAT_ADD']; ?></h3>
@@ -304,12 +304,12 @@ if ( $opt == 'config' ) {
                     <input name="name" type="text" value="<?php echo htmlspecialchars(@$item['name']); ?>" style="width: 300px;" />
                 </td>
             </tr>
-    <?php
-    if ( $sub_opt == 'country' ) {
-        if ( !isset($item['ordering']) ) {
-            $item['ordering'] = 1 + $inDB->get_field('cms_geo_countries', "1=1 ORDER BY ordering DESC", 'ordering');
-        }
-        ?>
+            <?php
+            if ( $sub_opt == 'country' ) {
+                if ( !isset($item['ordering']) ) {
+                    $item['ordering'] = 1 + $inDB->get_field('cms_geo_countries', "1=1 ORDER BY ordering DESC", 'ordering');
+                }
+                ?>
                 <tr>
                     <td><strong>alpha2</strong></td>
                     <td width="" valign="top">
@@ -334,10 +334,10 @@ if ( $opt == 'config' ) {
                         <input name="ordering" type="text" value="<?php echo htmlspecialchars(@$item['ordering']); ?>" style="width: 300px;" />
                     </td>
                 </tr>
-    <?php
-    }
-    elseif ( $sub_opt == 'region' ) {
-        ?>
+                <?php
+            }
+            elseif ( $sub_opt == 'region' ) {
+                ?>
                 <tr>
                     <td><strong><?php echo $_LANG['AD_COUNTRY1']; ?></strong></td>
                     <td width="" valign="top">
@@ -346,7 +346,7 @@ if ( $opt == 'config' ) {
                         </select>
                     </td>
                 </tr>
-            <?php
+                <?php
             }
             else {
                 ?>

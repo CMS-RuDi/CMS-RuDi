@@ -41,7 +41,7 @@ class cms_model_catalog
     {
         $result = array();
 
-        switch ($target) {
+        switch ( $target ) {
             case 'catalog': $item = $this->inDB->get_fields('cms_uc_items', "id={$target_id}", 'title');
                 if ( !$item ) {
                     return false;

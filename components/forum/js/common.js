@@ -53,16 +53,14 @@ $(function () {
         ocThread: function (thread_id, action) {
             if (action == 1) {
                 href = '/forum/closethread' + thread_id + '.html';
-            }
-            else {
+            } else {
                 href = '/forum/openthread' + thread_id + '.html';
             }
             $.post(href, {}, function (data) {
                 if (data == 1) {
                     $('.closethread').hide();
                     $('.openthread').fadeIn();
-                }
-                else {
+                } else {
                     $('.openthread').hide();
                     $('.closethread').fadeIn();
                 }
@@ -71,16 +69,14 @@ $(function () {
         pinThread: function (thread_id, action) {
             if (action == 1) {
                 href = '/forum/pinthread' + thread_id + '.html';
-            }
-            else {
+            } else {
                 href = '/forum/unpinthread' + thread_id + '.html';
             }
             $.post(href, {}, function (data) {
                 if (data == 1) {
                     $('.pinthread').hide();
                     $('.unpinthread').fadeIn();
-                }
-                else {
+                } else {
                     $('.unpinthread').hide();
                     $('.pinthread').fadeIn();
                 }
@@ -107,8 +103,7 @@ $(function () {
                         $('#popup_progress').show();
                         $('#movethread_form').submit();
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -125,8 +120,7 @@ $(function () {
                         $('#popup_progress').show();
                         $('#movethread_form').submit();
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -146,8 +140,7 @@ $(function () {
                         };
                         $('#renamethread_form').ajaxSubmit(options);
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -160,8 +153,7 @@ $(function () {
                     $('#thread_description').html(result.description).fadeIn();
                 }
                 core.box_close();
-            }
-            else {
+            } else {
                 core.alert(statusText, LANG_ERROR);
             }
         },
@@ -172,8 +164,7 @@ $(function () {
                     if (result == 1) {
                         if (file_count == 1) {
                             $('#fa_attach_' + post_id).css('background', '#FFAEAE').fadeOut();
-                        }
-                        else {
+                        } else {
                             $('#filebox' + file_id).css('background', '#FFAEAE').fadeOut();
                             $('#file_count').val(file_count - 1);
                         }
@@ -196,8 +187,7 @@ $(function () {
                         };
                         $('#reload_file').ajaxSubmit(options);
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -209,14 +199,12 @@ $(function () {
                 if (result.error == false) {
                     $('#attached_files_' + result.post_id).html(result.html);
                     core.box_close();
-                }
-                else {
+                } else {
                     $('#error_mess').html(result.text);
                     $('.sess_messages').fadeIn();
                     $('#popup_ok').prop('disabled', false);
                 }
-            }
-            else {
+            } else {
                 core.alert(statusText, LANG_ERROR);
             }
         },
@@ -225,19 +213,16 @@ $(function () {
             seltext = '';
             if (window.getSelection) {
                 seltext = window.getSelection().toString();
-            }
-            else if (document.getSelection) {
+            } else if (document.getSelection) {
                 seltext = document.getSelection().toString();
-            }
-            else if (document.selection) {
+            } else if (document.selection) {
                 seltext = document.selection.createRange().text;
             }
             if (seltext) {
                 quote = '[quote=' + author + ']' + seltext + '[/quote]' + "\n";
                 msg = $('textarea#message').val() + quote;
                 $('textarea#message').val(msg);
-            }
-            else {
+            } else {
                 core.alert(LANG_SELECT_TEXT_QUOTE)
             }
         }

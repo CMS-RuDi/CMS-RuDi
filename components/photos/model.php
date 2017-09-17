@@ -43,7 +43,7 @@ class cms_model_photos
     {
         $result = array();
 
-        switch ($target) {
+        switch ( $target ) {
             case 'palbum': $album = $this->inDB->get_fields('cms_photo_albums', "id='{$target_id}'", 'title');
                 if ( !$album ) {
                     return false;
@@ -69,7 +69,7 @@ class cms_model_photos
             return false;
         }
 
-        switch ($target) {
+        switch ( $target ) {
             case 'photo':
                 $sql = "UPDATE cms_photo_files
 				SET rating = rating + (" . $points . ")

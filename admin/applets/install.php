@@ -57,6 +57,7 @@ function componentsList($new_components, $action_name, $action)
             if ( $action == 'install_component' ) {
                 $version = $_component['version'];
             }
+
             if ( $action == 'upgrade_component' ) {
                 $version = $inCore->getComponentVersion($component) . ' &rarr; ' . $_component['version'];
             }
@@ -128,8 +129,6 @@ function applet_install()
 
     global $adminAccess;
 
-// ========================================================================== //
-
     if ( $do == 'module' ) {
         if ( !cmsUser::isAdminCan('admin/modules', $adminAccess) ) {
             cpAccessDenied();
@@ -164,8 +163,6 @@ function applet_install()
         echo '<p><a href="javascript:window.history.go(-1);">' . $_LANG['BACK'] . '</a></p>';
     }
 
-// ========================================================================== //
-
     if ( $do == 'install_module' ) {
         if ( !cmsUser::isAdminCan('admin/modules', $adminAccess) ) {
             cpAccessDenied();
@@ -198,8 +195,6 @@ function applet_install()
             cmsCore::redirectBack();
         }
     }
-
-// ========================================================================== //
 
     if ( $do == 'upgrade_module' ) {
         if ( !cmsUser::isAdminCan('admin/modules', $adminAccess) ) {
@@ -235,8 +230,6 @@ function applet_install()
             cmsCore::redirectBack();
         }
     }
-
-// ========================================================================== //
 
     if ( $do == 'component' ) {
         if ( !cmsUser::isAdminCan('admin/components', $adminAccess) ) {
@@ -278,8 +271,6 @@ function applet_install()
 
         echo '<p><a href="javascript:window.history.go(-1);">' . $_LANG['BACK'] . '</a></p>';
     }
-
-// ========================================================================== //
 
     if ( $do == 'install_component' ) {
         $error = '';
@@ -335,8 +326,6 @@ function applet_install()
         }
     }
 
-// ========================================================================== //
-
     if ( $do == 'upgrade_component' ) {
         cpAddPathway($_LANG['AD_UPDATE_COMPONENTS'], 'index.php?view=install&do=component');
 
@@ -374,8 +363,6 @@ function applet_install()
         }
     }
 
-// ========================================================================== //
-
     if ( $do == 'remove_component' ) {
         $component_id = cmsCore::request('id', 'int', '');
 
@@ -403,8 +390,6 @@ function applet_install()
 
         cmsCore::redirect('/admin/index.php?view=components');
     }
-
-// ========================================================================== //
 
     if ( $do == 'plugin' ) {
         if ( !cmsUser::isAdminCan('admin/plugins', $adminAccess) ) {
@@ -440,8 +425,6 @@ function applet_install()
         echo '<p><a href="javascript:window.history.go(-1);">' . $_LANG['BACK'] . '</a></p>';
     }
 
-// ========================================================================== //
-
     if ( $do == 'install_plugin' ) {
         if ( !cmsUser::isAdminCan('admin/plugins', $adminAccess) ) {
             cpAccessDenied();
@@ -475,8 +458,6 @@ function applet_install()
         echo '<p><a href="index.php?view=install&do=plugin">' . $_LANG['BACK'] . '</a></p>';
     }
 
-// ========================================================================== //
-
     if ( $do == 'upgrade_plugin' ) {
         if ( !cmsUser::isAdminCan('admin/plugins', $adminAccess) ) {
             cpAccessDenied();
@@ -509,8 +490,6 @@ function applet_install()
 
         echo '<p><a href="index.php?view=install&do=plugin">' . $_LANG['BACK'] . '</a></p>';
     }
-
-// ========================================================================== //
 
     if ( $do == 'remove_plugin' ) {
         if ( !cmsUser::isAdminCan('admin/plugins', $adminAccess) ) {

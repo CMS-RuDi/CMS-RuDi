@@ -50,15 +50,15 @@ if ( $opt == 'saveconfig' ) {
             <td><?php echo $_LANG['AD_RSS_CHANNELS']; ?>:</td>
             <td width="300" valign="top">
                 <label><input name="addsite" type="radio" value="1" <?php
-if ( $cfg['addsite'] ) {
-    echo 'checked="checked"';
-}
-?>/> <?php echo $_LANG['YES']; ?></label>
+                    if ( $cfg['addsite'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['YES']; ?></label>
                 <label><input name="addsite" type="radio" value="0" <?php
-                              if ( !$cfg['addsite'] ) {
-                                  echo 'checked="checked"';
-                              }
-                              ?>/> <?php echo $_LANG['NO']; ?></label>
+                    if ( !$cfg['addsite'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['NO']; ?></label>
             </td>
         </tr>
         <tr>
@@ -77,12 +77,12 @@ if ( $cfg['addsite'] ) {
                     if ( $cfg['icon_on'] ) {
                         echo 'checked="checked"';
                     }
-                              ?>/> <?php echo $_LANG['YES']; ?></label>
+                    ?>/> <?php echo $_LANG['YES']; ?></label>
                 <label><input name="icon_on" type="radio" value="0" <?php
-                              if ( !$cfg['icon_on'] ) {
-                                  echo 'checked="checked"';
-                              }
-                              ?>/> <?php echo $_LANG['NO']; ?></label>
+                    if ( !$cfg['icon_on'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['NO']; ?></label>
             </td>
         </tr>
         <tr>

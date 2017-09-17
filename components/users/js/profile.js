@@ -31,8 +31,7 @@ $(function () {
                         success: users.doSendMess
                     };
                     $('#send_msgform').ajaxSubmit(options);
-                }
-                else {
+                } else {
                     core.show_popup_info(LANG_CHOOSE_RECIPIENT, 'error');
                 }
             });
@@ -44,13 +43,11 @@ $(function () {
                     $('#popup_message').html(result.text);
                     $('#popup_ok, #popup_cancel').hide();
                     $('#popup_close').show();
-                }
-                else {
+                } else {
                     core.show_popup_info(result.text, 'error');
                     $('#popup_ok').prop('disabled', false);
                 }
-            }
-            else {
+            } else {
                 core.alert(statusText, LANG_ERROR);
             }
         },
@@ -85,8 +82,7 @@ $(function () {
                 users.deleteMessage(msg_id);
                 if (data.error == false) {
                     core.alert(data.text, LANG_ATTENTION);
-                }
-                else {
+                } else {
                     core.alert(data.text);
                 }
             }, 'json');
@@ -127,8 +123,7 @@ $(function () {
                 $(".sign_link a").hide();
                 if (data >= 0) {
                     $("#u_karma_cont").addClass('value-positive');
-                }
-                else {
+                } else {
                     $("#u_karma_cont").addClass('value-negative');
                 }
                 $("#u_karma").html(data).fadeOut().fadeIn();
@@ -152,8 +147,7 @@ function setStatus(user_id) {
         $('.usr_status_text span').eq(0).html(new_status);
         $('.usr_status_date').html(LANG_HAVE_JUST);
         $('.usr_status_bar').fadeIn();
-    }
-    else {
+    } else {
         if (new_status == '') {
             $('.usr_status_text').hide();
             $('.usr_status_date').hide();

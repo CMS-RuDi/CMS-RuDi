@@ -82,11 +82,11 @@ if ( $opt == 'dropcache' ) {
             <td valign="top">
                 <select name="search_engine" style="width:245px">
                     <option value="" <?php if ( !$model->config['search_engine'] ) { ?>selected="selected"<?php } ?>><?php echo $_LANG['AD_NATIVE']; ?></option>
-<?php
-$provider_array = getProvidersList();
-if ( $provider_array ) {
-    foreach ( $provider_array as $provider ) {
-        ?>
+                    <?php
+                    $provider_array = getProvidersList();
+                    if ( $provider_array ) {
+                        foreach ( $provider_array as $provider ) {
+                            ?>
                             <option value="<?php echo $provider; ?>" <?php if ( $model->config['search_engine'] == $provider ) { ?>selected="selected"<?php } ?>><?php echo $provider; ?></option>
                             <?php
                         }
@@ -95,18 +95,18 @@ if ( $provider_array ) {
                 </select>
             </td>
         </tr>
-<?php
-if ( $model->config['search_engine'] && class_exists($model->config['search_engine']) && method_exists($model->config['search_engine'], 'getProviderConfig') ) {
-    foreach ( $model->getProviderConfig() as $key => $value ) {
-        ?>
+        <?php
+        if ( $model->config['search_engine'] && class_exists($model->config['search_engine']) && method_exists($model->config['search_engine'], 'getProviderConfig') ) {
+            foreach ( $model->getProviderConfig() as $key => $value ) {
+                ?>
                 <tr>
                     <td width="215"><strong><?php echo $key; ?>: </strong></td>
                     <td width="289"><input name="<?php echo $value; ?>" type="text" value="<?php echo $model->config[$model->config['search_engine']][$value]; ?>" style="width:245px" /></td>
                 </tr>
-    <?php
-    }
-}
-?>
+                <?php
+            }
+        }
+        ?>
         <tr>
             <td valign="top"><strong><?php echo $_LANG['AD_SEARCH_COMPONENTS']; ?>:</strong> </td>
             <td valign="top">

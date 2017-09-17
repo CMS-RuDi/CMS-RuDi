@@ -1,9 +1,5 @@
 <?php
 
-if ( !defined('VALID_CMS') ) {
-    die('ACCESS DENIED');
-}
-
 /*
  *                           InstantCMS v1.10.6
  *                        http://www.instantcms.ru/

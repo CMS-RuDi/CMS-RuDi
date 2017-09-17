@@ -54,22 +54,22 @@ $GLOBALS['cp_page_head'][] = jwHeader();
 
 <form action="index.php?view=components&do=config&id=<?php echo $id; ?>" method="post" name="optform" target="_self" id="form1">
     <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
-<?php ob_start(); ?>
+    <?php ob_start(); ?>
     {tab=<?php echo $_LANG['AD_OVERALL']; ?>}
     <table width="550" border="0" cellpadding="10" cellspacing="0" class="proptable">
         <tr>
             <td><strong><?php echo $_LANG['AD_GENERATE_CYRYLLIC_URL']; ?>: </strong></td>
             <td width="110">
                 <label><input name="is_url_cyrillic" type="radio" value="1" <?php
-if ( $cfg['is_url_cyrillic'] ) {
-    echo 'checked="checked"';
-}
-?>/> <?php echo $_LANG['YES']; ?> </label>
+                    if ( $cfg['is_url_cyrillic'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="is_url_cyrillic" type="radio" value="0" <?php
-                              if ( !$cfg['is_url_cyrillic'] ) {
-                                  echo 'checked="checked"';
-                              }
-                              ?>/> <?php echo $_LANG['NO']; ?> </label>
+                    if ( !$cfg['is_url_cyrillic'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['NO']; ?> </label>
             </td>
         </tr>
         <tr>
@@ -79,12 +79,12 @@ if ( $cfg['is_url_cyrillic'] ) {
                     if ( $cfg['readdesc'] ) {
                         echo 'checked="checked"';
                     }
-                              ?>/> <?php echo $_LANG['YES']; ?> </label>
+                    ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="readdesc" type="radio" value="0" <?php
-                              if ( !$cfg['readdesc'] ) {
-                                  echo 'checked="checked"';
-                              }
-                              ?>/> <?php echo $_LANG['NO']; ?> </label>
+                    if ( !$cfg['readdesc'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['NO']; ?> </label>
             </td>
         </tr>
         <tr>
@@ -94,12 +94,12 @@ if ( $cfg['is_url_cyrillic'] ) {
                     if ( $cfg['rating'] ) {
                         echo 'checked="checked"';
                     }
-                              ?>/> <?php echo $_LANG['YES']; ?> </label>
+                    ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="rating" type="radio" value="0" <?php
-                              if ( !$cfg['rating'] ) {
-                                  echo 'checked="checked"';
-                              }
-                              ?>/> <?php echo $_LANG['NO']; ?></label>
+                    if ( !$cfg['rating'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['NO']; ?></label>
             </td>
         </tr>
         <tr>
@@ -111,12 +111,12 @@ if ( $cfg['is_url_cyrillic'] ) {
                     if ( $cfg['autokeys'] ) {
                         echo 'checked="checked"';
                     }
-                              ?>/> <?php echo $_LANG['YES']; ?> </label>
+                    ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="autokeys" type="radio" value="0" <?php
-                              if ( !$cfg['autokeys'] ) {
-                                  echo 'checked="checked"';
-                              }
-                              ?>/> <?php echo $_LANG['NO']; ?> </label>
+                    if ( !$cfg['autokeys'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['NO']; ?> </label>
             </td>
         </tr>
         <tr>
@@ -128,12 +128,12 @@ if ( $cfg['is_url_cyrillic'] ) {
                     if ( $cfg['hide_root'] ) {
                         echo 'checked="checked"';
                     }
-                              ?>/> <?php echo $_LANG['YES']; ?> </label>
+                    ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="hide_root" type="radio" value="0" <?php
-                              if ( !$cfg['hide_root'] ) {
-                                  echo 'checked="checked"';
-                              }
-                              ?>/> <?php echo $_LANG['NO']; ?> </label>
+                    if ( !$cfg['hide_root'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['NO']; ?> </label>
             </td>
         </tr>
         <tr>
@@ -149,12 +149,12 @@ if ( $cfg['is_url_cyrillic'] ) {
                     if ( $cfg['pt_show'] ) {
                         echo 'checked="checked"';
                     }
-                              ?>/> <?php echo $_LANG['YES']; ?> </label>
+                    ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="pt_show" type="radio" value="0" <?php
-                              if ( !$cfg['pt_show'] ) {
-                                  echo 'checked="checked"';
-                              }
-                              ?>/> <?php echo $_LANG['NO']; ?> </label>
+                    if ( !$cfg['pt_show'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['NO']; ?> </label>
             </td>
         </tr>
         <tr>
@@ -164,12 +164,12 @@ if ( $cfg['is_url_cyrillic'] ) {
                     if ( $cfg['pt_disp'] ) {
                         echo 'checked="checked"';
                     }
-                              ?>/> <?php echo $_LANG['YES']; ?> </label>
+                    ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="pt_disp" type="radio" value="0" <?php
-                              if ( !$cfg['pt_disp'] ) {
-                                  echo 'checked="checked"';
-                              }
-                              ?>/> <?php echo $_LANG['NO']; ?> </label>
+                    if ( !$cfg['pt_disp'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['NO']; ?> </label>
             </td>
         </tr>
         <tr>
@@ -179,12 +179,12 @@ if ( $cfg['is_url_cyrillic'] ) {
                     if ( $cfg['pt_hide'] ) {
                         echo 'checked="checked"';
                     }
-                              ?>/> <?php echo $_LANG['YES']; ?> </label>
+                    ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="pt_hide" type="radio" value="0" <?php
-                              if ( !$cfg['pt_hide'] ) {
-                                  echo 'checked="checked"';
-                              }
-                              ?>/> <?php echo $_LANG['NO']; ?> </label>
+                    if ( !$cfg['pt_hide'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['NO']; ?> </label>
             </td>
         </tr>
     </table>
@@ -209,12 +209,12 @@ if ( $cfg['is_url_cyrillic'] ) {
                     if ( $cfg['img_sqr'] ) {
                         echo 'checked="checked"';
                     }
-                              ?>/> <?php echo $_LANG['YES']; ?> </label>
+                    ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="img_sqr" type="radio" value="0" <?php
-                              if ( !$cfg['img_sqr'] ) {
-                                  echo 'checked="checked"';
-                              }
-                              ?>/> <?php echo $_LANG['NO']; ?> </label>
+                    if ( !$cfg['img_sqr'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['NO']; ?> </label>
             </td>
         </tr>
         <tr>
@@ -227,12 +227,12 @@ if ( $cfg['is_url_cyrillic'] ) {
                     if ( $cfg['img_users'] ) {
                         echo 'checked="checked"';
                     }
-                              ?>/> <?php echo $_LANG['YES']; ?> </label>
+                    ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="img_users" type="radio" value="0" <?php
-                              if ( !$cfg['img_users'] ) {
-                                  echo 'checked="checked"';
-                              }
-                              ?>/> <?php echo $_LANG['NO']; ?> </label>
+                    if ( !$cfg['img_users'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['NO']; ?> </label>
             </td>
         </tr>
         <tr>
@@ -243,17 +243,17 @@ if ( $cfg['is_url_cyrillic'] ) {
                     if ( $cfg['watermark'] ) {
                         echo 'checked="checked"';
                     }
-                              ?> /> <?php echo $_LANG['YES']; ?> </label>
+                    ?> /> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="watermark" type="radio" value="0"  <?php
-                              if ( !$cfg['watermark'] ) {
-                                  echo 'checked="checked"';
-                              }
-                              ?> /> <?php echo $_LANG['NO']; ?> </label>
+                    if ( !$cfg['watermark'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?> /> <?php echo $_LANG['NO']; ?> </label>
             </td>
         </tr>
     </table>
     {/tabs}
-<?php echo jwTabs(ob_get_clean()); ?>
+    <?php echo jwTabs(ob_get_clean()); ?>
     <p>
         <input name="opt" type="hidden" value="saveconfig" />
         <input name="save" type="submit" id="save" value="<?php echo $_LANG['SAVE']; ?>" />

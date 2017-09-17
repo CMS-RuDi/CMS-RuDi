@@ -113,15 +113,15 @@ if ( $opt == 'config' ) {
                 </td>
                 <td valign="top">
                     <label><input name="guest_enabled" type="radio" value="1"  <?php
-    if ( @$cfg['guest_enabled'] ) {
-        echo 'checked="checked"';
-    }
-    ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( @$cfg['guest_enabled'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="guest_enabled" type="radio" value="0"  <?php
-                                  if ( @!$cfg['guest_enabled'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?> </label>
+                        if ( @!$cfg['guest_enabled'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?> </label>
                 </td>
             </tr>
             <tr>
@@ -130,15 +130,15 @@ if ( $opt == 'config' ) {
                 </td>
                 <td valign="top">
                     <label><input name="user_link" type="radio" value="1"  <?php
-                    if ( @$cfg['user_link'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( @$cfg['user_link'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="user_link" type="radio" value="0"  <?php
-                                  if ( @!$cfg['user_link'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?> </label>
+                        if ( @!$cfg['user_link'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?> </label>
                 </td>
             </tr>
             <tr>
@@ -148,15 +148,15 @@ if ( $opt == 'config' ) {
                 </td>
                 <td valign="top">
                     <label><input name="publish" type="radio" value="1"  <?php
-                    if ( @$cfg['publish'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( @$cfg['publish'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="publish" type="radio" value="0"  <?php
-                                  if ( @!$cfg['publish'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?> </label>
+                        if ( @!$cfg['publish'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?> </label>
                 </td>
             </tr>
             <tr>
@@ -165,15 +165,15 @@ if ( $opt == 'config' ) {
                 </td>
                 <td valign="top">
                     <label><input name="is_comment" type="radio" value="1"  <?php
-                    if ( @$cfg['is_comment'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( @$cfg['is_comment'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="is_comment" type="radio" value="0"  <?php
-                                  if ( @!$cfg['is_comment'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?> </label>
+                        if ( @!$cfg['is_comment'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?> </label>
                 </td>
             </tr>
         </table>
@@ -500,30 +500,30 @@ if ( $opt == 'add_item' || $opt == 'edit_item' ) {
             <tr>
                 <td><strong><?php echo $_LANG['AD_CAT_QUESTION']; ?>:</strong></td>
                 <td width="220"><select name="category_id" id="category_id" style="width:220px">
-    <?php
-    if ( isset($mod['category_id']) ) {
-        echo $inCore->getListItems('cms_faq_cats', $mod['category_id']);
-    }
-    else {
-        if ( isset($_REQUEST['addto']) ) {
-            echo $inCore->getListItems('cms_faq_cats', cmsCore::request('addto', 'int', 0));
-        }
-        else {
-            echo $inCore->getListItems('cms_faq_cats');
-        }
-    }
-    ?>
+                        <?php
+                        if ( isset($mod['category_id']) ) {
+                            echo $inCore->getListItems('cms_faq_cats', $mod['category_id']);
+                        }
+                        else {
+                            if ( isset($_REQUEST['addto']) ) {
+                                echo $inCore->getListItems('cms_faq_cats', cmsCore::request('addto', 'int', 0));
+                            }
+                            else {
+                                echo $inCore->getListItems('cms_faq_cats');
+                            }
+                        }
+                        ?>
                     </select></td>
             </tr>
             <tr>
                 <td><strong><?php echo $_LANG['AD_ASKER']; ?>:</strong></td>
                 <td><select name="user_id" id="user_id" style="width:220px">
                         <option value="0" <?php
-                    if ( !$mod['user_id'] ) {
-                        echo 'selected="selected"';
-                    }
-    ?>>-- <?php echo $_LANG['AD_ANONYMOUS']; ?> --</option>
-                        <?php
+                        if ( !$mod['user_id'] ) {
+                            echo 'selected="selected"';
+                        }
+                        ?>>-- <?php echo $_LANG['AD_ANONYMOUS']; ?> --</option>
+                                <?php
                                 if ( isset($mod['user_id']) ) {
                                     echo $inCore->getListItems('cms_users', $mod['user_id'], 'nickname', 'ASC', 'is_deleted=0 AND is_locked=0', 'id', 'nickname');
                                 }
@@ -536,15 +536,15 @@ if ( $opt == 'add_item' || $opt == 'edit_item' ) {
             <tr>
                 <td><strong><?php echo $_LANG['AD_POST_QUESTION']; ?>?</strong></td>
                 <td><label><input name="published" type="radio" value="1" checked="checked" <?php
-                            if ( @$mod['published'] ) {
-                                echo 'checked="checked"';
-                            }
-                                ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( @$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="published" type="radio" value="0"  <?php
-                                  if ( @!$mod['published'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> />
+                        if ( @!$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> />
                         <?php echo $_LANG['NO']; ?></label></td>
             </tr>
             <tr>
@@ -556,20 +556,20 @@ if ( $opt == 'add_item' || $opt == 'edit_item' ) {
                     else {
                         echo 'value="' . $mod['pubdate'] . '"';
                     }
-                        ?>/>
+                    ?>/>
 
                     <input type="hidden" name="oldpubdate" value="<?php echo @$mod['pubdate'] ?>"/> </td>
             </tr>
             <tr>
                 <td valign="top"><strong><?php echo $_LANG['AD_DATE_REPLY']; ?>: </strong></td>
                 <td valign="top"><input name="answerdate" style="width:190px" type="text" id="answerdate" <?php
-                                    if ( @!$mod['answerdate'] ) {
-                                        echo 'value="' . date('d.m.Y') . '"';
-                                    }
-                                    else {
-                                        echo 'value="' . $mod['answerdate'] . '"';
-                                    }
-                        ?>/>
+                    if ( @!$mod['answerdate'] ) {
+                        echo 'value="' . date('d.m.Y') . '"';
+                    }
+                    else {
+                        echo 'value="' . $mod['answerdate'] . '"';
+                    }
+                    ?>/>
 
                     <input type="hidden" name="oldanswerdate" value="<?php echo @$mod['answerdate'] ?>"/>
                 </td>
@@ -587,9 +587,9 @@ if ( $opt == 'add_item' || $opt == 'edit_item' ) {
                 <td>
                     <div style="margin-bottom:10px"><strong><?php echo $_LANG['AD_ANSWER_QUESTION']; ?>:</strong></div>
                     <div>
-    <?php
-    $inCore->insertEditor('answer', $mod['answer'], '300', '605');
-    ?>
+                        <?php
+                        $inCore->insertEditor('answer', $mod['answer'], '300', '605');
+                        ?>
                     </div>			</td>
             </tr>
         </table>
@@ -597,14 +597,14 @@ if ( $opt == 'add_item' || $opt == 'edit_item' ) {
             <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>" />
             <input name="back2" type="button" id="back2" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components&do=config&id=<?php echo (int) $_REQUEST['id']; ?>';"/>
             <input name="opt" type="hidden" id="do" <?php
-                    if ( $opt == 'add_item' ) {
-                        echo 'value="submit_item"';
-                    }
-                    else {
-                        echo 'value="update_item"';
-                    }
-    ?> />
-            <?php
+            if ( $opt == 'add_item' ) {
+                echo 'value="submit_item"';
+            }
+            else {
+                echo 'value="update_item"';
+            }
+            ?> />
+                   <?php
                    if ( $opt == 'edit_item' ) {
                        echo '<input name="item_id" type="hidden" value="' . $mod['id'] . '" />';
                    }
@@ -645,11 +645,11 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                 <td><strong><?php echo $_LANG['AD_PARENT_CATEGORY']; ?>: </strong></td>
                 <td><select name="parent_id" id="parent_id" style="width:220px">
                         <option value="0" <?php
-    if ( !isset($mod['parent_id']) || @$mod['parent_id'] == 0 ) {
-        echo 'selected';
-    }
-    ?>>--</option>
-                        <?php
+                        if ( !isset($mod['parent_id']) || @$mod['parent_id'] == 0 ) {
+                            echo 'selected';
+                        }
+                        ?>>--</option>
+                                <?php
                                 if ( isset($mod['parent_id']) ) {
                                     echo $inCore->getListItems('cms_faq_cats', $mod['parent_id']);
                                 }
@@ -662,42 +662,42 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
             <tr>
                 <td><strong><?php echo $_LANG['AD_POST_CATEGORY']; ?>?</strong></td>
                 <td><label><input name="published" type="radio" value="1" <?php
-                            if ( @$mod['published'] ) {
-                                echo 'checked="checked"';
-                            }
-                                ?> /><?php echo $_LANG['YES']; ?> </label>
+                        if ( @$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /><?php echo $_LANG['YES']; ?> </label>
                     <label><input name="published" type="radio" value="0"  <?php
-                                  if ( @!$mod['published'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /><?php echo $_LANG['NO']; ?> </label></td>
+                        if ( @!$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /><?php echo $_LANG['NO']; ?> </label></td>
             </tr>
         </table>
         <table width="100%" border="0">
             <tr>
-    <?php
-    if ( !isset($mod['user']) || @$mod['user'] == 1 ) {
-        echo '<td width="52%" valign="top">';
-        echo $_LANG['AD_DESCR_CATEGORY'] . ':<br/>';
+                <?php
+                if ( !isset($mod['user']) || @$mod['user'] == 1 ) {
+                    echo '<td width="52%" valign="top">';
+                    echo $_LANG['AD_DESCR_CATEGORY'] . ':<br/>';
 
-        $inCore->insertEditor('description', $mod['description'], '260', '605');
+                    $inCore->insertEditor('description', $mod['description'], '260', '605');
 
-        echo '</td>';
-    }
-    ?>
+                    echo '</td>';
+                }
+                ?>
             </tr>
         </table>
         <p>
             <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>" />
             <input name="back3" type="button" id="back3" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components&do=config&id=<?php echo (int) $_REQUEST['id']; ?>';"/>
             <input name="opt" type="hidden" id="do" <?php
-            if ( $opt == 'add_cat' ) {
-                echo 'value="submit_cat"';
-            }
-            else {
-                echo 'value="update_cat"';
-            }
-    ?> />
+                   if ( $opt == 'add_cat' ) {
+                       echo 'value="submit_cat"';
+                   }
+                   else {
+                       echo 'value="update_cat"';
+                   }
+                   ?> />
                    <?php
                    if ( $opt == 'edit_cat' ) {
                        echo '<input name="item_id" type="hidden" value="' . $mod['id'] . '" />';

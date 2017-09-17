@@ -6,8 +6,7 @@ $(function () {
                     $('#pub_photo_link').hide();
                     $('#pub_photo_wait').hide();
                     $('#pub_photo_date').fadeIn();
-                }
-                else {
+                } else {
                     core.alert(LANG_NO_PUBLISH, LANG_ERROR);
                 }
             });
@@ -27,8 +26,7 @@ $(function () {
                         };
                         $('#move_photo_form').ajaxSubmit(options);
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -38,12 +36,10 @@ $(function () {
             if (statusText == 'success') {
                 if (result.error == false) {
                     window.location.href = result.redirect;
-                }
-                else {
+                } else {
                     core.alert(result.text, LANG_ERROR);
                 }
-            }
-            else {
+            } else {
                 core.alert(statusText, LANG_ERROR);
             }
         },
@@ -62,8 +58,7 @@ $(function () {
                         };
                         $('#edit_photo_form').ajaxSubmit(options);
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -74,8 +69,7 @@ $(function () {
                 if (result.error == false) {
                     window.location.href = result.redirect;
                 }
-            }
-            else {
+            } else {
                 core.alert(statusText, LANG_ERROR);
             }
         },

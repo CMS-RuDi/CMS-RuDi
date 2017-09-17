@@ -168,15 +168,15 @@ if ( $opt == 'config' ) {
                         <td><strong><?php echo $_LANG['AD_PHOTO_ENABLE']; ?>:</strong></td>
                         <td width="250">
                             <label><input name="photos" type="radio" value="1" <?php
-    if ( @$cfg['photos'] ) {
-        echo 'checked="checked"';
-    }
-    ?>/> <?php echo $_LANG['YES']; ?></label>
+                                if ( @$cfg['photos'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="photos" type="radio" value="0" <?php
-                                          if ( @!$cfg['photos'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?>/> <?php echo $_LANG['NO']; ?></label>
+                                if ( @!$cfg['photos'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                     <tr>
@@ -185,15 +185,15 @@ if ( $opt == 'config' ) {
                         </td>
                         <td valign="top">
                             <label><input name="watermark" type="radio" value="1" <?php
-                            if ( @$cfg['watermark'] ) {
-                                echo 'checked="checked"';
-                            }
-                                          ?>/> <?php echo $_LANG['YES']; ?></label>
+                                if ( @$cfg['watermark'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="watermark" type="radio" value="0" <?php
-                                          if ( @!$cfg['watermark'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?>/> <?php echo $_LANG['NO']; ?></label>
+                                if ( @!$cfg['watermark'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                     <tr>
@@ -202,15 +202,15 @@ if ( $opt == 'config' ) {
                         </td>
                         <td valign="top">
                             <label><input name="comments" type="radio" value="1" <?php
-                            if ( @$cfg['comments'] ) {
-                                echo 'checked="checked"';
-                            }
-                                          ?>/> <?php echo $_LANG['YES']; ?></label>
+                                if ( @$cfg['comments'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="comments" type="radio" value="0" <?php
-                                          if ( @!$cfg['comments'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?>/> <?php echo $_LANG['NO']; ?></label>
+                                if ( @!$cfg['comments'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                     <tr>
@@ -229,15 +229,15 @@ if ( $opt == 'config' ) {
                         <td><strong><?php echo $_LANG['AD_AUTOLINK_ENABLE']; ?>:</strong></td>
                         <td width="250">
                             <label><input name="auto_link" type="radio" value="1" <?php
-                            if ( @$cfg['auto_link'] ) {
-                                echo 'checked="checked"';
-                            }
-                                          ?>/> <?php echo $_LANG['YES']; ?></label>
+                                if ( @$cfg['auto_link'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="auto_link" type="radio" value="0" <?php
-                                          if ( @!$cfg['auto_link'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?>/> <?php echo $_LANG['NO']; ?></label>
+                                if ( @!$cfg['auto_link'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                 </table>
@@ -253,20 +253,20 @@ if ( $opt == 'config' ) {
                         <td valign="top">
                             <select name="public" id="public" style="width:260px">
                                 <option value="0" <?php
-                            if ( @$cfg['public'] == '0' ) {
-                                echo 'selected';
-                            }
-                                          ?>><?php echo $_LANG['AD_TABOO']; ?></option>
+                                if ( @$cfg['public'] == '0' ) {
+                                    echo 'selected';
+                                }
+                                ?>><?php echo $_LANG['AD_TABOO']; ?></option>
                                 <option value="1" <?php
-                                        if ( @$cfg['public'] == '1' ) {
-                                            echo 'selected';
-                                        }
-                                        ?>><?php echo $_LANG['AD_PREMODERATION']; ?></option>
+                                if ( @$cfg['public'] == '1' ) {
+                                    echo 'selected';
+                                }
+                                ?>><?php echo $_LANG['AD_PREMODERATION']; ?></option>
                                 <option value="2" <?php
-                                        if ( @$cfg['public'] == '2' ) {
-                                            echo 'selected';
-                                        }
-                                        ?>><?php echo $_LANG['AD_WITHOUT_MODERATION']; ?></option>
+                                if ( @$cfg['public'] == '2' ) {
+                                    echo 'selected';
+                                }
+                                ?>><?php echo $_LANG['AD_WITHOUT_MODERATION']; ?></option>
                             </select>
                         </td>
                     </tr>
@@ -277,15 +277,15 @@ if ( $opt == 'config' ) {
                         <td valign="top">
                             <select name="publish_after_edit" id="publish_after_edit" style="width:260px">
                                 <option value="0" <?php
-                            if ( @$cfg['publish_after_edit'] == '0' ) {
-                                echo 'selected';
-                            }
-                                        ?>><?php echo $_LANG['AD_DEFAULT']; ?></option>
+                                if ( @$cfg['publish_after_edit'] == '0' ) {
+                                    echo 'selected';
+                                }
+                                ?>><?php echo $_LANG['AD_DEFAULT']; ?></option>
                                 <option value="1" <?php
-                                        if ( @$cfg['publish_after_edit'] == '1' ) {
-                                            echo 'selected';
-                                        }
-                                        ?>><?php echo $_LANG['AD_NO_MODERATION']; ?></option>
+                                if ( @$cfg['publish_after_edit'] == '1' ) {
+                                    echo 'selected';
+                                }
+                                ?>><?php echo $_LANG['AD_NO_MODERATION']; ?></option>
                             </select>
                         </td>
                     </tr>
@@ -293,15 +293,15 @@ if ( $opt == 'config' ) {
                         <td valign="top"><strong><?php echo $_LANG['AD_DATA_AD']; ?>:</strong></td>
                         <td valign="top">
                             <div><label><input name="srok" type="radio" value="1" <?php
-                            if ( @$cfg['srok'] ) {
-                                echo 'checked="checked"';
-                            }
-                                        ?>/><?php echo $_LANG['AD_ENABLE_SELECTION']; ?></label></div>
+                                    if ( @$cfg['srok'] ) {
+                                        echo 'checked="checked"';
+                                    }
+                                    ?>/><?php echo $_LANG['AD_ENABLE_SELECTION']; ?></label></div>
                             <div><label><input name="srok" type="radio" value="0" <?php
-                                               if ( @!$cfg['srok'] ) {
-                                                   echo 'checked="checked"';
-                                               }
-                                               ?>/><?php echo $_LANG['AD_FIXED']; ?>:</label> <input class="uispin" name="pubdays" type="text" id="pubdays" size="3" value="<?php echo @$cfg['pubdays']; ?>"/> <?php echo $_LANG['DAY10']; ?></div>
+                                    if ( @!$cfg['srok'] ) {
+                                        echo 'checked="checked"';
+                                    }
+                                    ?>/><?php echo $_LANG['AD_FIXED']; ?>:</label> <input class="uispin" name="pubdays" type="text" id="pubdays" size="3" value="<?php echo @$cfg['pubdays']; ?>"/> <?php echo $_LANG['DAY10']; ?></div>
                         </td>
                     </tr>
                     <tr>
@@ -315,17 +315,17 @@ if ( $opt == 'config' ) {
                                 if ( @$cfg['aftertime'] == 'delete' ) {
                                     echo 'selected';
                                 }
-                                               ?>><?php echo $_LANG['DELETE']; ?></option>
+                                ?>><?php echo $_LANG['DELETE']; ?></option>
                                 <option value="hide" <?php
-                                        if ( @$cfg['aftertime'] == 'hide' ) {
-                                            echo 'selected';
-                                        }
-                                        ?>><?php echo $_LANG['HIDE']; ?></option>
+                                if ( @$cfg['aftertime'] == 'hide' ) {
+                                    echo 'selected';
+                                }
+                                ?>><?php echo $_LANG['HIDE']; ?></option>
                                 <option value="" <?php
-                                        if ( @$cfg['aftertime'] == '' ) {
-                                            echo 'selected';
-                                        }
-                                        ?>><?php echo $_LANG['AD_NOTHING']; ?></option>
+                                if ( @$cfg['aftertime'] == '' ) {
+                                    echo 'selected';
+                                }
+                                ?>><?php echo $_LANG['AD_NOTHING']; ?></option>
                             </select>
                         </td>
                     </tr>
@@ -336,15 +336,15 @@ if ( $opt == 'config' ) {
                         </td>
                         <td valign="top">
                             <label><input name="extend" type="radio" value="1" <?php
-                            if ( @$cfg['extend'] ) {
-                                echo 'checked="checked"';
-                            }
-                                        ?>/> <?php echo $_LANG['YES']; ?></label>
+                                if ( @$cfg['extend'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="extend" type="radio" value="0" <?php
-                                          if ( @!$cfg['extend'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?>/> <?php echo $_LANG['NO']; ?></label>
+                                if ( @!$cfg['extend'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                 </table>
@@ -366,49 +366,49 @@ if ( $opt == 'config' ) {
             </div>
 
             <div id="vip">
-    <?php if ( !IS_BILLING ) { ?>
+                <?php if ( !IS_BILLING ) { ?>
                     <p>
-                    <?php echo $_LANG['AD_SUPPORT_VIP_AD']; ?> &laquo;<a href="http://www.instantcms.ru/billing/about.html"><?php echo $_LANG['AD_BILLING']; ?></a>&raquo;
+                        <?php echo $_LANG['AD_SUPPORT_VIP_AD']; ?> &laquo;<a href="http://www.instantcms.ru/billing/about.html"><?php echo $_LANG['AD_BILLING']; ?></a>&raquo;
                     </p>
                     <p>
-        <?php echo $_LANG['AD_INFO_0']; ?>
+                        <?php echo $_LANG['AD_INFO_0']; ?>
                     </p>
                     <p>
-        <?php echo $_LANG['AD_WITHOUT_COMPONENT']; ?> &laquo;<a href="http://www.instantcms.ru/billing/about.html"><?php echo $_LANG['AD_BILLING']; ?></a>&raquo; <?php echo $_LANG['AD_INFO_1']; ?>
+                        <?php echo $_LANG['AD_WITHOUT_COMPONENT']; ?> &laquo;<a href="http://www.instantcms.ru/billing/about.html"><?php echo $_LANG['AD_BILLING']; ?></a>&raquo; <?php echo $_LANG['AD_INFO_1']; ?>
                     </p>
                     <?php
-                    }
-                    else {
-                        ?>
+                }
+                else {
+                    ?>
                     <table width="550" border="0" cellpadding="0" cellspacing="10" class="proptable" style="border:none">
                         <tr>
                             <td><strong><?php echo $_LANG['AD_ENABLE_VIP_AD']; ?></strong></td>
                             <td width="250">
                                 <label><input name="vip_enabled" type="radio" value="1" <?php
-            if ( @$cfg['vip_enabled'] ) {
-                echo 'checked="checked"';
-            }
-                        ?>/> <?php echo $_LANG['YES']; ?></label>
+                                    if ( @$cfg['vip_enabled'] ) {
+                                        echo 'checked="checked"';
+                                    }
+                                    ?>/> <?php echo $_LANG['YES']; ?></label>
                                 <label><input name="vip_enabled" type="radio" value="0" <?php
-                            if ( @!$cfg['vip_enabled'] ) {
-                                echo 'checked="checked"';
-                            }
-                        ?>/> <?php echo $_LANG['NO']; ?></label>
+                                    if ( @!$cfg['vip_enabled'] ) {
+                                        echo 'checked="checked"';
+                                    }
+                                    ?>/> <?php echo $_LANG['NO']; ?></label>
                             </td>
                         </tr>
                         <tr>
                             <td><strong><?php echo $_LANG['AD_ENABLE_VIP_STATUS']; ?></strong></td>
                             <td width="250">
                                 <label><input name="vip_prolong" type="radio" value="1" <?php
-                            if ( @$cfg['vip_prolong'] ) {
-                                echo 'checked="checked"';
-                            }
-                        ?>/> <?php echo $_LANG['YES']; ?></label>
+                                    if ( @$cfg['vip_prolong'] ) {
+                                        echo 'checked="checked"';
+                                    }
+                                    ?>/> <?php echo $_LANG['YES']; ?></label>
                                 <label><input name="vip_prolong" type="radio" value="0" <?php
-                            if ( @!$cfg['vip_prolong'] ) {
-                                echo 'checked="checked"';
-                            }
-                        ?>/> <?php echo $_LANG['NO']; ?></label>
+                                    if ( @!$cfg['vip_prolong'] ) {
+                                        echo 'checked="checked"';
+                                    }
+                                    ?>/> <?php echo $_LANG['NO']; ?></label>
                             </td>
                         </tr>
                         <tr>
@@ -456,15 +456,15 @@ if ( $opt == 'config' ) {
                         <td><strong><?php echo $_LANG['AD_USER_SEO_ACCESS']; ?> </strong></td>
                         <td>
                             <label><input name="seo_user_access" type="radio" value="1" <?php
-                if ( $cfg['seo_user_access'] ) {
-                    echo 'checked="checked"';
-                }
-                ?> /> <?php echo $_LANG['YES']; ?> </label>
+                                if ( $cfg['seo_user_access'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['YES']; ?> </label>
                             <label><input name="seo_user_access" type="radio" value="0"  <?php
-                            if ( !$cfg['seo_user_access'] ) {
-                                echo 'checked="checked"';
-                            }
-                ?> /> <?php echo $_LANG['NO']; ?> </label>
+                                if ( !$cfg['seo_user_access'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['NO']; ?> </label>
                         </td>
                     </tr>
                 </table>
@@ -675,9 +675,9 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                         $rootid = $inDB->get_field('cms_board_cats', 'parent_id=0', 'id');
                         ?>
                         <option value="<?php echo $rootid ?>" <?php
-                    if ( @$mod['parent_id'] == $rootid || !isset($mod['parent_id']) ) {
-                        echo 'selected';
-                    }
+                        if ( @$mod['parent_id'] == $rootid || !isset($mod['parent_id']) ) {
+                            echo 'selected';
+                        }
                         ?>><?php echo $_LANG['AD_CAT_ROOT']; ?></option>
                                 <?php
                                 if ( isset($mod['parent_id']) ) {
@@ -702,10 +702,10 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                 <td>
                     <select name="form_id" style="width:250px">
                         <option value="" <?php
-                            if ( @!$mod['form_id'] ) {
-                                echo 'selected';
-                            }
-                                ?>><?php echo $_LANG['AD_DONT_ATTACH']; ?></option>
+                        if ( @!$mod['form_id'] ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_DONT_ATTACH']; ?></option>
                                 <?php
                                 $sql = "SELECT id, title FROM cms_forms";
                                 $rs  = $inDB->query($sql);
@@ -728,84 +728,84 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
             <tr>
                 <td><strong><?php echo $_LANG['AD_IF_PUBLIC_CAT']; ?></strong></td>
                 <td><label><input name="published" type="radio" value="1" <?php
-                            if ( @$mod['published'] ) {
-                                echo 'checked="checked"';
-                            }
-                                ?> /><?php echo $_LANG['YES']; ?></label>
+                        if ( @$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /><?php echo $_LANG['YES']; ?></label>
                     <label><input name="published" type="radio" value="0"  <?php
-                    if ( @!$mod['published'] ) {
-                        echo 'checked="checked"';
-                    }
-                                ?> /><?php echo $_LANG['NO']; ?></label></td>
+                        if ( @!$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /><?php echo $_LANG['NO']; ?></label></td>
             </tr>
             <tr>
                 <td><strong><?php echo $_LANG['AD_IF_DATA_VIEW']; ?> </strong></td>
                 <td><label><input name="showdate" type="radio" value="1" checked="checked" <?php
-                    if ( @$mod['showdate'] ) {
-                        echo 'checked="checked"';
-                    }
-                                ?> /><?php echo $_LANG['YES']; ?></label>
+                        if ( @$mod['showdate'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /><?php echo $_LANG['YES']; ?></label>
                     <label><input name="showdate" type="radio" value="0"  <?php
-                    if ( @!$mod['showdate'] ) {
-                        echo 'checked="checked"';
-                    }
-                                ?> />
-                                  <?php echo $_LANG['NO']; ?></label></td>
+                        if ( @!$mod['showdate'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> />
+                        <?php echo $_LANG['NO']; ?></label></td>
             </tr>
             <tr>
                 <td><strong><?php echo $_LANG['AD_SORT_AD']; ?> </strong></td>
                 <td><select name="orderby" id="orderby" style="width:250px">
                         <option value="title" <?php
-                              if ( @$mod['orderby'] == 'title' ) {
-                                  echo 'selected';
-                              }
-                                  ?>><?php echo $_LANG['AD_BY_ALPHABET']; ?></option>
+                        if ( @$mod['orderby'] == 'title' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_ALPHABET']; ?></option>
                         <option value="pubdate" <?php
-                    if ( @$mod['orderby'] == 'pubdate' ) {
-                        echo 'selected';
-                    }
-                                  ?>><?php echo $_LANG['AD_BY_CALENDAR']; ?></option>
+                        if ( @$mod['orderby'] == 'pubdate' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_CALENDAR']; ?></option>
                         <option value="hits" <?php
-                    if ( @$mod['orderby'] == 'hits' ) {
-                        echo 'selected';
-                    }
-                                  ?>><?php echo $_LANG['AD_BY_VIEWS']; ?></option>
+                        if ( @$mod['orderby'] == 'hits' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_VIEWS']; ?></option>
                         <option value="obtype" <?php
-                    if ( @$mod['orderby'] == 'obtype' ) {
-                        echo 'selected';
-                    }
-                                  ?>><?php echo $_LANG['ORDERBY_TYPE']; ?></option>
+                        if ( @$mod['orderby'] == 'obtype' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['ORDERBY_TYPE']; ?></option>
                         <option value="user_id" <?php
-                    if ( @$mod['orderby'] == 'user_id' ) {
-                        echo 'selected';
-                    }
-                                  ?>><?php echo $_LANG['ORDERBY_AVTOR']; ?></option>
+                        if ( @$mod['orderby'] == 'user_id' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['ORDERBY_AVTOR']; ?></option>
                     </select>
                     <select name="orderto" id="orderto" style="width:250px">
                         <option value="desc" <?php
-                    if ( @$mod['orderto'] == 'desc' ) {
-                        echo 'selected';
-                    }
-                                  ?>><?php echo $_LANG['AD_BY_DECREMENT']; ?></option>
+                        if ( @$mod['orderto'] == 'desc' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_DECREMENT']; ?></option>
                         <option value="asc" <?php
-                    if ( @$mod['orderto'] == 'asc' ) {
-                        echo 'selected';
-                    }
-                                  ?>><?php echo $_LANG['AD_BY_INCREMENT']; ?></option>
+                        if ( @$mod['orderto'] == 'asc' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_INCREMENT']; ?></option>
                     </select></td>
             </tr>
             <tr>
                 <td><strong><?php echo $_LANG['AD_SORT_FORM']; ?> </strong></td>
                 <td><label><input name="orderform" type="radio" value="1" checked="checked" <?php
-                    if ( @$mod['orderform'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /><?php echo $_LANG['SHOW']; ?> </label>
+                        if ( @$mod['orderform'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /><?php echo $_LANG['SHOW']; ?> </label>
                     <label><input name="orderform" type="radio" value="0"  <?php
-                    if ( @!$mod['orderform'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /><?php echo $_LANG['HIDE']; ?> </label></td>
+                        if ( @!$mod['orderform'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /><?php echo $_LANG['HIDE']; ?> </label></td>
             </tr>
             <tr>
                 <td><strong><?php echo $_LANG['AD_HOW_MANY_COLUMNS_VIEW']; ?></strong></td>
@@ -815,25 +815,25 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                 <td><strong><?php echo $_LANG['AD_USERS_AD_ADD']; ?> </strong></td>
                 <td><select name="public" id="select" style="width:250px">
                         <option value="0" <?php
-                    if ( @$mod['public'] == '0' ) {
-                        echo 'selected';
-                    }
-                                  ?>><?php echo $_LANG['AD_TABOO']; ?></option>
+                        if ( @$mod['public'] == '0' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_TABOO']; ?></option>
                         <option value="1" <?php
-                    if ( @$mod['public'] == '1' ) {
-                        echo 'selected';
-                    }
-                                  ?>><?php echo $_LANG['AD_PREMODERATION']; ?></option>
+                        if ( @$mod['public'] == '1' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_PREMODERATION']; ?></option>
                         <option value="2" <?php
-                    if ( @$mod['public'] == '2' ) {
-                        echo 'selected';
-                    }
-                                  ?>><?php echo $_LANG['AD_WITHOUT_MODERATION']; ?></option>
+                        if ( @$mod['public'] == '2' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_WITHOUT_MODERATION']; ?></option>
                         <option value="-1" <?php
-                    if ( @$mod['public'] == '-1' ) {
-                        echo 'selected';
-                    }
-                                  ?>><?php echo $_LANG['AD_DEFAULT']; ?></option>
+                        if ( @$mod['public'] == '-1' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_DEFAULT']; ?></option>
                     </select></td>
             </tr>
             <tr>
@@ -848,15 +848,15 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
             <tr>
                 <td><p><strong><?php echo $_LANG['AD_PHOTO_TO_AD']; ?> </strong></p></td>
                 <td><label><input name="is_photos" type="radio" value="1" checked="checked" <?php
-                    if ( @$mod['is_photos'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /><?php echo $_LANG['YES']; ?> </label>
+                        if ( @$mod['is_photos'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /><?php echo $_LANG['YES']; ?> </label>
                     <label><input name="is_photos" type="radio" value="0"  <?php
-                    if ( @!$mod['is_photos'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /><?php echo $_LANG['NO']; ?> </label></td>
+                        if ( @!$mod['is_photos'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /><?php echo $_LANG['NO']; ?> </label></td>
             </tr>
             <tr>
                 <td><strong><?php echo $_LANG['AD_MINI_PHOTO_WIDTH']; ?> </strong><br/><span class="hinttext"><?php echo $_LANG['AD_IN_PIXELS']; ?></span></td>
@@ -866,15 +866,15 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                             <td width="100" align="center" valign="middle" style="background-color:#EBEBEB"><?php echo $_LANG['AD_SQUARE']; ?></td>
                             <td width="115" align="center" valign="middle" style="background-color:#EBEBEB">
                                 <label><input name="thumbsqr" type="radio" value="1" checked="checked" <?php
-                    if ( @$mod['thumbsqr'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /><?php echo $_LANG['YES']; ?> </label>
+                                    if ( @$mod['thumbsqr'] ) {
+                                        echo 'checked="checked"';
+                                    }
+                                    ?> /><?php echo $_LANG['YES']; ?> </label>
                                 <label><input name="thumbsqr" type="radio" value="0"  <?php
-                                if ( @!$mod['thumbsqr'] ) {
-                                    echo 'checked="checked"';
-                                }
-                                  ?> /><?php echo $_LANG['NO']; ?></label></td>
+                                    if ( @!$mod['thumbsqr'] ) {
+                                        echo 'checked="checked"';
+                                    }
+                                    ?> /><?php echo $_LANG['NO']; ?></label></td>
                         </tr>
                     </table></td>
             </tr>
@@ -922,13 +922,13 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
         </table>
         <p>
             <input name="opt" type="hidden" id="opt" <?php
-                                if ( $opt == 'add_cat' ) {
-                                    echo 'value="submit_cat"';
-                                }
-                                else {
-                                    echo 'value="update_cat"';
-                                }
-                                  ?> />
+            if ( $opt == 'add_cat' ) {
+                echo 'value="submit_cat"';
+            }
+            else {
+                echo 'value="update_cat"';
+            }
+            ?> />
             <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>" />
             <input name="back2" type="button" id="back2" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components';"/>
             <?php

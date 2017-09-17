@@ -14,7 +14,8 @@ function iconList()
     global $_LANG;
 
     if ( $handle = opendir(PATH . '/images/menuicons') ) {
-        $n    = 0;
+        $n = 0;
+
         while ( false !== ($file = readdir($handle)) ) {
             if ( $file != '.' && $file != '..' && mb_strstr($file, '.gif') ) {
                 $tag = str_replace('.gif', '', $file);
@@ -23,6 +24,7 @@ function iconList()
                 $n++;
             }
         }
+
         closedir($handle);
     }
 
@@ -49,7 +51,7 @@ function cpMenutypeById($item)
     $html   = '';
     $maxlen = 35;
 
-    switch ($item['linktype']) {
+    switch ( $item['linktype'] ) {
         case 'link': $html = '<span id="menutype"><a target="_blank" href="' . $item['link'] . '">' . $_LANG['AD_TYPE_LINK'] . '</a></span> - ' . $item['linkid'];
             break;
         case 'component': $html = '<span id="menutype"><a target="_blank" href="' . $item['link'] . '">' . $_LANG['AD_TYPE_COMPONENT'] . '</a></span> - ' . $inDB->get_field('cms_components', "link='" . $item['linkid'] . "'", 'title');
@@ -113,13 +115,13 @@ function applet_menu()
             'field' => array( 'title', 'titles' ), 'width' => '',
             'link'  => '?view=menu&do=edit&id=%id%',
             'prc'   => function ($i) {
-        $i['titles'] = cmsCore::yamlToArray($i['titles']);
-        // переопределяем название пункта меню в зависимости от языка
-        if ( !empty($i['titles'][cmsConfig::getConfig('lang')]) ) {
-            $i['title'] = $i['titles'][cmsConfig::getConfig('lang')];
-        }
-        return $i['title'];
-    }
+                $i['titles'] = cmsCore::yamlToArray($i['titles']);
+                // переопределяем название пункта меню в зависимости от языка
+                if ( !empty($i['titles'][cmsConfig::getConfig('lang')]) ) {
+                    $i['title'] = $i['titles'][cmsConfig::getConfig('lang')];
+                }
+                return $i['title'];
+            }
         );
         $fields[] = array( 'title' => $_LANG['SHOW'], 'field' => 'published', 'width' => '60' );
         $fields[] = array( 'title' => $_LANG['AD_ORDER'], 'field' => 'ordering', 'width' => '100' );

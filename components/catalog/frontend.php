@@ -101,23 +101,23 @@ function ratingForm($ratingdata, $item_id)
     global $_LANG;
 
     $html   = '';
-    $html .= '<form name="rateform" action="" method="POST"><div class="uc_detailrating"><table><tr>' . "\n";
-    $html .= '<td width="100">' . "\n";
-    $html .= '<strong>' . $_LANG['RATING'] . ':</strong> ' . round($ratingdata['rating'], 2) . "\n";
-    $html .= '</td>' . "\n";
-    $html .= '<td width="100" valign="middle">' . "\n";
-    $html .= cms_model_catalog::buildRating($ratingdata['rating']) . "\n";
-    $html .= '</td>' . "\n";
-    $html .= '<td width="65">' . "\n";
-    $html .= '<strong>' . $_LANG['VOTES'] . ':</strong> ' . "\n";
-    $html .= '</td>' . "\n";
-    $html .= '<td width="40" valign="middle">' . "\n";
-    $html .= $ratingdata['votes'] . "\n";
-    $html .= '</td>' . "\n";
-    $html .= '<td width="100">' . "\n";
-    $html .= '<strong>' . $_LANG['YOUR_VOTE'] . ':</strong> ' . "\n";
-    $html .= '</td>' . "\n";
-    $html .= '<td width=""> ' . "\n";
+    $html   .= '<form name="rateform" action="" method="POST"><div class="uc_detailrating"><table><tr>' . "\n";
+    $html   .= '<td width="100">' . "\n";
+    $html   .= '<strong>' . $_LANG['RATING'] . ':</strong> ' . round($ratingdata['rating'], 2) . "\n";
+    $html   .= '</td>' . "\n";
+    $html   .= '<td width="100" valign="middle">' . "\n";
+    $html   .= cms_model_catalog::buildRating($ratingdata['rating']) . "\n";
+    $html   .= '</td>' . "\n";
+    $html   .= '<td width="65">' . "\n";
+    $html   .= '<strong>' . $_LANG['VOTES'] . ':</strong> ' . "\n";
+    $html   .= '</td>' . "\n";
+    $html   .= '<td width="40" valign="middle">' . "\n";
+    $html   .= $ratingdata['votes'] . "\n";
+    $html   .= '</td>' . "\n";
+    $html   .= '<td width="100">' . "\n";
+    $html   .= '<strong>' . $_LANG['YOUR_VOTE'] . ':</strong> ' . "\n";
+    $html   .= '</td>' . "\n";
+    $html   .= '<td width=""> ' . "\n";
     $myvote = alreadyVoted($item_id);
 
     if ( !$myvote ) {
@@ -248,7 +248,7 @@ function tagLine($tagstr, $cat_id)
 
     foreach ( $tags as $key => $value ) {
         $value = mb_strtolower($value);
-        $html .= '<a href="/catalog/' . $cat_id . '/tag/' . urlencode($value) . '">' . $value . '</a>';
+        $html  .= '<a href="/catalog/' . $cat_id . '/tag/' . urlencode($value) . '">' . $value . '</a>';
         if ( $num < sizeof($tags) - 1 ) {
             $html .= ', ';
             $num++;
@@ -409,7 +409,7 @@ function catalog()
                     $findsql .= "AND (i.tags LIKE '%" . $tags . "%')";
                 }
 
-                $findsql .= " GROUP BY i.id";
+                $findsql   .= " GROUP BY i.id";
                 $advsearch = 1;
             }
 
@@ -626,7 +626,7 @@ function catalog()
         $page = $inCore->request('page', 'int', 1);
 
         //request items using pagination
-        $sql .= " LIMIT " . (($page - 1) * $perpage) . ", $perpage";
+        $sql    .= " LIMIT " . (($page - 1) * $perpage) . ", $perpage";
         $result = $inDB->query($sql);
 
         //search details, if needed

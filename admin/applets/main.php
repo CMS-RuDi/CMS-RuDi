@@ -248,23 +248,23 @@ function applet_main()
                                                 <?php if ( $inCore->isComponentEnable('video') ) { ?>
                                                     <td><img src="/images/markers/rssfeed.png" width="16" height="16" /></td>
                                                     <td><a href="/rss/video/all/feed.rss" id="rss_link"><?php echo $_LANG['AD_RSS_VIDEO']; ?></a> </td>
-                                                <?php
+                                                    <?php
                                                 }
                                                 else {
                                                     ?>
                                                     <td></td>
                                                     <td></td>
                                                 <?php } ?>
-        <?php if ( $inCore->isComponentEnable('audio') ) { ?>
+                                                <?php if ( $inCore->isComponentEnable('audio') ) { ?>
                                                     <td><img src="/images/markers/rssfeed.png" width="16" height="16" /></td>
                                                     <td><a href="/rss/audio/artists/feed.rss" id="rss_link"><?php echo $_LANG['AD_RSS_AUDIO']; ?></a> </td>
-                                                <?php
+                                                    <?php
                                                 }
                                                 else {
                                                     ?>
                                                     <td></td>
                                                     <td></td>
-        <?php } ?>
+                                                <?php } ?>
                                             </tr>
                                             <tr>
                                                 <td></td>
@@ -275,7 +275,7 @@ function applet_main()
                                         </table>
                                     </div>
                                 </div>
-    <?php } ?>
+                            <?php } ?>
 
                             <div class="small_box">
                                 <div class="small_title"><?php echo $_LANG['AD_ICMS_RAVE']; ?></div>

@@ -194,7 +194,7 @@ function applet_content()
 
             $autokeys = cmsCore::request('autokeys', 'int');
 
-            switch ($autokeys) {
+            switch ( $autokeys ) {
                 case 1: $article['meta_keys'] = $inCore->getKeywords($article['content']);
                     $article['meta_desc'] = $article['title'];
                     break;
@@ -291,7 +291,7 @@ function applet_content()
 
         $autokeys = cmsCore::request('autokeys', 'int');
 
-        switch ($autokeys) {
+        switch ( $autokeys ) {
             case 1: $article['meta_keys'] = $inCore->getKeywords($article['content']);
                 $article['meta_desc'] = $article['title'];
                 break;
@@ -656,11 +656,10 @@ function applet_content()
                         </div>
                         <div>
                             <select name="is_end" id="is_end" style="width:99%" onchange="if ($(this).val() == 1) {
-                                                $('#final_time').show();
-                                            }
-                                            else {
-                                                $('#final_time').hide();
-                                            }">
+                                        $('#final_time').show();
+                                    } else {
+                                        $('#final_time').hide();
+                                    }">
                                 <option value="0" <?php
                                 if ( @!$mod['is_end'] ) {
                                     echo 'selected="selected"';
@@ -828,4 +827,3 @@ function applet_content()
         <?php
     }
 }
-?>

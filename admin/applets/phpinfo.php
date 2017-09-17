@@ -30,4 +30,5 @@ function applet_phpinfo()
         <iframe src="/admin/includes/phpinfo.php" style="border:none;width:100%;height:600px" />
 
     </div>
-<?php } ?>
+    <?php
+}

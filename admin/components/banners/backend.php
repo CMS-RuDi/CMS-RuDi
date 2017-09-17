@@ -34,7 +34,7 @@ function bannerHitsbyID($item)
     }
 }
 
-/* * *************************************************************************** */
+//============================================================================//
 
 $opt = cmsCore::request('opt', 'str', 'list');
 
@@ -238,7 +238,7 @@ if ( $opt == 'add' || $opt == 'edit' ) {
         <table width="625" border="0" cellspacing="5" class="proptable">
             <tr>
                 <td align="center">
-        <?php echo cms_model_banners::getBannerById($item_id); ?>
+                    <?php echo cms_model_banners::getBannerById($item_id); ?>
                 </td>
             </tr>
         </table>
@@ -260,28 +260,28 @@ if ( $opt == 'add' || $opt == 'edit' ) {
             <tr>
                 <td><strong><?php echo $_LANG['AD_POSITION']; ?></strong></td>
                 <td><select name="position" id="position">
-    <?php for ( $m = 1; $m <= 30; $m++ ) { ?>
+                        <?php for ( $m = 1; $m <= 30; $m++ ) { ?>
                             <option value="banner<?php echo $m; ?>" <?php
                             if ( @$mod['position'] == 'banner' . $m ) {
                                 echo 'selected';
                             }
                             ?>>banner<?php echo $m; ?></option>
-                        <?php } ?>
+                                <?php } ?>
                     </select></td>
             </tr>
             <tr>
                 <td><strong><?php echo $_LANG['AD_BANNER_TYPE']; ?></strong></td>
                 <td><select name="typeimg" id="typeimg">
                         <option value="image" <?php
-                    if ( @$mod['typeimg'] == 'image' ) {
-                        echo 'selected';
-                    }
+                        if ( @$mod['typeimg'] == 'image' ) {
+                            echo 'selected';
+                        }
                         ?>><?php echo $_LANG['AD_BANNER_IMAGE']; ?></option>
                         <option value="swf" <?php
-                                if ( @$mod['typeimg'] == 'swf' ) {
-                                    echo 'selected';
-                                }
-                                ?>><?php echo $_LANG['AD_BANNER_FLASH']; ?></option>
+                        if ( @$mod['typeimg'] == 'swf' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BANNER_FLASH']; ?></option>
                     </select></td>
             </tr>
             <tr>
@@ -292,7 +292,7 @@ if ( $opt == 'add' || $opt == 'edit' ) {
                         echo '<a href="/images/photos/' . $mod['file'] . '" title="' . $_LANG['AD_BANNER_VIEW_PHOTO'] . '">' . $mod['file'] . '</a>';
                     }
                     else {
-                                    ?>
+                        ?>
                         <input name="picture" type="file" id="picture" size="30" />
                     <?php } ?></td>
             </tr>
@@ -305,15 +305,15 @@ if ( $opt == 'add' || $opt == 'edit' ) {
                 <td><strong><?php echo $_LANG['AD_BANNER_PUBLISH']; ?></strong><br />
                     <span class="hinttext"><?php echo $_LANG['AD_BANNER_DISALLOW']; ?></span></td>
                 <td><label><input name="published" type="radio" value="1" checked="checked" <?php
-                if ( @$mod['published'] ) {
-                    echo 'checked="checked"';
-                }
-                    ?> /><?php echo $_LANG['YES']; ?></label>
+                        if ( @$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /><?php echo $_LANG['YES']; ?></label>
                     <label><input name="published" type="radio" value="0"  <?php
-                                  if ( @!$mod['published'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /><?php echo $_LANG['NO']; ?></label></td>
+                        if ( @!$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /><?php echo $_LANG['NO']; ?></label></td>
             </tr>
         </table>
         <p><strong><?php echo $_LANG['AD_NOTE']; ?></strong> <?php echo $_LANG['AD_BANNER_NOTE']; ?></p>
@@ -321,13 +321,13 @@ if ( $opt == 'add' || $opt == 'edit' ) {
             <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>" />
             <input name="back3" type="button" id="back3" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components&amp;do=config&amp;id=<?php echo $id; ?>';"/>
             <input name="opt" type="hidden" id="opt" <?php
-                    if ( $opt == 'add' ) {
-                        echo 'value="submit"';
-                    }
-                    else {
-                        echo 'value="update"';
-                    }
-                                  ?> />
+                   if ( $opt == 'add' ) {
+                       echo 'value="submit"';
+                   }
+                   else {
+                       echo 'value="update"';
+                   }
+                   ?> />
                    <?php
                    if ( $opt == 'edit' ) {
                        echo '<input name="item_id" type="hidden" value="' . $mod['id'] . '" />';

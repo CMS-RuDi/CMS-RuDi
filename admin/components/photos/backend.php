@@ -21,7 +21,7 @@ $model = new cms_model_photos();
 
 $opt = cmsCore::request('opt', 'str', 'list_albums');
 
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'saveconfig' ) {
     if ( !cmsUser::checkCsrfToken() ) {
@@ -83,30 +83,30 @@ if ( $opt == 'config' ) {
                 <td width="300"><strong><?php echo $_LANG['AD_SHOW_LINKS_ORIGINAL']; ?>: </strong></td>
                 <td width="">
                     <label><input name="show_link" type="radio" value="1" <?php
-    if ( $cfg['link'] ) {
-        echo 'checked="checked"';
-    }
-    ?>/> <?php echo $_LANG['YES']; ?></label>
+                        if ( $cfg['link'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?>/> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="show_link" type="radio" value="0" <?php
-                                  if ( !$cfg['link'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?>/> <?php echo $_LANG['NO']; ?></label>
+                        if ( !$cfg['link'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?>/> <?php echo $_LANG['NO']; ?></label>
                 </td>
             </tr>
             <tr>
                 <td><strong><?php echo $_LANG['AD_RETAIN_BOOT']; ?>:</strong> </td>
                 <td>
                     <label><input name="saveorig" type="radio" value="1" <?php
-                    if ( $cfg['saveorig'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?>/> <?php echo $_LANG['YES']; ?> </label>
+                        if ( $cfg['saveorig'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?>/> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="saveorig" type="radio" value="0" <?php
-                                  if ( !$cfg['saveorig'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?>/> <?php echo $_LANG['NO']; ?></label></td>
+                        if ( !$cfg['saveorig'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?>/> <?php echo $_LANG['NO']; ?></label></td>
             </tr>
             <tr>
                 <td><strong><?php echo $_LANG['AD_NUMBER_COLUMS']; ?>: </strong></td>
@@ -116,42 +116,42 @@ if ( $opt == 'config' ) {
                 <td valign="top"><strong><?php echo $_LANG['AD_ALBUM_SORT']; ?>: </strong></td>
                 <td><select name="orderby" style="width:190px">
                         <option value="title" <?php
-                    if ( $cfg['orderby'] == 'title' ) {
-                        echo 'selected';
-                    }
-                                  ?>><?php echo $_LANG['AD_BY_ALPHABET']; ?></option>
+                        if ( $cfg['orderby'] == 'title' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_ALPHABET']; ?></option>
                         <option value="pubdate" <?php
-                                if ( $cfg['orderby'] == 'pubdate' ) {
-                                    echo 'selected';
-                                }
-                                ?>><?php echo $_LANG['AD_BY_CALENDAR']; ?></option>
+                        if ( $cfg['orderby'] == 'pubdate' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_CALENDAR']; ?></option>
                     </select>
                     <select name="orderto" style="width:190px">
                         <option value="desc" <?php
-                    if ( $cfg['orderto'] == 'desc' ) {
-                        echo 'selected';
-                    }
-                                ?>><?php echo $_LANG['AD_BY_DECREMENT']; ?></option>
+                        if ( $cfg['orderto'] == 'desc' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_DECREMENT']; ?></option>
                         <option value="asc" <?php
-                                if ( $cfg['orderto'] == 'asc' ) {
-                                    echo 'selected';
-                                }
-                                ?>><?php echo $_LANG['AD_BY_INCREMENT']; ?></option>
+                        if ( $cfg['orderto'] == 'asc' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_INCREMENT']; ?></option>
                     </select></td>
             </tr>
             <tr>
                 <td><strong><?php echo $_LANG['AD_SHOW_LINKS_LATEST']; ?>: </strong></td>
                 <td>
                     <label><input name="showlat" type="radio" value="1" <?php
-                    if ( $cfg['showlat'] ) {
-                        echo 'checked="checked"';
-                    }
-                                ?>/> <?php echo $_LANG['YES']; ?></label>
+                        if ( $cfg['showlat'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?>/> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="showlat" type="radio" value="0" <?php
-                                  if ( !$cfg['showlat'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?>/> <?php echo $_LANG['NO']; ?></label>
+                        if ( !$cfg['showlat'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?>/> <?php echo $_LANG['NO']; ?></label>
                 </td>
             </tr>
             <tr>
@@ -172,15 +172,15 @@ if ( $opt == 'config' ) {
                     <span class="hinttext"><?php echo $_LANG['AD_WATERMARK_PHOTOS_HINT']; ?> "<a href="/images/watermark.png" target="_blank">/images/watermark.png</a>"</span></td>
                 <td>
                     <label><input name="watermark" type="radio" value="1" <?php
-                    if ( $cfg['watermark'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?>/> <?php echo $_LANG['YES']; ?></label>
+                        if ( $cfg['watermark'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?>/> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="watermark" type="radio" value="0" <?php
-                                  if ( !$cfg['watermark'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?>/> <?php echo $_LANG['NO']; ?>	</label>  				  </td>
+                        if ( !$cfg['watermark'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?>/> <?php echo $_LANG['NO']; ?>	</label>  				  </td>
             </tr>
             <tr>
                 <td colspan="2">
@@ -200,15 +200,15 @@ if ( $opt == 'config' ) {
                 <td><strong><?php echo $_LANG['AD_USER_SEO_ACCESS']; ?> </strong></td>
                 <td>
                     <label><input name="seo_user_access" type="radio" value="1" <?php
-                    if ( $cfg['seo_user_access'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( $cfg['seo_user_access'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="seo_user_access" type="radio" value="0"  <?php
-                                  if ( !$cfg['seo_user_access'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?> </label>
+                        if ( !$cfg['seo_user_access'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?> </label>
                 </td>
             </tr>
         </table>
@@ -426,13 +426,12 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
     <script type="text/javascript">
         function showMapMarker() {
             var file = $('select[name=iconurl]').val();
+
             if (file) {
                 $('#marker_demo').attr('src', '/images/photos/small/' + file).fadeIn();
-            }
-            else {
+            } else {
                 $('#marker_demo').hide();
             }
-
         }
     </script>
 
@@ -446,14 +445,14 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
             <tr>
                 <td valign="top"><?php echo $_LANG['AD_ALBUM_PARENT']; ?>:</td>
                 <td valign="top">
-    <?php $rootid = $inDB->get_field('cms_photo_albums', "parent_id=0 AND NSDiffer=''", 'id'); ?>
+                    <?php $rootid = $inDB->get_field('cms_photo_albums', "parent_id=0 AND NSDiffer=''", 'id'); ?>
                     <select name="parent_id" size="8" id="parent_id" style="width:285px">
                         <option value="<?php echo $rootid; ?>" <?php
-                if ( @$mod['parent_id'] == $rootid || !isset($mod['parent_id']) ) {
-                    echo 'selected';
-                }
-    ?>><?php echo $_LANG['AD_ALBUM_ROOT']; ?></option>
-                        <?php
+                        if ( @$mod['parent_id'] == $rootid || !isset($mod['parent_id']) ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_ALBUM_ROOT']; ?></option>
+                                <?php
                                 if ( isset($mod['parent_id']) ) {
                                     echo $inCore->getListItemsNS('cms_photo_albums', $mod['parent_id']);
                                 }
@@ -468,75 +467,75 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td><?php echo $_LANG['AD_ALBUM_POST']; ?>?</td>
                 <td>
                     <label><input name="published" type="radio" value="1" <?php
-                            if ( @$mod['published'] ) {
-                                echo 'checked="checked"';
-                            }
-                                ?> /> <?php echo $_LANG['YES']; ?></label>
+                        if ( @$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="published" type="radio" value="0"  <?php
-                                  if ( @!$mod['published'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?></label>
+                        if ( @!$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?></label>
                 </td>
             </tr>
             <tr>
                 <td><?php echo $_LANG['AD_SHOW_DATES_COMMENTS']; ?>?</td>
                 <td>
                     <label><input name="showdate" type="radio" value="1" <?php
-                    if ( @$mod['showdate'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /> <?php echo $_LANG['YES']; ?></label>
+                        if ( @$mod['showdate'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="showdate" type="radio" value="0"  <?php
-                                  if ( @!$mod['showdate'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?></label>
+                        if ( @!$mod['showdate'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?></label>
                 </td>
             </tr>
             <tr>
                 <td valign="top"><?php echo $_LANG['AD_SHOW_TAGS']; ?>:</td>
                 <td valign="top">
                     <label><input name="showtags" type="radio" value="1" checked="checked" <?php
-                    if ( @$mod['showtags'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /> <?php echo $_LANG['YES']; ?></label>
+                        if ( @$mod['showtags'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="showtags" type="radio" value="0"  <?php
-                                  if ( @!$mod['showtags'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?></label>
+                        if ( @!$mod['showtags'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?></label>
                 </td>
             </tr>
             <tr>
                 <td valign="top"><?php echo $_LANG['AD_SHOW_CODE_FORUM']; ?>:</td>
                 <td valign="top">
                     <label><input name="bbcode" type="radio" value="1" checked="checked" <?php
-                    if ( @$mod['bbcode'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /> <?php echo $_LANG['YES']; ?></label>
+                        if ( @$mod['bbcode'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="bbcode" type="radio" value="0"  <?php
-                                  if ( @!$mod['bbcode'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?></label>
+                        if ( @!$mod['bbcode'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?></label>
                 </td>
             </tr>
             <tr>
                 <td valign="top"><?php echo $_LANG['AD_COMMENTS_ALBUM']; ?>:</td>
                 <td valign="top">
                     <label><input name="is_comments" type="radio" value="1" checked="checked" <?php
-                    if ( @$mod['is_comments'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /> <?php echo $_LANG['YES']; ?></label>
+                        if ( @$mod['is_comments'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="is_comments" type="radio" value="0"  <?php
-                                  if ( @!$mod['is_comments'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?></label>
+                        if ( @!$mod['is_comments'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?></label>
                 </td>
             </tr>
             <tr>
@@ -544,37 +543,37 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td>
                     <select name="orderby" id="orderby" style="width:285px">
                         <option value="title" <?php
-                    if ( @$mod['orderby'] == 'title' ) {
-                        echo 'selected';
-                    }
-                                  ?>><?php echo $_LANG['AD_BY_ALPHABET']; ?></option>
+                        if ( @$mod['orderby'] == 'title' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_ALPHABET']; ?></option>
                         <option value="pubdate" <?php
-                                if ( @$mod['orderby'] == 'pubdate' ) {
-                                    echo 'selected';
-                                }
-                                ?>><?php echo $_LANG['AD_BY_CALENDAR']; ?></option>
+                        if ( @$mod['orderby'] == 'pubdate' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_CALENDAR']; ?></option>
                         <option value="rating" <?php
-                                if ( @$mod['orderby'] == 'rating' ) {
-                                    echo 'selected';
-                                }
-                                ?>><?php echo $_LANG['AD_BY_RATING']; ?></option>
+                        if ( @$mod['orderby'] == 'rating' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_RATING']; ?></option>
                         <option value="hits" <?php
-                                if ( @$mod['orderby'] == 'hits' ) {
-                                    echo 'selected';
-                                }
-                                ?>><?php echo $_LANG['AD_BY_VIEWS']; ?></option>
+                        if ( @$mod['orderby'] == 'hits' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_VIEWS']; ?></option>
                     </select>
                     <select name="orderto" id="orderto" style="width:285px">
                         <option value="desc" <?php
-                    if ( @$mod['orderto'] == 'desc' ) {
-                        echo 'selected';
-                    }
-                                ?>><?php echo $_LANG['AD_BY_DECREMENT']; ?></option>
+                        if ( @$mod['orderto'] == 'desc' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_DECREMENT']; ?></option>
                         <option value="asc" <?php
-                                if ( @$mod['orderto'] == 'asc' ) {
-                                    echo 'selected';
-                                }
-                                ?>><?php echo $_LANG['AD_BY_INCREMENT']; ?></option>
+                        if ( @$mod['orderto'] == 'asc' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_INCREMENT']; ?></option>
                     </select>
                 </td>
             </tr>
@@ -583,15 +582,15 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td>
                     <select name="showtype" id="showtype" style="width:285px">
                         <option value="thumb" <?php
-                    if ( @$mod['showtype'] == 'thumb' ) {
-                        echo 'selected';
-                    }
-                                ?>><?php echo $_LANG['AD_GALLERY']; ?></option>
+                        if ( @$mod['showtype'] == 'thumb' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_GALLERY']; ?></option>
                         <option value="lightbox" <?php
-                                if ( @$mod['showtype'] == 'lightbox' ) {
-                                    echo 'selected';
-                                }
-                                ?>><?php echo $_LANG['AD_GALLERY_LIGHTBOX']; ?></option>
+                        if ( @$mod['showtype'] == 'lightbox' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_GALLERY_LIGHTBOX']; ?></option>
                     </select>
                 </td>
             </tr>
@@ -606,20 +605,20 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td>
                     <select name="public" id="select" style="width:285px">
                         <option value="0" <?php
-                    if ( @$mod['public'] == '0' ) {
-                        echo 'selected';
-                    }
-                                ?>><?php echo $_LANG['AD_PROCHBITED']; ?></option>
+                        if ( @$mod['public'] == '0' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_PROCHBITED']; ?></option>
                         <option value="1" <?php
-                                if ( @$mod['public'] == '1' ) {
-                                    echo 'selected';
-                                }
-                                ?>><?php echo $_LANG['AD_FROM_PREMODERATION']; ?></option>
+                        if ( @$mod['public'] == '1' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_FROM_PREMODERATION']; ?></option>
                         <option value="2" <?php
-                                if ( @$mod['public'] == '2' ) {
-                                    echo 'selected';
-                                }
-                                ?>><?php echo $_LANG['AD_WITHOUT_PREMODERATION']; ?></option>
+                        if ( @$mod['public'] == '2' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_WITHOUT_PREMODERATION']; ?></option>
                     </select>
                 </td>
             </tr>
@@ -633,30 +632,30 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td><?php echo $_LANG['AD_FORM_SORTING']; ?>:</td>
                 <td>
                     <label><input name="orderform" type="radio" value="1" checked="checked" <?php
-                    if ( @$mod['orderform'] ) {
-                        echo 'checked="checked"';
-                    }
-                                ?> /> <?php echo $_LANG['SHOW']; ?></label>
+                        if ( @$mod['orderform'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['SHOW']; ?></label>
                     <label><input name="orderform" type="radio" value="0"  <?php
-                                  if ( @!$mod['orderform'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['HIDE']; ?></label>
+                        if ( @!$mod['orderform'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['HIDE']; ?></label>
                 </td>
             </tr>
             <tr>
                 <td><?php echo $_LANG['AD_ALBUM_NAVIGATTING']; ?>:</td>
                 <td>
                     <label><input name="nav" type="radio" value="1" <?php
-                    if ( @$mod['nav'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /> <?php echo $_LANG['YES']; ?></label>
+                        if ( @$mod['nav'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="nav" type="radio" value="0"  <?php
-                                  if ( @!$mod['nav'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?></label>
+                        if ( @!$mod['nav'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?></label>
                 </td>
             </tr>
             <tr>
@@ -679,15 +678,15 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                             <td width="100" align="center" valign="middle" style="background-color:#EBEBEB"><?php echo $_LANG['AD_PHOTOS_SQUARE']; ?>:</td>
                             <td width="115" align="center" valign="middle" style="background-color:#EBEBEB">
                                 <label><input name="thumbsqr" type="radio" value="1" checked="checked" <?php
-                    if ( @$mod['thumbsqr'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /> <?php echo $_LANG['YES']; ?> </label>
+                                    if ( @$mod['thumbsqr'] ) {
+                                        echo 'checked="checked"';
+                                    }
+                                    ?> /> <?php echo $_LANG['YES']; ?> </label>
                                 <label><input name="thumbsqr" type="radio" value="0"  <?php
-                                              if ( @!$mod['thumbsqr'] ) {
-                                                  echo 'checked="checked"';
-                                              }
-                                              ?> /><?php echo $_LANG['NO']; ?> </label>
+                                    if ( @!$mod['thumbsqr'] ) {
+                                        echo 'checked="checked"';
+                                    }
+                                    ?> /><?php echo $_LANG['NO']; ?> </label>
                             </td>
                         </tr>
                     </table>
@@ -699,12 +698,12 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                     <input class="uispin" name="thumb2" type="text" id="thumb2" size="3" value="<?php echo @$mod['thumb2']; ?>"/> <?php echo $_LANG['AD_PX']; ?>.
                 </td>
             </tr>
-    <?php if ( $opt == 'edit_album' ) { ?>
+            <?php if ( $opt == 'edit_album' ) { ?>
                 <tr>
                     <td valign="top"><?php echo $_LANG['AD_MINI_SKETCH']; ?>:<br />
-        <?php if ( !empty($mod['iconurl']) && file_exists(PATH . '/images/photos/small/' . $mod['iconurl']) ) { ?>
+                        <?php if ( !empty($mod['iconurl']) && file_exists(PATH . '/images/photos/small/' . $mod['iconurl']) ) { ?>
                             <img id="marker_demo" src="/images/photos/small/<?php echo $mod['iconurl']; ?>">
-                        <?php
+                            <?php
                         }
                         else {
                             ?>
@@ -724,7 +723,7 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                                 }
                                 ?>
                             </select>
-                        <?php
+                            <?php
                         }
                         else {
                             ?>

@@ -31,7 +31,8 @@ function cpPriceInput($item)
     return $html;
 }
 
-//=================================================================================================//
+//============================================================================//
+
 cmsCore::loadModel('catalog');
 $model = new cms_model_catalog();
 
@@ -48,8 +49,8 @@ $GLOBALS['cp_page_head'][] = '<script type="text/javascript" src="/admin/compone
 echo '<script>';
 echo cmsPage::getLangJS('AD_HOW_MANY_COPY');
 echo '</script>';
-//=================================================================================================//
-//=================================================================================================//
+
+//============================================================================//
 
 $toolmenu = array();
 
@@ -77,8 +78,7 @@ else {
 
 cpToolMenu($toolmenu);
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'go_import_xls' ) {
     if ( !cmsUser::checkCsrfToken() ) {
@@ -161,8 +161,7 @@ if ( $opt == 'go_import_xls' ) {
     cmsCore::redirect('?view=components&do=config&opt=list_items&id=' . $id);
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'saveprices' ) {
     $prices = cmsCore::request('price', 'array_str', array());
@@ -178,8 +177,7 @@ if ( $opt == 'saveprices' ) {
     cmsCore::redirectBack();
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'show_item' ) {
     if ( !isset($_REQUEST['item']) ) {
@@ -201,8 +199,7 @@ if ( $opt == 'show_item' ) {
     }
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'hide_item' ) {
     if ( !isset($_REQUEST['item']) ) {
@@ -219,16 +216,14 @@ if ( $opt == 'hide_item' ) {
     }
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'renew_item' ) {
     $model->renewItem(cmsCore::request('item_id', 'int', 0));
     cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list_items');
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'delete_item' ) {
 
@@ -237,8 +232,7 @@ if ( $opt == 'delete_item' ) {
     cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list_items');
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'submit_discount' || $opt == 'update_discount' ) {
     if ( !cmsUser::checkCsrfToken() ) {
@@ -269,8 +263,7 @@ if ( $opt == 'delete_discount' ) {
     cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list_discount');
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'show_cat' ) {
     $item_id = cmsCore::request('item_id', 'int');
@@ -288,8 +281,7 @@ if ( $opt == 'hide_cat' ) {
     exit;
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'submit_cat' || $opt == 'update_cat' ) {
     if ( !cmsUser::checkCsrfToken() ) {
@@ -320,6 +312,7 @@ if ( $opt == 'submit_cat' || $opt == 'update_cat' ) {
     $cat['pagetitle']   = cmsCore::request('pagetitle', 'str', '');
     $cat['meta_desc']   = cmsCore::request('meta_desc', 'str', '');
     $cat['meta_keys']   = cmsCore::request('meta_keys', 'str', '');
+
     if ( !is_numeric($cat['cost']) ) {
         $cat['cost'] = '';
     }
@@ -347,6 +340,7 @@ if ( $opt == 'submit_cat' || $opt == 'update_cat' ) {
         }
         $fstruct = cmsCore::arrayToYaml($fstruct);
     }
+
     $cat['fieldsstruct'] = $inDB->escape_string($fstruct);
 
     if ( $opt == 'submit_cat' ) {
@@ -372,8 +366,7 @@ if ( $opt == 'submit_cat' || $opt == 'update_cat' ) {
     cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list_cats');
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'delete_cat' ) {
     $model->deleteCategory(cmsCore::request('item_id', 'int', 0));
@@ -381,8 +374,7 @@ if ( $opt == 'delete_cat' ) {
     cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list_cats');
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'list_cats' ) {
     echo '<h3>' . $_LANG['AD_CATALOG_RUBRICS'] . '</h3>';
@@ -403,8 +395,7 @@ if ( $opt == 'list_cats' ) {
     cpListTable('cms_uc_cats', $fields, $actions, 'parent_id>0', 'NSLeft');
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'list_items' ) {
     $GLOBALS['cp_page_head'][] = '<script type="text/javascript" src="/admin/components/catalog/js/common.js"></script>';
@@ -438,8 +429,7 @@ if ( $opt == 'list_items' ) {
     cpListTable('cms_uc_items', $fields, $actions, $where);
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'list_discount' ) {
     cpAddPathway($_LANG['AD_COEFFICIENTS']);
@@ -458,9 +448,7 @@ if ( $opt == 'list_discount' ) {
 
     cpListTable('cms_uc_discount', $fields, $actions);
 }
-
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'copy_item' ) {
     $item_id = cmsCore::request('item_id', 'int', 0);
@@ -472,8 +460,7 @@ if ( $opt == 'copy_item' ) {
     cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list_items');
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'copy_cat' ) {
     $item_id = cmsCore::request('item_id', 'int', 0);
@@ -485,8 +472,7 @@ if ( $opt == 'copy_cat' ) {
     cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list_cats');
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'add_item' ) {
     echo '<h3>' . $_LANG['ADD_ITEM'] . '</h3>';
@@ -510,8 +496,7 @@ if ( $opt == 'add_item' ) {
     }
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
     require('../includes/jwtabs.php');
@@ -543,11 +528,11 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                     <div><input name="title" type="text" id="title" style="width:99%" value="<?php echo htmlspecialchars($mod['title']); ?>" /></div>
                     <div style="margin-top:10px"><strong><?php echo $_LANG['AD_ITEMS_FEATURES']; ?></strong></div>
                     <div><span class="hinttext">
-    <?php echo $_LANG['AD_FIELDS_NAME']; ?>
+                            <?php echo $_LANG['AD_FIELDS_NAME']; ?>
                         </span></div>
                     <div style="margin-top:2px;margin-bottom:12px">
                         <div><span class="hinttext">
-    <?php echo $_LANG['AD_WHAT_MAKING_AUTOSEARCH']; ?>
+                                <?php echo $_LANG['AD_WHAT_MAKING_AUTOSEARCH']; ?>
                             </span></div>
                     </div>
                     <div>
@@ -557,8 +542,7 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
 
                                 if (copy) {
                                     $('.field, .fformat, .flink').prop('disabled', true);
-                                }
-                                else {
+                                } else {
                                     $('.field, .fformat, .flink').prop('disabled', false);
                                 }
                             }
@@ -567,8 +551,7 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                                 if (fformat == 'text') {
                                     $('.flink' + id).prop('disabled', false)
                                             .css('color', '');
-                                }
-                                else {
+                                } else {
                                     $('.flink' + id).prop('disabled', true)
                                             .css('color', '#CCC');
                                 }
@@ -585,7 +568,7 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                     </div>
 
                     <table cellpadding="0" cellspacing="0" border="0" width="100%">
-    <?php for ( $f = 0; $f < 15; $f++ ) { ?>
+                        <?php for ( $f = 0; $f < 15; $f++ ) { ?>
                             <?php
                             if ( @$fstruct[$f] ) {
                                 if ( mb_strstr($fstruct[$f], '/~h~/') ) {
@@ -613,79 +596,79 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                                 <td width="105" style="padding-bottom:4px">
                                     <select name="fformat[]" class="fformat" id="fformat<?php echo $f; ?>" style="width:100px" onchange="toggleAutosearch('<?php echo $f; ?>');">
                                         <option value="text" <?php
-                    if ( @$fstruct[$f] ) {
-                        if ( $ftype == 'text' ) {
-                            echo 'selected';
-                        }
-                    }
-                            ?>><?php echo $_LANG['AD_TEXT']; ?></option>
+                                        if ( @$fstruct[$f] ) {
+                                            if ( $ftype == 'text' ) {
+                                                echo 'selected';
+                                            }
+                                        }
+                                        ?>><?php echo $_LANG['AD_TEXT']; ?></option>
                                         <option value="html" <?php
-                                                if ( @$fstruct[$f] ) {
-                                                    if ( $ftype == 'html' ) {
-                                                        echo 'selected';
-                                                    }
-                                                }
-                                                ?>><?php echo $_LANG['AD_HTML']; ?></option>
+                                        if ( @$fstruct[$f] ) {
+                                            if ( $ftype == 'html' ) {
+                                                echo 'selected';
+                                            }
+                                        }
+                                        ?>><?php echo $_LANG['AD_HTML']; ?></option>
                                         <option value="link" <?php
-                                                if ( @$fstruct[$f] ) {
-                                                    if ( $ftype == 'link' ) {
-                                                        echo 'selected';
-                                                    }
-                                                }
-                                                ?>><?php echo $_LANG['AD_LINK']; ?></option>
+                                        if ( @$fstruct[$f] ) {
+                                            if ( $ftype == 'link' ) {
+                                                echo 'selected';
+                                            }
+                                        }
+                                        ?>><?php echo $_LANG['AD_LINK']; ?></option>
                                     </select>
                                 </td>
                                 <td style="padding-bottom:4px">
                                     <input name="fstruct[]" class="field" type="text" id="fstruct[]" style="width:99%" <?php
-                                if ( @$fstruct[$f] ) {
-                                    echo 'value="' . htmlspecialchars(stripslashes($fstruct[$f])) . '"';
-                                }
-                                                ?> />
+                                    if ( @$fstruct[$f] ) {
+                                        echo 'value="' . htmlspecialchars(stripslashes($fstruct[$f])) . '"';
+                                    }
+                                    ?> />
                                 </td>
                                 <td width="70" align="right" style="padding-bottom:2px">
                                     <strong class="flink<?php echo $f; ?>"><?php echo $_LANG['AD_AUTOSEARCH']; ?>:</strong>
                                 </td>
                                 <td width="50" align="right">
                                     <label><input name="flink[<?php echo $f; ?>]" class="flink flink<?php echo $f; ?>" type="radio" value="1" <?php
-                            if ( @$fstruct[$f] ) {
-                                if ( $makelink ) {
-                                    echo 'checked="checked"';
-                                }
-                            }
-                                                ?>/> <?php echo $_LANG['YES']; ?> </label>
+                                        if ( @$fstruct[$f] ) {
+                                            if ( $makelink ) {
+                                                echo 'checked="checked"';
+                                            }
+                                        }
+                                        ?>/> <?php echo $_LANG['YES']; ?> </label>
                                 </td>
                                 <td width="50" align="right">
                                     <label><input name="flink[<?php echo $f; ?>]" class="flink flink<?php echo $f; ?>" type="radio" value="0" <?php
-                                if ( @$fstruct[$f] ) {
-                                    if ( !$makelink ) {
-                                        echo 'checked="checked"';
-                                    }
-                                }
-                                else {
-                                    echo 'checked="checked"';
-                                }
-                                                ?>/> <?php echo $_LANG['NO']; ?> </label>
+                                        if ( @$fstruct[$f] ) {
+                                            if ( !$makelink ) {
+                                                echo 'checked="checked"';
+                                            }
+                                        }
+                                        else {
+                                            echo 'checked="checked"';
+                                        }
+                                        ?>/> <?php echo $_LANG['NO']; ?> </label>
                                 </td>
                             </tr>
                             <script type="text/javascript">
                                 toggleAutosearch('<?php echo $f; ?>');
                             </script>
-    <?php } ?>
+                        <?php } ?>
                     </table>
 
                     <div style="margin-top:10px"><strong><?php echo $_LANG['AD_MAKING_HTML_FIELDS']; ?> <a href="index.php?view=filters" target="_blank"><?php echo $_LANG['AD_FILTERS']; ?></a>?</strong></div>
                     <div>
                         <select name="filters" id="filters" style="width:100%">
                             <option value="0" <?php
-    if ( !$mod['filters'] ) {
-        echo 'selected="selected"';
-    }
-    ?>><?php echo $_LANG['NO']; ?></option>
+                            if ( !$mod['filters'] ) {
+                                echo 'selected="selected"';
+                            }
+                            ?>><?php echo $_LANG['NO']; ?></option>
                             <option value="1" <?php
-                                    if ( $mod['filters'] ) {
-                                        echo 'selected="selected"';
-                                    }
-                                    ?>><?php echo $_LANG['YES']; ?></option>
+                            if ( $mod['filters'] ) {
+                                echo 'selected="selected"';
+                            }
+                            ?>><?php echo $_LANG['YES']; ?></option>
                         </select>
                     </div>
 
@@ -697,30 +680,30 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                 <!-- боковая ячейка -->
                 <td width="300" valign="top" style="background:#ECECEC;">
 
-    <?php ob_start(); ?>
+                    <?php ob_start(); ?>
 
                     {tab=<?php echo $_LANG['AD_TAB_PUBLISH']; ?>}
 
                     <table width="100%" cellpadding="0" cellspacing="0" border="0" class="checklist">
                         <tr>
                             <td width="20"><input type="checkbox" name="published" id="published" value="1" <?php
-                if ( $mod['published'] || $do == 'add' ) {
-                    echo 'checked="checked"';
-                }
-    ?>/></td>
+                                if ( $mod['published'] || $do == 'add' ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/></td>
                             <td><label for="published"><strong><?php echo $_LANG['AD_IF_PUBLIC_CAT']; ?></strong></label></td>
                         </tr>
                     </table>
 
                     <div style="margin-top:7px">
                         <select name="parent_id" size="8" id="parent_id" style="width:99%;height:200px">
-    <?php $rootid = $inDB->get_field('cms_uc_cats', 'parent_id=0', 'id'); ?>
+                            <?php $rootid = $inDB->get_field('cms_uc_cats', 'parent_id=0', 'id'); ?>
                             <option value="<?php echo $rootid; ?>" <?php
                             if ( @$mod['parent_id'] == $rootid || !isset($mod['parent_id']) ) {
                                 echo 'selected';
                             }
                             ?>><?php echo $_LANG['AD_CATALOG_ROOT']; ?></option>
-                            <?php
+                                    <?php
                                     if ( isset($mod['parent_id']) ) {
                                         echo $inCore->getListItemsNS('cms_uc_cats', $mod['parent_id']);
                                     }
@@ -734,25 +717,25 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                     <div style="margin-bottom:15px;margin-top:4px" onchange="toggleAdvert()">
                         <select name="view_type" id="view_type" style="width:99%">
                             <option value="list" <?php
-                                if ( @$mod['view_type'] == 'list' ) {
-                                    echo 'selected';
-                                }
-                                    ?>><?php echo $_LANG['AD_LIST']; ?></option>
+                            if ( @$mod['view_type'] == 'list' ) {
+                                echo 'selected';
+                            }
+                            ?>><?php echo $_LANG['AD_LIST']; ?></option>
                             <option value="thumb" <?php
-                                    if ( @$mod['view_type'] == 'thumb' ) {
-                                        echo 'selected';
-                                    }
-                                    ?>><?php echo $_LANG['AD_GALERY']; ?></option>
+                            if ( @$mod['view_type'] == 'thumb' ) {
+                                echo 'selected';
+                            }
+                            ?>><?php echo $_LANG['AD_GALERY']; ?></option>
                             <option value="shop" <?php
-                                    if ( @$mod['view_type'] == 'shop' ) {
-                                        echo 'selected';
-                                    }
-                                    ?>><?php echo $_LANG['AD_SHOP']; ?></option>
+                            if ( @$mod['view_type'] == 'shop' ) {
+                                echo 'selected';
+                            }
+                            ?>><?php echo $_LANG['AD_SHOP']; ?></option>
                         </select>
                     </div>
 
                     <div class="advert" id="catalog_advert" style="line-height:16px;<?php if ( $mod['view_type'] != 'shop' ) { ?>display:none<?php } ?>">
-    <?php echo $_LANG['AD_ALSO']; ?> <a href="http://www.instantcms.ru/blogs/InstantSoft/professionalnyi-magazin-dlja-InstantCMS.html" target="_blank"><?php echo $_LANG['AD_ISHOP']; ?></a>
+                        <?php echo $_LANG['AD_ALSO']; ?> <a href="http://www.instantcms.ru/blogs/InstantSoft/professionalnyi-magazin-dlja-InstantCMS.html" target="_blank"><?php echo $_LANG['AD_ISHOP']; ?></a>
                     </div>
 
                     <script type="text/javascript">toggleAdvert();</script>
@@ -761,42 +744,42 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                     <table width="100%" cellpadding="0" cellspacing="0" border="0" class="checklist">
                         <tr>
                             <td width="20"><input type="checkbox" name="showmore" id="showmore" value="1" <?php
-    if ( $mod['showmore'] ) {
-        echo 'checked="checked"';
-    }
-    ?>/></td>
+                                if ( $mod['showmore'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/></td>
                             <td><label for="showmore"><?php echo $_LANG['AD_LINK_DETAILS']; ?></label></td>
                         </tr>
                         <tr>
                             <td width="20"><input type="checkbox" name="is_ratings" id="is_ratings" value="1" <?php
-                            if ( $mod['is_ratings'] ) {
-                                echo 'checked="checked"';
-                            }
-    ?>/></td>
+                                if ( $mod['is_ratings'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/></td>
                             <td><label for="is_ratings"><?php echo $_LANG['AD_ITEMS_RATING']; ?></label></td>
                         </tr>
                         <tr>
                             <td width="20"><input type="checkbox" name="showtags" id="showtags" value="1" <?php
-                            if ( $mod['showtags'] ) {
-                                echo 'checked="checked"';
-                            }
-    ?>/></td>
+                                if ( $mod['showtags'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/></td>
                             <td><label for="showtags"><?php echo $_LANG['AD_TAGS_VIEW']; ?></label></td>
                         </tr>
                         <tr>
                             <td width="20"><input type="checkbox" name="showsort" id="showsort" value="1" <?php
-                            if ( $mod['showsort'] ) {
-                                echo 'checked="checked"';
-                            }
-    ?>/></td>
+                                if ( $mod['showsort'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/></td>
                             <td><label for="showsort"><?php echo $_LANG['AD_SORT_VIEW']; ?></label></td>
                         </tr>
                         <tr>
                             <td width="20"><input type="checkbox" name="showabc" id="showabc" value="1" <?php
-                            if ( $mod['showabc'] ) {
-                                echo 'checked="checked"';
-                            }
-    ?>/></td>
+                                if ( $mod['showabc'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/></td>
                             <td><label for="showabc"><?php echo $_LANG['AD_ABC']; ?></label></td>
                         </tr>
                     </table>
@@ -809,13 +792,13 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                     </div>
                     <div>
                         <input class="uispin" name="fieldsshow" type="text" id="fieldsshow" style="width:100%" value="<?php
-                            if ( $opt == 'edit_cat' ) {
-                                echo $mod['fields_show'];
-                            }
-                            else {
-                                echo '10';
-                            }
-    ?>"/>
+                        if ( $opt == 'edit_cat' ) {
+                            echo $mod['fields_show'];
+                        }
+                        else {
+                            echo '10';
+                        }
+                        ?>"/>
                     </div>
 
                     <div style="margin-top:10px;">
@@ -827,39 +810,39 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                                 <td valign="top"  width="50%">
                                     <select name="orderby" id="orderby" style="width:100%">
                                         <option value="title" <?php
-                    if ( @$mod['orderby'] == 'title' ) {
-                        echo 'selected';
-                    }
-    ?>><?php echo $_LANG['AD_BY_ALPHABET']; ?></option>
+                                        if ( @$mod['orderby'] == 'title' ) {
+                                            echo 'selected';
+                                        }
+                                        ?>><?php echo $_LANG['AD_BY_ALPHABET']; ?></option>
                                         <option value="pubdate" <?php
-                                                if ( @$mod['orderby'] == 'pubdate' ) {
-                                                    echo 'selected';
-                                                }
-                                                ?>><?php echo $_LANG['AD_BY_CALENDAR']; ?></option>
+                                        if ( @$mod['orderby'] == 'pubdate' ) {
+                                            echo 'selected';
+                                        }
+                                        ?>><?php echo $_LANG['AD_BY_CALENDAR']; ?></option>
                                         <option value="rating" <?php
-                                                if ( @$mod['orderby'] == 'rating' ) {
-                                                    echo 'selected';
-                                                }
-                                                ?>><?php echo $_LANG['AD_BY_RATING']; ?></option>
+                                        if ( @$mod['orderby'] == 'rating' ) {
+                                            echo 'selected';
+                                        }
+                                        ?>><?php echo $_LANG['AD_BY_RATING']; ?></option>
                                         <option value="hits" <?php
-                                                if ( @$mod['orderby'] == 'hits' ) {
-                                                    echo 'selected';
-                                                }
-                                                ?>><?php echo $_LANG['AD_BY_VIEWS']; ?></option>
+                                        if ( @$mod['orderby'] == 'hits' ) {
+                                            echo 'selected';
+                                        }
+                                        ?>><?php echo $_LANG['AD_BY_VIEWS']; ?></option>
                                     </select>
                                 </td>
                                 <td valign="top" style="padding-left:5px">
                                     <select name="orderto" id="orderto" style="width:100%">
                                         <option value="desc" <?php
-                                    if ( @$mod['orderto'] == 'desc' ) {
-                                        echo 'selected';
-                                    }
-                                                ?>><?php echo $_LANG['AD_BY_DECREMENT']; ?></option>
+                                        if ( @$mod['orderto'] == 'desc' ) {
+                                            echo 'selected';
+                                        }
+                                        ?>><?php echo $_LANG['AD_BY_DECREMENT']; ?></option>
                                         <option value="asc" <?php
-                                                if ( @$mod['orderto'] == 'asc' ) {
-                                                    echo 'selected';
-                                                }
-                                                ?>><?php echo $_LANG['AD_BY_INCREMENT']; ?></option>
+                                        if ( @$mod['orderto'] == 'asc' ) {
+                                            echo 'selected';
+                                        }
+                                        ?>><?php echo $_LANG['AD_BY_INCREMENT']; ?></option>
                                     </select>
                                 </td>
                             </tr>
@@ -871,13 +854,13 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                     </div>
                     <div>
                         <input class="uispin" name="perpage" type="text" id="perpage" style="width:100%" value="<?php
-                                    if ( $opt == 'edit_cat' ) {
-                                        echo $mod['perpage'];
-                                    }
-                                    else {
-                                        echo '20';
-                                    }
-                                                ?>"/>
+                        if ( $opt == 'edit_cat' ) {
+                            echo $mod['perpage'];
+                        }
+                        else {
+                            echo '20';
+                        }
+                        ?>"/>
                     </div>
 
                     <div style="margin-top:10px;">
@@ -886,15 +869,15 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                     <div>
                         <select name="shownew" id="shownew" style="width:100%">
                             <option value="1" <?php
-                    if ( $mod['shownew'] ) {
-                        echo 'selected="selected"';
-                    }
-                                                ?>><?php echo $_LANG['YES']; ?></option>
+                            if ( $mod['shownew'] ) {
+                                echo 'selected="selected"';
+                            }
+                            ?>><?php echo $_LANG['YES']; ?></option>
                             <option value="0" <?php
-                                    if ( !$mod['shownew'] ) {
-                                        echo 'selected="selected"';
-                                    }
-                                    ?>><?php echo $_LANG['NO']; ?></option>
+                            if ( !$mod['shownew'] ) {
+                                echo 'selected="selected"';
+                            }
+                            ?>><?php echo $_LANG['NO']; ?></option>
                         </select>
                     </div>
 
@@ -910,20 +893,20 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                                 <td valign="top">
                                     <select name="int_2" id="int_2" style="width:100%">
                                         <option value="HOUR"  <?php
-                        if ( @mb_strstr($mod['newint'], 'HOUR') ) {
-                            echo 'selected';
-                        }
-                                    ?>><?php echo $_LANG['HOUR10']; ?></option>
+                                        if ( @mb_strstr($mod['newint'], 'HOUR') ) {
+                                            echo 'selected';
+                                        }
+                                        ?>><?php echo $_LANG['HOUR10']; ?></option>
                                         <option value="DAY" <?php
-                                                if ( @mb_strstr($mod['newint'], 'DAY') ) {
-                                                    echo 'selected';
-                                                }
-                                                ?>><?php echo $_LANG['DAY10']; ?></option>
+                                        if ( @mb_strstr($mod['newint'], 'DAY') ) {
+                                            echo 'selected';
+                                        }
+                                        ?>><?php echo $_LANG['DAY10']; ?></option>
                                         <option value="MONTH" <?php
-                                                if ( @mb_strstr($mod['newint'], 'MONTH') ) {
-                                                    echo 'selected';
-                                                }
-                                                ?>><?php echo $_LANG['MONTH10']; ?></option>
+                                        if ( @mb_strstr($mod['newint'], 'MONTH') ) {
+                                            echo 'selected';
+                                        }
+                                        ?>><?php echo $_LANG['MONTH10']; ?></option>
                                     </select>
                                 </td>
                             </tr>
@@ -958,20 +941,20 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                     <table width="100%" cellpadding="0" cellspacing="0" border="0" class="checklist" style="margin-top:5px">
                         <tr>
                             <td width="20">
-    <?php
-    if ( $opt == 'edit_cat' ) {
+                                <?php
+                                if ( $opt == 'edit_cat' ) {
 
-        $sql2    = "SELECT * FROM cms_uc_cats_access WHERE cat_id = " . $mod['id'];
-        $result2 = $inDB->query($sql2);
-        $ord     = array();
+                                    $sql2    = "SELECT * FROM cms_uc_cats_access WHERE cat_id = " . $mod['id'];
+                                    $result2 = $inDB->query($sql2);
+                                    $ord     = array();
 
-        if ( $inDB->num_rows($result2) ) {
-            while ( $r = $inDB->fetch_assoc($result2) ) {
-                $ord[] = $r['group_id'];
-            }
-        }
-    }
-    ?>
+                                    if ( $inDB->num_rows($result2) ) {
+                                        while ( $r = $inDB->fetch_assoc($result2) ) {
+                                            $ord[] = $r['group_id'];
+                                        }
+                                    }
+                                }
+                                ?>
                                 <input name="is_public" type="checkbox" id="is_public" onclick="checkGroupList()" value="1" <?php
                                 if ( @$mod['is_public'] ) {
                                     echo 'checked="checked"';
@@ -983,7 +966,7 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                     </table>
                     <div style="padding:5px">
                         <span class="hinttext">
-    <?php echo $_LANG['AD_IF_ENABLE']; ?>
+                            <?php echo $_LANG['AD_IF_ENABLE']; ?>
                         </span>
                     </div>
 
@@ -991,66 +974,66 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                         <div>
                             <strong><?php echo $_LANG['AD_ALLOW_GROUPS']; ?></strong><br />
                             <span class="hinttext">
-    <?php echo $_LANG['AD_SELECT_MULTIPLE_CTRL']; ?>
+                                <?php echo $_LANG['AD_SELECT_MULTIPLE_CTRL']; ?>
                             </span>
                         </div>
                         <div>
-    <?php
-    echo '<select style="width: 99%" name="showfor[]" id="showin" size="6" multiple="multiple" ' . (@$mod['is_public'] ? '' : 'disabled="disabled"') . '>';
+                            <?php
+                            echo '<select style="width: 99%" name="showfor[]" id="showin" size="6" multiple="multiple" ' . (@$mod['is_public'] ? '' : 'disabled="disabled"') . '>';
 
-    $sql    = "SELECT * FROM cms_user_groups";
-    $result = $inDB->query($sql);
+                            $sql    = "SELECT * FROM cms_user_groups";
+                            $result = $inDB->query($sql);
 
-    if ( $inDB->num_rows($result) ) {
-        while ( $item = $inDB->fetch_assoc($result) ) {
-            if ( $item['alias'] != 'guest' ) {
-                echo '<option value="' . $item['id'] . '"';
-                if ( $opt == 'edit_cat' ) {
-                    if ( inArray($ord, $item['id']) ) {
-                        echo 'selected';
-                    }
-                }
+                            if ( $inDB->num_rows($result) ) {
+                                while ( $item = $inDB->fetch_assoc($result) ) {
+                                    if ( $item['alias'] != 'guest' ) {
+                                        echo '<option value="' . $item['id'] . '"';
+                                        if ( $opt == 'edit_cat' ) {
+                                            if ( inArray($ord, $item['id']) ) {
+                                                echo 'selected';
+                                            }
+                                        }
 
-                echo '>';
-                echo $item['title'] . '</option>';
-            }
-        }
-    }
+                                        echo '>';
+                                        echo $item['title'] . '</option>';
+                                    }
+                                }
+                            }
 
-    echo '</select>';
-    ?>
+                            echo '</select>';
+                            ?>
                         </div>
                     </div>
 
-    <?php if ( IS_BILLING ) { ?>
+                    <?php if ( IS_BILLING ) { ?>
                         <div style="margin:5px">
                             <strong><?php echo $_LANG['AD_ITEM_COST']; ?></strong><br/>
                             <div style="color:gray"><?php echo $_LANG['AD_DEFAULT_COST']; ?></div>
                             <input type="text" name="cost" value="<?php echo $mod['cost']; ?>" style="width:50px"/> <?php echo $_LANG['BILLING_POINT10']; ?>
                         </div>
-    <?php } ?>
+                    <?php } ?>
 
                     <table width="100%" cellpadding="0" cellspacing="0" border="0" class="checklist" style="margin-top:5px">
                         <tr>
                             <td width="20">
                                 <input name="can_edit" type="checkbox" id="can_edit" onclick="" value="1" <?php
-    if ( @$mod['can_edit'] ) {
-        echo 'checked="checked"';
-    }
-    ?> />
+                                if ( @$mod['can_edit'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> />
                             </td>
                             <td><label for="can_edit"><strong><?php echo $_LANG['AD_ALLOW_EDIT']; ?></strong></label></td>
                         </tr>
                     </table>
                     <div style="padding:5px">
                         <span class="hinttext">
-    <?php echo $_LANG['AD_IF_ALLOW_EDIT']; ?>
+                            <?php echo $_LANG['AD_IF_ALLOW_EDIT']; ?>
                         </span>
                     </div>
 
                     {/tabs}
 
-    <?php echo jwTabs(ob_get_clean()); ?>
+                    <?php echo jwTabs(ob_get_clean()); ?>
 
                 </td>
 
@@ -1060,14 +1043,14 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
             <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>" />
             <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.history.back();"/>
             <input name="opt" type="hidden" id="opt" <?php
-    if ( $opt == 'add_cat' ) {
-        echo 'value="submit_cat"';
-    }
-    else {
-        echo 'value="update_cat"';
-    }
-    ?> />
-            <?php
+            if ( $opt == 'add_cat' ) {
+                echo 'value="submit_cat"';
+            }
+            else {
+                echo 'value="update_cat"';
+            }
+            ?> />
+                   <?php
                    if ( $opt == 'edit_cat' ) {
                        echo '<input name="item_id" type="hidden" value="' . $mod['id'] . '" />';
                    }
@@ -1078,8 +1061,7 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
     <?php
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'add_discount' || $opt == 'edit_discount' ) {
     if ( $opt == 'add_discount' ) {
@@ -1109,13 +1091,13 @@ if ( $opt == 'add_discount' || $opt == 'edit_discount' ) {
                 <td valign="top"><strong><?php echo $_LANG['AD_CAT_BOARD']; ?>:</strong></td>
                 <td valign="top">
                     <select name="cat_id" id="cat_id" style="width:250px">
-    <?php $rootid = 0; ?>
+                        <?php $rootid = 0; ?>
                         <option value="<?php echo $rootid; ?>" <?php
                         if ( @$mod['cat_id'] == $rootid || !isset($mod['cat_id']) ) {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_ALL_CAT']; ?></option>
-                        <?php
+                                <?php
                                 if ( isset($mod['cat_id']) ) {
                                     echo $inCore->getListItemsNS('cms_uc_cats', $mod['cat_id']);
                                 }
@@ -1134,42 +1116,42 @@ if ( $opt == 'add_discount' || $opt == 'edit_discount' ) {
                             if ( @$mod['sign'] == -1 ) {
                                 echo 'selected';
                             }
-                                ?>><?php echo $_LANG['AD_PRODUCT_DISCOUNT']; ?>)</option>
+                            ?>><?php echo $_LANG['AD_PRODUCT_DISCOUNT']; ?>)</option>
                             <option value="1" <?php
-                                    if ( @$mod['sign'] == 1 ) {
-                                        echo 'selected';
-                                    }
-                                    ?>><?php echo $_LANG['AD_PRODUCT_ALLOWANCE']; ?>)</option>
+                            if ( @$mod['sign'] == 1 ) {
+                                echo 'selected';
+                            }
+                            ?>><?php echo $_LANG['AD_PRODUCT_ALLOWANCE']; ?>)</option>
                             <option value="2" <?php
-                                    if ( @$mod['sign'] == 2 ) {
-                                        echo 'selected';
-                                    }
-                                    ?>><?php echo $_LANG['AD_ORDER_ALLOWANCE']; ?></option>
+                            if ( @$mod['sign'] == 2 ) {
+                                echo 'selected';
+                            }
+                            ?>><?php echo $_LANG['AD_ORDER_ALLOWANCE']; ?></option>
                             <option value="3" <?php
-                                    if ( @$mod['sign'] == 3 ) {
-                                        echo 'selected';
-                                    }
-                                    ?>><?php echo $_LANG['AD_ORDER_DISCOUNT']; ?></option>
+                            if ( @$mod['sign'] == 3 ) {
+                                echo 'selected';
+                            }
+                            ?>><?php echo $_LANG['AD_ORDER_DISCOUNT']; ?></option>
                         </select>
                     </label></td>
             </tr>
             <tr class="if_limit" <?php
-                        if ( $mod['sign'] != 3 ) {
-                            echo 'style="display:none"';
-                        }
-                                    ?>>
+            if ( $mod['sign'] != 3 ) {
+                echo 'style="display:none"';
+            }
+            ?>>
                 <td>
                     <strong><?php echo $_LANG['AD_MIN_COST']; ?> </strong>
                 </td>
                 <td valign="top">
                     <input name="if_limit" type="text" id="value" size="5" value="<?php
-            if ( $opt == 'edit_discount' ) {
-                echo $mod['if_limit'];
-            }
-            else {
-                echo '0';
-            }
-                                    ?>"/> <?php echo $_LANG['CURRENCY']; ?>
+                    if ( $opt == 'edit_discount' ) {
+                        echo $mod['if_limit'];
+                    }
+                    else {
+                        echo '0';
+                    }
+                    ?>"/> <?php echo $_LANG['CURRENCY']; ?>
                 </td>
             </tr>
             <tr>
@@ -1177,15 +1159,15 @@ if ( $opt == 'add_discount' || $opt == 'edit_discount' ) {
                 <td valign="top"><label>
                         <select name="unit" id="unit" style="width:200px">
                             <option value="%" <?php
-                if ( @$mod['unit'] == '%' ) {
-                    echo 'selected';
-                }
-                                    ?>><?php echo $_LANG['AD_PERCENT']; ?></option>
+                            if ( @$mod['unit'] == '%' ) {
+                                echo 'selected';
+                            }
+                            ?>><?php echo $_LANG['AD_PERCENT']; ?></option>
                             <option value="<?php echo $_LANG['CURRENCY']; ?>" <?php
-                                    if ( @$mod['unit'] == $_LANG['CURRENCY'] ) {
-                                        echo 'selected';
-                                    }
-                                    ?>><?php echo $_LANG['AD_CURRENCY_NAME']; ?></option>
+                            if ( @$mod['unit'] == $_LANG['CURRENCY'] ) {
+                                echo 'selected';
+                            }
+                            ?>><?php echo $_LANG['AD_CURRENCY_NAME']; ?></option>
                         </select>
                     </label></td>
             </tr>
@@ -1195,10 +1177,10 @@ if ( $opt == 'add_discount' || $opt == 'edit_discount' ) {
                 </td>
                 <td valign="top">
                     <input name="value" type="text" id="value" size="5" value="<?php
-                        if ( $opt == 'edit_discount' ) {
-                            echo $mod['value'];
-                        }
-                                    ?>"/>
+                    if ( $opt == 'edit_discount' ) {
+                        echo $mod['value'];
+                    }
+                    ?>"/>
                 </td>
             </tr>
         </table>
@@ -1206,14 +1188,14 @@ if ( $opt == 'add_discount' || $opt == 'edit_discount' ) {
             <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>" />
             <input name="back3" type="button" id="back3" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components';"/>
             <input name="opt" type="hidden" id="do" <?php
-                if ( $opt == 'add_discount' ) {
-                    echo 'value="submit_discount"';
-                }
-                else {
-                    echo 'value="update_discount"';
-                }
-                                    ?> />
-            <?php
+            if ( $opt == 'add_discount' ) {
+                echo 'value="submit_discount"';
+            }
+            else {
+                echo 'value="update_discount"';
+            }
+            ?> />
+                   <?php
                    if ( $opt == 'edit_discount' ) {
                        echo '<input name="item_id" type="hidden" value="' . $mod['id'] . '" />';
                    }
@@ -1223,8 +1205,7 @@ if ( $opt == 'add_discount' || $opt == 'edit_discount' ) {
     <?php
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'saveconfig' ) {
     if ( !cmsUser::checkCsrfToken() ) {
@@ -1252,8 +1233,7 @@ if ( $opt == 'saveconfig' ) {
     cmsCore::redirectBack();
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'config' ) {
     cpAddPathway($_LANG['AD_SETTINGS']);
@@ -1272,15 +1252,15 @@ if ( $opt == 'config' ) {
                 <td><strong><?php echo $_LANG['AD_USER_NOTICE']; ?> </strong></td>
                 <td>
                     <label><input name="notice" type="radio" value="1" <?php
-    if ( @$cfg['notice'] ) {
-        echo 'checked="checked"';
-    }
-    ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( @$cfg['notice'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="notice" type="radio" value="0"  <?php
-                                  if ( @!$cfg['notice'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?> </label>
+                        if ( @!$cfg['notice'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?> </label>
                 </td>
             </tr>
         </table>
@@ -1289,62 +1269,62 @@ if ( $opt == 'config' ) {
                 <td><strong><?php echo $_LANG['AD_USERS_MODERATION']; ?> </strong></td>
                 <td width="260">
                     <label><input name="premod" type="radio" value="1" <?php
-                    if ( @$cfg['premod'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( @$cfg['premod'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="premod" type="radio" value="0"  <?php
-                                  if ( @!$cfg['premod'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?> </label>
+                        if ( @!$cfg['premod'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?> </label>
                 </td>
             </tr>
             <tr>
                 <td><strong><?php echo $_LANG['AD_ABOUT_NEW_ITEM']; ?> </strong></td>
                 <td width="260">
                     <label><input name="premod_msg" type="radio" value="1" <?php
-                    if ( @$cfg['premod_msg'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( @$cfg['premod_msg'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="premod_msg" type="radio" value="0"  <?php
-                                  if ( @!$cfg['premod_msg'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?> </label>
+                        if ( @!$cfg['premod_msg'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?> </label>
                 </td>
             </tr>
             <tr>
                 <td><strong><?php echo $_LANG['AD_AUTOCOMENT']; ?> </strong></td>
                 <td width="260">
                     <label><input name="is_comments" type="radio" value="1" <?php
-                    if ( @$cfg['is_comments'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( @$cfg['is_comments'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="is_comments" type="radio" value="0"  <?php
-                                  if ( @!$cfg['is_comments'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?> </label>
+                        if ( @!$cfg['is_comments'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?> </label>
                 </td>
             </tr>
             <tr>
                 <td><strong><?php echo $_LANG['AD_ENABLE_WATERMARK']; ?></strong>  <br />
-    <?php echo $_LANG['AD_IF_PUT_IMAGE']; ?> "<a href="/images/watermark.png" target="_blank">/images/watermark.png</a>"
+                    <?php echo $_LANG['AD_IF_PUT_IMAGE']; ?> "<a href="/images/watermark.png" target="_blank">/images/watermark.png</a>"
                 </td>
                 <td width="260">
                     <label><input name="watermark" type="radio" value="1" <?php
-    if ( @$cfg['watermark'] ) {
-        echo 'checked="checked"';
-    }
-    ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( @$cfg['watermark'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="watermark" type="radio" value="0"  <?php
-                                  if ( @!$cfg['watermark'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?> </label>
+                        if ( @!$cfg['watermark'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?> </label>
                 </td>
             </tr>
             <tr>
@@ -1375,15 +1355,15 @@ if ( $opt == 'config' ) {
                 <td><strong><?php echo $_LANG['AD_VIEW_RSS_ICON']; ?> </strong></td>
                 <td width="260">
                     <label><input name="is_rss" type="radio" value="1" <?php
-                    if ( @$cfg['is_rss'] ) {
-                        echo 'checked="checked"';
-                    }
-                                  ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( @$cfg['is_rss'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="is_rss" type="radio" value="0"  <?php
-                                  if ( @!$cfg['is_rss'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?> </label>
+                        if ( @!$cfg['is_rss'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?> </label>
                 </td>
             </tr>
         </table>
@@ -1403,8 +1383,7 @@ if ( $opt == 'config' ) {
     <?php
 }
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'import_xls' ) {
     cpAddPathway($_LANG['AD_EXCEL_IMPORT']);
@@ -1456,7 +1435,7 @@ if ( $opt == 'import_xls' ) {
                 </tr>
             </table>
             <p>
-        <?php echo $_LANG['AD_DATA_NOTE_INFO']; ?>
+                <?php echo $_LANG['AD_DATA_NOTE_INFO']; ?>
             </p>
             <table width="750" border="0" cellspacing="5" class="proptable">
                 <tr id="row_title">
@@ -1468,24 +1447,24 @@ if ( $opt == 'import_xls' ) {
                     <td width="90"><label><input type="checkbox" id="ignore_title" name="cells[title][ignore]" onclick="ignoreRow('title')" value="1"/> <?php echo $_LANG['AD_TEXT']; ?>: </label></td>
                     <td><input type="text" class="other" name="cells[title][other]" style="width:200px" disabled="disabled" /></td>
                 </tr>
-        <?php
-        $current = 0;
-        foreach ( $fstruct as $key => $value ) {
-            //strip special markups
-            if ( mb_strstr($value, '/~h~/') ) {
-                $value = str_replace('/~h~/', '', $value);
-            }
-            elseif ( mb_strstr($value, '/~l~/') ) {
-                $value = str_replace('/~l~/', '', $value);
-            }
-            else {
-                $ftype = 'text';
-            }
-            if ( mb_strstr($value, '/~m~/') ) {
-                $value = str_replace('/~m~/', '', $value);
-            }
-            //show field inputs
-            ?>
+                <?php
+                $current = 0;
+                foreach ( $fstruct as $key => $value ) {
+                    //strip special markups
+                    if ( mb_strstr($value, '/~h~/') ) {
+                        $value = str_replace('/~h~/', '', $value);
+                    }
+                    elseif ( mb_strstr($value, '/~l~/') ) {
+                        $value = str_replace('/~l~/', '', $value);
+                    }
+                    else {
+                        $ftype = 'text';
+                    }
+                    if ( mb_strstr($value, '/~m~/') ) {
+                        $value = str_replace('/~m~/', '', $value);
+                    }
+                    //show field inputs
+                    ?>
                     <tr id="row_<?php echo $current; ?>">
                         <td width=""><strong><?php echo stripslashes($value); ?>:</strong></td>
                         <td><?php echo $_LANG['AD_COLUMN']; ?>:</td>
@@ -1495,12 +1474,12 @@ if ( $opt == 'import_xls' ) {
                         <td><label><input type="checkbox" id="ignore_<?php echo $current; ?>" name="cells[<?php echo $current; ?>][ignore]" onclick="ignoreRow('<?php echo $current; ?>')" value="1" /> <?php echo $_LANG['AD_TEXT']; ?>: </label></td>
                         <td><input type="text" class="other" name="cells[<?php echo $current; ?>][other]" style="width:200px" disabled="disabled" /></td>
                     </tr>
-            <?php
-            $current++;
-        }
+                    <?php
+                    $current++;
+                }
 
-        if ( $cat['view_type'] == 'shop' ) {
-            ?>
+                if ( $cat['view_type'] == 'shop' ) {
+                    ?>
                     <tr id="row_price">
                         <td width=""><strong><?php echo $_LANG['PRICE']; ?>:</strong></td>
                         <td><?php echo $_LANG['AD_COLUMN']; ?>:</td>
@@ -1510,9 +1489,9 @@ if ( $opt == 'import_xls' ) {
                         <td><label><input type="checkbox" id="ignore_price" name="cells[price][ignore]" onclick="ignoreRow('price')" value="1"/> <?php echo $_LANG['AD_TEXT']; ?>: </label></td>
                         <td><input type="text" class="other" name="cells[price][other]" style="width:200px" disabled="disabled" /></td>
                     </tr>
-            <?php
-        }
-        ?>
+                    <?php
+                }
+                ?>
             </table>
 
             <p><?php echo $_LANG['AD_OTHER_PARAMETRS']; ?>:</p>
@@ -1534,7 +1513,7 @@ if ( $opt == 'import_xls' ) {
                         <label><input name="is_comments" type="radio" value="0" /> <?php echo $_LANG['NO']; ?> </label>
                     </td>
                 </tr>
-        <?php if ( $cat['view_type'] == 'shop' ) { ?>
+                <?php if ( $cat['view_type'] == 'shop' ) { ?>
                     <tr>
                         <td>
                             <strong><?php echo $_LANG['CAN_MANY']; ?>:</strong><br/>
@@ -1545,7 +1524,7 @@ if ( $opt == 'import_xls' ) {
                             <label><input name="canmany" type="radio" value="0" /> <?php echo $_LANG['NO']; ?> </label>
                         </td>
                     </tr>
-        <?php } ?>
+                <?php } ?>
                 <tr>
                     <td>
                         <strong><?php echo $_LANG['AD_ITEMS_TAGS']; ?></strong><br/>
@@ -1571,7 +1550,7 @@ if ( $opt == 'import_xls' ) {
                     </td>
                     <td>
                         <select name="user_id" style="width:300px">
-        <?php echo cmsUser::getUsersList(); ?>
+                            <?php echo cmsUser::getUsersList(); ?>
                         </select>
                     </td>
                 </tr>

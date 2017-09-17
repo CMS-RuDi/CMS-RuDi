@@ -324,7 +324,7 @@ function blogs()
         }
 
         //Генерируем панель со страницами и устанавливаем заголовки страниц и глубиномера
-        switch ($ownertype) {
+        switch ( $ownertype ) {
             case 'all': $inPage->setTitle($_LANG['ALL_BLOGS']);
                 $inPage->setDescription($_LANG['BLOGS'] . ' - ' . $_LANG['ALL_BLOGS']);
                 $inPage->addPathway($_LANG['ALL_BLOGS']);

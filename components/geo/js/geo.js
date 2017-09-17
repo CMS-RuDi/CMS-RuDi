@@ -28,8 +28,7 @@ $(function () {
 
             if ($('select[name=cities]').is(':visible') && $('select[name=cities]').val() > 0) {
                 $('#popup_ok').show();
-            }
-            else {
+            } else {
                 $('#popup_ok').hide();
             }
 
@@ -80,8 +79,7 @@ $(function () {
 
             if (id > 0) {
                 $('#popup_ok').show();
-            }
-            else {
+            } else {
                 $('#popup_ok').hide();
             }
 

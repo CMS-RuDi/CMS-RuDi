@@ -1101,7 +1101,7 @@ class cms_model_forum
 
         $poll['options'] = cmsCore::yamlToArray($poll['options']);
 
-        switch ($poll['options']['result']) {
+        switch ( $poll['options']['result'] ) {
             case 0:
                 $poll['options']['result_text'] = $_LANG['AVAILABLE_FOR_ALL'];
                 break;
@@ -1113,7 +1113,7 @@ class cms_model_forum
                 break;
         }
 
-        switch ($poll['options']['change']) {
+        switch ( $poll['options']['change'] ) {
             case 0:
                 $poll['options']['change_text'] = $_LANG['PROHIBITED'];
                 break;

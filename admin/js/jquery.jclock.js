@@ -6,100 +6,102 @@
  * Licensed under the MIT License:
  *   http://www.opensource.org/licenses/mit-license.php
  */
-(function($) {
+(function ($) {
 
-  $.fn.jclock = function(options) {
-    var version = '0.2.1';
+    $.fn.jclock = function (options) {
+        var version = '0.2.1';
 
-    // options
-    var opts = $.extend({}, $.fn.jclock.defaults, options);
-         
-    return this.each(function() {
-      $this = $(this);
-      $this.timerID = null;
-      $this.running = false;
+        // options
+        var opts = $.extend({}, $.fn.jclock.defaults, options);
 
-      var o = $.meta ? $.extend({}, opts, $this.data()) : opts;
+        return this.each(function () {
+            $this = $(this);
+            $this.timerID = null;
+            $this.running = false;
 
-      $this.timeNotation = o.timeNotation;
-      $this.am_pm = o.am_pm;
-      $this.utc = o.utc;
-      $this.utc_offset = o.utc_offset;
+            var o = $.meta ? $.extend({}, opts, $this.data()) : opts;
 
-      $this.css({
-        fontFamily: o.fontFamily,
-        fontSize: o.fontSize,
-        backgroundColor: o.background,
-        color: o.foreground
-      });
+            $this.timeNotation = o.timeNotation;
+            $this.am_pm = o.am_pm;
+            $this.utc = o.utc;
+            $this.utc_offset = o.utc_offset;
 
-      $.fn.jclock.startClock($this);
+            $this.css({
+                fontFamily: o.fontFamily,
+                fontSize: o.fontSize,
+                backgroundColor: o.background,
+                color: o.foreground
+            });
 
-    });
-  };
-       
-  $.fn.jclock.startClock = function(el) {
-    $.fn.jclock.stopClock(el);
-    $.fn.jclock.displayTime(el);
-  }
-  $.fn.jclock.stopClock = function(el) {
-    if(el.running) {
-      clearTimeout(el.timerID);
+            $.fn.jclock.startClock($this);
+
+        });
+    };
+
+    $.fn.jclock.startClock = function (el) {
+        $.fn.jclock.stopClock(el);
+        $.fn.jclock.displayTime(el);
     }
-    el.running = false;
-  }
-  $.fn.jclock.displayTime = function(el) {
-    var time = $.fn.jclock.getTime(el);
-    el.html(time);
-    el.timerID = setTimeout(function(){$.fn.jclock.displayTime(el)},1000);
-  }
-  $.fn.jclock.getTime = function(el) {
-    var now = new Date();
-    var hours, minutes, seconds;
-
-    if(el.utc == true) {
-      if(el.utc_offset != 0) {
-        now.setUTCHours(now.getUTCHours()+el.utc_offset);
-      }
-      hours = now.getUTCHours();
-      minutes = now.getUTCMinutes();
-      seconds = now.getUTCSeconds();
-    } else {
-      hours = now.getHours();
-      minutes = now.getMinutes();
-      seconds = now.getSeconds();
+    $.fn.jclock.stopClock = function (el) {
+        if (el.running) {
+            clearTimeout(el.timerID);
+        }
+        el.running = false;
     }
-
-    var am_pm_text = '';
-    (hours >= 12) ? am_pm_text = " P.M." : am_pm_text = " A.M.";
-
-    if (el.timeNotation == '12h') {
-      hours = ((hours > 12) ? hours - 12 : hours);
-    } else {
-      hours   = ((hours <  10) ? "0" : "") + hours;
+    $.fn.jclock.displayTime = function (el) {
+        var time = $.fn.jclock.getTime(el);
+        el.html(time);
+        el.timerID = setTimeout(function () {
+            $.fn.jclock.displayTime(el)
+        }, 1000);
     }
+    $.fn.jclock.getTime = function (el) {
+        var now = new Date();
+        var hours, minutes, seconds;
 
-    minutes = ((minutes <  10) ? "0" : "") + minutes;
-    seconds = ((seconds <  10) ? "0" : "") + seconds;
+        if (el.utc == true) {
+            if (el.utc_offset != 0) {
+                now.setUTCHours(now.getUTCHours() + el.utc_offset);
+            }
+            hours = now.getUTCHours();
+            minutes = now.getUTCMinutes();
+            seconds = now.getUTCSeconds();
+        } else {
+            hours = now.getHours();
+            minutes = now.getMinutes();
+            seconds = now.getSeconds();
+        }
 
-    var timeNow = hours + ":" + minutes + ":" + seconds;
-    if ( (el.timeNotation == '12h') && (el.am_pm == true) ) {
-     timeNow += am_pm_text;
-    }
+        var am_pm_text = '';
+        (hours >= 12) ? am_pm_text = " P.M." : am_pm_text = " A.M.";
 
-    return timeNow;
-  };
-       
-  // plugin defaults
-  $.fn.jclock.defaults = {
-    timeNotation: '24h',
-    am_pm: false,
-    utc: false,
-    fontFamily: '',
-    fontSize: '',
-    foreground: '',
-    background: '',
-    utc_offset: 0
-  };
+        if (el.timeNotation == '12h') {
+            hours = ((hours > 12) ? hours - 12 : hours);
+        } else {
+            hours = ((hours < 10) ? "0" : "") + hours;
+        }
+
+        minutes = ((minutes < 10) ? "0" : "") + minutes;
+        seconds = ((seconds < 10) ? "0" : "") + seconds;
+
+        var timeNow = hours + ":" + minutes + ":" + seconds;
+        if ((el.timeNotation == '12h') && (el.am_pm == true)) {
+            timeNow += am_pm_text;
+        }
+
+        return timeNow;
+    };
+
+    // plugin defaults
+    $.fn.jclock.defaults = {
+        timeNotation: '24h',
+        am_pm: false,
+        utc: false,
+        fontFamily: '',
+        fontSize: '',
+        foreground: '',
+        background: '',
+        utc_offset: 0
+    };
 
 })(jQuery);

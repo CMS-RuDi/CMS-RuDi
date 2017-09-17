@@ -281,7 +281,7 @@ class cms_model_comments
                 $comment['ip']                 = ($this->config['cmm_ip'] == 2 && $comment['ip']) ? $comment['ip'] : '';
             }
 
-            switch ($comment['gender']) {
+            switch ( $comment['gender'] ) {
                 case 'm': $comment['gender'] = $_LANG['COMMENTS_MALE'];
                     break;
                 case 'f': $comment['gender'] = $_LANG['COMMENTS_FEMALE'];

@@ -45,4 +45,3 @@ if ( !cmsUser::isAdminCan('admin/config', $adminAccess) ) {
 }
 
 @phpinfo();
-?>

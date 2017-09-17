@@ -43,8 +43,7 @@ class cms_model_board
     {
         $result = array();
 
-        switch ($target) {
-
+        switch ( $target ) {
             case 'boarditem': $item = $this->inDB->get_fields('cms_board_items', "id='{$target_id}'", 'title, obtype');
                 if ( !$item ) {
                     return false;
@@ -223,7 +222,7 @@ class cms_model_board
                         $s = '';
                     }
                     $padding = str_repeat('--', $node['NSLevel']) . ' ';
-                    $html .= '<option value="' . $node['id'] . '" ' . $s . '>' . $padding . $node['title'] . '</option>';
+                    $html    .= '<option value="' . $node['id'] . '" ' . $s . '>' . $padding . $node['title'] . '</option>';
                 }
             }
         }
@@ -239,7 +238,7 @@ class cms_model_board
         //подготовим условия
         $pub_where = ($show_all ? '1=1' : 'i.published = 1');
         $r_join    = $is_users ? " LEFT JOIN cms_users u ON u.id = i.user_id \n" : '';
-        $r_join .= $is_cats ? " INNER JOIN cms_board_cats cat ON cat.id = i.category_id" : '';
+        $r_join    .= $is_cats ? " INNER JOIN cms_board_cats cat ON cat.id = i.category_id" : '';
 
         $r_select = $is_users ? ', u.login, u.nickname' : '';
         $r_select .= $is_cats ? ', cat.title as cat_title, cat.obtypes' : '';
@@ -410,7 +409,7 @@ class cms_model_board
     {
         if ( $this->config['aftertime'] ) {
             $time_sql = '';
-            switch ($this->config['aftertime']) {
+            switch ( $this->config['aftertime'] ) {
                 case 'delete': $time_sql = "DELETE FROM cms_board_items WHERE DATEDIFF(NOW(), pubdate) > pubdays AND pubdays > 0";
                     break;
                 case 'hide': $time_sql = "UPDATE cms_board_items SET published = 0 WHERE DATEDIFF(NOW(), pubdate) > pubdays AND pubdays > 0";
@@ -535,7 +534,7 @@ class cms_model_board
                     $s = '';
                 }
                 $pretty = htmlspecialchars(icms_ucfirst($cat_city));
-                $html .= '<option value="' . $pretty . '" ' . $s . '>' . $pretty . '</option>';
+                $html   .= '<option value="' . $pretty . '" ' . $s . '>' . $pretty . '</option>';
             }
         }
 

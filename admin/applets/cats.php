@@ -227,7 +227,6 @@ function applet_cats()
         $category['seolink'] = cmsCore::generateCatSeoLink($category, 'cms_category', $model->config['is_url_cyrillic']);
 
         if ( $category['id'] ) {
-
             $inDB->update('cms_category', $category, $category['id']);
 
             if ( !cmsCore::request('is_access', 'int', 0) ) {
@@ -343,13 +342,12 @@ function applet_cats()
                         <div>
                             <div class="parent_notice" style="color:red;margin:4px 0px;display:none"><?php echo $_LANG['AD_ANOTHER_PARENT']; ?></div>
                             <select name="parent_id" size="12" id="parent_id" style="width:100%" onchange="if ($('option:selected', this).data('nsleft') >= '<?php echo $mod['NSLeft']; ?>' && $('option:selected', this).data('nsright') <= '<?php echo $mod['NSRight']; ?>') {
-                                                $('.parent_notice').show();
-                                                $('#add_mod').prop('disabled', true);
-                                            }
-                                            else {
-                                                $('.parent_notice').hide();
-                                                $('#add_mod').prop('disabled', false);
-                                            }">
+                                        $('.parent_notice').show();
+                                        $('#add_mod').prop('disabled', true);
+                                    } else {
+                                        $('.parent_notice').hide();
+                                        $('#add_mod').prop('disabled', false);
+                                    }">
                                         <?php $rootid = $inDB->getNsRootCatId('cms_category'); ?>
                                 <option value="<?php echo $rootid; ?>" <?php
                                 if ( @$mod['parent_id'] == $rootid || !isset($mod['parent_id']) ) {
@@ -808,8 +806,7 @@ function applet_cats()
                 id = $('select[name=album_id]').val();
                 if (id != 0) {
                     $('#con_photoalbum').fadeIn();
-                }
-                else {
+                } else {
                     $('#con_photoalbum').hide();
                 }
             }

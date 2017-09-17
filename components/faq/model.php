@@ -1,9 +1,5 @@
 <?php
 
-if ( !defined('VALID_CMS') ) {
-    die('ACCESS DENIED');
-}
-
 /*
  *                           InstantCMS v1.10.6
  *                        http://www.instantcms.ru/
@@ -26,7 +22,7 @@ class cms_model_faq
     {
         $result = array();
 
-        switch ($target) {
+        switch ( $target ) {
             case 'faq':
                 $item = $this->inDB->get_fields('cms_faq_quests', "id={$target_id}", 'quest');
 

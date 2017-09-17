@@ -99,15 +99,15 @@ cpCheckWritable('/images/users/photos/medium', 'folder');
                     <td><strong><?php echo $_LANG['AD_VIEV_PROFILES']; ?>: </strong></td>
                     <td width="230">
                         <label><input name="sw_guest" type="radio" value="1" <?php
-if ( $model->config['sw_guest'] ) {
-    echo 'checked="checked"';
-}
-?>/> <?php echo $_LANG['YES']; ?></label>
+                            if ( $model->config['sw_guest'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="sw_guest" type="radio" value="0" <?php
-                                      if ( !$model->config['sw_guest'] ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['NO']; ?></label>
+                            if ( !$model->config['sw_guest'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>
@@ -117,17 +117,17 @@ if ( $model->config['sw_guest'] ) {
                             if ( $model->config['sw_search'] == 1 ) {
                                 echo 'checked="checked"';
                             }
-                                      ?>/> <?php echo $_LANG['YES']; ?></label>
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="sw_search" type="radio" value="0" <?php
-                                      if ( !$model->config['sw_search'] ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['AD_YES_ONLY_VIEW']; ?></label>
+                            if ( !$model->config['sw_search'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['AD_YES_ONLY_VIEW']; ?></label>
                         <label><input name="sw_search" type="radio" value="2" <?php
-                                      if ( $model->config['sw_search'] == 2 ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['NO']; ?></label>
+                            if ( $model->config['sw_search'] == 2 ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>
@@ -137,12 +137,12 @@ if ( $model->config['sw_guest'] ) {
                             if ( $model->config['sw_comm'] ) {
                                 echo 'checked="checked"';
                             }
-                                      ?>/> <?php echo $_LANG['YES']; ?></label>
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="sw_comm" type="radio" value="0" <?php
-                                      if ( !$model->config['sw_comm'] ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['NO']; ?></label>
+                            if ( !$model->config['sw_comm'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>
@@ -152,12 +152,12 @@ if ( $model->config['sw_guest'] ) {
                             if ( $model->config['sw_forum'] ) {
                                 echo 'checked="checked"';
                             }
-                                      ?>/> <?php echo $_LANG['YES']; ?></label>
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="sw_forum" type="radio" value="0" <?php
-                                      if ( !$model->config['sw_forum'] ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['NO']; ?></label>
+                            if ( !$model->config['sw_forum'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>
@@ -167,12 +167,12 @@ if ( $model->config['sw_guest'] ) {
                             if ( $model->config['sw_wall'] ) {
                                 echo 'checked="checked"';
                             }
-                                      ?>/> <?php echo $_LANG['YES']; ?></label>
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="sw_wall" type="radio" value="0" <?php
-                                      if ( !$model->config['sw_wall'] ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['NO']; ?></label>
+                            if ( !$model->config['sw_wall'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>
@@ -182,12 +182,12 @@ if ( $model->config['sw_guest'] ) {
                             if ( $model->config['sw_blogs'] ) {
                                 echo 'checked="checked"';
                             }
-                                      ?>/> <?php echo $_LANG['YES']; ?></label>
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="sw_blogs" type="radio" value="0" <?php
-                                      if ( !$model->config['sw_blogs'] ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['NO']; ?></label>
+                            if ( !$model->config['sw_blogs'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>
@@ -197,12 +197,12 @@ if ( $model->config['sw_guest'] ) {
                             if ( $model->config['sw_board'] ) {
                                 echo 'checked="checked"';
                             }
-                                      ?>/> <?php echo $_LANG['YES']; ?></label>
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="sw_board" type="radio" value="0" <?php
-                                      if ( !$model->config['sw_board'] ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['NO']; ?></label>
+                            if ( !$model->config['sw_board'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>
@@ -212,12 +212,12 @@ if ( $model->config['sw_guest'] ) {
                             if ( $model->config['sw_msg'] ) {
                                 echo 'checked="checked"';
                             }
-                                      ?>/> <?php echo $_LANG['YES']; ?></label>
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="sw_msg" type="radio" value="0" <?php
-                                      if ( !$model->config['sw_msg'] ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['NO']; ?></label>
+                            if ( !$model->config['sw_msg'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>
@@ -236,22 +236,22 @@ if ( $model->config['sw_guest'] ) {
                             if ( mb_strstr($model->config['karmaint'], 'MINUTE') ) {
                                 echo 'selected="selected"';
                             }
-                                      ?>><?php echo $_LANG['MINUTE10']; ?></option>
+                            ?>><?php echo $_LANG['MINUTE10']; ?></option>
                             <option value="HOUR"  <?php
-                                    if ( mb_strstr($model->config['karmaint'], 'HOUR') ) {
-                                        echo 'selected="selected"';
-                                    }
-                                    ?>><?php echo $_LANG['HOUR10']; ?></option>
+                            if ( mb_strstr($model->config['karmaint'], 'HOUR') ) {
+                                echo 'selected="selected"';
+                            }
+                            ?>><?php echo $_LANG['HOUR10']; ?></option>
                             <option value="DAY" <?php
-                                    if ( mb_strstr($model->config['karmaint'], 'DAY') ) {
-                                        echo 'selected="selected"';
-                                    }
-                                    ?>><?php echo $_LANG['DAY10']; ?></option>
+                            if ( mb_strstr($model->config['karmaint'], 'DAY') ) {
+                                echo 'selected="selected"';
+                            }
+                            ?>><?php echo $_LANG['DAY10']; ?></option>
                             <option value="MONTH" <?php
-                                    if ( mb_strstr($model->config['karmaint'], 'MONTH') ) {
-                                        echo 'selected="selected"';
-                                    }
-                                    ?>><?php echo $_LANG['MONTH10']; ?></option>
+                            if ( mb_strstr($model->config['karmaint'], 'MONTH') ) {
+                                echo 'selected="selected"';
+                            }
+                            ?>><?php echo $_LANG['MONTH10']; ?></option>
                         </select>
                     </td>
                 </tr>
@@ -310,12 +310,12 @@ if ( $model->config['sw_guest'] ) {
                             if ( $model->config['sw_feed'] ) {
                                 echo 'checked="checked"';
                             }
-                                    ?>/> <?php echo $_LANG['YES']; ?></label>
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="sw_feed" type="radio" value="0" <?php
-                                      if ( !$model->config['sw_feed'] ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['NO']; ?></label>
+                            if ( !$model->config['sw_feed'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>
@@ -325,12 +325,12 @@ if ( $model->config['sw_guest'] ) {
                             if ( $model->config['sw_clubs'] ) {
                                 echo 'checked="checked"';
                             }
-                                      ?>/> <?php echo $_LANG['YES']; ?></label>
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="sw_clubs" type="radio" value="0" <?php
-                                      if ( !$model->config['sw_clubs'] ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['NO']; ?></label>
+                            if ( !$model->config['sw_clubs'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>
@@ -340,12 +340,12 @@ if ( $model->config['sw_guest'] ) {
                             if ( $model->config['sw_awards'] ) {
                                 echo 'checked="checked"';
                             }
-                                      ?>/> <?php echo $_LANG['YES']; ?></label>
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="sw_awards" type="radio" value="0" <?php
-                                      if ( !$model->config['sw_awards'] ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['NO']; ?></label>
+                            if ( !$model->config['sw_awards'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
             </table>
@@ -358,22 +358,22 @@ if ( $model->config['sw_guest'] ) {
                         <div><?php echo $_LANG['AD_FORMS_IN_PROFILES']; ?>: </div>
                         <p>
                             <select name="privforms[]" size="10" style="width:350px; border:solid 1px silver;" multiple="multiple">
-<?php
-$sql = "SELECT * FROM cms_forms";
-$rs  = $inDB->query($sql);
+                                <?php
+                                $sql = "SELECT * FROM cms_forms";
+                                $rs  = $inDB->query($sql);
 
-if ( $inDB->num_rows($rs) ) {
-    while ( $f = $inDB->fetch_assoc($rs) ) {
-        if ( in_array($f['id'], $model->config['privforms']) ) {
-            $selected = 'selected="selected"';
-        }
-        else {
-            $selected = '';
-        }
-        echo '<option value="' . $f['id'] . '" ' . $selected . '>' . $f['title'] . '</option>';
-    }
-}
-?>
+                                if ( $inDB->num_rows($rs) ) {
+                                    while ( $f = $inDB->fetch_assoc($rs) ) {
+                                        if ( in_array($f['id'], $model->config['privforms']) ) {
+                                            $selected = 'selected="selected"';
+                                        }
+                                        else {
+                                            $selected = '';
+                                        }
+                                        echo '<option value="' . $f['id'] . '" ' . $selected . '>' . $f['title'] . '</option>';
+                                    }
+                                }
+                                ?>
                             </select>
                         </p>
                         <p><?php echo $_LANG['AD_SELECT_MULTIPLE_CTRL']; ?>.</p>
@@ -389,15 +389,15 @@ if ( $inDB->num_rows($rs) ) {
                     <td><strong><?php echo $_LANG['AD_PHOTO_ALBUMS']; ?>: </strong></td>
                     <td width="210">
                         <label><input name="sw_photo" type="radio" value="1" <?php
-                                if ( $model->config['sw_photo'] ) {
-                                    echo 'checked="checked"';
-                                }
-?>/> <?php echo $_LANG['YES']; ?></label>
+                            if ( $model->config['sw_photo'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="sw_photo" type="radio" value="0" <?php
-                                      if ( !$model->config['sw_photo'] ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['NO']; ?></label>
+                            if ( !$model->config['sw_photo'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>
@@ -410,12 +410,12 @@ if ( $inDB->num_rows($rs) ) {
                             if ( $model->config['watermark'] ) {
                                 echo 'checked="checked"';
                             }
-                                      ?>/> <?php echo $_LANG['YES']; ?></label>
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="watermark" type="radio" value="0" <?php
-                                      if ( !$model->config['watermark'] ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['NO']; ?></label>
+                            if ( !$model->config['watermark'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>
@@ -437,12 +437,12 @@ if ( $inDB->num_rows($rs) ) {
                             if ( $model->config['sw_files'] ) {
                                 echo 'checked="checked"';
                             }
-                                      ?>/> <?php echo $_LANG['YES']; ?></label>
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="sw_files" type="radio" value="0" <?php
-                                      if ( !$model->config['sw_files'] ) {
-                                          echo 'checked="checked"';
-                                      }
-                                      ?>/> <?php echo $_LANG['NO']; ?></label>
+                            if ( !$model->config['sw_files'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>

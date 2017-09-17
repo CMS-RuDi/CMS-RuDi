@@ -61,7 +61,7 @@ class cms_model_users
     {
         $result = array();
 
-        switch ($target) {
+        switch ( $target ) {
             case 'userphoto': $photo = $this->inDB->get_fields('cms_user_photos', "id='" . $target_id . "'", 'user_id, title');
                 if ( !$photo ) {
                     return false;
@@ -86,7 +86,7 @@ class cms_model_users
     {
         $is_hidden = 0;
 
-        switch ($target) {
+        switch ( $target ) {
             case 'userphoto': $photo = $this->inDB->get_fields('cms_user_photos', "id='" . $target_id . "'", 'album_id, allow_who');
                 if ( $photo['allow_who'] != 'all' ) {
                     $is_hidden = 1;
@@ -343,7 +343,7 @@ class cms_model_users
         $user['formsdata']    = cmsCore::yamlToArray($user['formsdata']);
 
         if ( $user['gender'] ) {
-            switch ($user['gender']) {
+            switch ( $user['gender'] ) {
                 case 'm': $user['fgender'] = $_LANG['MALES'];
                     break;
                 case 'f': $user['fgender'] = $_LANG['FEMALES'];

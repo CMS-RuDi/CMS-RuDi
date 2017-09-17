@@ -22,6 +22,7 @@ function applet_usergroups()
 
     global $_LANG;
     global $adminAccess;
+
     if ( !cmsUser::isAdminCan('admin/users', $adminAccess) ) {
         cpAccessDenied();
     }
@@ -89,6 +90,7 @@ function applet_usergroups()
         else {
             $inDB->update('cms_user_groups', $items, $id);
             cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'], 'success');
+
             if ( empty($_SESSION['editlist']) ) {
                 cmsCore::redirect('index.php?view=usergroups');
             }

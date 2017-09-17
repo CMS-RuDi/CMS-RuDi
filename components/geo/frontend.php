@@ -90,7 +90,7 @@ function geo($do = null)
             cmsCore::error404();
         }
 
-        switch ($type) {
+        switch ( $type ) {
             case 'regions': $items = $model->getRegions($parent_id);
                 break;
 

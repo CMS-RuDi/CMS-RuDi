@@ -83,7 +83,7 @@ class cms_model_clubs
     {
         $result = array();
 
-        switch ($target) {
+        switch ( $target ) {
             case 'club_photo': $photo = $this->inDB->get_fields('cms_photo_files', "id='{$target_id}'", 'id, title');
                 if ( !$photo ) {
                     return false;
@@ -115,7 +115,7 @@ class cms_model_clubs
     {
         $is_hidden = 0;
 
-        switch ($target) {
+        switch ( $target ) {
             case 'club_photo':
                 $album_id = $this->inDB->get_field('cms_photo_files', "id='{$target_id}'", 'album_id');
                 $club_id  = $this->inDB->get_field('cms_photo_albums', "id='{$album_id}'", 'user_id');
@@ -146,7 +146,7 @@ class cms_model_clubs
             return false;
         }
 
-        switch ($target) {
+        switch ( $target ) {
             case 'club_photo':
                 $sql = "UPDATE cms_photo_files SET rating = rating + ({$points}) WHERE id = '{$item_id}'";
                 break;

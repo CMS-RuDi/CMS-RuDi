@@ -21,7 +21,8 @@ function autoOrder($form_id)
     $rs  = $inDB->query($sql);
 
     if ( $inDB->num_rows($rs) ) {
-        $ord  = 1;
+        $ord = 1;
+
         while ( $item = $inDB->fetch_assoc($rs) ) {
             $inDB->query("UPDATE cms_form_fields SET ordering = $ord WHERE id= '{$item['id']}'");
             $ord += 1;
@@ -125,7 +126,7 @@ if ( in_array($opt, array( 'add_field', 'update_field' )) ) {
     $item['config']['text_link_prefix'] = cmsCore::request('text_link_prefix', 'str', '');
     $item['config']['max']              = cmsCore::request('text_max', 'int');
 
-    switch ($item['kind']) {
+    switch ( $item['kind'] ) {
         case 'text':
             $item['config']['size'] = cmsCore::request('f_text_size', 'int');
             break;
@@ -295,15 +296,15 @@ if ( in_array($opt, array( 'add', 'edit' )) ) {
                 <td>
                     <select name="sendto" id="sendto" style="width:220px;" onChange="toggleSendTo()">
                         <option value="mail" <?php
-    if ( @$mod['sendto'] == 'mail' || !isset($mod['sendto']) ) {
-        echo 'selected';
-    }
-    ?>><?php echo $_LANG['AD_EMAIL_ADDRESS']; ?></option>
+                        if ( @$mod['sendto'] == 'mail' || !isset($mod['sendto']) ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_EMAIL_ADDRESS']; ?></option>
                         <option value="user" <?php
-                    if ( @$mod['sendto'] == 'user' ) {
-                        echo 'selected';
-                    }
-    ?>><?php echo $_LANG['AD_PERSON_MESS']; ?></option>
+                        if ( @$mod['sendto'] == 'user' ) {
+                            echo 'selected';
+                        }
+                        ?>><?php echo $_LANG['AD_PERSON_MESS']; ?></option>
                     </select>
                 </td>
             </tr>
@@ -312,15 +313,15 @@ if ( in_array($opt, array( 'add', 'edit' )) ) {
                 <td width="200"><strong><?php echo $_LANG['AD_VIEW_FORM_TITLE']; ?>: </strong></td>
                 <td width="">
                     <label><input name="showtitle" type="radio" value="1" <?php
-                    if ( $mod['showtitle'] ) {
-                        echo 'checked="checked"';
-                    }
-    ?>/> <?php echo $_LANG['YES']; ?></label>
+                        if ( $mod['showtitle'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?>/> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="showtitle" type="radio" value="0" <?php
-                    if ( !$mod['showtitle'] ) {
-                        echo 'checked="checked"';
-                    }
-    ?>/> <?php echo $_LANG['NO']; ?></label>
+                        if ( !$mod['showtitle'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?>/> <?php echo $_LANG['NO']; ?></label>
                 </td>
             </tr>
             <tr>
@@ -333,15 +334,15 @@ if ( in_array($opt, array( 'add', 'edit' )) ) {
                 <td width="200"><strong><?php echo $_LANG['AD_FILED_ONLY']; ?>: </strong></td>
                 <td width="">
                     <label><input name="only_fields" type="radio" value="1" <?php
-                    if ( $mod['only_fields'] ) {
-                        echo 'checked="checked"';
-                    }
-    ?>/> <?php echo $_LANG['YES']; ?></label>
+                        if ( $mod['only_fields'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?>/> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="only_fields" type="radio" value="0" <?php
-                    if ( !$mod['only_fields'] ) {
-                        echo 'checked="checked"';
-                    }
-    ?>/> <?php echo $_LANG['NO']; ?></label>
+                        if ( !$mod['only_fields'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?>/> <?php echo $_LANG['NO']; ?></label>
                 </td>
             </tr>
             <tr>
@@ -352,13 +353,13 @@ if ( in_array($opt, array( 'add', 'edit' )) ) {
             </tr>
         </table>
         <div id="sendto_mail" <?php
-                    if ( @$mod['sendto'] == 'mail' || !isset($mod['sendto']) ) {
-                        echo 'style="display:block"';
-                    }
-                    else {
-                        echo 'style="display:none"';
-                    }
-    ?>>
+        if ( @$mod['sendto'] == 'mail' || !isset($mod['sendto']) ) {
+            echo 'style="display:block"';
+        }
+        else {
+            echo 'style="display:none"';
+        }
+        ?>>
             <table width="605" border="0" cellspacing="5" class="proptable">
                 <tr>
                     <td width="16" valign="top"><img src="/admin/components/forms/email.gif" width="16" height="16"></td>
@@ -371,13 +372,13 @@ if ( in_array($opt, array( 'add', 'edit' )) ) {
             </table>
         </div>
         <div id="sendto_user" <?php
-    if ( @$mod['sendto'] == 'user' ) {
-        echo 'style="display:block"';
-    }
-    else {
-        echo 'style="display:none"';
-    }
-    ?>>
+        if ( @$mod['sendto'] == 'user' ) {
+            echo 'style="display:block"';
+        }
+        else {
+            echo 'style="display:none"';
+        }
+        ?>>
             <table width="605" border="0" cellspacing="5" class="proptable">
                 <tr>
                     <td width="16"><img src="/admin/components/forms/user.gif" width="16" height="16"></td>
@@ -416,13 +417,13 @@ if ( in_array($opt, array( 'add', 'edit' )) ) {
         <p>
             <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>" />
             <input name="opt" type="hidden" id="do" <?php
-    if ( $opt == 'add' ) {
-        echo 'value="submit"';
-    }
-    else {
-        echo 'value="update"';
-    }
-        ?> />
+            if ( $opt == 'add' ) {
+                echo 'value="submit"';
+            }
+            else {
+                echo 'value="update"';
+            }
+            ?> />
                    <?php
                    if ( $opt == 'edit' ) {
                        echo '<input name="item_id" type="hidden" value="' . $mod['id'] . '" />';
@@ -441,9 +442,9 @@ if ( in_array($opt, array( 'add', 'edit' )) ) {
             <tr>
                 <td width="300" valign="top" class="proptable">
                     <h4 style="border-bottom:solid 1px #CCC; font-size: 14px; margin-bottom: 10px"><b><?php if ( !@$field ) { ?><?php echo $_LANG['AD_FIELD_ADD']; ?><?php
-        }
-        else {
-            ?><?php echo $_LANG['AD_FIELD_EDIT']; ?><?php } ?></b></h4>
+                            }
+                            else {
+                                ?><?php echo $_LANG['AD_FIELD_EDIT']; ?><?php } ?></b></h4>
                     <form id="fieldform" name="fieldform" method="post" action="index.php?view=components&do=config&id=<?php echo $id; ?>">
                         <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
                         <input type="hidden" name="opt" value="<?php if ( !@$field ) { ?>add_field<?php
@@ -688,9 +689,9 @@ if ( in_array($opt, array( 'add', 'edit' )) ) {
 
                         <div style="margin-top:10px;padding:5px;padding-right:0px;">
                             <div>
-                                    <?php echo $_LANG['AD_GROUPS_VIEW']; ?><br />
+                                <?php echo $_LANG['AD_GROUPS_VIEW']; ?><br />
                                 <span class="hinttext">
-        <?php echo $_LANG['AD_SELECT_MULTIPLE_CTRL']; ?>
+                                    <?php echo $_LANG['AD_SELECT_MULTIPLE_CTRL']; ?>
                                 </span>
                             </div>
                             <div>
@@ -730,7 +731,7 @@ if ( in_array($opt, array( 'add', 'edit' )) ) {
 
                 </td>
                 <td width="440" valign="top" class="proptable"><h4 style="border-bottom:solid 1px black;font-size: 14px; margin-bottom: 5px"><b><?php echo $_LANG['AD_PREVIEV']; ?> </b></h4>
-        <?php echo cmsForm::displayForm($item_id, array(), true); ?>
+                    <?php echo cmsForm::displayForm($item_id, array(), true); ?>
                 </td>
             </tr>
         </table>

@@ -17,6 +17,7 @@ function applet_userbanlist()
 
     global $_LANG;
     global $adminAccess;
+
     if ( !cmsUser::isAdminCan('admin/users', $adminAccess) ) {
         cpAccessDenied();
     }
@@ -28,6 +29,7 @@ function applet_userbanlist()
     $do = cmsCore::request('do', 'str', 'list');
     $id = cmsCore::request('id', 'int', -1);
     $to = cmsCore::request('to', 'int', 0);
+
     // для редиректа обратно в профиль на сайт
     if ( $to ) {
         cmsUser::sessionPut('back_url', cmsCore::getBackURL());

@@ -62,20 +62,20 @@ function applet_arhive()
                     <td width="100" valign="top">
                         <select name="source" id="source" style="width:285px">
                             <option value="content" <?php
-        if ( $cfg_arhive['source'] == 'content' ) {
-            echo 'selected="selected"';
-        }
-        ?>><?php echo $_LANG['AD_ARTICLE_SITE']; ?></option>
+                            if ( $cfg_arhive['source'] == 'content' ) {
+                                echo 'selected="selected"';
+                            }
+                            ?>><?php echo $_LANG['AD_ARTICLE_SITE']; ?></option>
                             <option value="arhive" <?php
-                    if ( $cfg_arhive['source'] == 'arhive' ) {
-                        echo 'selected="selected"';
-                    }
-        ?>><?php echo $_LANG['AD_ARTICLES_ARCHIVE']; ?></option>
+                            if ( $cfg_arhive['source'] == 'arhive' ) {
+                                echo 'selected="selected"';
+                            }
+                            ?>><?php echo $_LANG['AD_ARTICLES_ARCHIVE']; ?></option>
                             <option value="both" <?php
-                    if ( $cfg_arhive['source'] == 'both' ) {
-                        echo 'selected="selected"';
-                    }
-        ?>><?php echo $_LANG['AD_CATALOG_AND_ARCHIVE']; ?></option>
+                            if ( $cfg_arhive['source'] == 'both' ) {
+                                echo 'selected="selected"';
+                            }
+                            ?>><?php echo $_LANG['AD_CATALOG_AND_ARCHIVE']; ?></option>
                         </select>
                     </td>
                 </tr>

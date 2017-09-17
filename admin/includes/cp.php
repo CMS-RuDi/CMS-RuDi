@@ -384,7 +384,7 @@ function cpAddParam($query, $param, $value)
         }
         else {
             $new_query .= $key . '=' . $value;
-            $added = true;
+            $added     = true;
         }
 
         if ( $l < sizeof($params) ) {
@@ -445,8 +445,9 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
     }
 
     if ( $filter ) {
-        $f = 0;
+        $f   = 0;
         $sql .= ' WHERE 1=1';
+
         foreach ( $filter as $key => $value ) {
             if ( $filter[$key] && $filter[$key] != -100 ) {
                 $sql .= ' AND ';
@@ -459,6 +460,7 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
                 $f++;
             }
         }
+
         if ( !isset($_SESSION['filter']) ) {
             $_SESSION['filter'] = $filter;
         }
@@ -518,22 +520,26 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
     foreach ( $_fields as $key => $value ) {
         if ( isset($_fields[$key]['filter']) ) {
             $f_html .= '<td width="">' . $_fields[$key]['title'] . ': </td>';
+
             if ( !isset($filter[$_fields[$key]['field']]) ) {
                 $initval = '';
             }
             else {
                 $initval = $filter[$_fields[$key]['field']];
             }
-            $f_html .= '<td width="">';
+
+            $f_html    .= '<td width="">';
             $inputname = 'filter[' . $_fields[$key]['field'] . ']';
+
             if ( !isset($_fields[$key]['filterlist']) ) {
                 $f_html .= '<input name="' . $inputname . '" type="text" size="' . $_fields[$key]['filter'] . '" class="filter_input" value="' . $initval . '"/></td>';
             }
             else {
                 $f_html .= cpBuildList($inputname, $_fields[$key]['filterlist'], $initval);
             }
-            $f_html .= '</td>';
-            $filters += 1;
+
+            $f_html                  .= '</td>';
+            $filters                 += 1;
             $_SERVER['QUERY_STRING'] = str_replace('filter[' . $_fields[$key]['field'] . ']=', '', $_SERVER['QUERY_STRING']);
         }
     }
@@ -1072,7 +1078,7 @@ function dbDeleteList($table, $list)
         foreach ( $list as $key => $value ) {
             $item ++;
             $value = (int) $value;
-            $sql .= 'id = ' . $value;
+            $sql   .= 'id = ' . $value;
 
             if ( $item < sizeof($list) ) {
                 $sql .= ' OR ';

@@ -48,15 +48,15 @@ if ( $opt == 'saveconfig' ) {
             <td><strong><?php echo $_LANG['AD_FILES_CHECK_LINK']; ?>:</strong></td>
             <td width="300" valign="top">
                 <label><input name="check_link" type="radio" value="1" <?php
-if ( $cfg['check_link'] ) {
-    echo 'checked="checked"';
-}
-?>/> <?php echo $_LANG['YES']; ?></label>
+                    if ( $cfg['check_link'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['YES']; ?></label>
                 <label><input name="check_link" type="radio" value="0" <?php
-                              if ( !$cfg['check_link'] ) {
-                                  echo 'checked="checked"';
-                              }
-                              ?>/> <?php echo $_LANG['NO']; ?></label>
+                    if ( !$cfg['check_link'] ) {
+                        echo 'checked="checked"';
+                    }
+                    ?>/> <?php echo $_LANG['NO']; ?></label>
             </td>
         </tr>
         <tr>

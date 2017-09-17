@@ -274,11 +274,11 @@ if ( $opt == 'add' || $opt == 'edit' ) {
             <tr>
                 <td><strong><?php echo $_LANG['UPLOAD_LOGO']; ?>:</strong></td>
                 <td>
-    <?php
-    if ( @$mod['imageurl'] ) {
-        echo '<div style="margin-bottom:5px;"><img src="/images/clubs/small/' . $mod['imageurl'] . '" /></div>';
-    }
-    ?>
+                    <?php
+                    if ( @$mod['imageurl'] ) {
+                        echo '<div style="margin-bottom:5px;"><img src="/images/clubs/small/' . $mod['imageurl'] . '" /></div>';
+                    }
+                    ?>
                     <input name="picture" type="file" id="picture" size="33" />
                 </td>
             </tr>
@@ -291,13 +291,13 @@ if ( $opt == 'add' || $opt == 'edit' ) {
             <tr>
                 <td><strong><?php echo $_LANG['AD_CLUB_DATE']; ?>:</strong></td>
                 <td><input name="pubdate" type="text" id="pubdate" style="width:278px" <?php
-                if ( @!$mod['pubdate'] ) {
-                    echo 'value="' . date('d.m.Y') . '"';
-                }
-                else {
-                    echo 'value="' . date('d.m.Y', strtotime($mod['pubdate'])) . '"';
-                }
-    ?>/>
+                    if ( @!$mod['pubdate'] ) {
+                        echo 'value="' . date('d.m.Y') . '"';
+                    }
+                    else {
+                        echo 'value="' . date('d.m.Y', strtotime($mod['pubdate'])) . '"';
+                    }
+                    ?>/>
 
                     <input type="hidden" name="olddate" value="<?php echo date('d.m.Y', strtotime(@$mod['pubdate'])) ?>"/></td>
             </tr>
@@ -308,35 +308,35 @@ if ( $opt == 'add' || $opt == 'edit' ) {
                 </td>
                 <td>
                     <label><input name="published" type="radio" value="1" checked="checked" <?php
-                       if ( @$mod['published'] ) {
-                           echo 'checked="checked"';
-                       }
-    ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( @$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="published" type="radio" value="0"  <?php
-                                  if ( @!$mod['published'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?></label></td>
+                        if ( @!$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?></label></td>
             </tr>
             <tr>
                 <td><strong><?php echo $_LANG['CLUB_BLOG']; ?>:</strong></td>
                 <td>
                     <select name="enabled_blogs" id="enabled_blogs" style="width:300px">
                         <option value="-1" <?php
-                    if ( @$mod['orig_enabled_blogs'] == '-1' ) {
-                        echo 'selected="selected"';
-                    }
-                                  ?>><?php echo $_LANG['AD_BY_DEFAULT']; ?></option>
+                        if ( @$mod['orig_enabled_blogs'] == '-1' ) {
+                            echo 'selected="selected"';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_DEFAULT']; ?></option>
                         <option value="1" <?php
-                                if ( @$mod['orig_enabled_blogs'] == '1' ) {
-                                    echo 'selected="selected"';
-                                }
-                                ?>><?php echo $_LANG['AD_IS_ENABLED']; ?></option>
+                        if ( @$mod['orig_enabled_blogs'] == '1' ) {
+                            echo 'selected="selected"';
+                        }
+                        ?>><?php echo $_LANG['AD_IS_ENABLED']; ?></option>
                         <option value="0" <?php
-                                if ( @$mod['orig_enabled_blogs'] == '0' ) {
-                                    echo 'selected="selected"';
-                                }
-                                ?>><?php echo $_LANG['AD_IS_DISABLED']; ?></option>
+                        if ( @$mod['orig_enabled_blogs'] == '0' ) {
+                            echo 'selected="selected"';
+                        }
+                        ?>><?php echo $_LANG['AD_IS_DISABLED']; ?></option>
                     </select>
                 </td>
             </tr>
@@ -345,20 +345,20 @@ if ( $opt == 'add' || $opt == 'edit' ) {
                 <td>
                     <select name="enabled_photos" id="enabled_photos" style="width:300px">
                         <option value="-1" <?php
-                    if ( @$mod['orig_enabled_photos'] == '-1' ) {
-                        echo 'selected="selected"';
-                    }
-                                ?>><?php echo $_LANG['AD_BY_DEFAULT']; ?></option>
+                        if ( @$mod['orig_enabled_photos'] == '-1' ) {
+                            echo 'selected="selected"';
+                        }
+                        ?>><?php echo $_LANG['AD_BY_DEFAULT']; ?></option>
                         <option value="1" <?php
-                                if ( @$mod['orig_enabled_photos'] == '1' ) {
-                                    echo 'selected="selected"';
-                                }
-                                ?>><?php echo $_LANG['AD_IS_ENABLED']; ?></option>
+                        if ( @$mod['orig_enabled_photos'] == '1' ) {
+                            echo 'selected="selected"';
+                        }
+                        ?>><?php echo $_LANG['AD_IS_ENABLED']; ?></option>
                         <option value="0" <?php
-                                if ( @$mod['orig_enabled_photos'] == '0' ) {
-                                    echo 'selected="selected"';
-                                }
-                                ?>><?php echo $_LANG['AD_IS_DISABLED']; ?></option>
+                        if ( @$mod['orig_enabled_photos'] == '0' ) {
+                            echo 'selected="selected"';
+                        }
+                        ?>><?php echo $_LANG['AD_IS_DISABLED']; ?></option>
                     </select>
                 </td>
             </tr>
@@ -367,7 +367,7 @@ if ( $opt == 'add' || $opt == 'edit' ) {
         <table width="100%" border="0" cellspacing="5" class="proptable">
             <tr>
                 <td>
-    <?php $inCore->insertEditor('description', $mod['description'], '400', '100%'); ?>
+                    <?php $inCore->insertEditor('description', $mod['description'], '400', '100%'); ?>
                 </td>
             </tr>
         </table>
@@ -377,14 +377,14 @@ if ( $opt == 'add' || $opt == 'edit' ) {
                 <td width="298"><strong><?php echo $_LANG['CLUB_ADMIN']; ?>:</strong></td>
                 <td width="308">
                     <select name="admin_id" id="admin_id" style="width:300px">
-    <?php
-    if ( isset($mod['admin_id']) ) {
-        echo $inCore->getListItems('cms_users', $mod['admin_id'], 'nickname', 'ASC', 'is_deleted=0 AND is_locked=0', 'id', 'nickname');
-    }
-    else {
-        echo $inCore->getListItems('cms_users', 0, 'nickname', 'ASC', 'is_deleted=0 AND is_locked=0', 'id', 'nickname');
-    }
-    ?>
+                        <?php
+                        if ( isset($mod['admin_id']) ) {
+                            echo $inCore->getListItems('cms_users', $mod['admin_id'], 'nickname', 'ASC', 'is_deleted=0 AND is_locked=0', 'id', 'nickname');
+                        }
+                        else {
+                            echo $inCore->getListItems('cms_users', 0, 'nickname', 'ASC', 'is_deleted=0 AND is_locked=0', 'id', 'nickname');
+                        }
+                        ?>
                     </select>
                 </td>
             </tr>
@@ -393,21 +393,21 @@ if ( $opt == 'add' || $opt == 'edit' ) {
                 <td>
                     <select name="clubtype" id="clubtype" style="width:300px">
                         <option value="public" <?php
-                    if ( @$mod['clubtype'] == 'public' ) {
-                        echo 'selected="selected"';
-                    }
-    ?>><?php echo $_LANG['PUBLIC']; ?></option>
+                        if ( @$mod['clubtype'] == 'public' ) {
+                            echo 'selected="selected"';
+                        }
+                        ?>><?php echo $_LANG['PUBLIC']; ?></option>
                         <option value="private" <?php
-                                if ( @$mod['clubtype'] == 'private' ) {
-                                    echo 'selected="selected"';
-                                }
-                                ?>><?php echo $_LANG['PRIVATE']; ?></option>
+                        if ( @$mod['clubtype'] == 'private' ) {
+                            echo 'selected="selected"';
+                        }
+                        ?>><?php echo $_LANG['PRIVATE']; ?></option>
                     </select>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
-    <?php if ( $opt == 'edit' ) { ?>
+                    <?php if ( $opt == 'edit' ) { ?>
                         <?php echo $_LANG['AD_MEMBERS_EDIT_ON_SITE']; ?> <a target="_blank" href="/clubs/<?php echo $mod['id']; ?>/config.html#moders"><?php echo $_LANG['AD_EDIT_ON_SITE']; ?></a>.
                     <?php } ?>
                 </td>
@@ -418,14 +418,14 @@ if ( $opt == 'add' || $opt == 'edit' ) {
             <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>" />
             <input name="back3" type="button" id="back3" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components';"/>
             <input name="opt" type="hidden" id="opt" <?php
-                if ( $opt == 'add' ) {
-                    echo 'value="submit"';
-                }
-                else {
-                    echo 'value="update"';
-                }
-                    ?> />
-            <?php
+            if ( $opt == 'add' ) {
+                echo 'value="submit"';
+            }
+            else {
+                echo 'value="update"';
+            }
+            ?> />
+                   <?php
                    if ( $opt == 'edit' ) {
                        echo '<input name="item_id" type="hidden" value="' . $mod['id'] . '" />';
                    }
@@ -479,15 +479,15 @@ if ( $opt == 'config' ) {
                         <td><strong><?php echo $_LANG['AD_USER_SEO_ACCESS']; ?> </strong></td>
                         <td>
                             <label><input name="seo_user_access" type="radio" value="1" <?php
-    if ( $cfg['seo_user_access'] ) {
-        echo 'checked="checked"';
-    }
-    ?> /> <?php echo $_LANG['YES']; ?> </label>
+                                if ( $cfg['seo_user_access'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['YES']; ?> </label>
                             <label><input name="seo_user_access" type="radio" value="0"  <?php
-                                          if ( !$cfg['seo_user_access'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?> /> <?php echo $_LANG['NO']; ?> </label>
+                                if ( !$cfg['seo_user_access'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['NO']; ?> </label>
                         </td>
                     </tr>
                 </table>
@@ -498,15 +498,15 @@ if ( $opt == 'config' ) {
                         <td><strong><?php echo $_LANG['CLUB_BLOG']; ?>:</strong></td>
                         <td width="300">
                             <label><input name="enabled_blogs" type="radio" value="1"  <?php
-                            if ( $cfg['enabled_blogs'] ) {
-                                echo 'checked="checked"';
-                            }
-                                          ?> /> <?php echo $_LANG['YES']; ?></label>
+                                if ( $cfg['enabled_blogs'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="enabled_blogs" type="radio" value="0"  <?php
-                                          if ( !$cfg['enabled_blogs'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?> /> <?php echo $_LANG['NO']; ?></label>
+                                if ( !$cfg['enabled_blogs'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                     <tr>
@@ -523,15 +523,15 @@ if ( $opt == 'config' ) {
                         <td><strong><?php echo $_LANG['AD_SQUARE_LOGO']; ?>:</strong></td>
                         <td>
                             <label><input name="thumbsqr" type="radio" value="1"  <?php
-                            if ( $cfg['thumbsqr'] ) {
-                                echo 'checked="checked"';
-                            }
-                                          ?> /> <?php echo $_LANG['YES']; ?></label>
+                                if ( $cfg['thumbsqr'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="thumbsqr" type="radio" value="0"  <?php
-                                          if ( !$cfg['thumbsqr'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?> /> <?php echo $_LANG['NO']; ?></label>
+                                if ( !$cfg['thumbsqr'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                     <tr>
@@ -541,15 +541,15 @@ if ( $opt == 'config' ) {
                         </td>
                         <td valign="top">
                             <label><input name="notify_in" type="radio" value="1"  <?php
-                            if ( $cfg['notify_in'] ) {
-                                echo 'checked="checked"';
-                            }
-                                          ?> /> <?php echo $_LANG['YES']; ?></label>
+                                if ( $cfg['notify_in'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="notify_in" type="radio" value="0"  <?php
-                                          if ( !$cfg['notify_in'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?> /> <?php echo $_LANG['NO']; ?></label>
+                                if ( !$cfg['notify_in'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                     <tr>
@@ -559,15 +559,15 @@ if ( $opt == 'config' ) {
                         </td>
                         <td valign="top">
                             <label><input name="notify_out" type="radio" value="1"  <?php
-                            if ( $cfg['notify_out'] ) {
-                                echo 'checked="checked"';
-                            }
-                                          ?> /> <?php echo $_LANG['YES']; ?></label>
+                                if ( $cfg['notify_out'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="notify_out" type="radio" value="0"  <?php
-                                          if ( !$cfg['notify_out'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?> /> <?php echo $_LANG['NO']; ?></label>
+                                if ( !$cfg['notify_out'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                 </table>
@@ -614,49 +614,49 @@ if ( $opt == 'config' ) {
                         <td><strong><?php echo $_LANG['CLUB_PHOTOALBUMS']; ?>:</strong></td>
                         <td width="300">
                             <label><input name="enabled_photos" type="radio" value="1"  <?php
-                            if ( $cfg['enabled_photos'] ) {
-                                echo 'checked="checked"';
-                            }
-                                          ?> /> <?php echo $_LANG['YES']; ?></label>
+                                if ( $cfg['enabled_photos'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="enabled_photos" type="radio" value="0"  <?php
-                                          if ( !$cfg['enabled_photos'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?> /> <?php echo $_LANG['NO']; ?></label>
+                                if ( !$cfg['enabled_photos'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                     <tr>
                         <td><strong><?php echo $_LANG['AD_ENABLE_WATERMARK']; ?></strong><br>
                             <span class="hinttext">
-    <?php echo $_LANG['AD_ENABLE_WATERMARK_HINT']; ?> "<a href="/images/watermark.png" target="_blank">/images/watermark.png</a>"
+                                <?php echo $_LANG['AD_ENABLE_WATERMARK_HINT']; ?> "<a href="/images/watermark.png" target="_blank">/images/watermark.png</a>"
                             </span>
                         </td>
                         <td>
                             <label><input name="photo_watermark" type="radio" value="1"  <?php
-    if ( $cfg['photo_watermark'] ) {
-        echo 'checked="checked"';
-    }
-    ?>> <?php echo $_LANG['YES']; ?></label>
+                                if ( $cfg['photo_watermark'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="photo_watermark" type="radio" value="0" <?php
-                                          if ( !$cfg['photo_watermark'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?>> <?php echo $_LANG['NO']; ?></label>
+                                if ( !$cfg['photo_watermark'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                     <tr>
                         <td><strong><?php echo $_LANG['AD_RETAIN_BOOT']; ?></strong></td>
                         <td>
                             <label><input name="is_saveorig" type="radio" value="1"  <?php
-                            if ( $cfg['is_saveorig'] ) {
-                                echo 'checked="checked"';
-                            }
-                                          ?>> <?php echo $_LANG['YES']; ?></label>
+                                if ( $cfg['is_saveorig'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="is_saveorig" type="radio" value="0" <?php
-                                          if ( !$cfg['is_saveorig'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?>> <?php echo $_LANG['NO']; ?></label>
+                                if ( !$cfg['is_saveorig'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                     <tr>
@@ -671,15 +671,15 @@ if ( $opt == 'config' ) {
                                         <td width="100" align="center" valign="middle"><?php echo $_LANG['AD_SQUARE_PHOTO']; ?>:</td>
                                         <td width="115" align="center" valign="middle">
                                             <label><input name="photo_thumbsqr" type="radio" value="1" <?php
-                            if ( $cfg['photo_thumbsqr'] ) {
-                                echo 'checked="checked"';
-                            }
-                                          ?>> <?php echo $_LANG['YES']; ?> </label>
+                                                if ( $cfg['photo_thumbsqr'] ) {
+                                                    echo 'checked="checked"';
+                                                }
+                                                ?>> <?php echo $_LANG['YES']; ?> </label>
                                             <label><input name="photo_thumbsqr" type="radio" value="0" <?php
-                                                          if ( !$cfg['photo_thumbsqr'] ) {
-                                                              echo 'checked="checked"';
-                                                          }
-                                                          ?>> <?php echo $_LANG['NO']; ?></label>
+                                                if ( !$cfg['photo_thumbsqr'] ) {
+                                                    echo 'checked="checked"';
+                                                }
+                                                ?>> <?php echo $_LANG['NO']; ?></label>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -703,15 +703,15 @@ if ( $opt == 'config' ) {
                             <span class="hinttext"><?php echo $_LANG['AD_CANCREATE_HINT']; ?></span></td>
                         <td valign="top">
                             <label><input name="cancreate" type="radio" value="1"  <?php
-                                            if ( $cfg['cancreate'] ) {
-                                                echo 'checked="checked"';
-                                            }
-                                                          ?> /> <?php echo $_LANG['YES']; ?></label>
+                                if ( $cfg['cancreate'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="cancreate" type="radio" value="0"  <?php
-                                          if ( !$cfg['cancreate'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?> /> <?php echo $_LANG['NO']; ?></label>
+                                if ( !$cfg['cancreate'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                     <tr>

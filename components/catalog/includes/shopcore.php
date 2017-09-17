@@ -15,7 +15,6 @@ if ( !defined('VALID_CMS') ) {
     die('ACCESS DENIED');
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
 function shopAddToCart($item_id, $itemscount = 1)
 {
     $inDB   = cmsDatabase::getInstance();
@@ -203,7 +202,7 @@ function shopCart()
             $item['totalprice'] = $item['price'] * $item['itemscount'];
             $item['price']      = number_format($item['price'], 2, '.', '');
             $item['totalprice'] = number_format($item['totalprice'], 2, '.', '');
-            $total += $item['totalprice'];
+            $total              += $item['totalprice'];
 
             echo '<tr>';
             echo '<td class="' . $class . '"><img src="/components/catalog/images/icons/cart.png" border="0"></td>';
@@ -319,7 +318,7 @@ function shopOrder($cfg)
 
             $item['price']      = number_format($item['price'], 2, '.', '');
             $item['totalprice'] = number_format($item['totalprice'], 2, '.', '');
-            $total += $item['totalprice'];
+            $total              += $item['totalprice'];
             echo '<tr>';
             echo '<td class="' . $class . '"><img src="/components/catalog/images/icons/cart.png" border="0"></td>';
             echo '<td class="' . $class . '"><a href="/catalog/item' . $item['id'] . '.html">' . $item['title'] . '</a></td>';
@@ -550,7 +549,7 @@ function shopFinishOrder($cfg)
                 $a_mail_message .= $_LANG['ORDER_COMMENT'] . ": " . @$customer['comment'] . "\n\n";
             }
 
-            $a_mail_message .= $_LANG['ORDER'] . "\n---------------------------------\n";
+            $a_mail_message    .= $_LANG['ORDER'] . "\n---------------------------------\n";
             //////////////////////////////////////////////////////////////////////////////////////
             // список покупок
             $row               = 0;
@@ -563,14 +562,14 @@ function shopFinishOrder($cfg)
                 $item['totalprice'] = $item['price'] * $item['itemscount'];
                 $item['price']      = number_format($item['price'], 2, '.', '');
                 $item['totalprice'] = number_format($item['totalprice'], 2, '.', '');
-                $total += $item['totalprice'];
-                $item_mail_message .= $row . '. ' . $item['title'] . ' (' . $item['itemscount'] . '  x ' . $item['price'] . ' ' . $_LANG['CURRENCY'] . ') = ' . $item['totalprice'] . ' ' . $_LANG['CURRENCY'] . "\n";
+                $total              += $item['totalprice'];
+                $item_mail_message  .= $row . '. ' . $item['title'] . ' (' . $item['itemscount'] . '  x ' . $item['price'] . ' ' . $_LANG['CURRENCY'] . ') = ' . $item['totalprice'] . ' ' . $_LANG['CURRENCY'] . "\n";
             }
 
             ob_start();
             shopDiscountsInfo($total);
             ob_clean();
-            $total = number_format($total, 2, '.', '');
+            $total             = number_format($total, 2, '.', '');
             $item_mail_message .= "\n" . $_LANG['TOTAL_ORDER_PRICE'] . ': ' . $total . ' ' . $_LANG['CURRENCY'] . "\n";
             //////////////////////////////////////////////////////////////////////////////////////
 

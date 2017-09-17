@@ -28,23 +28,17 @@ function applet_plugins()
     $do = cmsCore::request('do', 'str', 'list');
     $id = cmsCore::request('id', 'int', -1);
 
-// ===================================================================================== //
-
     if ( $do == 'hide' ) {
         dbHide('cms_plugins', $id);
         echo '1';
         exit;
     }
 
-// ===================================================================================== //
-
     if ( $do == 'show' ) {
         dbShow('cms_plugins', $id);
         echo '1';
         exit;
     }
-
-// ===================================================================================== //
 
     if ( $do == 'list' ) {
         $toolmenu[] = array( 'icon' => 'install.gif', 'title' => $_LANG['AD_INSTALL_PLUGINS'], 'link' => '?view=install&do=plugin' );
@@ -64,8 +58,6 @@ function applet_plugins()
 
         cpListTable('cms_plugins', $fields, $actions);
     }
-
-// ===================================================================================== //
 
     if ( $do == 'save_config' ) {
         if ( !cmsUser::checkCsrfToken() ) {
@@ -107,8 +99,7 @@ function applet_plugins()
             $type    = (string) $param['type'];
             $default = (string) $param['default'];
 
-            switch ($param['type']) {
-
+            switch ( $param['type'] ) {
                 case 'number': $value = cmsCore::request($name, 'int', $default);
                     break;
                 case 'string': $value = cmsCore::request($name, 'str', $default);
@@ -139,10 +130,9 @@ function applet_plugins()
         cmsCore::redirect('index.php?view=plugins');
     }
 
-// ===================================================================================== //
-
     if ( $do == 'config' ) {
         $plugin_name = $inCore->getPluginById($id);
+
         if ( !$plugin_name ) {
             cmsCore::error404();
         }
@@ -194,6 +184,4 @@ function applet_plugins()
         }
         echo '</form>';
     }
-
-// ===================================================================================== //
 }

@@ -14,9 +14,11 @@ function cpModuleHasConfig($item)
     if ( file_exists('modules/' . $item['content'] . '/backend.php') ) {
         return true;
     }
+
     if ( file_exists('modules/' . $item['content'] . '/backend.xml') ) {
         return true;
     }
+
     return false;
 }
 
@@ -26,8 +28,8 @@ function applet_modules()
     $inDB   = cmsDatabase::getInstance();
 
     global $_LANG;
-
     global $adminAccess;
+
     if ( !cmsUser::isAdminCan('admin/modules', $adminAccess) ) {
         cpAccessDenied();
     }
@@ -39,9 +41,6 @@ function applet_modules()
     $do = cmsCore::request('do', 'str', 'list');
     $id = cmsCore::request('id', 'int', -1);
     $co = cmsCore::request('co', 'int', -1);
-
-//============================================================================//
-//============================================================================//
 
     if ( $do == 'config' ) {
         $module_name  = cpModuleById($id);
@@ -86,9 +85,6 @@ function applet_modules()
         return;
     }
 
-//============================================================================//
-//============================================================================//
-
     if ( $do == 'save_auto_config' ) {
         if ( !cmsUser::checkCsrfToken() ) {
             cmsCore::error404();
@@ -102,10 +98,12 @@ function applet_modules()
             $title     = cmsCore::request('title', 'str', '');
             $published = cmsCore::request('published', 'int', 0);
             $inDB->query("UPDATE cms_modules SET title='{$title}', published='{$published}' WHERE id={$id}");
+
             if ( cmsCore::inRequest('content') ) {
                 $content = $inDB->escape_string(cmsCore::request('content', 'html'));
                 $inDB->query("UPDATE cms_modules SET content='{$content}' WHERE id={$id}");
             }
+
             // Добавим возможность изменять css_префикс с фронта
             if ( cmsCore::inRequest('css_prefix') ) {// На шаблонах не не отдающих параметра затирать класс не будем
                 $css_prefix = cmsCore::request('css_prefix', 'str', '');
@@ -131,7 +129,7 @@ function applet_modules()
             $type    = (string) $param['type'];
             $default = (string) $param['default'];
 
-            switch ($param['type']) {
+            switch ( $param['type'] ) {
                 case 'number': $value = cmsCore::request($name, 'int', $default);
                     break;
                 case 'string': $value = cmsCore::request($name, 'str', $default);
@@ -160,9 +158,6 @@ function applet_modules()
         cmsCore::redirectBack();
     }
 
-//============================================================================//
-//============================================================================//
-
     if ( $do == 'list' ) {
         $toolmenu[] = array( 'icon' => 'new.gif', 'title' => $_LANG['AD_MODULE_ADD'], 'link' => '?view=modules&do=add' );
         $toolmenu[] = array( 'icon' => 'install.gif', 'title' => $_LANG['AD_MODULES_SETUP'], 'link' => '?view=install&do=module' );
@@ -182,13 +177,13 @@ function applet_modules()
             'field' => array( 'title', 'titles' ), 'width' => '',
             'link'  => '?view=modules&do=edit&id=%id%',
             'prc'   => function ($i) {
-        $i['titles'] = cmsCore::yamlToArray($i['titles']);
-        // переопределяем название пункта меню в зависимости от языка
-        if ( !empty($i['titles'][cmsConfig::getConfig('lang')]) ) {
-            $i['title'] = $i['titles'][cmsConfig::getConfig('lang')];
-        }
-        return $i['title'];
-    }
+                $i['titles'] = cmsCore::yamlToArray($i['titles']);
+                // переопределяем название пункта меню в зависимости от языка
+                if ( !empty($i['titles'][cmsConfig::getConfig('lang')]) ) {
+                    $i['title'] = $i['titles'][cmsConfig::getConfig('lang')];
+                }
+                return $i['title'];
+            }
         );
         $fields[] = array( 'title' => $_LANG['TITLE'], 'field' => 'name', 'width' => '220', 'filter' => '15' );
         $fields[] = array( 'title' => $_LANG['AD_VERSION'], 'field' => 'version', 'width' => '55' );
@@ -204,9 +199,6 @@ function applet_modules()
         cpListTable('cms_modules', $fields, $actions, '', 'published DESC, position, ordering ASC');
     }
 
-//============================================================================//
-//============================================================================//
-
     if ( $do == 'autoorder' ) {
         $rs = $inDB->query("SELECT id, position FROM cms_modules ORDER BY position");
 
@@ -219,16 +211,13 @@ function applet_modules()
                     }
                 }
                 $inDB->query("UPDATE cms_modules SET ordering = {$ord} WHERE id='{$item['id']}'");
-                $ord += 1;
+                $ord        += 1;
                 $latest_pos = $item['position'];
             }
         }
 
         cmsCore::redirect('index.php?view=modules');
     }
-
-//============================================================================//
-//============================================================================//
 
     if ( $do == 'move_up' ) {
         if ( $id >= 0 ) {
@@ -244,9 +233,6 @@ function applet_modules()
         cmsCore::redirectBack();
     }
 
-//============================================================================//
-//============================================================================//
-
     if ( $do == 'saveorder' ) {
         if ( isset($_REQUEST['ordering']) ) {
             $ord = $_REQUEST['ordering'];
@@ -255,12 +241,10 @@ function applet_modules()
             foreach ( $ord as $id => $ordering ) {
                 $inDB->query("UPDATE cms_modules SET ordering = '" . (int) $ordering . "' WHERE id = '" . (int) $ids[$id] . "'");
             }
+
             cmsCore::redirect('index.php?view=modules');
         }
     }
-
-//============================================================================//
-//============================================================================//
 
     if ( $do == 'show' ) {
         if ( !isset($_REQUEST['item']) ) {
@@ -301,9 +285,6 @@ function applet_modules()
         cmsCore::redirect('index.php?view=modules');
     }
 
-//============================================================================//
-//============================================================================//
-
     if ( $do == 'update' ) {
         if ( !cmsUser::checkCsrfToken() ) {
             cmsCore::error404();
@@ -322,6 +303,7 @@ function applet_modules()
         $is_strict_bind_hidden = cmsCore::request('is_strict_bind_hidden', 'int', 0);
 
         $is_public = cmsCore::request('is_public', 'int', '');
+
         if ( !$is_public ) {
             $access_list = cmsCore::arrayToYaml(cmsCore::request('allow_group', 'array_int', array()));
         }
@@ -361,7 +343,6 @@ function applet_modules()
         $inDB->query($sql);
 
         if ( cmsCore::request('show_all', 'int', 0) ) {
-
             $sql = "INSERT INTO cms_modules_bind (module_id, menu_id, position)
                     VALUES ($id, 0, '{$position}')";
             $inDB->query($sql);
@@ -373,7 +354,6 @@ function applet_modules()
             }
         }
         else {
-
             $showin  = cmsCore::request('showin', 'array_int', array());
             $showpos = cmsCore::request('showpos', 'array_str', array());
             if ( $showin ) {
@@ -395,9 +375,6 @@ function applet_modules()
         }
     }
 
-//============================================================================//
-//============================================================================//
-
     if ( $do == 'submit' ) {
         if ( !cmsUser::checkCsrfToken() ) {
             cmsCore::error404();
@@ -418,6 +395,7 @@ function applet_modules()
         $css_prefix = cmsCore::request('css_prefix', 'str', '');
 
         $is_public = cmsCore::request('is_public', 'int', '');
+
         if ( !$is_public ) {
             $access_list = cmsCore::arrayToYaml(cmsCore::request('allow_group', 'array_int', array()));
         }
@@ -506,9 +484,6 @@ function applet_modules()
         cmsCore::addSessionMessage($_LANG['AD_MODULE_ADD_SITE'], 'success');
         cmsCore::redirect('index.php?view=modules');
     }
-
-//============================================================================//
-//============================================================================//
 
     if ( $do == 'add' || $do == 'edit' ) {
         require('../includes/jwtabs.php');
@@ -1034,7 +1009,4 @@ function applet_modules()
         </form>
         <?php
     }
-
-//============================================================================//
-//============================================================================//
 }

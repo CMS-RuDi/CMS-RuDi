@@ -33,7 +33,7 @@ if ( $new_msg['notices'] > $new_msg['messages'] ) {
     $opt = 'notices';
 }
 
-switch ($opt) {
+switch ( $opt ) {
     case 'in':
         $page_title = $_LANG['INBOX'];
 

@@ -12,7 +12,7 @@
 
 defined('VALID_CMS_ADMIN') or die();
 
-$inDB = cmsDatabase::getInstance();
+$inDB         = cmsDatabase::getInstance();
 ?>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>

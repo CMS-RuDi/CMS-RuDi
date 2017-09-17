@@ -168,7 +168,7 @@ class cms_model_search
     {
         $today = date("d-m-Y");
 
-        switch ($this->from_pubdate) {
+        switch ( $this->from_pubdate ) {
             case 'd': $this->inDB->where("DATE_FORMAT(pubdate, '%d-%m-%Y')='" . $today . "'");
                 break;
             case 'w': $this->inDB->where("DATEDIFF(NOW(), pubdate) <= 7");

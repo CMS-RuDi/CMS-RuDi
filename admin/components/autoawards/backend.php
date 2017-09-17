@@ -242,15 +242,15 @@ if ( $opt == 'add' || $opt == 'edit' ) {
                 <td valign="top"><strong><?php echo $_LANG['AD_ENABLE_AWARD_CONFIRM']; ?></strong><br />
                     <span class="hinttext"><?php echo $_LANG['AD_DISALLOW_TEXT']; ?></span>					</td>
                 <td valign="top"><label><input name="published" type="radio" value="1" checked="checked" <?php
-    if ( @$mod['published'] ) {
-        echo 'checked="checked"';
-    }
-    ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( @$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="published" type="radio" value="0"  <?php
-                                               if ( @!$mod['published'] ) {
-                                                   echo 'checked="checked"';
-                                               }
-                                               ?> /><?php echo $_LANG['NO']; ?></label></td>
+                        if ( @!$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /><?php echo $_LANG['NO']; ?></label></td>
             </tr>
             <tr>
                 <td valign="top"><strong><?php echo $_LANG['AD_AWARD_IMAGE']; ?></strong><br />
@@ -258,13 +258,13 @@ if ( $opt == 'add' || $opt == 'edit' ) {
                 <td valign="top"><?php
                     $awards_img = cmsUser::getAwardsImages();
                     foreach ( $awards_img as $img ) {
-                                                   ?>
+                        ?>
 
                         <div style="float:left;margin:4px">
                             <table border="0" cellspacing="0" cellpadding="4"><tr>
-        <?php if ( $mod['imageurl'] != $img ) { ?>
+                                    <?php if ( $mod['imageurl'] != $img ) { ?>
                                         <td align="center" valign="middle"><label><img src="/images/users/awards/<?php echo $img; ?>" /><br/><input type="radio" name="imageurl" value="<?php echo $img; ?>"/></label></td>
-                                    <?php
+                                        <?php
                                     }
                                     else {
                                         ?>
@@ -322,13 +322,13 @@ if ( $opt == 'add' || $opt == 'edit' ) {
             <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>" />
             <input name="back3" type="button" id="back3" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components&do=config&id=<?php echo $id; ?>';" />
             <input name="opt" type="hidden" id="opt" <?php
-                    if ( $opt == 'add' ) {
-                        echo 'value="submit"';
-                    }
-                    else {
-                        echo 'value="update"';
-                    }
-                    ?> />
+                   if ( $opt == 'add' ) {
+                       echo 'value="submit"';
+                   }
+                   else {
+                       echo 'value="update"';
+                   }
+                   ?> />
                    <?php
                    if ( $opt == 'edit' ) {
                        echo '<input name="item_id" type="hidden" value="' . $mod['id'] . '" />';
@@ -338,4 +338,3 @@ if ( $opt == 'add' || $opt == 'edit' ) {
     </form>
     <?php
 }
-?>

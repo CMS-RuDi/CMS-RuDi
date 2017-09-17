@@ -20,8 +20,7 @@ function delFiles(title) {
 
     if (sel == false) {
         core.alert(LANG_NO_SELECT_FILE, LANG_ERROR);
-    }
-    else {
+    } else {
         core.confirm(title, null, function () {
             $("#listform").attr('action', 'delfilelist.html');
             document.listform.submit();
@@ -40,12 +39,10 @@ function pubFiles(flag) {
 
     if (sel == false) {
         core.alert(LANG_NO_SELECT_FILE, LANG_ERROR);
-    }
-    else {
+    } else {
         if (flag == 1) {
             $("#listform").attr('action', 'showfilelist.html');
-        }
-        else {
+        } else {
             $("#listform").attr('action', 'hidefilelist.html');
         }
         document.listform.submit();

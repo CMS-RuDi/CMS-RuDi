@@ -15,8 +15,7 @@ $(function () {
                         };
                         $('#addform').ajaxSubmit(options);
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -36,8 +35,7 @@ $(function () {
                         };
                         $('#addform').ajaxSubmit(options);
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -47,13 +45,11 @@ $(function () {
             if (statusText == 'success') {
                 if (result.error == false) {
                     window.location.href = result.redirect;
-                }
-                else {
+                } else {
                     core.show_popup_info(result.text, 'error');
                     $('#popup_ok').prop('disabled', false);
                 }
-            }
-            else {
+            } else {
                 core.alert(statusText, LANG_ERROR);
             }
         },
@@ -72,8 +68,7 @@ $(function () {
                     $('#pub_link').hide();
                     $('#pub_wait').hide();
                     $('#pub_date').fadeIn();
-                }
-                else {
+                } else {
                     core.alert(LANG_NO_PUBLISHED, LANG_ERROR);
                 }
             });
@@ -93,8 +88,7 @@ $(function () {
                     $('#pub_photo_link').hide();
                     $('#pub_photo_wait').hide();
                     $('#pub_photo_date').fadeIn();
-                }
-                else {
+                } else {
                     core.alert(LANG_NO_PUBLISH, LANG_ERROR);
                 }
             });
@@ -114,8 +108,7 @@ $(function () {
                         };
                         $('#edit_photo_form').ajaxSubmit(options);
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -126,8 +119,7 @@ $(function () {
                 if (result.error == false) {
                     window.location.href = result.redirect;
                 }
-            }
-            else {
+            } else {
                 core.alert(statusText, LANG_ERROR);
             }
         },
@@ -171,13 +163,11 @@ $(function () {
                 if (result.error == true) {
                     core.show_popup_info(result.text, 'error');
                     $('#popup_ok').prop('disabled', false);
-                }
-                else {
+                } else {
                     core.box_close();
                     $('#album_title').html(result.text);
                 }
-            }
-            else {
+            } else {
                 core.alert(statusText, LANG_ERROR);
             }
         },
@@ -206,8 +196,7 @@ $(function () {
                             }
                         });
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -228,8 +217,7 @@ $(function () {
                         };
                         $('#send_messages').ajaxSubmit(options);
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -240,12 +228,10 @@ $(function () {
                 if (result.error == true) {
                     core.show_popup_info(result.text, 'error');
                     $('#popup_ok').prop('disabled', false);
-                }
-                else {
+                } else {
                     core.alert(result.text);
                 }
-            }
-            else {
+            } else {
                 core.alert(statusText, LANG_ERROR);
             }
         },
@@ -271,12 +257,10 @@ $(function () {
                 if (result.error == true) {
                     core.show_popup_info(result.text, 'error');
                     $('#popup_ok').prop('disabled', false);
-                }
-                else {
+                } else {
                     window.location.href = '/clubs/photoalbum' + result.album_id;
                 }
-            }
-            else {
+            } else {
                 core.alert(statusText, LANG_ERROR);
             }
         },
@@ -298,8 +282,7 @@ $(function () {
                         };
                         $('#create_club').ajaxSubmit(options);
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -310,12 +293,10 @@ $(function () {
                 if (result.error == true) {
                     core.show_popup_info(result.text, 'error');
                     $('#popup_ok').prop('disabled', false);
-                }
-                else {
+                } else {
                     window.location.href = '/clubs/' + result.club_id;
                 }
-            }
-            else {
+            } else {
                 core.alert(statusText, LANG_ERROR);
             }
         },
@@ -330,8 +311,7 @@ $(function () {
                     $('#popup_ok').click(function () {
                         clubs.intive_send('/clubs/' + club_id + '/join_member.html');
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text);
                 }
             }, 'json');
@@ -355,8 +335,7 @@ $(function () {
             $('#flist_data #flist' + user_id).toggleClass('flist_cell').toggleClass('flist_cell_on');
             if ($('#flist_data #flist' + user_id).attr('class') == 'flist_cell_on') {
                 var new_count = Number(count_friends) + 1;
-            }
-            else {
+            } else {
                 var new_count = Number(count_friends) - 1;
                 if ($('#list_selected_tab').attr('class') == 't_filter_selected') {
                     $('#flist_data #flist' + user_id).fadeOut();
@@ -367,8 +346,7 @@ $(function () {
         intive_filter: function (type) {
             if (type == 'all') {
                 $('#flist_data div.flist_cell, #friend_list_lookup').show();
-            }
-            else {
+            } else {
                 $('#flist_data div.flist_cell, #friend_list_lookup').hide();
             }
         },
@@ -394,13 +372,11 @@ $(function () {
                             });
                         });
                         $('#count_friends').html(0);
-                    }
-                    else {
+                    } else {
                         core.show_popup_info(data.text, 'error');
                     }
                 }, 'json');
-            }
-            else {
+            } else {
                 core.show_popup_info(LANG_YOU_NO_SELECT_USER, 'error');
             }
         },

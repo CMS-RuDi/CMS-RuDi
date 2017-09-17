@@ -28,8 +28,7 @@ $(function () {
                             }, 'json');
                         });
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -40,14 +39,12 @@ $(function () {
             if (statusText == 'success') {
                 if (result.error == false) {
                     window.location.href = result.redirect;
-                }
-                else {
+                } else {
                     $('#error_mess').html(result.text);
                     $('.sess_messages').fadeIn();
                     $('#popup_ok').prop('disabled', false);
                 }
-            }
-            else {
+            } else {
                 core.alert(statusText, LANG_ERROR);
             }
         },
@@ -66,8 +63,7 @@ $(function () {
                         };
                         $('#addform').ajaxSubmit(options);
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -87,8 +83,7 @@ $(function () {
                         };
                         $('#addform').ajaxSubmit(options);
                     });
-                }
-                else {
+                } else {
                     core.alert(data.text, LANG_ERROR);
                 }
             }, 'json');
@@ -99,14 +94,12 @@ $(function () {
             if (statusText == 'success') {
                 if (result.error == false) {
                     window.location.href = result.redirect;
-                }
-                else {
+                } else {
                     $('#error_mess').html(result.text);
                     $('.sess_messages').fadeIn();
                     $('#popup_ok').prop('disabled', false);
                 }
-            }
-            else {
+            } else {
                 core.alert(statusText, LANG_ERROR);
             }
         },
@@ -134,8 +127,7 @@ $(function () {
                     $('#pub_link').hide();
                     $('#pub_wait').hide();
                     $('#pub_date').fadeIn();
-                }
-                else {
+                } else {
                     core.alert(LANG_NO_PUBLISHED, LANG_ERROR);
                 }
             });

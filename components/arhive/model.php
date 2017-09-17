@@ -130,7 +130,7 @@ class cms_model_arhive
                 $item['fpubdate']     = cmsCore::dateFormat($item['pubdate']);
             }
             $item['image'] = (file_exists(PATH . '/images/photos/small/article' . $item['id'] . '.jpg') ?
-                            'article' . $item['id'] . '.jpg' : '');
+                    'article' . $item['id'] . '.jpg' : '');
 
             $content[] = $item;
         }

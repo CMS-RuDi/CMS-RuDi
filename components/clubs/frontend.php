@@ -404,7 +404,7 @@ function clubs()
             // Формируем список друзей, которые еще не в клубе
             foreach ( $friends as $key => $friend ) {
                 if ( !in_array($friend['id'], $members) && $friend['id'] != $club['admin_id'] ) {
-                    $friends_list .= '<option value="' . $friend['id'] . '">' . $friend['nickname'] . '</option>';
+                    $friends_list  .= '<option value="' . $friend['id'] . '">' . $friend['nickname'] . '</option>';
                     $friends_ids[] = $friend['id'];
                 }
             }

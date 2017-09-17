@@ -557,12 +557,12 @@ function applet_config()
                             <td>
                                 <?php if ( !$config['smtpuser'] ) { ?>
                                     <input name="smtpuser" type="text" id="smtpuser" value="<?php echo $config['smtpuser']; ?>" style="width:350px" />
-                                <?php
+                                    <?php
                                 }
                                 else {
                                     ?>
                                     <span class="hinttext"><?php echo $_LANG['AD_IF_CHANGE_USER']; ?></span>
-    <?php } ?>
+                                <?php } ?>
                             </td>
                         </tr>
                         <tr>
@@ -572,12 +572,12 @@ function applet_config()
                             <td>
                                 <?php if ( !$config['smtppass'] ) { ?>
                                     <input name="smtppass" type="password" id="smtppass" value="<?php echo $config['smtppass']; ?>" style="width:350px" />
-                                <?php
+                                    <?php
                                 }
                                 else {
                                     ?>
                                     <span class="hinttext"><?php echo $_LANG['AD_IF_CHANGE_PASS']; ?></span>
-    <?php } ?>
+                                <?php } ?>
                             </td>
                         </tr>
                         <tr>
@@ -605,7 +605,7 @@ function applet_config()
                             <td>
                                 <strong><?php echo $_LANG['AD_VIEW_PATHWAY']; ?></strong><br />
                                 <span class="hinttext">
-    <?php echo $_LANG['AD_PATH_TO_CATEGORY']; ?>
+                                    <?php echo $_LANG['AD_PATH_TO_CATEGORY']; ?>
                                 </span>
                             </td>
                             <td>

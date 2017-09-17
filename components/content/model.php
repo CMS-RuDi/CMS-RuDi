@@ -46,7 +46,7 @@ class cms_model_content
     {
         $result = array();
 
-        switch ($target) {
+        switch ( $target ) {
 
             case 'article': $article = $this->inDB->get_fields('cms_content', "id='{$target_id}'", 'seolink, title');
                 if ( !$article ) {
@@ -66,7 +66,7 @@ class cms_model_content
             return false;
         }
 
-        switch ($target) {
+        switch ( $target ) {
             case 'content':
                 $sql = "UPDATE cms_content SET rating = rating + (" . $points . ") WHERE id = '" . $item_id . "'";
                 break;

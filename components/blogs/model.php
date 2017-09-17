@@ -64,7 +64,7 @@ class cms_model_blogs
     {
         $result = array();
 
-        switch ($target) {
+        switch ( $target ) {
             case 'blog': $sql = "SELECT p.title as title,
                                         p.seolink as seolink,
                                         b.seolink as bloglink
@@ -93,7 +93,7 @@ class cms_model_blogs
     {
         $is_hidden = 0;
 
-        switch ($target) {
+        switch ( $target ) {
             case 'blog':
                 // получаем массив поста
                 $post = $this->inDB->get_fields('cms_blog_posts', "id='$target_id'", 'blog_id, allow_who, published');

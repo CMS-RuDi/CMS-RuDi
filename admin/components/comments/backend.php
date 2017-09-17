@@ -187,18 +187,18 @@ if ( $opt == 'edit' ) {
             <tr>
                 <td><strong><?php echo $_LANG['AD_IF_COMENT_PUBLIC']; ?></strong></td>
                 <td><label><input name="published" type="radio" value="1" <?php
-    if ( $mod['published'] ) {
-        echo 'checked="checked"';
-    }
-    ?> /> <?php echo $_LANG['YES']; ?> </label>
+                        if ( $mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label> <input name="published" type="radio" value="0"  <?php
-                                  if ( !$mod['published'] ) {
-                                      echo 'checked="checked"';
-                                  }
-                                  ?> /> <?php echo $_LANG['NO']; ?> </label></td>
+                        if ( !$mod['published'] ) {
+                            echo 'checked="checked"';
+                        }
+                        ?> /> <?php echo $_LANG['NO']; ?> </label></td>
             </tr>
         </table>
-    <?php cmsCore::insertEditor('content', $mod['content'], '250', '100%'); ?>
+        <?php cmsCore::insertEditor('content', $mod['content'], '250', '100%'); ?>
         <p>
             <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>"/>
             <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components';"/>
@@ -261,15 +261,15 @@ if ( $opt == 'config' ) {
                         </td>
                         <td valign="top">
                             <label><input name="subscribe" type="radio" value="1" <?php
-    if ( $cfg['subscribe'] ) {
-        echo 'checked="checked"';
-    }
-    ?> /> <?php echo $_LANG['YES']; ?></label>
+                                if ( $cfg['subscribe'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="subscribe" type="radio" value="0"  <?php
-                                          if ( !$cfg['subscribe'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?> /> <?php echo $_LANG['NO']; ?></label>
+                                if ( !$cfg['subscribe'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                 </table>
@@ -283,30 +283,30 @@ if ( $opt == 'config' ) {
                         </td>
                         <td width="313" valign="top">
                             <label><input name="cmm_ajax" type="radio" value="1" <?php
-                            if ( $cfg['cmm_ajax'] ) {
-                                echo 'checked="checked"';
-                            }
-                                          ?> /> <?php echo $_LANG['YES']; ?></label>
+                                if ( $cfg['cmm_ajax'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="cmm_ajax" type="radio" value="0"  <?php
-                                          if ( !$cfg['cmm_ajax'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?> /> <?php echo $_LANG['NO']; ?></label>
+                                if ( !$cfg['cmm_ajax'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                     <tr>
                         <td valign="top"><strong><?php echo $_LANG['AD_WATERMARK']; ?></strong></td>
                         <td valign="top">
                             <label><input name="watermark" type="radio" value="1" <?php
-                            if ( $cfg['watermark'] ) {
-                                echo 'checked="checked"';
-                            }
-                                          ?> /> <?php echo $_LANG['YES']; ?></label>
+                                if ( $cfg['watermark'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="watermark" type="radio" value="0"  <?php
-                                          if ( !$cfg['watermark'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?> /> <?php echo $_LANG['NO']; ?></label>
+                                if ( !$cfg['watermark'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> /> <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                     <tr>
@@ -326,20 +326,20 @@ if ( $opt == 'config' ) {
                         <td>
                             <select name="cmm_ip" id="cmm_ip" style="width:220px">
                                 <option value="0" <?php
-                            if ( $cfg['cmm_ip'] == 0 ) {
-                                echo 'selected';
-                            }
-                                          ?>><?php echo $_LANG['AD_HIDE_IP']; ?></option>
+                                if ( $cfg['cmm_ip'] == 0 ) {
+                                    echo 'selected';
+                                }
+                                ?>><?php echo $_LANG['AD_HIDE_IP']; ?></option>
                                 <option value="1" <?php
-                                        if ( $cfg['cmm_ip'] == 1 ) {
-                                            echo 'selected';
-                                        }
-                                        ?>><?php echo $_LANG['AD_ONLY_GUEST_IP']; ?></option>
+                                if ( $cfg['cmm_ip'] == 1 ) {
+                                    echo 'selected';
+                                }
+                                ?>><?php echo $_LANG['AD_ONLY_GUEST_IP']; ?></option>
                                 <option value="2" <?php
-                                        if ( $cfg['cmm_ip'] == 2 ) {
-                                            echo 'selected';
-                                        }
-                                        ?>><?php echo $_LANG['AD_ALL_IP']; ?></option>
+                                if ( $cfg['cmm_ip'] == 2 ) {
+                                    echo 'selected';
+                                }
+                                ?>><?php echo $_LANG['AD_ALL_IP']; ?></option>
                             </select>
                         </td>
                     </tr>
@@ -356,15 +356,15 @@ if ( $opt == 'config' ) {
                         <td valign="top">
                             <select name="regcap" id="regcap" style="width:220px">
                                 <option value="0" <?php
-                            if ( $cfg['regcap'] == 0 ) {
-                                echo 'selected';
-                            }
-                                        ?>><?php echo $_LANG['AD_FOR_GUEST']; ?></option>
+                                if ( $cfg['regcap'] == 0 ) {
+                                    echo 'selected';
+                                }
+                                ?>><?php echo $_LANG['AD_FOR_GUEST']; ?></option>
                                 <option value="1" <?php
-                                        if ( $cfg['regcap'] == 1 ) {
-                                            echo 'selected';
-                                        }
-                                        ?>><?php echo $_LANG['AD_FOR_ALL']; ?></option>
+                                if ( $cfg['regcap'] == 1 ) {
+                                    echo 'selected';
+                                }
+                                ?>><?php echo $_LANG['AD_FOR_ALL']; ?></option>
                             </select>
                         </td>
                     </tr>
@@ -375,40 +375,40 @@ if ( $opt == 'config' ) {
                         <td valign="top">
                             <select name="edit_minutes" id="regcap" style="width:220px">
                                 <option value="0" <?php
-                            if ( !$cfg['edit_minutes'] ) {
-                                echo 'selected';
-                            }
-                                        ?>><?php echo $_LANG['AD_AT_ONCE']; ?></option>
+                                if ( !$cfg['edit_minutes'] ) {
+                                    echo 'selected';
+                                }
+                                ?>><?php echo $_LANG['AD_AT_ONCE']; ?></option>
                                 <option value="1" <?php
-                                        if ( $cfg['edit_minutes'] == 1 ) {
-                                            echo 'selected';
-                                        }
-                                        ?>>1 <?php echo $_LANG['MINUTU1']; ?></option>
+                                if ( $cfg['edit_minutes'] == 1 ) {
+                                    echo 'selected';
+                                }
+                                ?>>1 <?php echo $_LANG['MINUTU1']; ?></option>
                                 <option value="5" <?php
-                                        if ( $cfg['edit_minutes'] == 5 ) {
-                                            echo 'selected';
-                                        }
-                                        ?>>5 <?php echo $_LANG['MINUTE10']; ?></option>
+                                if ( $cfg['edit_minutes'] == 5 ) {
+                                    echo 'selected';
+                                }
+                                ?>>5 <?php echo $_LANG['MINUTE10']; ?></option>
                                 <option value="10" <?php
-                                        if ( $cfg['edit_minutes'] == 10 ) {
-                                            echo 'selected';
-                                        }
-                                        ?>>10 <?php echo $_LANG['MINUTE10']; ?></option>
+                                if ( $cfg['edit_minutes'] == 10 ) {
+                                    echo 'selected';
+                                }
+                                ?>>10 <?php echo $_LANG['MINUTE10']; ?></option>
                                 <option value="15" <?php
-                                        if ( $cfg['edit_minutes'] == 15 ) {
-                                            echo 'selected';
-                                        }
-                                        ?>>15 <?php echo $_LANG['MINUTE10']; ?></option>
+                                if ( $cfg['edit_minutes'] == 15 ) {
+                                    echo 'selected';
+                                }
+                                ?>>15 <?php echo $_LANG['MINUTE10']; ?></option>
                                 <option value="30" <?php
-                                        if ( $cfg['edit_minutes'] == 30 ) {
-                                            echo 'selected';
-                                        }
-                                        ?>>30 <?php echo $_LANG['MINUTE10']; ?></option>
+                                if ( $cfg['edit_minutes'] == 30 ) {
+                                    echo 'selected';
+                                }
+                                ?>>30 <?php echo $_LANG['MINUTE10']; ?></option>
                                 <option value="60" <?php
-                                        if ( $cfg['edit_minutes'] == 60 ) {
-                                            echo 'selected';
-                                        }
-                                        ?>>1 <?php echo $_LANG['HOUR1']; ?></option>
+                                if ( $cfg['edit_minutes'] == 60 ) {
+                                    echo 'selected';
+                                }
+                                ?>>1 <?php echo $_LANG['HOUR1']; ?></option>
                             </select>
                         </td>
                     </tr>
@@ -424,15 +424,15 @@ if ( $opt == 'config' ) {
                         </td>
                         <td width="313" valign="top">
                             <label><input name="min_karma" type="radio" value="1" <?php
-                            if ( $cfg['min_karma'] ) {
-                                echo 'checked="checked"';
-                            }
-                                        ?> />  <?php echo $_LANG['YES']; ?></label>
+                                if ( $cfg['min_karma'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?> />  <?php echo $_LANG['YES']; ?></label>
                             <label><input name="min_karma" type="radio" value="0" <?php
-                                          if ( !$cfg['min_karma'] ) {
-                                              echo 'checked="checked"';
-                                          }
-                                          ?>/>  <?php echo $_LANG['NO']; ?></label>
+                                if ( !$cfg['min_karma'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/>  <?php echo $_LANG['NO']; ?></label>
                         </td>
                     </tr>
                     <tr>

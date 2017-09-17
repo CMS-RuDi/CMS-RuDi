@@ -28,8 +28,7 @@ else {
 
 cpToolMenu($toolmenu);
 
-//=================================================================================================//
-//=================================================================================================//
+//============================================================================//
 
 if ( $opt == 'list' ) {
     $fields[] = array( 'title' => 'id', 'field' => 'id', 'width' => '30' );
@@ -135,34 +134,34 @@ if ( $opt == 'add' || $opt == 'edit' ) {
                 <td width="213"><input name="title" type="text" id="title" size="30" value="<?php echo htmlspecialchars(@$mod['title']); ?>" /></td>
                 <td width="173">&nbsp;</td>
             </tr>
-    <?php for ( $v = 1; $v <= 12; $v++ ) { ?>
+            <?php for ( $v = 1; $v <= 12; $v++ ) { ?>
 
                 <tr>
                     <td><?php echo $_LANG['AD_ANSWER']; ?> №<?php echo $v ?>:</td>
                     <td><input name="answers[<?php echo $v ?>]" type="text" size="30" value="<?php echo @$answers_title[$v]; ?>" /></td>
                     <td><?php
-        if ( isset($answers_num[$v]) ) {
-            echo $_LANG['AD_VOTES'] . ': ' . $answers_num[$v];
-            echo '<input type="hidden" name="num[' . $v . ']" value="' . $answers_num[$v] . '" />';
-        }
-        else {
-            echo '&nbsp;';
-        }
-        ?></td>
+                        if ( isset($answers_num[$v]) ) {
+                            echo $_LANG['AD_VOTES'] . ': ' . $answers_num[$v];
+                            echo '<input type="hidden" name="num[' . $v . ']" value="' . $answers_num[$v] . '" />';
+                        }
+                        else {
+                            echo '&nbsp;';
+                        }
+                        ?></td>
                 </tr>
 
-    <?php } ?>
+            <?php } ?>
         </table>
 
         <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>" />
         <input name="opt" type="hidden" id="opt" <?php
-    if ( $opt == 'add' ) {
-        echo 'value="submit"';
-    }
-    else {
-        echo 'value="update"';
-    }
-    ?> />
+               if ( $opt == 'add' ) {
+                   echo 'value="submit"';
+               }
+               else {
+                   echo 'value="update"';
+               }
+               ?> />
                <?php
                if ( $opt == 'edit' ) {
                    echo '<input name="poll_id" type="hidden" value="' . $mod['id'] . '" /> ';

@@ -21,6 +21,7 @@ function applet_tree()
 
     global $_LANG;
     global $adminAccess;
+
     if ( !cmsUser::isAdminCan('admin/content', $adminAccess) ) {
         cpAccessDenied();
     }
@@ -45,7 +46,6 @@ function applet_tree()
 
     $do = cmsCore::request('do', 'str', 'tree');
 
-//============================================================================//
 //============================================================================//
 
     if ( $do == 'tree' ) {

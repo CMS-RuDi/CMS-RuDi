@@ -235,7 +235,7 @@ if ( $fdo == 'addfile' ) {
         $post_max_b = trim(@ini_get('upload_max_filesize'));
         $last       = mb_strtolower($post_max_b{mb_strlen($post_max_b) - 1});
 
-        switch ($last) {
+        switch ( $last ) {
             case 'g':
                 $post_max_b *= 1024;
             case 'm':

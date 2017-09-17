@@ -108,6 +108,7 @@ function applet_users()
 
     if ( $do == 'rerating' ) {
         $user_id = cmsCore::request('user_id', 'int');
+
         if ( !$user_id ) {
             cmsCore::redirectBack();
         }
@@ -125,12 +126,12 @@ function applet_users()
 
     if ( $do == 'activate' ) {
         $user_ids = cmsCore::request('item', 'array_int');
+
         if ( !$user_ids ) {
             cmsCore::redirectBack();
         }
 
         foreach ( $user_ids as $user_id ) {
-
             $code = $inDB->get_field('cms_users_activate', "user_id = '$user_id'", 'code');
 
             $sql = "UPDATE cms_users SET is_locked = 0 WHERE id = '$user_id'";
@@ -208,14 +209,17 @@ function applet_users()
                 $errors = true;
             }
         }
+
         if ( $items['password'] && !$items['pass2'] ) {
             cmsCore::addSessionMessage($_LANG['TYPE_PASS_TWICE'], 'error');
             $errors = true;
         }
+
         if ( $items['password'] && $items['pass2'] && mb_strlen($items['password']) < 6 ) {
             cmsCore::addSessionMessage($_LANG['PASS_SHORT'], 'error');
             $errors = true;
         }
+
         if ( $items['password'] && $items['pass2'] && $items['password'] != $items['pass2'] ) {
             cmsCore::addSessionMessage($_LANG['WRONG_PASS'], 'error');
             $errors = true;
@@ -226,6 +230,7 @@ function applet_users()
             cmsCore::addSessionMessage($_LANG['SHORT_NICKNAME'], 'error');
             $errors = true;
         }
+
         // Проверяем email
         if ( !$items['email'] ) {
             cmsCore::addSessionMessage($_LANG['ERR_EMAIL'], 'error');
@@ -274,6 +279,7 @@ function applet_users()
             if ( $id == 1 && $inUser->id != $id ) {
                 cmsCore::error404();
             }
+
             if ( $id == 1 ) {
                 unset($items['group_id']);
                 unset($items['is_locked']);

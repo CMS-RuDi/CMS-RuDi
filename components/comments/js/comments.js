@@ -23,8 +23,8 @@ function addComment(target, target_id, parent_id) {
         }
     });
 }
-function showResponseAdd(result, statusText, xhr, $form) {
 
+function showResponseAdd(result, statusText, xhr, $form) {
     $('.sess_messages').fadeOut();
 
     if (statusText == 'success') {
@@ -37,14 +37,12 @@ function showResponseAdd(result, statusText, xhr, $form) {
             $('#submit_cmm').prop('disabled', false);
             $('.submit_cmm img').remove();
             $('#cancel_cmm').show();
-        }
-        else {
+        } else {
             if (result.is_premod) {
                 core.alert(result.is_premod);
                 $('.cm_addentry').remove();
                 $('.cm_add_link').show();
-            }
-            else {
+            } else {
                 $('.cm_addentry').remove();
                 $('.cm_add_link').show();
                 loadComments(result.target, result.target_id, false);
@@ -52,33 +50,31 @@ function showResponseAdd(result, statusText, xhr, $form) {
                 $('#comments_count').html(total_page + 1);
             }
         }
-    }
-    else {
+    } else {
         core.alert(statusText, LANG_ERROR);
     }
-
 }
 
 function showResponseEdit(result, statusText, xhr, $form) {
     $('.ajax-loader').hide();
+
     if (statusText == 'success') {
         if (result.error == true) {
             core.show_popup_info(result.text, 'error');
             $('#popup_ok').prop('disabled', false);
-        }
-        else {
+        } else {
             core.box_close();
             $('#cm_msg_' + result.comment_id).html(result.text);
             afterLoad();
         }
-    }
-    else {
+    } else {
         core.alert(statusText, LANG_ERROR);
     }
 }
 
 function editComment(comment_id, csrf_token) {
     core.message(LANG_EDIT_COMMENT);
+
     $.post('/components/comments/addform.php', {action: 'edit', id: comment_id, csrf_token: csrf_token}, function (data) {
         if (data) {
             $('#popup_ok').show();
@@ -86,6 +82,7 @@ function editComment(comment_id, csrf_token) {
             $('#popup_progress').hide();
         }
     });
+
     $('#popup_ok').click(function () {
         $('#popup_ok').prop('disabled', true);
         $('.ajax-loader').show();
@@ -118,7 +115,6 @@ function expandComment(id) {
 }
 
 function loadComments(target, target_id, anchor) {
-
     $('div.component').css({opacity: 0.4, filter: 'alpha(opacity=40)'});
 
     $.ajax({
@@ -136,7 +132,6 @@ function loadComments(target, target_id, anchor) {
             afterLoad();
         }
     });
-
 }
 
 function afterLoad() {
@@ -154,15 +149,13 @@ function afterLoad() {
 }
 
 function goPage(dir, field, target, target_id) {
-
     var p = Number($('#' + field).val()) + dir;
     loadComments(target, target_id, p);
-
 }
 
 function voteComment(comment_id, vote) {
-
     $('span#votes' + comment_id).html('<img src="/images/ajax-loader.gif" border="0"/>');
+
     $.ajax({
         type: "POST",
         url: "/components/comments/vote.php",
@@ -171,5 +164,6 @@ function voteComment(comment_id, vote) {
             $('span#votes' + comment_id).html(data);
         }
     });
+
     return false;
 }
