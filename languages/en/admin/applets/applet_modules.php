@@ -1,15 +1,13 @@
 ﻿<?php
-/******************************************************************************/
-//                                                                            //
-//                           InstantCMS v1.10.6                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/******************************************************************************/
+/*
+ *                           InstantCMS v1.10.7
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2016
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
 
 $_LANG['AD_EDIT_MODULE_VIEW']        = 'Edit module view';
 $_LANG['AD_EDIT_MODULE']             = 'Edit Module';
@@ -35,7 +33,7 @@ $_LANG['AD_ROOT_PAGES']              = '-- Main page --';
 $_LANG['AD_WHERE_MODULE_VIEW']       = 'Where show module?';
 $_LANG['AD_WHERE_MODULE_NOT_VIEW']   = 'Where hide module?';
 $_LANG['AD_DONT_VIEW']               = 'Not display on nested pages';
-$_LANG['AD_EXCEPT_NESTED']    		 = 'Except nested';
+$_LANG['AD_EXCEPT_NESTED']           = 'Except nested';
 $_LANG['AD_MODULE_CACHE']            = 'Cache';
 $_LANG['AD_DO_MODULE_CACHE']         = 'Module cache enabled';
 $_LANG['AD_MODULE_CACHE_PERIOD']     = 'Cache refresh period';

@@ -1,30 +1,33 @@
 <?php
-/******************************************************************************/
-//                                                                            //
-//                           InstantCMS v1.10.6                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/******************************************************************************/
 
-function mod_whoonline($mod, $cfg){
+/*
+ *                           InstantCMS v1.10.6
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2015
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
 
+function mod_whoonline($mod, $cfg)
+{
     $inDB = cmsDatabase::getInstance();
 
-    if (!isset($cfg['color_admin'])) { $cfg['color_admin'] = '#FF0000'; }
-    if (!isset($cfg['color_editor'])) { $cfg['color_editor'] = '#009900'; }
+    if ( !isset($cfg['color_admin']) ) {
+        $cfg['color_admin'] = '#FF0000';
+    }
+
+    if ( !isset($cfg['color_editor']) ) {
+        $cfg['color_editor'] = '#009900';
+    }
 
     $online_count = cmsUser::getOnlineCount();
 
     $users       = array();
     $today_users = array();
 
-    if($online_count['users']){
-
+    if ( $online_count['users'] ) {
         $sql = "SELECT
                 o.user_id as id,
                 u.login,
@@ -38,22 +41,20 @@ function mod_whoonline($mod, $cfg){
 
         $result = $inDB->query($sql);
         $users  = getUsersArray($result, $cfg, $inDB);
-
     }
 
-    if($cfg['show_today']){
-
-        $today = date("Y-m-d");
-        $sql = "SELECT u.id as id, u.nickname as nickname, u.login as login, p.gender as gender
+    if ( $cfg['show_today'] ) {
+        $today  = date("Y-m-d");
+        $sql    = "SELECT u.id as id, u.nickname as nickname, u.login as login, p.gender as gender
                 FROM cms_users u
                 LEFT JOIN cms_user_profiles p ON p.user_id = u.id
                 WHERE u.is_locked = 0 AND u.is_deleted = 0 AND DATE_FORMAT(u.logdate, '%Y-%m-%d')='$today'
                 ORDER BY u.logdate DESC";
         $result = $inDB->query($sql);
-        if ($inDB->num_rows($result)){
+
+        if ( $inDB->num_rows($result) ) {
             $today_users = getUsersArray($result, $cfg, $inDB);
         }
-
     }
 
     cmsPage::initTemplate('modules', $cfg['tpl'])->
@@ -64,25 +65,31 @@ function mod_whoonline($mod, $cfg){
             display($cfg['tpl']);
 
     return true;
-
 }
 
-function getUsersArray($result, $cfg, $inDB) {
+function getUsersArray($result, $cfg, $inDB)
+{
     $users = array();
-    while($usr = $inDB->fetch_assoc($result)){
-        if($cfg['admin_editor']){
-            if (cmsUser::userIsAdmin($usr['id'])){
+
+    while ( $usr = $inDB->fetch_assoc($result) ) {
+        if ( $cfg['admin_editor'] ) {
+            if ( cmsUser::userIsAdmin($usr['id']) ) {
 
                 $usr['genderlink'] = cmsUser::getGenderLink($usr['id'], $usr['nickname'], $usr['gender'], $usr['login'], "color:{$cfg['color_admin']}");
-            } elseif (cmsUser::userIsEditor($usr['id'])) {
+            }
+            elseif ( cmsUser::userIsEditor($usr['id']) ) {
                 $usr['genderlink'] = cmsUser::getGenderLink($usr['id'], $usr['nickname'], $usr['gender'], $usr['login'], "color:{$cfg['color_editor']}");
-            } else {
+            }
+            else {
                 $usr['genderlink'] = cmsUser::getGenderLink($usr['id'], $usr['nickname'], $usr['gender'], $usr['login']);
             }
-        } else {
+        }
+        else {
             $usr['genderlink'] = cmsUser::getGenderLink($usr['id'], $usr['nickname'], $usr['gender'], $usr['login']);
         }
+
         $users[] = $usr['genderlink'];
     }
+
     return $users;
 }

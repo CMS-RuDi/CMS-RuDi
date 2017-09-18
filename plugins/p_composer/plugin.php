@@ -1,20 +1,20 @@
 <?php
-/******************************************************************************/
-//                                                                            //
-//                           InstantCMS v1.10.7                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/******************************************************************************/
 
-class p_composer extends cmsPlugin {
+/*
+ *                           InstantCMS v1.10.7
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2015
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
 
-    public function __construct() {
+class p_composer extends cmsPlugin
+{
 
+    public function __construct()
+    {
         global $_LANG;
 
         $this->info = array(
@@ -27,10 +27,9 @@ class p_composer extends cmsPlugin {
             'plugin_type' => 'system',
         );
 
-        $this->events = array('GET_INDEX');
+        $this->events = array( 'GET_INDEX' );
 
         parent::__construct();
-
     }
 
     /**
@@ -39,14 +38,15 @@ class p_composer extends cmsPlugin {
      * @param array $item
      * @return array
      */
-    public function execute($event = '', $item = array()){
+    public function execute($event = '', $item = array())
+    {
+        $file_name = PATH . '/vendor/autoload.php';
 
-        $file_name = PATH.'/vendor/autoload.php';
-
-        if (file_exists($file_name)) {
+        if ( file_exists($file_name) ) {
             include_once $file_name;
         }
 
         return $item;
     }
+
 }

@@ -1,18 +1,17 @@
 <?php
-/******************************************************************************/
-//                                                                            //
-//                           InstantCMS v1.10.6                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/******************************************************************************/
 
-function mod_invite($mod, $cfg){
+/*
+ *                           InstantCMS v1.10.6
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2015
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
 
+function mod_invite($mod, $cfg)
+{
     $inUser = cmsUser::getInstance();
 
     global $_LANG;
@@ -20,25 +19,28 @@ function mod_invite($mod, $cfg){
     $errors      = false;
     $is_redirect = false; // в модуле нельзя использовать cmsCore::redirectBack(), используем костыли ;)
 
-    if (cmsCore::inRequest('send_invite_email')){
-
+    if ( cmsCore::inRequest('send_invite_email') ) {
         $is_redirect = true;
 
         $username = cmsCore::request('username', 'str', '');
         $email    = cmsCore::request('friend_email', 'email', '');
 
-        if (!$username && !$inUser->id){
-            cmsCore::addSessionMessage($_LANG['ERR_NEED_NAME'], 'error'); $errors = true;
-        }
-        if ($inUser->id) { $username = $inUser->nickname; }
-
-        if (!$email){
-            cmsCore::addSessionMessage($_LANG['ERR_NEED_MAIL'], 'error'); $errors = true;
+        if ( !$username && !$inUser->id ) {
+            cmsCore::addSessionMessage($_LANG['ERR_NEED_NAME'], 'error');
+            $errors = true;
         }
 
-        if(!$errors){
+        if ( $inUser->id ) {
+            $username = $inUser->nickname;
+        }
 
-            if(!cmsUser::checkCsrfToken()){
+        if ( !$email ) {
+            cmsCore::addSessionMessage($_LANG['ERR_NEED_MAIL'], 'error');
+            $errors = true;
+        }
+
+        if ( !$errors ) {
+            if ( !cmsUser::checkCsrfToken() ) {
                 cmsCore::error404();
             }
 
@@ -50,9 +52,7 @@ function mod_invite($mod, $cfg){
             cmsCore::mailText($email, sprintf($_LANG['INVITE_SUBJECT'], $username), $letter);
 
             cmsCore::addSessionMessage($_LANG['INVITE_SENDED'], 'success');
-
         }
-
     }
 
     cmsPage::initTemplate('modules', $cfg['tpl'])->
@@ -61,5 +61,4 @@ function mod_invite($mod, $cfg){
             display($cfg['tpl']);
 
     return true;
-
 }

@@ -1,15 +1,14 @@
 <?php
-/******************************************************************************/
-//                                                                            //
-//                           InstantCMS v1.10.6                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/******************************************************************************/
+
+/*
+ *                           InstantCMS v1.10.7
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2016
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
 
 $_LANG['BLOG']                   = 'Blog';
 $_LANG['BLOGS']                  = 'Blogs';
@@ -42,17 +41,17 @@ $_LANG['KARMS']                  = 'karma';
 $_LANG['POSTS_1']                = 'post';
 $_LANG['POSTS_2']                = 'posts';
 $_LANG['POSTS_10']               = 'posts';
-$_LANG['NEW_POST']           = 'New post';
-$_LANG['EDIT_POST']          = 'Edit post';
-$_LANG['POST_ERR_TITLE']     = 'Specify post title! The title should be no shorter than 2 characters.';
-$_LANG['POST_ERR_TEXT']      = 'Fill in the text of the post! The text should be no shorter than 5 characters.';
-$_LANG['ERR_POST_CREATE']    = 'Failed to create a record!';
-$_LANG['POST_CREATED']       = 'Post was added successfully';
-$_LANG['POST_UPDATED']       = 'Post was updated successfully';
-$_LANG['POST_IS_DELETED']    = 'Post was deleted successfully';
-$_LANG['POST_PREMODER_TEXT'] = 'The record will be published on the Blog after validation.';
-$_LANG['PREV_POST']          = 'Previous post';
-$_LANG['NEXT_POST']          = 'Next post';
+$_LANG['NEW_POST']               = 'New post';
+$_LANG['EDIT_POST']              = 'Edit post';
+$_LANG['POST_ERR_TITLE']         = 'Specify post title! The title should be no shorter than 2 characters.';
+$_LANG['POST_ERR_TEXT']          = 'Fill in the text of the post! The text should be no shorter than 5 characters.';
+$_LANG['ERR_POST_CREATE']        = 'Failed to create a record!';
+$_LANG['POST_CREATED']           = 'Post was added successfully';
+$_LANG['POST_UPDATED']           = 'Post was updated successfully';
+$_LANG['POST_IS_DELETED']        = 'Post was deleted successfully';
+$_LANG['POST_PREMODER_TEXT']     = 'The record will be published on the Blog after validation.';
+$_LANG['PREV_POST']              = 'Previous post';
+$_LANG['NEXT_POST']              = 'Next post';
 
 $_LANG['NEW_CAT']       = 'New category';
 $_LANG['CAT_ERR_TITLE'] = 'Specify category title! The title should be no shorter than 3 characters.';

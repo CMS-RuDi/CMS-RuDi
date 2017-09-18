@@ -1,15 +1,14 @@
 <?php
-/******************************************************************************/
-//                                                                            //
-//                           InstantCMS v1.10.6                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/******************************************************************************/
+
+/*
+ *                           InstantCMS v1.10.7
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2016
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
 
 $_LANG                              = array();
 $_LANG['PATH_HOME']                 = 'Главная';
@@ -88,16 +87,16 @@ $_LANG['CODE']           = 'Код';
 $_LANG['WAS_UPDATED']    = 'Произошло обновление:';
 $_LANG['CURRENCY']       = 'руб.';
 
-$_LANG['TITLE']                  = 'Название';
-$_LANG['DESCRIPTION']            = 'Описание';
-$_LANG['IMAGE']                  = 'Изображение';
-$_LANG['EDIT_INFO']              = 'Для редактирования у Вас осталось {min}';
-$_LANG['ON_MODERATE']            = 'На модерации';
-$_LANG['FILE']                   = 'Файл';
-$_LANG['NOT_FOUND']              = 'не найден';
-$_LANG['USER_IS_DELETE']         = 'Пользователь удален';
-$_LANG['INSERT_WYSIWYG_ERROR']   = '<p>Визуальный редактор не найден либо не включен.<br/>Если редактор установлен, включите его в админке (меню <em>Дополнения</em> &rarr; <em>Плагины</em>).</p>';
-$_LANG['INSERT_CAPTCHA_ERROR']   = '<p>Капча не найдена либо не включена.<br/>Если капча установлена, включите ее в админке (меню <em>Дополнения</em> &rarr; <em>Плагины</em>).</p>';
+$_LANG['TITLE']                = 'Название';
+$_LANG['DESCRIPTION']          = 'Описание';
+$_LANG['IMAGE']                = 'Изображение';
+$_LANG['EDIT_INFO']            = 'Для редактирования у Вас осталось {min}';
+$_LANG['ON_MODERATE']          = 'На модерации';
+$_LANG['FILE']                 = 'Файл';
+$_LANG['NOT_FOUND']            = 'не найден';
+$_LANG['USER_IS_DELETE']       = 'Пользователь удален';
+$_LANG['INSERT_WYSIWYG_ERROR'] = '<p>Визуальный редактор не найден либо не включен.<br/>Если редактор установлен, включите его в админке (меню <em>Дополнения</em> &rarr; <em>Плагины</em>).</p>';
+$_LANG['INSERT_CAPTCHA_ERROR'] = '<p>Капча не найдена либо не включена.<br/>Если капча установлена, включите ее в админке (меню <em>Дополнения</em> &rarr; <em>Плагины</em>).</p>';
 
 // For All Modules
 $_LANG['CONFIG_MODULE']           = 'Настроить модуль';
@@ -244,7 +243,7 @@ $_LANG['BB_CODE'] = array(
     'IV'      => 'Вставить видео',
     'IMP3'    => 'Вставить mp3',
     'II'      => 'Вставить картинку из Сети',
-    'U_AND_I' => 'Загрузить и вставить фото');
+    'U_AND_I' => 'Загрузить и вставить фото' );
 
 $_LANG['BB_URL']        = 'Адрес ссылки (URL)';
 $_LANG['BB_URL_TITLE']  = 'Название ссылки (не обязательно)';

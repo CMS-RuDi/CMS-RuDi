@@ -1,27 +1,37 @@
 <?php
-/******************************************************************************/
-//                                                                            //
-//                           InstantCMS v1.10.6                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/******************************************************************************/
 
-function mod_menu($mod, $cfg){
+/*
+ *                           InstantCMS v1.10.6
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2015
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
 
+function mod_menu($mod, $cfg)
+{
     $inCore      = cmsCore::getInstance();
     $inUser      = cmsUser::getInstance();
     $menuid      = $inCore->menuId();
     $full_menu   = $inCore->getMenuStruct();
-    $current_uri = '/'.$inCore->getUri();
+    $current_uri = '/' . $inCore->getUri();
 
-    if (!isset($cfg['menu'])) { $menu = 'mainmenu'; } else { $menu = $cfg['menu']; }
-    if (!isset($cfg['show_home'])) { $cfg['show_home'] = 1; }
-    if (!isset($cfg['is_sub_menu'])) { $cfg['is_sub_menu'] = 0; }
+    if ( !isset($cfg['menu']) ) {
+        $menu = 'mainmenu';
+    }
+    else {
+        $menu = $cfg['menu'];
+    }
+
+    if ( !isset($cfg['show_home']) ) {
+        $cfg['show_home'] = 1;
+    }
+
+    if ( !isset($cfg['is_sub_menu']) ) {
+        $cfg['is_sub_menu'] = 0;
+    }
 
     // текущий пункт меню
     $currentmenu = isset($full_menu[$menuid]) ? $full_menu[$menuid] : array();
@@ -30,48 +40,50 @@ function mod_menu($mod, $cfg){
     $items = array();
 
     // id корня меню если обычный вывод меню, $menuid если режим подменю
-    if($cfg['is_sub_menu']){
-
+    if ( $cfg['is_sub_menu'] ) {
         // в подменю не должно быть ссылки на главную
         $cfg['show_home'] = 0;
+
         // на главной или нет активного пункта меню
-        if($menuid == 1 || !$currentmenu){
+        if ( $menuid == 1 || !$currentmenu ) {
             return false;
         }
-        foreach ($full_menu as $item) {
-            if($item['NSLeft'] > $currentmenu['NSLeft'] &&
+
+        foreach ( $full_menu as $item ) {
+            if ( $item['NSLeft'] > $currentmenu['NSLeft'] &&
                     $item['NSRight'] < $currentmenu['NSRight'] &&
                     in_array($menu, $item['menu']) &&
-                    ($item['is_lax'] || cmsCore::checkContentAccess($item['access_list'], false)) && $item['published']){
-                $item['link']  = cmsUser::stringReplaceUserProperties($item['link']);
-                $item['title'] = cmsUser::stringReplaceUserProperties($item['title'], true);
-                $item['icon_as_img'] = ($item['iconurl'] && file_exists(PATH.$item['iconurl']) ? true : false);
-                $item['icon_as_css'] = ($item['iconurl'] && !file_exists(PATH.$item['iconurl']) ? true : false);
-                $items[] = $item;
+                    ($item['is_lax'] || cmsCore::checkContentAccess($item['access_list'], false)) && $item['published'] ) {
+                $item['link']        = cmsUser::stringReplaceUserProperties($item['link']);
+                $item['title']       = cmsUser::stringReplaceUserProperties($item['title'], true);
+                $item['icon_as_img'] = ($item['iconurl'] && file_exists(PATH . $item['iconurl']) ? true : false);
+                $item['icon_as_css'] = ($item['iconurl'] && !file_exists(PATH . $item['iconurl']) ? true : false);
+                $items[]             = $item;
                 // массивы для сортировки
-                $nsl[] = $item['NSLeft'];
-                $ord[] = $item['ordering'];
+                $nsl[]               = $item['NSLeft'];
+                $ord[]               = $item['ordering'];
             }
         }
-
-    } else {
-
-        foreach ($full_menu as $item) {
-            if(in_array($menu, $item['menu']) &&
-                    ($item['is_lax'] || cmsCore::checkContentAccess($item['access_list'], false)) && $item['published']){
-                $item['link']  = cmsUser::stringReplaceUserProperties($item['link']);
-                $item['title'] = cmsUser::stringReplaceUserProperties($item['title'], true);
-                $item['icon_as_img'] = ($item['iconurl'] && file_exists(PATH.$item['iconurl']) ? true : false);
-                $item['icon_as_css'] = ($item['iconurl'] && !file_exists(PATH.$item['iconurl']) ? true : false);
-                $items[] = $item;
+    }
+    else {
+        foreach ( $full_menu as $item ) {
+            if ( in_array($menu, $item['menu']) &&
+                    ($item['is_lax'] || cmsCore::checkContentAccess($item['access_list'], false)) && $item['published'] ) {
+                $item['link']        = cmsUser::stringReplaceUserProperties($item['link']);
+                $item['title']       = cmsUser::stringReplaceUserProperties($item['title'], true);
+                $item['icon_as_img'] = ($item['iconurl'] && file_exists(PATH . $item['iconurl']) ? true : false);
+                $item['icon_as_css'] = ($item['iconurl'] && !file_exists(PATH . $item['iconurl']) ? true : false);
+                $items[]             = $item;
                 // массивы для сортировки
-                $nsl[] = $item['NSLeft'];
-                $ord[] = $item['ordering'];
+                $nsl[]               = $item['NSLeft'];
+                $ord[]               = $item['ordering'];
             }
         }
     }
 
-    if(!$items) { return false; }
+    if ( !$items ) {
+        return false;
+    }
 
     // сортируем массив
     array_multisort($nsl, SORT_ASC, $ord, SORT_ASC, $items);
@@ -89,5 +101,4 @@ function mod_menu($mod, $cfg){
             display($cfg['tpl']);
 
     return true;
-
 }

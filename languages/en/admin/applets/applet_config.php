@@ -1,15 +1,13 @@
 ﻿<?php
-/******************************************************************************/
-//                                                                            //
-//                           InstantCMS v1.10.6                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/******************************************************************************/
+/*
+ *                           InstantCMS v1.10.7
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2016
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
 
 $_LANG['AD_CONFIG_SITE_ERROR']         = 'File /includes/config.inc.php is not writable';
 $_LANG['AD_SITE']                      = 'Site';
@@ -84,6 +82,6 @@ $_LANG['AD_ONLINESTATS']               = 'Stats for online users';
 $_LANG['AD_NO_ONLINESTATS']            = 'do not keep stats';
 $_LANG['AD_YES_ONLINESTATS']           = 'clear the statistics for each reload of page';
 $_LANG['AD_CRON_ONLINESTATS']          = 'clear the stats by CRON (task "clearOnlineUsers")';
-$_LANG['AD_SEO_URL_COUNT'] 			   = 'SEO URL length';
-$_LANG['AD_SEO_URL_COUNT_HINT'] 	   = 'Seo url characters count';
+$_LANG['AD_SEO_URL_COUNT']             = 'SEO URL length';
+$_LANG['AD_SEO_URL_COUNT_HINT']        = 'Seo url characters count';
 $_LANG['AD_ATTENTION']                 = '<strong>Attention:</strong> after configuring you need to change the files owner for security reasons /includes/config.inc.php and set the permissions on it 644.<br /> Note : after the full site configuration on the server you must set the access rights <strong>644 for all files</strong> and <strong>755 for all directories,</strong> except for the upload files directory. Also make sure that the owner of the site files is a different user from the one who works with the web server and an interpreter php.';
