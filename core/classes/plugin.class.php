@@ -18,7 +18,7 @@ class cmsPlugin
     protected $inPage;
     public $info;
     public $events;
-    public $config;
+    public $config = [];
 
     public function __construct()
     {

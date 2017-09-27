@@ -1070,12 +1070,14 @@ class cmsUser
         $guests = 0;
         $online = array();
 
-        foreach ( $ou as $o ) {
-            if ( $o['user_id'] == 0 || $o['user_id'] == '' ) {
-                $guests++;
-            }
-            else {
-                $online[$o['user_id']][] = $o;
+        if ( !empty($ou) ) {
+            foreach ( $ou as $o ) {
+                if ( $o['user_id'] == 0 || $o['user_id'] == '' ) {
+                    $guests++;
+                }
+                else {
+                    $online[$o['user_id']][] = $o;
+                }
             }
         }
 

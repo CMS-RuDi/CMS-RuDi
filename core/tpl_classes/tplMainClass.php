@@ -33,7 +33,7 @@ abstract class tplMainClass
     /**
      * Добавляет переменную в набор
      */
-    public function assign($tpl_var, $value)
+    public function assign($tpl_var, $value = false)
     {
         if ( !empty($tpl_var) ) {
             if ( is_array($tpl_var) ) {
