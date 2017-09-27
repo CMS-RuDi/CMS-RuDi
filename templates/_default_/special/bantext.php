@@ -23,14 +23,15 @@
                                 <h2><?php echo $_LANG['BAN_TITLE']; ?></h2>
                                 <div style="padding:15px 0;">
                                     <p><strong><?php echo $_LANG['BAN_LOCK_DATE']; ?>:</strong> <?php echo $ban['bandate'] ?></p>
-                                    <?php if ($ban['int_num']<=0){ ?>
+                                    <?php if ( $ban['int_num'] <= 0 ) { ?>
                                         <p><strong><?php echo $_LANG['BAN_PERIOD_LOCK']; ?>:</strong> <?php echo $_LANG['BAN_INFINITE']; ?></p>
-                                    <?php } else { ?>
+                                    <?php }
+                                    else { ?>
                                         <p><strong><?php echo $_LANG['BAN_PERIOD_LOCK']; ?>:</strong> <?php echo $ban['enddate'] ?></p>
                                     <?php } ?>
-                                    <?php if ($ban['cause']){ ?>
+                                    <?php if ( $ban['cause'] ) { ?>
                                         <p><strong><?php echo $_LANG['BAN_REASON_LOCK']; ?>:</strong></p><p><?php echo nl2br($ban['cause']); ?></p>
-                                    <?php } ?>
+<?php } ?>
                                 </div>
                             </td>
                         </tr>

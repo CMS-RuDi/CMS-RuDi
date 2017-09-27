@@ -22,7 +22,7 @@
                             <td>
                                 <h2><?php echo $_LANG['404']; ?></h2>
                                 <p><?php echo $_LANG['404_INFO']; ?>.</p>
-                                <?php if(cmsConfig::getConfig('debug')){ ?>
+                                <?php if ( cmsConfig::getConfig('debug') ) { ?>
                                     <p><a href="#trace_stack" class="ajaxlink trace_stack"><?php echo $_LANG['TRACE_STACK']; ?></a></p>
                                 <?php } ?>
                             </td>
@@ -31,36 +31,38 @@
                 </td>
             </tr>
         </table>
-        <?php if(cmsConfig::getConfig('debug')){ ?>
-        <div style="display: none">
-            <ul id="trace_stack">
+        <?php if ( cmsConfig::getConfig('debug') ) { ?>
+            <div style="display: none">
+                <ul id="trace_stack">
 
-                <?php $stack = debug_backtrace(); ?>
+                    <?php $stack = debug_backtrace(); ?>
 
-                <?php for($i=2; $i<=14; $i++){ ?>
+                    <?php for ( $i = 2; $i <= 14; $i++ ) { ?>
 
-                    <?php if (!isset($stack[$i])){ break; } ?>
+                        <?php if ( !isset($stack[$i]) ) {
+                            break;
+                        } ?>
 
-                    <?php $row = $stack[$i]; ?>
-                    <li>
-                        <b><?php echo $row['function']; ?>()</b>
-                        <?php if (isset($row['file'])) { ?>
-                            <span>@ <?php echo str_replace(PATH, '', $row['file']); ?></span> => <span><?php echo $row['line']; ?></span>
+                            <?php $row = $stack[$i]; ?>
+                        <li>
+                            <b><?php echo $row['function']; ?>()</b>
+                            <?php if ( isset($row['file']) ) { ?>
+                                <span>@ <?php echo str_replace(PATH, '', $row['file']); ?></span> => <span><?php echo $row['line']; ?></span>
                         <?php } ?>
-                    </li>
+                        </li>
 
-                <?php } ?>
+    <?php } ?>
 
-            </ul>
-        </div>
-        <script type="text/javascript" src="/includes/jquery/jquery.js"></script>
-        <script type="text/javascript" src="/includes/jquery/colorbox/jquery.colorbox.js"></script>
-        <link href="/includes/jquery/colorbox/colorbox.css" rel="stylesheet" type="text/css" />
-        <script>
-            $(function(){
-                $('.trace_stack').colorbox({inline:true, width:"50%", maxHeight: "100%", transition:"none"});
-            });
-        </script>
-        <?php } ?>
+                </ul>
+            </div>
+            <script type="text/javascript" src="/includes/jquery/jquery.js"></script>
+            <script type="text/javascript" src="/includes/jquery/colorbox/jquery.colorbox.js"></script>
+            <link href="/includes/jquery/colorbox/colorbox.css" rel="stylesheet" type="text/css" />
+            <script>
+                $(function () {
+                    $('.trace_stack').colorbox({inline: true, width: "50%", maxHeight: "100%", transition: "none"});
+                });
+            </script>
+<?php } ?>
     </body>
 </html>
