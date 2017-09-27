@@ -1,15 +1,14 @@
 <?php
-/******************************************************************************/
-//                                                                            //
-//                           InstantCMS v1.10.6                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/******************************************************************************/
+
+/*
+ *                           InstantCMS v1.10.7
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2017
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
 
 //
 // ВНИМАНИЕ! Данный файл используйте в своих отдельных php файлах
@@ -20,19 +19,19 @@
 //           ниже произведена инициализация InstantCMS с базовыми классами
 //
 
-if (!defined('PATH')) {
+if ( !defined('PATH') ) {
     die('ACCESS DENIED');
 }
 
 Error_Reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
-if (@$_SERVER['HTTP_X_REQUESTED_WITH'] != 'XMLHttpRequest') {
+if ( @$_SERVER['HTTP_X_REQUESTED_WITH'] != 'XMLHttpRequest' ) {
     die();
 }
 
 header('Content-Type: text/html; charset=utf-8');
 
-require(PATH .'/core/classes/autoload.php');
+require(PATH . '/core/classes/autoload.php');
 
 session_start();
 
@@ -45,11 +44,11 @@ $inConf = cmsConfig::getInstance();
 $inUser = cmsUser::getInstance();
 $inPage = cmsPage::getInstance();
 
-if (!$inUser->update()) {
+if ( !$inUser->update() ) {
     cmsCore::halt();
 }
 
-if ($inConf->siteoff && !$inUser->is_admin) {
+if ( $inConf->siteoff && !$inUser->is_admin ) {
     cmsCore::halt();
 }
 
