@@ -14,8 +14,6 @@ class cmsDatabase
 {
 
     private static $instance;
-    public $q_count  = 0;
-    public $q_dump   = array();
     public $join     = '';
     public $select   = '';
     public $where    = '';
@@ -166,30 +164,19 @@ class cmsDatabase
 
         $sql = $replace_prefix ? $this->replacePrefix($sql) : $sql;
 
-        $start_time = microtime(true);
+        $tkey = cmsCore::startTimer();
 
         $result = mysqli_query($this->db_link, $sql);
 
         if ( cmsConfig::getConfig('debug') ) {
-            $this->q_count++;
+            cmsCore::setDebugInfo('queries', $tkey, $sql);
 
-            $trace = debug_backtrace();
+            if ( !$ignore_errors ) {
+                $error = $this->error();
 
-            if ( (isset($trace[1]['file']) || isset($trace[0]['file'])) && isset($trace[1]['function']) ) {
-                $src = (isset($trace[1]['file']) ? $trace[1]['file'] : $trace[0]['file']) . ' => ' . $trace[1]['function'] . '()';
-                $src = str_replace(PATH, '', $src);
-            }
-            else {
-                $src = '';
-            }
-
-            $this->q_dump[] = array( 'sql' => $sql, 'src' => $src, 'time' => (microtime(true) - $start_time) );
-        }
-
-        if ( cmsConfig::getConfig('debug') && !$ignore_errors ) {
-            $error = $this->error();
-            if ( $error ) {
-                die('<h3>DATABASE ERROR:</h3><pre>' . $sql . '</pre><p>' . $error . '</p>');
+                if ( $error ) {
+                    die('<h3>DATABASE ERROR:</h3><pre>' . $sql . '</pre><p>' . $error . '</p>');
+                }
             }
         }
 

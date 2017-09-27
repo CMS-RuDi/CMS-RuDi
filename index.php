@@ -10,8 +10,6 @@
  *                        LICENSED BY GNU/GPL v2
  */
 
-Error_Reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-
 header('Content-Type: text/html; charset=utf-8');
 header('X-Powered-By: InstantCMS');
 define('PATH', __DIR__);
@@ -24,6 +22,17 @@ if ( !file_exists(PATH . '/includes/config.inc.php') ) {
 }
 
 require(PATH . '/core/classes/autoload.php');
+
+$inConf = cmsConfig::getInstance();
+
+// дебаг отключен - скрываем все сообщения об ошибках
+if ( !$inConf->debug ) {
+    error_reporting(0);
+}
+else {
+    error_reporting(E_ALL);
+    set_error_handler(array( 'cmsCore', 'errorHandler' ));
+}
 
 session_start();
 
@@ -38,7 +47,6 @@ if ( is_dir(PATH . '/install') || is_dir(PATH . '/migrate') ) {
 cmsCore::callEvent('GET_INDEX', '');
 
 $inPage = cmsPage::getInstance();
-$inConf = cmsConfig::getInstance();
 $inUser = cmsUser::getInstance();
 
 // автоматически авторизуем пользователя, если найден кукис

@@ -552,10 +552,15 @@ class cmsPage
      */
     private function renderModule($mod)
     {
+        $tkey = cmsCore::startTimer();
+
         $inCore = cmsCore::getInstance();
 
         // флаг показа модуля
         $callback = true;
+
+        // флаг указывающий что данные из кеша
+        $cache = false;
 
         // html код модуля
         $html = '';
@@ -582,6 +587,7 @@ class cmsPage
                 if ( $mod['cache'] && cmsCore::isCached('module', $mod['id'], $mod['cachetime'], $mod['cacheint']) ) {
                     $mod['body'] = cmsCore::getCache('module', $mod['id']);
                     $callback    = true;
+                    $cache       = true;
                 }
                 else {
                     $cfg = cmsCore::yamlToArray($mod['config']);
@@ -621,6 +627,10 @@ class cmsPage
             $html = ob_get_clean();
         }
 
+        if ( cmsConfig::getConfig('debug') ) {
+            cmsCore::setDebugInfo('modules', $tkey, $mod['title'] . ($cache ? ' (CACHE)' : ''), [ 'position' => $mod['mb_position'], 'name' => $mod['is_external'] ? $mod['content'] : 'html', 'empty_html' => empty($html) ]);
+        }
+
         return $html;
     }
 
@@ -638,7 +648,6 @@ class cmsPage
         }
 
         foreach ( $this->modules[$position] as $html ) {
-
             echo $html;
         }
 
