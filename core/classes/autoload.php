@@ -40,6 +40,7 @@ class autoload
         'bbcode'                   => '../../includes/bbcode/bbcode.lib.php',
         'Lingua_Stem_Ru'           => '../../includes/stemmer/stemmer.php',
         'Spyc'                     => '../../includes/spyc/spyc.php',
+        'SphinxClient'             => '../../includes/sphinx/sphinxapi.php',
         'Smarty'                   => '../../includes/smarty/libs/Smarty.class.php',
         'lastRSS'                  => '../../includes/rss/lastRSS.php',
         'PHPMailer'                => '../../includes/phpmailer/class.phpmailer.php',
@@ -48,7 +49,7 @@ class autoload
     );
     private static $dirs    = array();
 
-    public function autoload($class = false)
+    public function load($class = false)
     {
         if ( empty($class) ) {
             return false;
@@ -129,4 +130,4 @@ class autoload
 
 autoload::addDir(__DIR__);
 
-spl_autoload_register(array( new autoload(), 'autoload' ));
+spl_autoload_register(array( new autoload(), 'load' ));
