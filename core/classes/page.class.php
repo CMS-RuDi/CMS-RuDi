@@ -368,7 +368,7 @@ class cmsPage
         if ( !$already ) {
             // проверяем нет ли на ссылку пункта меню, если есть, меняем заголовок
             $title           = ($menu_title      = cmsCore::getInstance()->getLinkInMenu($link)) ? cmsUser::stringReplaceUserProperties($menu_title, true) : $title;
-            $this->pathway[] = array( 'title' => $title, 'link' => $link );
+            $this->pathway[] = [ 'title' => $title, 'link' => $link, 'is_last' => false ];
         }
 
         return $this;

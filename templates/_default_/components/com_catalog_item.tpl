@@ -1,4 +1,6 @@
-{$item.plugins_output_before}
+{if !empty($item.plugins_output_before)}
+    {$item.plugins_output_before}
+{/if}
 
 {if $cat.view_type=='shop' || $item.can_edit}
 	<div id="shop_toollink_div">
@@ -92,4 +94,6 @@
 	{$ratingForm}
 {/if}
 
-{$item.plugins_output_after}
+{if !empty($item.plugins_output_after)}
+    {$item.plugins_output_after}
+{/if}

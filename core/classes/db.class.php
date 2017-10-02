@@ -611,7 +611,7 @@ class cmsDatabase
     {
         $nested_sql = $only_nested ? '' : '=';
 
-        $path = $this->get_table($table, "NSLeft < " . $nested_sql . " " . $left_key . " AND NSRight > " . $nested_sql . " " . $right_key . " AND parent_id > 0 AND NSDiffer = '" . $differ . "' ORDER BY NSLeft", $fields);
+        $path = $this->get_table($table, "NSLeft <" . $nested_sql . " " . $left_key . " AND NSRight >" . $nested_sql . " " . $right_key . " AND parent_id > 0 AND NSDiffer = '" . $differ . "' ORDER BY NSLeft", $fields);
 
         return $path;
     }

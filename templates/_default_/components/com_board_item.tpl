@@ -1,4 +1,7 @@
-{$item.plugins_output_before}
+{if !empty($item.plugins_output_before)}
+	{$item.plugins_output_before}
+{/if}
+
 <h1 class="con_heading">{$item.title}</h1>
 <div class="bd_item_details_full">
     {if $item.is_vip}
@@ -73,7 +76,9 @@
     {/if}
 </div>
 
-{$item.plugins_output_after}
+{if !empty($item.plugins_output_after)}
+	{$item.plugins_output_after}
+{/if}
 
 {if $cfg.comments}
     {$can_delete = ($item.user_id == $user_id)}

@@ -1,4 +1,7 @@
-{$photo.plugins_output_before}
+{if !empty($photo.plugins_output_before)}
+    {$photo.plugins_output_before}
+{/if}
+
 {if $is_author || $is_admin}
 <div class="float_bar">
 <a class="ajaxlink" href="javascript:void(0)" onclick="photos.editPhoto({$photo.id});return false;">{$LANG.EDIT}</a>{if $is_admin}  | <a class="ajaxlink" href="javascript:void(0)" onclick="photos.movePhoto({$photo.id});return false;">{$LANG.MOVE}</a>{if !$photo.published}<span id="pub_photo_link">  | <a class="ajaxlink" href="javascript:void(0)" onclick="photos.publishPhoto({$photo.id});return false;">{$LANG.PUBLISH}</a></span>{/if}{/if}   | <a class="ajaxlink" href="javascript:void(0)" onclick="photos.deletePhoto({$photo.id}, '{csrf_token}');return false;">{$LANG.DELETE}</a>
@@ -80,4 +83,7 @@
         </td>
     </tr>
 </table>
-{$photo.plugins_output_after}
+
+{if !empty($photo.plugins_output_after)}
+    {$photo.plugins_output_after}
+{/if}

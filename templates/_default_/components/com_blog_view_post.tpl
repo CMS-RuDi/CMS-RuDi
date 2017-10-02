@@ -1,4 +1,6 @@
-{$post.plugins_output_before}
+{if !empty($post.plugins_output_before)}
+	{$post.plugins_output_before}
+{/if}
 
 {if $myblog || $is_admin || ($is_writer && $is_author)}
     <div class="float_bar">
@@ -47,4 +49,7 @@
         {if $navigation.next}<a href="{$navigation.next.url}" class="next">{$navigation.next.title}</a>{/if}
     </div>
 {/if}
-{$post.plugins_output_after}
+
+{if !empty($post.plugins_output_after)}
+	{$post.plugins_output_after}
+{/if}

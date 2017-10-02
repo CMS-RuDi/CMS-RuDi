@@ -1,4 +1,6 @@
-{$article.plugins_output_before}
+{if !empty($article.plugins_output_before)}
+	{$article.plugins_output_before}
+{/if}
 
 {if $article.showtitle}
     <h1 class="con_heading">{$article.title}</h1>
@@ -72,4 +74,6 @@
 	</div>
 {/if}
 
-{$article.plugins_output_after}
+{if !empty($article.plugins_output_after)}
+	{$article.plugins_output_after}
+{/if}
