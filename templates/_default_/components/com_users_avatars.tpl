@@ -7,11 +7,13 @@
         {if $col==1} <tr> {/if}
             {math equation="(x-1)*y + z" x=$page y=$perpage z=$avatar_id assign="avatar_id"}
             <td width="25%" valign="middle" align="center">
-                    <a href="/users/{$userid}/select-avatar/{$avatar_id}" title="{$LANG.SELECT_AVATAR}">
-                        <img src="{$avatars_dir}/{$avatar}" border="0" />
-                    </a>
+                <a href="/users/{$userid}/select-avatar/{$avatar_id}" title="{$LANG.SELECT_AVATAR}">
+                    <img src="{$avatars_dir}/{$avatar}" border="0" />
+                </a>
             </td>
-        {if $col==4} </tr> {$col="1"} {else} {$col=$col+1} {/if}
+
+            {if $col==4} </tr> {$col="1"} {else} {$col=$col+1} {/if}
+
     {/foreach}
 
     {if $col>1}

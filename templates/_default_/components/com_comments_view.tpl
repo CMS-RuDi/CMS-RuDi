@@ -1,11 +1,11 @@
 <div class="cmm_heading">
-	{$labels.comments} (<span id="comments_count">{$comments_count}</span>)
+    {$labels.comments} (<span id="comments_count">{$comments_count}</span>)
 </div>
 
 <div class="cm_ajax_list">
-{if !$cfg.cmm_ajax}
-	{$html}
-{/if}
+    {if !$cfg.cmm_ajax}
+        {$html}
+    {/if}
 </div>
 
 <a name="c"></a>
@@ -16,13 +16,13 @@
     {if $cfg.subscribe}
         {if $is_user}
             {if !$user_subscribed}
-            <span class="subscribe">
-                <a href="/subscribe/{$target}/{$target_id}">{$LANG.SUBSCRIBE_TO_NEW}</a>
-            </span>
+                <span class="subscribe">
+                    <a href="/subscribe/{$target}/{$target_id}">{$LANG.SUBSCRIBE_TO_NEW}</a>
+                </span>
             {else}
-            <span class="unsubscribe">
-                <a href="/unsubscribe/{$target}/{$target_id}">{$LANG.UNSUBSCRIBE}</a>
-            </span>
+                <span class="unsubscribe">
+                    <a href="/unsubscribe/{$target}/{$target_id}">{$LANG.UNSUBSCRIBE}</a>
+                </span>
             {/if}
         {/if}
     {/if}
@@ -36,17 +36,17 @@
 <script type="text/javascript">
     var target_author_can_delete = {$target_author_can_delete};
     var anc = '';
-    if (window.location.hash){
+    if (window.location.hash) {
         anc = window.location.hash;
     }
-{if $cfg.cmm_ajax}
-    $(function(){
+    {if $cfg.cmm_ajax}
+    $(function () {
         loadComments('{$target}', {$target_id}, anc);
     });
-{else}
-    if (anc){
+    {else}
+    if (anc) {
         window.location.hash = anc.substr(1, 100);
-        $('a[href='+anc+']').css('color', '#c0392b').attr('title', LANG_COMMENT_IN_LINK).fadeOut().fadeIn().fadeOut().fadeIn();
+        $('a[href=' + anc + ']').css('color', '#c0392b').attr('title', LANG_COMMENT_IN_LINK).fadeOut().fadeIn().fadeOut().fadeIn();
     }
-{/if}
+    {/if}
 </script>

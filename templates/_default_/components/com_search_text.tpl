@@ -46,11 +46,11 @@
 </div>
 
 {if $results}
-	<p class="usr_photos_notice"><strong>{$LANG.FOUND} {$total|spellcount:$LANG.1_MATERIALS:$LANG.2_MATERIALS:$LANG.10_MATERIALS}</strong></p>
+    <p class="usr_photos_notice"><strong>{$LANG.FOUND} {$total|spellcount:$LANG.1_MATERIALS:$LANG.2_MATERIALS:$LANG.10_MATERIALS}</strong></p>
     {foreach key=tid item=item from=$results}
-	<div class="search_block">
+        <div class="search_block">
             {if $item.pubdate}
-            	<div class="search_date">{$item.pubdate}</div>
+                <div class="search_date">{$item.pubdate}</div>
             {/if}
             <div class="search_result_title">
                 <span>{$res_count}</span>
@@ -60,29 +60,29 @@
                 {if $item.imageurl}
                     <img class="bd_image_small" src="{$item.imageurl}" alt="{$item.s_title|escape:html}" />
                 {/if}
-            	{if $item.description}
-            		<p>{$item.description}</p>
+                {if $item.description}
+                    <p>{$item.description}</p>
                 {/if}
                 <div class="search_result_link"><a href="{$item.placelink}">{$item.place}</a> &mdash; <span style="color:green">{$host}{$item.link}</span></div>
             </div>
-     </div>
-     {$res_count=$res_count+1}
+        </div>
+        {$res_count=$res_count+1}
     {/foreach}
     {$pagebar}
 {else}
-	{if $query}
-		<p class="not_found">{$LANG.BY_QUERY} <strong>"{$query}"</strong> {$LANG.NOTHING_FOUND}. <a href="{$external_link}" target="_blank">{$LANG.FIND_EXTERNAL}</a></p>
+    {if $query}
+        <p class="not_found">{$LANG.BY_QUERY} <strong>"{$query}"</strong> {$LANG.NOTHING_FOUND}. <a href="{$external_link}" target="_blank">{$LANG.FIND_EXTERNAL}</a></p>
+        {/if}
     {/if}
-{/if}
 <script type="text/javascript">
-		$(function(){
-			$('#query').focus();
-        });
-		function toggleInput(id){
-			$('#from_search label#'+id).toggleClass('selected');
-		}
-		function paginator(page){
-			$('#sform').append('<input type="hidden" name="page" value="'+page+'" />');
-			$('#sform').submit();
-		}
+    $(function () {
+        $('#query').focus();
+    });
+    function toggleInput(id) {
+        $('#from_search label#' + id).toggleClass('selected');
+    }
+    function paginator(page) {
+        $('#sform').append('<input type="hidden" name="page" value="' + page + '" />');
+        $('#sform').submit();
+    }
 </script>

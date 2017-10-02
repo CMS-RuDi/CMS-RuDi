@@ -1,7 +1,6 @@
 {if $actions}
-<div class="actions_list" id="actions_list">
-
-<p><strong>{if $user_id}{$LANG.ACTIONS_USERS} "<a href="{$user.user_url}">{$user.user_nickname}</a>"{else}{$LANG.ALL_ACTIONS_FR}{/if}, {$LANG.SHOWN_LAST} {$cfg.perpage_tab}.</strong></p>
+    <div class="actions_list" id="actions_list">
+        <p><strong>{if $user_id}{$LANG.ACTIONS_USERS} "<a href="{$user.user_url}">{$user.user_nickname}</a>"{else}{$LANG.ALL_ACTIONS_FR}{/if}, {$LANG.SHOWN_LAST} {$cfg.perpage_tab}.</strong></p>
 
         {foreach key=aid item=action from=$actions}
             {if $action.item_date}

@@ -22,8 +22,8 @@
         {/foreach}
     </div>
     {if $cfg.show_link}
-    <p>
-        <a href="/actions" class="mod_act_all">{$LANG.ALL_ACTIONS}</a>
-    </p>
+        <p>
+            <a href="/actions" class="mod_act_all">{$LANG.ALL_ACTIONS}</a>
+        </p>
     {/if}
 {/if}

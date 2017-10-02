@@ -22,7 +22,7 @@
 
 </form>
 <script type="text/javascript">
-    $(function(){
+    $(function () {
         $('input[name=pass]').focus();
     });
 </script>

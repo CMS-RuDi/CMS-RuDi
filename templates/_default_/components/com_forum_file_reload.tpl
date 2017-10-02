@@ -9,6 +9,6 @@
     </div>
 </form>
 <div class="sess_messages" style="display:none">
-  <div class="message_info" id="error_mess"></div>
+    <div class="message_info" id="error_mess"></div>
 </div>
 <script type="text/javascript" src="/includes/jquery/jquery.form.js"></script>

@@ -9,16 +9,18 @@
     </p>
     <script type="text/javascript">
         $(function () {
-            var timer    = $('#timer');
-            var delay    = +{$time};
+            var timer = $('#timer');
+            var delay = +{$time};
             var location = "{$url}";
             $(timer).html(delay);
             var interval = setInterval(function () {
-                if(delay) { delay--; }
+                if (delay) {
+                    delay--;
+                }
                 $(timer).html(delay);
-                if(delay <= 0){
+                if (delay <= 0) {
                     clearInterval(interval);
-                    window.location.href=location;
+                    window.location.href = location;
                 }
             }, 1000);
         });

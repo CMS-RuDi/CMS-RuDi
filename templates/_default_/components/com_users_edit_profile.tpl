@@ -2,7 +2,9 @@
 {add_css file='includes/jquery/tabs/tabs.css'}
 
 <script type="text/javascript">
-    $(function(){ $(".uitabs").tabs(); });
+    $(function () {
+        $(".uitabs").tabs();
+    });
 </script>
 
 <div class="con_heading">{$LANG.CONFIG_PROFILE}</div>
@@ -64,29 +66,29 @@
                     </td>
                 </tr>
                 {if $cfg_forum.component_enabled}
-                <tr>
-                    <td valign="top">
-                        <strong>{$LANG.SIGNED_FORUM}:</strong><br />
-                        <span class="usr_edithint">{$LANG.CAN_USE_BBCODE} </span>
-                    </td>
-                    <td valign="top">
-                        <textarea name="signature" class="text-input" style="width:300px" rows="2" id="signature">{$usr.signature|escape:'html'}</textarea>
-                    </td>
-                </tr>
+                    <tr>
+                        <td valign="top">
+                            <strong>{$LANG.SIGNED_FORUM}:</strong><br />
+                            <span class="usr_edithint">{$LANG.CAN_USE_BBCODE} </span>
+                        </td>
+                        <td valign="top">
+                            <textarea name="signature" class="text-input" style="width:300px" rows="2" id="signature">{$usr.signature|escape:'html'}</textarea>
+                        </td>
+                    </tr>
                 {/if}
                 {if $private_forms}
                     {foreach key=tid item=field from=$private_forms}
-                    <tr>
-                        <td valign="top">
-                            <strong>{$field.title}:</strong>
-                            {if $field.description}
-                                <br /><span class="usr_edithint">{$field.description}</span>
-                            {/if}
-                        </td>
-                        <td valign="top">
-                            {$field.field}
-                        </td>
-                    </tr>
+                        <tr>
+                            <td valign="top">
+                                <strong>{$field.title}:</strong>
+                                {if $field.description}
+                                    <br /><span class="usr_edithint">{$field.description}</span>
+                                {/if}
+                            </td>
+                            <td valign="top">
+                                {$field.field}
+                            </td>
+                        </tr>
                     {/foreach}
                 {/if}
             </table>
@@ -198,7 +200,7 @@
         <div style="margin-top: 12px;" id="submitform">
             <input name="save" type="submit" id="save" value="{$LANG.SAVE}" />
             {if $is_can_delete_profile}
-                <input name="delbtn2" type="button" id="delbtn2" value="{$LANG.DEL_PROFILE}" onclick="location.href='/users/{$usr.id}/delprofile.html';" />
+                <input name="delbtn2" type="button" id="delbtn2" value="{$LANG.DEL_PROFILE}" onclick="location.href = '/users/{$usr.id}/delprofile.html';" />
             {/if}
         </div>
     </form>
@@ -231,10 +233,10 @@
 </div>
 
 <script type="text/javascript">
-    $(function(){
-        $( '#tabs li' ).click( function(){
-            rel = $( this ).attr( "rel" );
-            if(!rel){
+    $(function () {
+        $('#tabs li').click(function () {
+            rel = $(this).attr("rel");
+            if (!rel) {
                 $('#submitform').show();
             } else {
                 $('#submitform').hide();

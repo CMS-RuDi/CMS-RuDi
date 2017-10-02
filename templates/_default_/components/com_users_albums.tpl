@@ -9,7 +9,6 @@
 </div>
 
 {if $albums}
-
     <div class="usr_albums_block" style="margin-top:30px">
         <ul class="usr_albums_list">
             {foreach key=key item=album from=$albums}
@@ -28,10 +27,9 @@
                     </div>
                 </li>
             {/foreach}
-         </ul>
-         <div class="blog_desc"></div>
+        </ul>
+        <div class="blog_desc"></div>
     </div>
-
 {else}
     <p>{$LANG.NOT_PHOTOS}</p>
 {/if}

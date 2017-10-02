@@ -11,7 +11,6 @@
     <input type="text" name="invite_email" class="text-input" value="" style="width:200px"/>
 
     <input type="submit" name="send_invite" value="{$LANG.SEND_INVITE}" />
-
 </form>
 
 

@@ -7,17 +7,17 @@
         <p style="margin-bottom:15px; font-size: 14px">{$LANG.INVITES_ONLY}</p>
 
         <form id="regform" name="regform" method="post" action="/registration">
-        <table cellpadding="0" cellspacing="0" border="0">
-            <tr>
-                <td><strong>{$LANG.INVITE_CODE}:</strong></td>
-                <td style="padding-left:15px">
-                    <input type="text" name="invite_code" class="text-input" value="" style="width:300px"/>
-                </td>
-                <td style="padding-left:5px">
-                    <input type="submit" name="show_invite" value="{$LANG.SHOW_INVITE}" />
-                </td>
-            </tr>
-        </table>
+            <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td><strong>{$LANG.INVITE_CODE}:</strong></td>
+                    <td style="padding-left:15px">
+                        <input type="text" name="invite_code" class="text-input" value="" style="width:300px"/>
+                    </td>
+                    <td style="padding-left:5px">
+                        <input type="submit" name="show_invite" value="{$LANG.SHOW_INVITE}" />
+                    </td>
+                </tr>
+            </table>
         </form>
 
     {else}
@@ -96,17 +96,17 @@
                 </tr>
                 {if $private_forms}
                     {foreach key=tid item=field from=$private_forms}
-                    <tr>
-                        <td valign="top">
-                            <strong>{$field.title}:</strong>
-                            {if $field.description}
-                                <div><small>{$field.description}</small></div>
-                            {/if}
-                        </td>
-                        <td valign="top">
-                            {$field.field} <span class="regstar">*</span>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td valign="top">
+                                <strong>{$field.title}:</strong>
+                                {if $field.description}
+                                    <div><small>{$field.description}</small></div>
+                                {/if}
+                            </td>
+                            <td valign="top">
+                                {$field.field} <span class="regstar">*</span>
+                            </td>
+                        </tr>
                     {/foreach}
                 {/if}
                 {if $cfg.ask_city}

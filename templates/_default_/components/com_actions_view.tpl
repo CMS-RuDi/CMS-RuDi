@@ -27,5 +27,5 @@
     </div>
     {$pagebar}
 {else}
-<p>{$LANG.EVENTS_NOT_FOUND}</p>
+    <p>{$LANG.EVENTS_NOT_FOUND}</p>
 {/if}

@@ -3,9 +3,9 @@
 {/if}
 
 {if $is_author || $is_admin}
-<div class="float_bar">
-<a class="ajaxlink" href="javascript:void(0)" onclick="photos.editPhoto({$photo.id});return false;">{$LANG.EDIT}</a>{if $is_admin}  | <a class="ajaxlink" href="javascript:void(0)" onclick="photos.movePhoto({$photo.id});return false;">{$LANG.MOVE}</a>{if !$photo.published}<span id="pub_photo_link">  | <a class="ajaxlink" href="javascript:void(0)" onclick="photos.publishPhoto({$photo.id});return false;">{$LANG.PUBLISH}</a></span>{/if}{/if}   | <a class="ajaxlink" href="javascript:void(0)" onclick="photos.deletePhoto({$photo.id}, '{csrf_token}');return false;">{$LANG.DELETE}</a>
-</div>
+    <div class="float_bar">
+        <a class="ajaxlink" href="javascript:void(0)" onclick="photos.editPhoto({$photo.id});return false;">{$LANG.EDIT}</a>{if $is_admin}  | <a class="ajaxlink" href="javascript:void(0)" onclick="photos.movePhoto({$photo.id});return false;">{$LANG.MOVE}</a>{if !$photo.published}<span id="pub_photo_link">  | <a class="ajaxlink" href="javascript:void(0)" onclick="photos.publishPhoto({$photo.id});return false;">{$LANG.PUBLISH}</a></span>{/if}{/if}   | <a class="ajaxlink" href="javascript:void(0)" onclick="photos.deletePhoto({$photo.id}, '{csrf_token}');return false;">{$LANG.DELETE}</a>
+    </div>
 {/if}
 
 <h1 class="con_heading">{$photo.title}</h1>
@@ -31,7 +31,7 @@
                         <a href="/photos/photo{$nextid.id}.html">{$LANG.NEXT}</a> &rarr;
                     {/if}
                 </div>
-			{/if}
+            {/if}
         </td>
         <td width="7" class="photo_larr">&nbsp;
 
@@ -58,7 +58,7 @@
 
                 {if $cfg.link}
                     <p class="photo_date_details"><a class="lightbox-enabled" rel="lightbox-galery" href="/images/photos/{$photo.file}" title="{$photo.title|escape:'html'}">{$LANG.OPEN_ORIGINAL}</a></p>
-                {/if}
+                    {/if}
 
             </div>
 
@@ -70,10 +70,10 @@
             {/if}
 
             {if $photo.a_bbcode}
-            <div class="photo_details" style="margin-top:5px;font-size: 12px">
-                {$LANG.CODE_INPUT_TO_FORUMS}:<br/>
-                <input onclick="$(this).select();" type="text" class="photo_bbinput" value="{$bbcode}"/>
-            </div>
+                <div class="photo_details" style="margin-top:5px;font-size: 12px">
+                    {$LANG.CODE_INPUT_TO_FORUMS}:<br/>
+                    <input onclick="$(this).select();" type="text" class="photo_bbinput" value="{$bbcode}"/>
+                </div>
             {/if}
 
             <div class="photo_sub_details" style="padding:0px 20px">

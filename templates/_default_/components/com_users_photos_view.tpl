@@ -1,5 +1,4 @@
 {if $is_allow}
-
     {if $myprofile || $is_admin}
         <div class="float_bar" style="background: none">
             <a class="usr_photo_link_edit" href="/users/{$usr.id}/editphoto{$photo.id}.html">{$LANG.EDIT}</a>
@@ -15,7 +14,6 @@
 
     <table cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr>
-
             <td width="50%">
                 {if $previd}
                     <a class="usr_photo_prev_link" href="/users/{$usr.id}/photo{$previd.id}.html" title="{$previd.title|escape:'html'}"></a>
@@ -28,7 +26,7 @@
                 <div class="usr_photo_view">
                     {if $nextid}<a href="/users/{$usr.id}/photo{$nextid.id}.html">{/if}
                         <img border="0" src="/images/users/photos/medium/{$photo.imageurl}" alt="{$photo.title|escape:'html'}" />
-                    {if $nextid}</a>{/if}
+                        {if $nextid}</a>{/if}
                 </div>
             </td>
 
@@ -39,7 +37,6 @@
                     &nbsp;
                 {/if}
             </td>
-
         </tr>
     </table>
 
@@ -58,7 +55,6 @@
 
     <table cellpadding="0" cellspacing="0" border="0" width="100%" height="300">
         <tr>
-
             <td width="30%">
                 {if $previd}
                     <a class="usr_photo_prev_link" href="/users/{$usr.id}/photo{$previd.id}.html" title="{$previd.title|escape:'html'}"></a>
@@ -66,15 +62,13 @@
                     &nbsp;
                 {/if}
             </td>
-
             <td width="40%">
                 <div class="usr_photo_view">
                     {if $nextid}<a href="/users/{$usr.id}/photo{$nextid.id}.html">{/if}
                         <span>{$LANG.PHOTO_NOT_FOUND_TEXT}</span>
-                    {if $nextid}</a>{/if}
+                        {if $nextid}</a>{/if}
                 </div>
             </td>
-
             <td width="30%">
                 {if $nextid}
                     <a class="usr_photo_next_link" href="/users/{$usr.id}/photo{$nextid.id}.html" title="{$nextid.title|escape:'html'}"></a>
@@ -82,8 +76,6 @@
                     &nbsp;
                 {/if}
             </td>
-
         </tr>
     </table>
-
 {/if}

@@ -6,13 +6,13 @@
                 <img src="/templates/{template}/images/icons/user_comment.png" border="0" />
             </td>
             <td style="padding-left:0px">{$thread.last_msg_array.user_link} {if $thread.last_msg_array.post_count == 1}{$LANG.FORUM_START_THREAD}{else}{$LANG.FORUM_REPLY_THREAD}{/if} &laquo;{$thread.last_msg_array.thread_link}&raquo;
-            {if $cfg.showforum} {$LANG.FORUM_ON_FORUM} &laquo;<a href="/forum/{$thread.forum_id}">{$thread.forum_title}</a>&raquo;{/if}</td>
+                {if $cfg.showforum} {$LANG.FORUM_ON_FORUM} &laquo;<a href="/forum/{$thread.forum_id}">{$thread.forum_title}</a>&raquo;{/if}</td>
         </tr>
 
         {if $cfg.showtext}
-        <tr>
-            <td colspan="3"><div class="mod_fweb2_shorttext">{$thread.last_msg_array.content_html|strip_tags|truncate:200}</div></td>
-        </tr>
+            <tr>
+                <td colspan="3"><div class="mod_fweb2_shorttext">{$thread.last_msg_array.content_html|strip_tags|truncate:200}</div></td>
+            </tr>
         {/if}
     {/foreach}
 </table>

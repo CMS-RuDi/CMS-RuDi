@@ -1,9 +1,9 @@
 <form action="" method="post">
     <input type="hidden" name="csrf_token" value="{csrf_token}" />
     {if !$user_id}
-    <div style="margin-bottom:10px">
-        <input type="text" class="text-input" style="width:98%;color:#666" name="username" value="" placeholder="{$LANG.YOUR_NAME}" />
-    </div>
+        <div style="margin-bottom:10px">
+            <input type="text" class="text-input" style="width:98%;color:#666" name="username" value="" placeholder="{$LANG.YOUR_NAME}" />
+        </div>
     {/if}
 
     <div>
@@ -16,9 +16,9 @@
 
 </form>
 {if $is_redirect}
-<script type="text/javascript">
-    $(document).ready(function(){
-        location.href='{$smarty.server.REQUEST_URI}';
-    });
-</script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            location.href = '{$smarty.server.REQUEST_URI}';
+        });
+    </script>
 {/if}

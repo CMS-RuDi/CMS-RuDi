@@ -1,16 +1,16 @@
 <style type="text/css">
-html #popup_container .popup_body {
-    width: 333px;
-}
-#geo_window {
-    height: 93px;
-    margin: 10px;
-}
-.list select {
-    margin: 0 0 10px;
-    padding: 3px;
-    width: 300px;
-}
+    html #popup_container .popup_body {
+        width: 333px;
+    }
+    #geo_window {
+        height: 93px;
+        margin: 10px;
+    }
+    .list select {
+        margin: 0 0 10px;
+        padding: 3px;
+        width: 300px;
+    }
 </style>
 <div id="geo_window">
     <div class="list">
@@ -27,8 +27,8 @@ html #popup_container .popup_body {
 </div>
 {if $country_id && !$city_id}
     <script type="text/javascript">
-    $(function(){
-        $('#geo_window select[name=countries]').trigger('change');
-    });
+        $(function () {
+            $('#geo_window select[name=countries]').trigger('change');
+        });
     </script>
 {/if}

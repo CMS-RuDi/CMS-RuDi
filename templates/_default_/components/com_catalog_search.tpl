@@ -1,6 +1,6 @@
 <h1 class="con_heading">{$LANG.SEARCH_IN_CAT}</h1>
 <div class="uc_search_in_cat">
-	<a href="/catalog/{$cat.id}">{$cat.title}</a>
+    <a href="/catalog/{$cat.id}">{$cat.title}</a>
 </div>
 
 <p><strong>{$LANG.FILL_FIELDS}:</strong></p>
@@ -28,8 +28,8 @@
             </tr>
         </table>
     </div>
-	<p>
-		<input type="submit" name="gosearch" value="{$LANG.SEARCH_IN_CAT}" />
-		<input type="button" onclick="window.history.go(-1);" name="cancel" value="{$LANG.CANCEL}" />
-	</p>
+    <p>
+        <input type="submit" name="gosearch" value="{$LANG.SEARCH_IN_CAT}" />
+        <input type="button" onclick="window.history.go(-1);" name="cancel" value="{$LANG.CANCEL}" />
+    </p>
 </form>

@@ -5,6 +5,6 @@
         {else}
             <a href="{$path.link}" class="pathwaylink">{$path.title}</a>
         {/if}
-        {if !$smarty.foreach.pathway.last}{$separator}{/if}
-    {/foreach}
+    {if !$smarty.foreach.pathway.last}{$separator}{/if}
+{/foreach}
 </div>
