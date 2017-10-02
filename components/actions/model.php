@@ -20,7 +20,7 @@ class cms_model_actions
     {
         $this->inDB   = cmsDatabase::getInstance();
         $this->config = cmsCore::getInstance()->loadComponentConfig('actions');
-        cmsCore::loadClass('actions');
+
         cmsCore::loadLanguage('components/users');
     }
 

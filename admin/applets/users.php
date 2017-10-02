@@ -54,7 +54,6 @@ function applet_users()
     $inUser = cmsUser::getInstance();
     $inDB   = cmsDatabase::getInstance();
 
-    cmsCore::loadClass('actions');
     cmsCore::loadModel('users');
 
     $model = new cms_model_users();

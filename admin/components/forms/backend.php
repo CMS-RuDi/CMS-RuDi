@@ -84,9 +84,6 @@ $toolmenu[] = array( 'icon' => 'listforms.gif', 'title' => $_LANG['AD_FORMS'], '
 
 cpToolMenu($toolmenu);
 
-cmsCore::loadClass('form');
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 if ( $opt == 'up_field' ) {
     moveField(cmsCore::request('item_id', 'int'), cmsCore::request('form_id', 'int'), -1);
 

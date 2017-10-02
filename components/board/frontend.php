@@ -20,9 +20,6 @@ function board()
     global $_LANG;
 
     define('IS_BILLING', $inCore->isComponentInstalled('billing'));
-    if ( IS_BILLING ) {
-        cmsCore::loadClass('billing');
-    }
 
     $model = new cms_model_board();
 

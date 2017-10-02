@@ -348,8 +348,6 @@ class cms_model_catalog
 
     public function uploadPhoto($old_file = '')
     {
-        cmsCore::loadClass('upload_photo');
-
         $inUploadPhoto                = cmsUploadPhoto::getInstance();
         $inUploadPhoto->upload_dir    = PATH . '/images/catalog/';
         $inUploadPhoto->small_size_w  = $this->config['small_size'];

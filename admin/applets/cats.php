@@ -57,10 +57,6 @@ function applet_cats()
 
     define('IS_BILLING', $inCore->isComponentInstalled('billing'));
 
-    if ( IS_BILLING ) {
-        cmsCore::loadClass('billing');
-    }
-
     if ( $do == 'delete' ) {
         $is_with_content = cmsCore::inRequest('content');
         $model->deleteCategory($id, $is_with_content);

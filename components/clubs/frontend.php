@@ -24,9 +24,6 @@ function clubs()
     $inPhoto = $model->initPhoto();
 
     define('IS_BILLING', $inCore->isComponentInstalled('billing'));
-    if ( IS_BILLING ) {
-        cmsCore::loadClass('billing');
-    }
 
     // js только авторизованным
     if ( $inUser->id ) {

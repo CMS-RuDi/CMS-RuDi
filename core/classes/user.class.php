@@ -115,11 +115,7 @@ class cmsUser
 
         $geo_cfg = $inCore->loadComponentConfig('geo');
 
-        if ( $geo_cfg['component_enabled'] &&
-                $geo_cfg['autodetect'] &&
-                cmsCore::loadClass($geo_cfg['class']) &&
-                class_exists('cms' . $geo_cfg['class']) ) {
-
+        if ( $geo_cfg['component_enabled'] && $geo_cfg['autodetect'] && class_exists('cms' . $geo_cfg['class']) ) {
             $geo_data = call_user_func(array( 'cms' . $geo_cfg['class'], 'getInfo' ), $this->ip);
 
             if ( $geo_data ) {

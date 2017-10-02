@@ -21,10 +21,6 @@ function content()
 
     define('IS_BILLING', $inCore->isComponentInstalled('billing'));
 
-    if ( IS_BILLING ) {
-        cmsCore::loadClass('billing');
-    }
-
     global $_LANG;
 
     $id = cmsCore::request('id', 'int', 0);
@@ -499,8 +495,6 @@ function content()
                 @unlink(PATH . "/images/photos/medium/$file");
             }
 
-            // Загружаем класс загрузки фото
-            cmsCore::loadClass('upload_photo');
             $inUploadPhoto                = cmsUploadPhoto::getInstance();
             // Выставляем конфигурационные параметры
             $inUploadPhoto->upload_dir    = PATH . '/images/photos/';

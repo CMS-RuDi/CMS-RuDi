@@ -12,7 +12,7 @@
 class autoload
 {
 
-    private static $classes = array(
+    private static $classes = [
         'cmsCore'                  => '../cms.php',
         'cmsAdmin'                 => '../cms_admin.php',
         'tplMainClass'             => '../tpl_classes/tplMainClass.php',
@@ -35,6 +35,7 @@ class autoload
         'cmsUploadPhoto'           => 'upload_photo.class.php',
         'cmsUser'                  => 'user.class.php',
         'cmsBilling'               => 'billing.class.php',
+        'cmsTranslations'          => 'translations.class.php',
         'autokeyword'              => '../../includes/keywords.inc.php',
         'CCelkoNastedSet'          => '../../includes/nestedsets.php',
         'bbcode'                   => '../../includes/bbcode/bbcode.lib.php',
@@ -46,8 +47,8 @@ class autoload
         'PHPMailer'                => '../../includes/phpmailer/class.phpmailer.php',
         'GeSHi'                    => '../../includes/geshi/geshi.php',
         'Spreadsheet_Excel_Reader' => '../../includes/excel/excel_reader2.php'
-    );
-    private static $dirs    = array();
+    ];
+    private static $dirs    = [];
 
     public function load($class = false)
     {

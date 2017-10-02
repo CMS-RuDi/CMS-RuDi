@@ -22,7 +22,6 @@ class cmsPlugin
 
     public function __construct()
     {
-        cmsCore::loadClass('page');
         $this->inCore = cmsCore::getInstance();
         $this->inDB   = cmsDatabase::getInstance();
         $this->inPage = cmsPage::getInstance();

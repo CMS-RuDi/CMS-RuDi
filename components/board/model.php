@@ -36,7 +36,6 @@ class cms_model_board
         $this->obtype                = cmsCore::getSearchVar('obtype');
         $this->is_can_add_by_group   = cmsUser::isUserCan('board/add');
         $this->is_moderator_by_group = cmsUser::isUserCan('board/moderate');
-        cmsCore::loadClass('form');
     }
 
     public function getCommentTarget($target, $target_id)
@@ -457,8 +456,6 @@ class cms_model_board
 
     public function uploadPhoto($old_file = '', $cat)
     {
-        // Загружаем класс загрузки фото
-        cmsCore::loadClass('upload_photo');
         $inUploadPhoto                = cmsUploadPhoto::getInstance();
         // Выставляем конфигурационные параметры
         $inUploadPhoto->upload_dir    = PATH . '/images/board/';

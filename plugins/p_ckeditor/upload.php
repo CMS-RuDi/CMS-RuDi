@@ -22,10 +22,6 @@ include(PATH . '/core/cms.php');
 
 $inCore = cmsCore::getInstance();
 
-cmsCore::loadClass('page');
-cmsCore::loadClass('user');
-cmsCore::loadClass('upload_photo');
-
 $inUser = cmsUser::getInstance();
 
 if ( !$inUser->update() ) {

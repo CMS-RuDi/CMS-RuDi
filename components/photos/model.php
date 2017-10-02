@@ -88,8 +88,6 @@ class cms_model_photos
      */
     public function initUploadClass($album)
     {
-        cmsCore::loadClass('upload_photo');
-
         $inUploadPhoto                = cmsUploadPhoto::getInstance();
         // Выставляем конфигурационные параметры
         $inUploadPhoto->upload_dir    = PATH . '/images/photos/';

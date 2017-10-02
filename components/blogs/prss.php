@@ -28,7 +28,6 @@ function rss_blogs($item_id, $cfg)
     cmsCore::loadModel('blogs');
     $model = new cms_model_blogs();
 
-    cmsCore::loadClass('blog');
     $inBlog        = cmsBlogs::getInstance();
     $inBlog->owner = 'user';
 

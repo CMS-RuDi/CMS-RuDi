@@ -21,7 +21,6 @@ require(PATH . '/core/cms.php');
 require(PATH . '/admin/includes/cp.php');
 
 cmsCore::getInstance();
-cmsCore::loadClass('user');
 
 $inUser = cmsUser::getInstance();
 $inConf = cmsConfig::getInstance();

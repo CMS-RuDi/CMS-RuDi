@@ -279,10 +279,6 @@ class cmsCron
                 $classname         = $job['class_name'][1];
             }
 
-            if ( $classfile ) {
-                cmsCore::loadClass($classfile);
-            }
-
             if ( class_exists($classname) ) {
                 if ( method_exists($classname, $job['class_method']) ) {
                     $job_result = $job_result && call_user_func(array( $classname, $job['class_method'] ));

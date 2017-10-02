@@ -63,8 +63,6 @@ function applet_modules()
 
         $cfg = $inCore->loadModuleConfig($id);
 
-        cmsCore::loadClass('formgen');
-
         $formGen = new cmsFormGen($xml_file, $cfg);
 
         cpAddPathway($module_title, '?view=modules&do=edit&id=' . $id);

@@ -19,7 +19,6 @@ class cms_model_users
         $this->inCore = cmsCore::getInstance();
         $this->config = $this->inCore->loadComponentConfig('users');
         cmsCore::loadLanguage('components/users');
-        cmsCore::loadClass('form');
     }
 
     public static function getDefaultConfig()
@@ -376,8 +375,6 @@ class cms_model_users
             $this->inDB->query("DELETE FROM cms_user_wall WHERE user_id = '" . $user_id . "' AND usertype = 'user'");
             $this->inDB->query("DELETE FROM cms_user_friends WHERE to_id = '" . $user_id . "' OR from_id = '" . $user_id . "'");
             $this->inDB->query("DELETE FROM cms_user_clubs WHERE user_id = '" . $user_id . "'");
-
-            cmsCore::loadClass('blog');
 
             $inBlog        = cmsBlogs::getInstance();
             $inBlog->owner = 'user';
@@ -933,8 +930,6 @@ class cms_model_users
 
     public function deleteInactiveUsers()
     {
-        cmsCore::loadClass('actions');
-
         $users_list = $this->inDB->get_table('cms_users', "DATE_SUB(NOW(), INTERVAL " . $this->config['deltime'] . " MONTH) > logdate", 'id');
 
         if ( !$users_list ) {

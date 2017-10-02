@@ -26,8 +26,6 @@ define("VALID_CMS", 1);
 include(PATH . '/core/cms.php');
 
 cmsCore::getInstance();
-cmsCore::loadClass('cron');
-cmsCore::loadClass('actions');
 
 $jobs = cmsCron::getJobs();
 

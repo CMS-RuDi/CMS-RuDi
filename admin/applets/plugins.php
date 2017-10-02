@@ -161,7 +161,6 @@ function applet_plugins()
             $toolmenu[] = array( 'icon' => 'cancel.gif', 'title' => $_LANG['CANCEL'], 'link' => 'index.php?view=modules' );
             cpToolMenu($toolmenu);
 
-            cmsCore::loadClass('formgen');
             $formGen = new cmsFormGen($xml_file, $config);
             echo $formGen->getHTML();
         }

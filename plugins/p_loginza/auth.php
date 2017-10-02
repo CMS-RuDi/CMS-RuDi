@@ -23,9 +23,6 @@ include(PATH . '/core/cms.php');
 
 cmsCore::getInstance();
 
-cmsCore::loadClass('page');
-cmsCore::loadClass('user');
-
 $inUser = cmsUser::getInstance();
 
 if ( !$inUser->update() || $inUser->id ) {

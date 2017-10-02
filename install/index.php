@@ -19,11 +19,6 @@ define('PATH', $_SERVER['DOCUMENT_ROOT']);
 include(PATH . '/core/cms.php');
 
 cmsCore::includeFile('install/function.php');
-cmsCore::loadClass('config');
-cmsCore::loadClass('db');
-cmsCore::loadClass('user');
-cmsCore::loadClass('page');
-cmsCore::loadClass('actions');
 
 $inConf = cmsConfig::getInstance();
 
@@ -169,14 +164,14 @@ $php_path    = get_program_path('php');
                             }
                             ?>
                             <li data-lang="<?php echo $lng; ?>" style="background-image:  url(/templates/_default_/images/icons/langs/<?php echo $lng; ?>.png);"><?php echo $lng; ?></li>
-    <?php } ?>
+                        <?php } ?>
                     </ul>
                 </div>
-                <?php } ?>
+            <?php } ?>
             <h1 id="header">
-            <?php echo $_LANG['INS_HEADER'] . ' ' . CORE_VERSION; ?>
+                <?php echo $_LANG['INS_HEADER'] . ' ' . CORE_VERSION; ?>
             </h1>
-<?php if ( !$installed ) { ?>
+            <?php if ( !$installed ) { ?>
                 <!-- ================================================================ -->
                 <form class="wizard" action="#" method="post" >
                     <div class="wizard-nav">
@@ -186,16 +181,16 @@ $php_path    = get_program_path('php');
                         <a href="#install"><?php echo $_LANG['INS_INSTALL']; ?></a>
                     </div>
                     <?php $messages = cmsCore::getSessionMessages(); ?>
-                        <?php if ( $messages ) { ?>
+                    <?php if ( $messages ) { ?>
                         <div class="sess_messages">
                             <?php foreach ( $messages as $message ) { ?>
                                 <?php echo $message; ?>
-                        <?php } ?>
+                            <?php } ?>
                         </div>
-    <?php } ?>
+                    <?php } ?>
                     <div id="start" class="wizardpage">
                         <h2><?php echo $_LANG['INS_WELCOME']; ?></h2>
-    <?php echo $_LANG['INS_WELCOME_NOTES']; ?>
+                        <?php echo $_LANG['INS_WELCOME_NOTES']; ?>
                         <p>
                             <label><input type="checkbox" id="license_agree" onClick="checkAgree()" /><?php echo $_LANG['INS_ACCEPT_LICENSE']; ?></label>
                         </p>
@@ -209,23 +204,24 @@ $php_path    = get_program_path('php');
                             <tr>
                                 <td><?php echo $_LANG['INS_INSTALL_VERSION']; ?></td>
                                 <td class="value">
-    <?php echo html_bool_span($info['php']['version'], $info['php']['valid']); ?>
+                                    <?php echo html_bool_span($info['php']['version'], $info['php']['valid']); ?>
                                 </td>
                             </tr>
                         </table>
                         <h3><?php echo $_LANG['INS_NEED_EXTENTION']; ?></h3>
                         <table class="grid">
-    <?php foreach ( $info['ext'] as $name => $valid ) { ?>
+                            <?php foreach ( $info['ext'] as $name => $valid ) { ?>
                                 <tr>
                                     <td><a href="http://ru2.php.net/manual/ru/book.<?php echo str_replace('math', '', $name); ?>.php" target="_blank" title="<?php echo $_LANG['INS_PHPNET_HINT']; ?>"><?php echo $name; ?></a></td>
                                     <td class="value">
                                         <?php if ( $valid ) { ?>
                                             <?php echo html_bool_span($_LANG['INS_INSTALL_OK'], $valid); ?>
-                                        <?php }
+                                        <?php
+                                        }
                                         else {
                                             ?>
-            <?php echo html_bool_span($_LANG['INS_INSTALL_NOTFOUND'], $valid); ?>
-                                <?php } ?>
+                                            <?php echo html_bool_span($_LANG['INS_INSTALL_NOTFOUND'], $valid); ?>
+        <?php } ?>
                                     </td>
                                 </tr>
     <?php } ?>
@@ -236,7 +232,7 @@ $php_path    = get_program_path('php');
                         <h2><?php echo $_LANG['INS_CHECK_FOLDER']; ?></h2>
                             <?php echo $_LANG['INS_FOLDERS_NOTES']; ?>
                         <table class="grid">
-                                    <?php foreach ( $permissions as $name => $permission ) { ?>
+    <?php foreach ( $permissions as $name => $permission ) { ?>
                                 <tr>
                                     <td>/<?php
                                         echo $name;
@@ -245,11 +241,12 @@ $php_path    = get_program_path('php');
                                     <td class="value">
                                         <?php if ( $permission['valid'] ) { ?>
                                             <?php echo html_bool_span($_LANG['INS_PERMISSION_OK'], $permission['valid']); ?>
-                                        <?php }
+                                        <?php
+                                        }
                                         else {
                                             ?>
-                                    <?php echo html_bool_span($_LANG['INS_PERMISSION_NO'], $permission['valid']); ?>
-        <?php } ?>
+            <?php echo html_bool_span($_LANG['INS_PERMISSION_NO'], $permission['valid']); ?>
+                                <?php } ?>
                                     </td>
                                 </tr>
     <?php } ?>
@@ -298,7 +295,8 @@ $php_path    = get_program_path('php');
                                     <?php if ( $sqldumpdemo == $sqldumpempty ) { ?>
                                         <label><input disabled="true" name="demodata" type="radio" value="1" /><?php echo $_LANG['YES']; ?></label>
                                         <label><input disabled="true" name="demodata" type="radio" value="0" checked="true" /> <?php echo $_LANG['NO']; ?></label>
-                                    <?php }
+                                    <?php
+                                    }
                                     else {
                                         ?>
                                         <label><input name="demodata" type="radio" value="1" checked /><?php echo $_LANG['YES']; ?></label>
@@ -310,7 +308,8 @@ $php_path    = get_program_path('php');
                         <div class="hint_text"><?php echo $_LANG['INS_FORM_NOTES']; ?></div>
                     </div>
                 </form>
-<?php }
+<?php
+}
 else {
     ?>
                 <div class="result_link">
@@ -335,7 +334,7 @@ else {
                         else {
                             ?>php<?php } ?> -f <?php echo PATH; ?>/cron.php <?php echo $_SERVER['HTTP_HOST']; ?> > /dev/null</pre>
                     <p>
-    <?php echo $_LANG['INS_FEEDBACK_SUPPORT']; ?>
+                <?php echo $_LANG['INS_FEEDBACK_SUPPORT']; ?>
                     </p>
                     <h2><?php echo $_LANG['INS_ATTENTION']; ?></h2>
                     <p><?php echo $_LANG['INS_DELETE_TODO']; ?></p>

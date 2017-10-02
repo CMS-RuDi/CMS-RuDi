@@ -17,7 +17,6 @@ function photos()
     $inDB   = cmsDatabase::getInstance();
     $inUser = cmsUser::getInstance();
 
-    cmsCore::loadClass('photo');
     $inPhoto = cmsPhoto::getInstance();
 
     global $_LANG;

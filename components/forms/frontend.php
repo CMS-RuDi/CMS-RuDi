@@ -16,8 +16,6 @@ if ( !defined('VALID_CMS') ) {
 
 function forms()
 {
-    cmsCore::loadClass('form');
-
     $do = cmsCore::getInstance()->do;
 
     global $_LANG;

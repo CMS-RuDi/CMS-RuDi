@@ -76,12 +76,6 @@ class cmsCore
             return;
         }
 
-        //подключим базу и конфиг
-        self::loadClass('db');
-        self::loadClass('config');
-        self::loadClass('plugin');
-        self::loadClass('translations');
-
         $inConf = cmsConfig::getInstance();
 
         //проверяем был ли переопределен язык через сессию
@@ -161,8 +155,6 @@ class cmsCore
 
         // если интернационализованный домен
         if ( mb_strpos($_SERVER['HTTP_HOST'], 'xn--') !== false ) {
-            self::loadClass('idna_convert');
-
             $IDN = new idna_convert();
 
             return $IDN->decode($_SERVER['HTTP_HOST']);
@@ -725,16 +717,6 @@ class cmsCore
     }
 
     /**
-     * Загружает класс из файла /core/classes/XXX.class.php, где XXX = $class
-     * @param string $class
-     * @return bool
-     */
-    public static function loadClass($class)
-    {
-        return self::includeFile('core/classes/' . $class . '.class.php');
-    }
-
-    /**
      * Загружает модель для указанного компонента
      * @param string $component Название компонента
      * @return bool
@@ -1227,8 +1209,6 @@ class cmsCore
         if ( ob_get_length() ) {
             ob_end_clean();
         }
-
-        self::loadClass('page');
 
         header("HTTP/1.0 404 Not Found");
         header("HTTP/1.1 404 Not Found");
@@ -2191,8 +2171,6 @@ class cmsCore
             return false;
         }
 
-        self::loadClass('actions');
-
         foreach ( $comments as $comment ) {
             cmsActions::removeObjectLog('add_comment', $comment['id']);
             self::deleteUploadImages($comment['id'], 'comment');
@@ -2519,8 +2497,8 @@ class cmsCore
     public static function htmlCleanUp($text)
     {
         if ( !isset(self::$jevix) ) {
-            self::loadClass('jevix');
             self::$jevix = new Jevix();
+
             // Устанавливаем разрешённые теги. (Все не разрешенные теги считаются запрещенными.)
             self::$jevix->cfgAllowTags(array( 'p', 'a', 'img', 'i', 'b', 'u', 's', 'strike', 'video', 'em', 'strong', 'nobr', 'li', 'ol', 'ul', 'div', 'abbr', 'sup', 'sub', 'acronym', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'br', 'hr', 'pre', 'code', 'object', 'param', 'embed', 'blockquote', 'iframe', 'span', 'input', 'table', 'caption', 'th', 'tr', 'td', 'article', 'nav', 'audio', 'menu', 'section', 'time' ));
             // Устанавливаем коротие теги. (не имеющие закрывающего тега)
@@ -3013,6 +2991,17 @@ class cmsCore
 
     /**
      * ====== DEPRECATED =========
+     * Загружает класс из файла /core/classes/XXX.class.php, где XXX = $class
+     * @param string $class
+     * @return bool
+     */
+    public static function loadClass($class)
+    {
+        return self::includeFile('core/classes/' . $class . '.class.php');
+    }
+
+    /**
+     * ====== DEPRECATED =========
      */
     public function initSmarty($tpl_folder, $tpl_file)
     {
@@ -3081,3 +3070,5 @@ function dump($i)
     echo '</pre>';
     die;
 }
+
+require_once __DIR__ . '/classes/autoload.php';

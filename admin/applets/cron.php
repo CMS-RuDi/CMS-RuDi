@@ -11,8 +11,6 @@
 
 function applet_cron()
 {
-    cmsCore::loadClass('cron');
-
     global $_LANG;
 
     global $adminAccess;

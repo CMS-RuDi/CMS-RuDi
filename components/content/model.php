@@ -692,7 +692,6 @@ class cms_model_content
             return array();
         }
 
-        cmsCore::loadClass('photo');
         $inPhoto = cmsPhoto::getInstance();
 
         $p_a = $this->inDB->getNsCategory('cms_photo_albums', (int) $album['id']);

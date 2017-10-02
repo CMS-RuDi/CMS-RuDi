@@ -28,10 +28,6 @@ require(PATH . '/includes/tools.inc.php');
 
 $inCore = cmsCore::getInstance(false, true);
 
-cmsCore::loadClass('page');
-cmsCore::loadClass('user');
-cmsCore::loadClass('actions');
-
 $inPage = cmsPage::getInstance();
 $inConf = cmsConfig::getInstance();
 $inDB   = cmsDatabase::getInstance();

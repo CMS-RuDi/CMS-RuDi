@@ -25,7 +25,6 @@ function mod_blogs($mod, $cfg)
 
     $cfg = array_merge($default_cfg, $cfg);
 
-    cmsCore::loadClass('blog');
     $inBlog        = cmsBlogs::getInstance();
     $inBlog->owner = $cfg['owner'];
 

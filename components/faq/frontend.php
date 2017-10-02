@@ -21,10 +21,6 @@ function faq()
 
     define('IS_BILLING', $inCore->isComponentInstalled('billing'));
 
-    if ( IS_BILLING ) {
-        $inCore->loadClass('billing');
-    }
-
     global $_LANG;
 
     $pagetitle = $inCore->getComponentTitle();

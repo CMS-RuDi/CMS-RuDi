@@ -150,7 +150,6 @@ class p_loginza extends cmsPlugin
         $inCore = cmsCore::getInstance();
         $inDB   = cmsDatabase::getInstance();
         $inUser = cmsUser::getInstance();
-        cmsCore::loadClass('actions');
 
         $nickname  = $email     = $birthdate = '';
         $advanced  = array();

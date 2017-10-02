@@ -21,11 +21,6 @@ define('PATH', $_SERVER['DOCUMENT_ROOT']);
 include(PATH . '/core/cms.php');
 $inCore = cmsCore::getInstance(false, true);
 
-cmsCore::loadClass('user');
-cmsCore::loadClass('cron');
-cmsCore::loadClass('actions');
-cmsCore::loadClass('page');
-
 $inConf = cmsConfig::getInstance();
 $inDB   = cmsDatabase::getInstance();
 

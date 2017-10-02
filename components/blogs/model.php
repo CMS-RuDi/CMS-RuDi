@@ -50,8 +50,6 @@ class cms_model_blogs
             return false;
         }
 
-        cmsCore::loadClass('blog');
-
         return cmsBlogs::updateCommentsCount($target, $target_id);
     }
 

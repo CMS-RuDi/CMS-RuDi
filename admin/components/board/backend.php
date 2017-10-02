@@ -15,8 +15,6 @@ if ( !defined('VALID_CMS_ADMIN') ) {
 
 function uploadCategoryIcon($file = '')
 {
-    // Загружаем класс загрузки фото
-    cmsCore::loadClass('upload_photo');
     $inUploadPhoto                = cmsUploadPhoto::getInstance();
     // Выставляем конфигурационные параметры
     $inUploadPhoto->upload_dir    = PATH . '/upload/board/';
@@ -40,10 +38,6 @@ cmsCore::loadModel('board');
 $model = new cms_model_board();
 
 define('IS_BILLING', $inCore->isComponentInstalled('billing'));
-
-if ( IS_BILLING ) {
-    cmsCore::loadClass('billing');
-}
 
 $opt = cmsCore::request('opt', 'str', 'list_items');
 

@@ -22,8 +22,6 @@ header('Content-Type: text/html; charset=utf-8');
 include_once(PATH . '/core/cms.php');
 $inCore = cmsCore::getInstance();
 
-cmsCore::loadClass('user');
-
 $inDB   = cmsDatabase::getInstance();
 $inConf = cmsConfig::getInstance();
 $inUser = cmsUser::getInstance();

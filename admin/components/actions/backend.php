@@ -16,7 +16,6 @@ if ( !defined('VALID_CMS_ADMIN') ) {
 cmsCore::loadModel('actions');
 $model = new cms_model_actions();
 
-cmsCore::loadClass('actions');
 $inActions = cmsActions::getInstance();
 
 $opt = cmsCore::request('opt', 'str', 'list');

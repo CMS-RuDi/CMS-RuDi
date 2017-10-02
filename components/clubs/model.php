@@ -74,8 +74,6 @@ class cms_model_clubs
             return false;
         }
 
-        cmsCore::loadClass('blog');
-
         return cmsBlogs::updateCommentsCount($target, $target_id);
     }
 
@@ -516,7 +514,6 @@ class cms_model_clubs
         }
 
         // Создаем блог клуба
-        cmsCore::loadClass('blog');
         $inBlog = cmsBlogs::getInstance();
 
         $inBlog->addBlog(array( 'user_id'   => $club_id,
@@ -645,8 +642,6 @@ class cms_model_clubs
      */
     public function uploadClubImage($old_file = '')
     {
-        cmsCore::loadClass('upload_photo');
-
         $inUploadPhoto                = cmsUploadPhoto::getInstance();
         // Выставляем конфигурационные параметры
         $inUploadPhoto->upload_dir    = PATH . '/images/';
@@ -669,8 +664,6 @@ class cms_model_clubs
      */
     public function initUploadClass()
     {
-        cmsCore::loadClass('upload_photo');
-
         $inUploadPhoto                = cmsUploadPhoto::getInstance();
         // Выставляем конфигурационные параметры
         $inUploadPhoto->upload_dir    = PATH . '/images/photos/';
@@ -743,7 +736,6 @@ class cms_model_clubs
 
         $inBlog = $this->initBlog();
 
-        cmsCore::loadClass('photo');
         $inPhoto = $this->initPhoto();
 
         //Удаляем логотип клуба
@@ -864,8 +856,6 @@ class cms_model_clubs
      */
     public function initBlog()
     {
-        cmsCore::loadClass('blog');
-
         $inBlog        = cmsBlogs::getInstance();
         $inBlog->owner = 'club';
         $inBlog->setTargets(array( 'tags'         => 'blogpost',
@@ -883,9 +873,8 @@ class cms_model_clubs
      */
     public function initPhoto()
     {
-        cmsCore::loadClass('photo');
-
         $inPhoto = cmsPhoto::getInstance();
+
         $inPhoto->setTargets(array( 'tags'           => 'photo',
             'rating'         => 'club_photo',
             'comments_photo' => 'club_photo',

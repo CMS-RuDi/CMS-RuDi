@@ -12,7 +12,6 @@
 
 function mod_photo($mod, $cfg)
 {
-    cmsCore::loadClass('photo');
     $inPhoto = cmsPhoto::getInstance();
     $inDB    = cmsDatabase::getInstance();
 

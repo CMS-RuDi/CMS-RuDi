@@ -12,8 +12,6 @@
 
 function insertForm($form_title)
 {
-    cmsCore::loadClass('form');
-
     return cmsForm::displayForm(trim($form_title), array(), false);
 }
 

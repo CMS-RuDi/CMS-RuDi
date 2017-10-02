@@ -15,8 +15,6 @@ if ( !defined('VALID_CMS_ADMIN') ) {
 
 function uploadCategoryIcon($file = '')
 {
-    cmsCore::loadClass('upload_photo');
-
     $inUploadPhoto                = cmsUploadPhoto::getInstance();
     $inUploadPhoto->upload_dir    = PATH . '/upload/forum/';
     $inUploadPhoto->dir_medium    = 'cat_icons/';
@@ -31,9 +29,6 @@ function uploadCategoryIcon($file = '')
 }
 
 define('IS_BILLING', $inCore->isComponentInstalled('billing'));
-if ( IS_BILLING ) {
-    cmsCore::loadClass('billing');
-}
 
 $opt = cmsCore::request('opt', 'str', 'list_forums');
 

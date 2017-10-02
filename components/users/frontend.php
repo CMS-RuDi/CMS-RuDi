@@ -783,8 +783,6 @@ function users()
         $inPage->addPathway($_LANG['LOAD_AVATAR']);
 
         if ( cmsCore::inRequest('upload') ) {
-            cmsCore::loadClass('upload_photo');
-
             $inUploadPhoto = cmsUploadPhoto::getInstance();
 
             // Выставляем конфигурационные параметры

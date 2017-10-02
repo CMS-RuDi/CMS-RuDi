@@ -17,7 +17,6 @@ function blogs()
     $inDB   = cmsDatabase::getInstance();
     $inUser = cmsUser::getInstance();
 
-    cmsCore::loadClass('blog');
     $inBlog        = cmsBlogs::getInstance();
     $inBlog->owner = 'user';
 
@@ -26,9 +25,6 @@ function blogs()
     $model = new cms_model_blogs();
 
     define('IS_BILLING', $inCore->isComponentInstalled('billing'));
-    if ( IS_BILLING ) {
-        cmsCore::loadClass('billing');
-    }
 
     //Получаем параметры
     $id          = cmsCore::request('id', 'int', 0);

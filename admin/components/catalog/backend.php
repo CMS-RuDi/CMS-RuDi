@@ -40,9 +40,6 @@ $cfg = $inCore->loadComponentConfig('catalog');
 $opt = cmsCore::request('opt', 'str', 'list_cats');
 
 define('IS_BILLING', $inCore->isComponentInstalled('billing'));
-if ( IS_BILLING ) {
-    cmsCore::loadClass('billing');
-}
 
 $GLOBALS['cp_page_head'][] = '<script type="text/javascript" src="/admin/components/catalog/js/common.js"></script>';
 

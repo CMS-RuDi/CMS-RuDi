@@ -40,7 +40,6 @@ $cfg = $inCore->loadComponentConfig('blogs');
 cmsCore::loadModel('blogs');
 $model = new cms_model_blogs();
 
-cmsCore::loadClass('blog');
 $inBlog = cmsBlogs::getInstance();
 
 //============================================================================//

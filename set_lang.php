@@ -22,8 +22,6 @@ include(PATH . '/core/cms.php');
 
 cmsCore::getInstance();
 
-cmsCore::loadClass('user');
-
 if ( !cmsConfig::getConfig('is_change_lang') ) {
     cmsCore::error404();
 }

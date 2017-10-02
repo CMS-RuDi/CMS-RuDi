@@ -323,9 +323,6 @@ function catalog()
     $model = new cms_model_catalog();
 
     define('IS_BILLING', $inCore->isComponentInstalled('billing'));
-    if ( IS_BILLING ) {
-        cmsCore::loadClass('billing');
-    }
 
     $pagetitle = $inCore->getComponentTitle();
 

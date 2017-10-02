@@ -226,8 +226,6 @@ function applet_content()
                 @unlink(PATH . "/images/photos/medium/$file");
             }
             else {
-                // Загружаем класс загрузки фото
-                cmsCore::loadClass('upload_photo');
                 $inUploadPhoto                = cmsUploadPhoto::getInstance();
                 // Выставляем конфигурационные параметры
                 $inUploadPhoto->upload_dir    = PATH . '/images/photos/';
@@ -320,8 +318,6 @@ function applet_content()
             createMenuItem($inmenu, $article['id'], $article['title']);
         }
 
-        // Загружаем класс загрузки фото
-        cmsCore::loadClass('upload_photo');
         $inUploadPhoto                = cmsUploadPhoto::getInstance();
         // Выставляем конфигурационные параметры
         $inUploadPhoto->upload_dir    = PATH . '/images/photos/';

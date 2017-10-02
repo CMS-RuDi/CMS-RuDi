@@ -33,10 +33,6 @@ if ( !$sess_id ) {
 session_id($sess_id);
 session_start();
 
-cmsCore::loadClass('user');
-cmsCore::loadClass('actions');
-cmsCore::loadClass('photo');
-
 $inDB    = cmsDatabase::getInstance();
 $inConf  = cmsConfig::getInstance();
 $inUser  = cmsUser::getInstance();
