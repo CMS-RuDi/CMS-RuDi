@@ -518,9 +518,18 @@ class cmsDatabase
 
     public function setFlags($table, $items, $flag, $value)
     {
+        $ids = [];
+
         foreach ( $items as $id ) {
-            $this->setFlag($table, $id, $flag, $value);
+            $id = (int) $id;
+
+            if ( !empty($id) ) {
+                $ids[] = $id;
+            }
         }
+
+        $this->query("UPDATE " . $table . " SET " . $flag . " = '" . $value . "' WHERE `id` IN (" . implode(',', $ids) . ") LIMIT " . count($ids));
+
         return $this;
     }
 
