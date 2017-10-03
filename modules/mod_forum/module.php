@@ -14,7 +14,8 @@ function mod_forum($mod, $cfg)
 {
     $inDB = cmsDatabase::getInstance();
 
-    $default_cfg = array(
+    $cfg = array_merge(
+            [
         'shownum'     => 4,
         'cat_id'      => 0,
         'forum_id'    => 0,
@@ -24,10 +25,9 @@ function mod_forum($mod, $cfg)
         'showtext'    => 1,
         'showforum'   => 0,
         'order'       => 'pubdate'
+            ], $cfg
     );
-    $cfg         = array_merge($default_cfg, $cfg);
 
-    cmsCore::loadModel('forum');
     $model = new cms_model_forum();
 
     $inDB->addJoin('INNER JOIN cms_forums f ON f.id = t.forum_id');

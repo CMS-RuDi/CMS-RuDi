@@ -54,7 +54,6 @@ function applet_content()
 
     $cfg = $inCore->loadComponentConfig('content');
 
-    cmsCore::loadModel('content');
     $model = new cms_model_content();
 
     $GLOBALS['cp_page_title'] = $_LANG['AD_ARTICLES'];

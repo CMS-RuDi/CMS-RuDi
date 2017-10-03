@@ -48,7 +48,6 @@ if ( $inConf->siteoff && !$inUser->is_admin ) {
     exit(0);
 }
 
-cmsCore::loadModel('clubs');
 $model = new cms_model_clubs();
 
 $inPhoto = $model->initPhoto();

@@ -14,7 +14,6 @@ function mod_latestboard($mod, $cfg)
 {
     $inDB = cmsDatabase::getInstance();
 
-    cmsCore::loadModel('board');
     $model = new cms_model_board();
 
     if ( !isset($cfg['shownum']) ) {

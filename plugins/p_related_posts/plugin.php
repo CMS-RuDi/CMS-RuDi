@@ -333,7 +333,6 @@ class p_related_posts extends cmsPlugin
             return $item;
         }
 
-        cmsCore::loadModel('blogs');
         $model = new cms_model_blogs();
 
         foreach ( $found_posts as $key => $post ) {

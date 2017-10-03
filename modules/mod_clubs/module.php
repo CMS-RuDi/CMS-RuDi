@@ -26,7 +26,6 @@ function mod_clubs($mod, $cfg)
         $cfg['vip_on_top'] = 1;
     }
 
-    cmsCore::loadModel('clubs');
     $model = new cms_model_clubs();
 
     if ( $cfg['vip_on_top'] ) {

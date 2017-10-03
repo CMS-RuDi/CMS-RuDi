@@ -48,7 +48,6 @@ if ( $inConf->siteoff && !$inUser->is_admin ) {
     exit(0);
 }
 
-cmsCore::loadModel('photos');
 $model = new cms_model_photos();
 
 if ( !$model->config['component_enabled'] ) {

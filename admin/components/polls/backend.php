@@ -15,7 +15,6 @@ if ( !defined('VALID_CMS_ADMIN') ) {
 
 $opt = cmsCore::request('opt', 'str', 'list');
 
-cmsCore::loadModel('polls');
 $model = new cms_model_polls();
 
 if ( $opt == 'list' ) {

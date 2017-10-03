@@ -29,12 +29,10 @@ function mod_blogs($mod, $cfg)
     $inBlog->owner = $cfg['owner'];
 
     if ( $cfg['owner'] == 'club' ) {
-        cmsCore::loadModel('clubs');
         $model = new cms_model_clubs();
         $inDB->addSelect('b.user_id as bloglink');
     }
     else {
-        cmsCore::loadModel('blogs');
         $model = new cms_model_blogs();
     }
 

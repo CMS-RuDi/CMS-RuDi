@@ -22,7 +22,6 @@ function registration()
 
     $model = new cms_model_registration();
 
-    cmsCore::loadModel('users');
     $users_model = new cms_model_users();
 
     global $_LANG;

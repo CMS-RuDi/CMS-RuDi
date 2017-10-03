@@ -15,7 +15,6 @@ if ( !defined('VALID_CMS_ADMIN') ) {
 
 $cfg = $inCore->loadComponentConfig('photos');
 
-cmsCore::loadModel('photos');
 $model = new cms_model_photos();
 
 $opt = cmsCore::request('opt', 'str', 'list_albums');

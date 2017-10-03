@@ -116,7 +116,6 @@ class cms_model_arhive
             return array();
         }
 
-        cmsCore::loadModel('content');
         $content_model = new cms_model_content();
 
         while ( $item = $this->inDB->fetch_assoc($result) ) {

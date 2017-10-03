@@ -20,7 +20,6 @@ function rss_content($item_id, $cfg)
 
     global $_LANG;
 
-    cmsCore::loadModel('content');
     $model = new cms_model_content();
 
     $channel = array();

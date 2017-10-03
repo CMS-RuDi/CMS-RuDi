@@ -1165,7 +1165,6 @@ function insertPanel()
     echo '<td width="100">' . $submit_btn . '</td>';
     echo '</tr>';
     if ( $inCore->isComponentInstalled('banners') ) {
-        $inCore->loadModel('banners');
         echo '<tr id="banpos">';
         echo '<td width="120">
                         <strong>' . $_LANG['AD_POSITION'] . ':</strong>

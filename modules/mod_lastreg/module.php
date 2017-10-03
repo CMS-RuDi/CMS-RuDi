@@ -14,7 +14,6 @@ function mod_lastreg($mod, $cfg)
 {
     $inDB = cmsDatabase::getInstance();
 
-    cmsCore::loadModel('users');
     $model = new cms_model_users();
 
     $inDB->orderBy('regdate', 'DESC');

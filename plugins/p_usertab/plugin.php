@@ -52,7 +52,6 @@ class p_usertab extends cmsPlugin
     {
         $inDB = cmsDatabase::getInstance();
 
-        cmsCore::loadModel('content');
         $model = new cms_model_content();
 
         $model->whereUserIs($user_id);

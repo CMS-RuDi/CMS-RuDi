@@ -12,8 +12,8 @@
 
 function mod_search($mod, $cfg)
 {
-    cmsCore::loadModel('search');
     cmsCore::loadLanguage('components/search');
+
     $model = cms_model_search::initModel();
 
     cmsPage::initTemplate('modules', $cfg['tpl'])->

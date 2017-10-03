@@ -35,7 +35,6 @@ function getProvidersList()
     return $provider_array;
 }
 
-cmsCore::loadModel('search');
 $model = cms_model_search::initModel();
 
 $opt = cmsCore::request('opt', 'str', '');

@@ -31,7 +31,6 @@ function mod_comments($mod, $cfg)
         return true;
     }
 
-    cmsCore::loadModel('comments');
     $model = new cms_model_comments();
     $model->initAccess();
 

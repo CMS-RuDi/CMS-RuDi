@@ -268,7 +268,6 @@ function users()
                 $errors = true;
             }
 
-            cmsCore::loadModel('registration');
             $modreg = new cms_model_registration();
 
             if ( !$inUser->is_admin ) {
@@ -512,8 +511,6 @@ function users()
         }
 
         if ( $usr['city'] ) {
-            cmsCore::loadModel('geo');
-
             $geo          = new cms_model_geo();
             $city_parents = $geo->getCityParents($usr['city']);
 

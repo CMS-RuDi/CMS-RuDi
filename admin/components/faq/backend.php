@@ -81,7 +81,6 @@ if ( !isset($cfg['is_comment']) ) {
     $cfg['is_comment'] = 1;
 }
 
-$inCore->loadModel('faq');
 $model = new cms_model_faq();
 
 if ( $opt == 'saveconfig' ) {

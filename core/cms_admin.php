@@ -754,24 +754,24 @@ class cmsAdmin extends cmsCore
         }
 
         if ( $linktype == 'category' || $linktype == 'content' ) {
-            $this->loadModel('content');
             $model = new cms_model_content();
+
             switch ( $linktype ) {
-                case 'category': $menulink = $model->getCategoryURL(null, $inDB->get_field('cms_category', "id='" . $linkid . "'", 'seolink'));
+                case 'category':
+                    $menulink = $model->getCategoryURL(null, $inDB->get_field('cms_category', "id='" . $linkid . "'", 'seolink'));
                     break;
-                case 'content': $menulink = $model->getArticleURL(null, $inDB->get_field('cms_content', "id='" . $linkid . "'", 'seolink'));
+                case 'content':
+                    $menulink = $model->getArticleURL(null, $inDB->get_field('cms_content', "id='" . $linkid . "'", 'seolink'));
                     break;
             }
         }
 
         if ( $linktype == 'blog' ) {
-            $this->loadModel('blogs');
             $model    = new cms_model_blogs();
             $menulink = $model->getBlogURL($inDB->get_field('cms_blogs', "id='" . $linkid . "'", 'seolink'));
         }
 
         if ( $linktype == 'video_cat' ) {
-            $this->loadModel('video');
             $model    = cms_model_video::initModel();
             $cat      = $inDB->get_fields('cms_video_category', "id='" . $linkid . "'", 'id, seolink');
             $menulink = $model->getCatLink($cat['seolink'], $cat['id']);

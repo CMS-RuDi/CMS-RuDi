@@ -54,7 +54,6 @@ $toolmenu[] = array( 'icon' => 'config.gif', 'title' => $_LANG['AD_SETTINGS'], '
 
 cpToolMenu($toolmenu);
 
-cmsCore::loadModel('comments');
 $model = new cms_model_comments();
 
 $cfg = $model->config;

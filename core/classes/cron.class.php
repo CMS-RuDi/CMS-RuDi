@@ -252,8 +252,6 @@ class cmsCron
         //============================  метод модели =========================//
 
         if ( $job['component'] && $job['model_method'] ) {
-            cmsCore::loadModel($job['component']);
-
             $classname = "cms_model_" . $job['component'];
 
             if ( class_exists($classname) ) {

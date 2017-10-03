@@ -20,7 +20,6 @@ function rss_comments($item_id, $cfg)
 
     global $_LANG;
 
-    cmsCore::loadModel('comments');
     $model = new cms_model_comments();
 
     $channel = array();
@@ -39,12 +38,10 @@ function rss_comments($item_id, $cfg)
             return false;
         }
 
-        if ( cmsCore::loadModel($target['component']) ) {
-            $model_class = 'cms_model_' . $target['component'];
+        $model_class = 'cms_model_' . $target['component'];
 
-            if ( class_exists($model_class) ) {
-                $target_model = new $model_class();
-            }
+        if ( class_exists($model_class) ) {
+            $target_model = new $model_class();
         }
 
         if ( !isset($target_model) ) {

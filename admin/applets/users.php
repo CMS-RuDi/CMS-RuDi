@@ -54,8 +54,6 @@ function applet_users()
     $inUser = cmsUser::getInstance();
     $inDB   = cmsDatabase::getInstance();
 
-    cmsCore::loadModel('users');
-
     $model = new cms_model_users();
 
     // подключаем язык компонента регистрации

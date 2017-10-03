@@ -33,7 +33,6 @@ function search_blogs($query, $look)
     if ( $inDB->num_rows($result) ) {
         cmsCore::loadLanguage('components/blogs');
 
-        cmsCore::loadModel('blogs');
         $model = new cms_model_blogs();
 
         while ( $item = $inDB->fetch_assoc($result) ) {

@@ -178,8 +178,6 @@ function cmsTagItemLink($target, $item_id)
             }
             break;
         case 'video':
-            $inCore->loadModel('video');
-
             $model = cms_model_video::initModel();
 
             $sql = "SELECT i.title as title, i.id as item_id, i.seolink as movie_seolink, c.title as cat_title, c.id as cat_id, c.seolink as cat_seolink

@@ -26,7 +26,6 @@ $inDB   = cmsDatabase::getInstance();
 $inConf = cmsConfig::getInstance();
 $inUser = cmsUser::getInstance();
 
-cmsCore::loadModel('users');
 $model = new cms_model_users();
 
 if ( empty($_FILES['Filedata']['name']) ) {

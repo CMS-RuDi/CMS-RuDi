@@ -33,7 +33,6 @@ function cpPriceInput($item)
 
 //============================================================================//
 
-cmsCore::loadModel('catalog');
 $model = new cms_model_catalog();
 
 $cfg = $inCore->loadComponentConfig('catalog');

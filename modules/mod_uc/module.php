@@ -14,8 +14,6 @@ function mod_uc($mod, $cfg)
 {
     $inDB = cmsDatabase::getInstance();
 
-    cmsCore::loadModel('catalog');
-
     if ( !in_array(@$cfg['sort'], array( 'rating', 'hits', 'pubdate' )) ) {
         $cfg['sort'] = 'pubdate';
     }

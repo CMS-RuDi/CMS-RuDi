@@ -65,7 +65,6 @@ class p_auto_forum extends cmsPlugin
 
     private function updateLastForumPost($article)
     {
-        cmsCore::loadModel('forum');
         $model_forum = new cms_model_forum();
 
         // получаем полную статью
@@ -87,7 +86,6 @@ class p_auto_forum extends cmsPlugin
             return;
         }
 
-        cmsCore::loadModel('forum');
         $model_forum = new cms_model_forum();
 
         $thread = $this->inDB->get_fields('cms_forum_threads t
@@ -137,7 +135,6 @@ class p_auto_forum extends cmsPlugin
             return false;
         }
 
-        cmsCore::loadModel('forum');
         $model_forum = new cms_model_forum();
 
         $post_html = $this->getHtmlPost($article);

@@ -12,7 +12,6 @@
 
 function mod_polls($mod, $cfg)
 {
-    cmsCore::loadModel('polls');
     $model = new cms_model_polls();
 
     if ( $cfg['poll_id'] > 0 ) {

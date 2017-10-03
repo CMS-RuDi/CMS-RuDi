@@ -32,7 +32,6 @@ define('IS_BILLING', $inCore->isComponentInstalled('billing'));
 
 $opt = cmsCore::request('opt', 'str', 'list_forums');
 
-cmsCore::loadModel('forum');
 $model = new cms_model_forum();
 
 $cfg = $model->config;

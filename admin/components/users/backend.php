@@ -13,7 +13,6 @@ if ( !defined('VALID_CMS_ADMIN') ) {
     die('ACCESS DENIED');
 }
 
-cmsCore::loadModel('users');
 $model = new cms_model_users();
 
 $opt = cmsCore::request('opt', 'str', 'list');

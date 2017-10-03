@@ -13,7 +13,6 @@ if ( !defined('VALID_CMS_ADMIN') ) {
     die('ACCESS DENIED');
 }
 
-cmsCore::loadModel('actions');
 $model = new cms_model_actions();
 
 $inActions = cmsActions::getInstance();

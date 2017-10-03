@@ -23,7 +23,6 @@ function rss_board($item_id, $cfg)
 
     $inDB = cmsDatabase::getInstance();
 
-    cmsCore::loadModel('board');
     $model = new cms_model_board();
 
     global $_LANG;

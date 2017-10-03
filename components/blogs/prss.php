@@ -25,7 +25,6 @@ function rss_blogs($item_id, $cfg)
 
     global $_LANG;
 
-    cmsCore::loadModel('blogs');
     $model = new cms_model_blogs();
 
     $inBlog        = cmsBlogs::getInstance();

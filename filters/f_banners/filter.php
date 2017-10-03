@@ -31,8 +31,6 @@ function f_banners(&$text)
         return true;
     }
 
-    cmsCore::loadModel('banners');
-
     foreach ( $matches as $elm ) {
         $elm[0] = str_replace('{', '', $elm[0]);
         $elm[0] = str_replace('}', '', $elm[0]);

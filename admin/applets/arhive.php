@@ -21,8 +21,6 @@ function applet_arhive()
     $cfg        = $inCore->loadComponentConfig('content');
     $cfg_arhive = $inCore->loadComponentConfig('arhive');
 
-    cmsCore::loadModel('content');
-
     $model = new cms_model_content();
 
     cpAddPathway($_LANG['AD_ARTICLE_SITE'], 'index.php?view=tree');

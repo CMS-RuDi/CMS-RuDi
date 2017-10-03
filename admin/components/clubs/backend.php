@@ -17,7 +17,6 @@ $cfg = $inCore->loadComponentConfig('clubs');
 
 $opt = cmsCore::request('opt', 'str', 'list');
 
-cmsCore::loadModel('clubs');
 $model = new cms_model_clubs();
 
 if ( $opt == 'list' ) {

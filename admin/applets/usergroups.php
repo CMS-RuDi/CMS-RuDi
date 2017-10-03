@@ -34,7 +34,6 @@ function applet_usergroups()
     $do = cmsCore::request('do', 'str', 'list');
     $id = cmsCore::request('id', 'int', -1);
 
-    cmsCore::loadModel('users');
     $model = new cms_model_users();
 
     if ( $do == 'list' ) {

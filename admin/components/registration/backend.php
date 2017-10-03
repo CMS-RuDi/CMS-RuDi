@@ -56,7 +56,6 @@ if ( $opt == 'saveconfig' ) {
     $inCore->saveComponentConfig('registration', $cfg);
 
     if ( cmsCore::request('inv_now', 'int', 0) ) {
-        cmsCore::loadModel('users');
         $model = new cms_model_users();
 
         $inv_count = $cfg['inv_count'];
@@ -75,7 +74,6 @@ if ( $opt == 'saveconfig' ) {
     }
 
     if ( cmsCore::request('inv_delete', 'int', 0) ) {
-        cmsCore::loadModel('users');
         $model = new cms_model_users();
 
         $model->deleteInvites();
@@ -107,15 +105,15 @@ if ( $opt == 'saveconfig' ) {
                                     $('.inv').hide();
                                 }">
                             <option value="open" <?php
-if ( $cfg['reg_type'] == 'open' ) {
-    echo 'selected';
-}
-?>><?php echo $_LANG['AD_REGISTRATION_OPEN']; ?></option>
+                            if ( $cfg['reg_type'] == 'open' ) {
+                                echo 'selected';
+                            }
+                            ?>><?php echo $_LANG['AD_REGISTRATION_OPEN']; ?></option>
                             <option value="invite" <?php
                             if ( $cfg['reg_type'] == 'invite' ) {
                                 echo 'selected';
                             }
-?>><?php echo $_LANG['AD_REGISTRATION_INVITES']; ?></option>
+                            ?>><?php echo $_LANG['AD_REGISTRATION_INVITES']; ?></option>
                         </select>
                     </td>
                 </tr>
@@ -135,20 +133,20 @@ if ( $cfg['reg_type'] == 'open' ) {
                                 <td>
                                     <select name="inv_period">
                                         <option value="DAY" <?php
-                            if ( $cfg['inv_period'] == 'DAY' ) {
-                                echo 'selected';
-                            }
-?>><?php echo $_LANG['AD_DAY']; ?></option>
+                                        if ( $cfg['inv_period'] == 'DAY' ) {
+                                            echo 'selected';
+                                        }
+                                        ?>><?php echo $_LANG['AD_DAY']; ?></option>
                                         <option value="WEEK" <?php
                                         if ( $cfg['inv_period'] == 'WEEK' ) {
                                             echo 'selected';
                                         }
-?>><?php echo $_LANG['AD_WEEKLY']; ?></option>
+                                        ?>><?php echo $_LANG['AD_WEEKLY']; ?></option>
                                         <option value="MONTH" <?php
                                         if ( $cfg['inv_period'] == 'MONTH' ) {
                                             echo 'selected';
                                         }
-?>><?php echo $_LANG['AD_MONTH']; ?></option>
+                                        ?>><?php echo $_LANG['AD_MONTH']; ?></option>
                                     </select>
                                 </td>
                             </tr>
@@ -176,15 +174,15 @@ if ( $cfg['reg_type'] == 'open' ) {
                     <td width="308"><strong><?php echo $_LANG['AD_REGISTRATION_ON']; ?>: </strong></td>
                     <td width="313">
                         <label><input name="is_on" type="radio" value="1" <?php
-                                           if ( $cfg['is_on'] ) {
-                                               echo 'checked="checked"';
-                                           }
-?>/> <?php echo $_LANG['YES']; ?></label>
+                            if ( $cfg['is_on'] ) {
+                                echo 'checked="checked"';
+                            }
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="is_on" type="radio" value="0" <?php
                             if ( !$cfg['is_on'] ) {
                                 echo 'checked="checked"';
                             }
-?>/> <?php echo $_LANG['NO']; ?></label>
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>
@@ -198,12 +196,12 @@ if ( $cfg['reg_type'] == 'open' ) {
                             if ( $cfg['act'] ) {
                                 echo 'checked="checked"';
                             }
-?>/> <?php echo $_LANG['YES']; ?></label>
+                            ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="act" type="radio" value="0" <?php
                             if ( !$cfg['act'] ) {
                                 echo 'checked="checked"';
                             }
-?>/> <?php echo $_LANG['NO']; ?></label>
+                            ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
                 <tr>

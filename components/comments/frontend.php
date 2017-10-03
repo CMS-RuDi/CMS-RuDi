@@ -25,7 +25,6 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
     $inDB   = cmsDatabase::getInstance();
     $inUser = cmsUser::getInstance();
 
-    cmsCore::loadModel('comments');
     $model = new cms_model_comments($labels);
 
     // Проверяем включени ли компонент
@@ -243,11 +242,9 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
         }
 
         //  2. подключим модель этого компонента
-        if ( cmsCore::loadModel($target['component']) ) {
-            $model_class = 'cms_model_' . $target['component'];
-            if ( class_exists($model_class) ) {
-                $target_model = new $model_class();
-            }
+        $model_class = 'cms_model_' . $target['component'];
+        if ( class_exists($model_class) ) {
+            $target_model = new $model_class();
         }
 
         if ( !isset($target_model) ) {
@@ -453,16 +450,14 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
         $model->deleteComment($id);
 
         //подключим модель этого компонента
-        if ( cmsCore::loadModel($target['component']) ) {
-            $model_class = 'cms_model_' . $target['component'];
+        $model_class = 'cms_model_' . $target['component'];
 
-            if ( class_exists($model_class) ) {
-                $target_model = new $model_class();
+        if ( class_exists($model_class) ) {
+            $target_model = new $model_class();
 
-                // Пересчитываем количество комментариев у цели если нужно
-                if ( method_exists($target_model, 'updateCommentsCount') ) {
-                    $target_model->updateCommentsCount($comment['target'], $comment['target_id']);
-                }
+            // Пересчитываем количество комментариев у цели если нужно
+            if ( method_exists($target_model, 'updateCommentsCount') ) {
+                $target_model->updateCommentsCount($comment['target'], $comment['target_id']);
             }
         }
 

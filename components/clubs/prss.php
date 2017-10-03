@@ -25,7 +25,6 @@ function rss_clubs($item_id, $cfg)
 
     global $_LANG;
 
-    cmsCore::loadModel('clubs');
     $model = new cms_model_clubs();
 
     $inBlog = $model->initBlog();

@@ -22,7 +22,6 @@ function search_clubs($query, $look)
 
     global $_LANG;
 
-    cmsCore::loadModel('clubs');
     $model = new cms_model_clubs();
 
     /////// поиск по клубным блогам //////////

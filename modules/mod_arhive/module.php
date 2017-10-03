@@ -12,7 +12,6 @@
 
 function mod_arhive($mod, $cfg)
 {
-    cmsCore::loadModel('arhive');
     $model = new cms_model_arhive();
 
     $model->whereThisAndNestedCats(@$cfg['cat_id']);

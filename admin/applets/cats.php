@@ -49,7 +49,6 @@ function applet_cats()
     $GLOBALS['cp_page_title'] = $_LANG['AD_ARTICLES'];
     cpAddPathway($_LANG['AD_ARTICLES'], 'index.php?view=tree');
 
-    cmsCore::loadModel('content');
     $model = new cms_model_content();
 
     $do = cmsCore::request('do', 'str', 'add');

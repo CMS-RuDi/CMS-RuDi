@@ -33,8 +33,8 @@ function uploadCategoryIcon($file = '')
 
 // ========================================================================== //
 
-$cfg   = $inCore->loadComponentConfig('board');
-cmsCore::loadModel('board');
+$cfg = $inCore->loadComponentConfig('board');
+
 $model = new cms_model_board();
 
 define('IS_BILLING', $inCore->isComponentInstalled('billing'));

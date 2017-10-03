@@ -32,7 +32,6 @@ class p_loginza extends cmsPlugin
         $this->events[] = 'LOGINZA_BUTTON';
         $this->events[] = 'LOGINZA_AUTH';
 
-        cmsCore::loadModel('registration');
         $this->reg_model = new cms_model_registration();
 
         parent::__construct();

@@ -646,11 +646,7 @@ class cmsCore
             $config = self::yamlToArray($this->components[$component]['config']);
 
             // проверяем настройки по умолчанию в модели
-            $is_model_loaded = true;
-
-            if ( !class_exists('cms_model_' . $component) ) {
-                $is_model_loaded = self::loadModel($component);
-            }
+            $is_model_loaded = class_exists('cms_model_' . $component);
 
             if ( $is_model_loaded && method_exists('cms_model_' . $component, 'getDefaultConfig') ) {
                 $default_cfg = call_user_func(array( 'cms_model_' . $component, 'getDefaultConfig' ));
@@ -714,16 +710,6 @@ class cmsCore
     public static function loadLib($lib)
     {
         return self::includeFile('core/lib_' . $lib . '.php');
-    }
-
-    /**
-     * Загружает модель для указанного компонента
-     * @param string $component Название компонента
-     * @return bool
-     */
-    public static function loadModel($component)
-    {
-        return self::includeFile('components/' . $component . '/model.php');
     }
 
     /**
@@ -1162,8 +1148,6 @@ class cmsCore
             // Успешность выполнения должна определяться в методе execute плагина
             // Он должен вернуть true
             if ( !cmsCore::callEvent(strtoupper('get_' . $this->component . '_action_' . $this->do), false) ) {
-                self::loadModel($this->component);
-
                 self::includeFile('components/' . $this->component . '/frontend.php');
 
                 if ( function_exists($this->component) ) {
@@ -2987,6 +2971,17 @@ class cmsCore
         }
 
         self::halt(json_encode($data));
+    }
+
+    /**
+     * ====== DEPRECATED =========
+     * Загружает модель для указанного компонента
+     * @param string $component Название компонента
+     * @return bool
+     */
+    public static function loadModel($component)
+    {
+        return self::includeFile('components/' . $component . '/model.php');
     }
 
     /**

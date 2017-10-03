@@ -38,8 +38,6 @@ function bannerHitsbyID($item)
 
 $opt = cmsCore::request('opt', 'str', 'list');
 
-cmsCore::loadModel('banners');
-
 $toolmenu = array();
 
 if ( $opt == 'list' ) {

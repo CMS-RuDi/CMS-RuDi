@@ -92,8 +92,6 @@ function cmsSubmitKarma($target, $item_id, $points)
     //проверяем наличие метода updateRatingHook(target, item_id, points) в модели
     //компонента, ответственного за цель
     if ( $info['component'] ) {
-        cmsCore::loadModel($info['component']);
-
         if ( class_exists('cms_model_' . $info['component']) ) {
             $model_class = 'cms_model_' . $info['component'];
             $model       = new $model_class();

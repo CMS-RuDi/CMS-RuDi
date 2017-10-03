@@ -14,7 +14,6 @@ function mod_category($mod, $cfg)
 {
     $inDB = cmsDatabase::getInstance();
 
-    cmsCore::loadModel('content');
     $model = new cms_model_content();
 
     if ( !isset($cfg['category_id']) ) {

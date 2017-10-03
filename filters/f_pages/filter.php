@@ -40,8 +40,6 @@ function f_pages(&$text)
             cmsCore::error404();
         }
 
-        cmsCore::loadModel('content');
-
         $text .= cmsPage::getPagebar($n, $page, 1, cms_model_content::getArticleURL(null, $seolink, '%page%'));
 
         return true;

@@ -37,7 +37,6 @@ $opt = cmsCore::request('opt', 'str', 'list_blogs');
 
 $cfg = $inCore->loadComponentConfig('blogs');
 
-cmsCore::loadModel('blogs');
 $model = new cms_model_blogs();
 
 $inBlog = cmsBlogs::getInstance();
