@@ -61,17 +61,11 @@ class autoload
         $required = false;
 
         if ( isset(self::$classes[$class]) ) {
-            if ( file_exists(self::$classes[$class]) ) {
-                require_once(self::$classes[$class]);
-                $required = true;
-            }
-            else {
-                foreach ( self::$dirs as $dir ) {
-                    if ( file_exists($dir . '/' . self::$classes[$class]) ) {
-                        require_once($dir . '/' . self::$classes[$class]);
-                        $required = true;
-                        break;
-                    }
+            foreach ( self::$dirs as $dir ) {
+                if ( file_exists($dir . '/' . self::$classes[$class]) ) {
+                    require_once($dir . '/' . self::$classes[$class]);
+                    $required = true;
+                    break;
                 }
             }
         }
@@ -80,12 +74,6 @@ class autoload
             foreach ( self::$dirs as $dir ) {
                 if ( file_exists($dir . '/' . $class . '.php') ) {
                     require_once($dir . '/' . $class . '.php');
-                    $required = true;
-                    break;
-                }
-
-                if ( file_exists($dir . '/' . $class . '.class.php') ) {
-                    require_once($dir . '/' . $class . '.class.php');
                     $required = true;
                     break;
                 }
@@ -130,5 +118,6 @@ class autoload
 }
 
 autoload::addDir(__DIR__);
+autoload::addDir(__DIR__ . '/../..');
 
 spl_autoload_register(array( new autoload(), 'load' ));
