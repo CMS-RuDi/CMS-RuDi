@@ -57,7 +57,7 @@
             if (statusText == 'success') {
                 if (result.error == false) {
                     core.alert(result.text, '{$LANG.NOTICE}!');
-                    $.post('/modules/mod_polls/load.php', {module_id: module_id}, function (data) {
+                    $.post('/modules/mod_polls/load.php', { module_id: module_id }, function (data) {
                         $('#poll_module_' + module_id).html(data);
                     });
                     setTimeout('core.box_close()', 900);

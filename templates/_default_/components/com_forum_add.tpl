@@ -29,9 +29,11 @@
 
                 {if $cfg.fa_on && $is_allow_attach}
                     {add_js file='includes/jquery/multifile/jquery.multifile.js'}
+                    
                     <script type="text/javascript">
-        $(function () {
-            $('#upfile').MultiFile({max: ' {$cfg.fa_max}', accept: '{$cfg.fa_ext} ', max: 3, STRING: {remove: LANG_CANCEL, selected: LANG_FILE_SELECTED, denied: LANG_FILE_DENIED, duplicate: LANG_FILE_DUPLICATE}}); });
+                        $(function () {
+                            $('#upfile').MultiFile({ max: ' {$cfg.fa_max}', accept: '{$cfg.fa_ext} ', max: 3, STRING: { remove: LANG_CANCEL, selected: LANG_FILE_SELECTED, denied: LANG_FILE_DENIED, duplicate: LANG_FILE_DUPLICATE } });
+                        });
                     </script>
                     <input type="hidden" name="fa_count" value="1"/>
                     <div class="forum_fa">

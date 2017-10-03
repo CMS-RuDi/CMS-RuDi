@@ -256,7 +256,7 @@
                                 <div class="value"><a href="#" rel="{$usr.email|NoSpam}" class="email">{$usr.email}</a></div>
                             </div>
                             <script>
-                                $('.email').nospam({replaceText: true});
+                                $('.email').nospam({ replaceText: true });
                             </script>
                         {/if}
 

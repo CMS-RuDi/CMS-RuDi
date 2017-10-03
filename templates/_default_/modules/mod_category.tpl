@@ -33,9 +33,8 @@
 </ul>
 
 <script type="text/javascript">
-
     {if !$cfg.expand_all}
-    $('ul.mod_cat_list li > ul').hide();
+        $('ul.mod_cat_list li > ul').hide();
     {/if}
 
     $('.cat_plus').click(function () {
@@ -51,6 +50,5 @@
         $(this).parent('li').find('ul').find('.cat_minus').hide();
         $(this).parent('li').find('ul').find('.cat_plus').show();
     });
-
 </script>
 {/if}

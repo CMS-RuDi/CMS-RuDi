@@ -47,7 +47,7 @@
                 var ss = $(this).parent('a');
                 ss.attr("rel", "gal").attr("href", orig).addClass('photobox');
             });
-            $('a.photobox').colorbox({rel: 'gal', transition: "none", slideshow: true, width: "650px", height: "650px"});
+            $('a.photobox').colorbox({ rel: 'gal', transition: "none", slideshow: true, width: "650px", height: "650px" });
         });
     </script>
 {/if}

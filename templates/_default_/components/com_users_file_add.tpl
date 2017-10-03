@@ -7,7 +7,8 @@
         document.uploadform.submit();
     }
     $(function () {
-        $('#upfile').MultiFile({accept: '{$types}', max: 3, STRING: {remove: LANG_CANCEL, selected: LANG_FILE_SELECTED, denied: LANG_FILE_DENIED, duplicate: LANG_FILE_DUPLICATE}}); });
+        $('#upfile').MultiFile({ accept: '{$types}', max: 3, STRING: { remove: LANG_CANCEL, selected: LANG_FILE_SELECTED, denied: LANG_FILE_DENIED, duplicate: LANG_FILE_DUPLICATE } });
+    });
 </script>
 
 <div class="con_heading">{$LANG.UPLOAD_FILES}</div>

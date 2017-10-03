@@ -71,13 +71,13 @@
 {if $is_moder}
     <script type="text/javascript" language="JavaScript">
         $(document).ready(function () {
-            $('.b_table_tr .bd_moderate_link').css({opacity: 0.3, filter: 'alpha(opacity=30)'});
+            $('.b_table_tr .bd_moderate_link').css({ opacity: 0.3, filter: 'alpha(opacity=30)' });
             $('.b_table_tr').hover(
                     function () {
-                        $(this).find('.bd_moderate_link').css({opacity: 1.0, filter: 'alpha(opacity=100)'});
+                        $(this).find('.bd_moderate_link').css({ opacity: 1.0, filter: 'alpha(opacity=100)' });
                     },
                     function () {
-                        $(this).find('.bd_moderate_link').css({opacity: 0.3, filter: 'alpha(opacity=30)'});
+                        $(this).find('.bd_moderate_link').css({ opacity: 0.3, filter: 'alpha(opacity=30)' });
                     }
             );
         });

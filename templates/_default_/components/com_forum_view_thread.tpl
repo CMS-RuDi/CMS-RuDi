@@ -190,22 +190,22 @@
 {if $user_id}
     <script type="text/javascript" language="JavaScript">
         $(document).ready(function () {
-            $('.darkBlue-LightBlue .msg_links').css({opacity: 0.4, filter: 'alpha(opacity=40)'});
+            $('.darkBlue-LightBlue .msg_links').css({ opacity: 0.4, filter: 'alpha(opacity=40)' });
             $('.posts_table_tr').hover(
-                    function () {
-                        $(this).prev().find('.msg_links').css({opacity: 1.0, filter: 'alpha(opacity=100)'});
-                    },
-                    function () {
-                        $(this).prev().find('.msg_links').css({opacity: 0.4, filter: 'alpha(opacity=40)'});
-                    }
+                function () {
+                    $(this).prev().find('.msg_links').css({ opacity: 1.0, filter: 'alpha(opacity=100)' });
+                },
+                function () {
+                    $(this).prev().find('.msg_links').css({ opacity: 0.4, filter: 'alpha(opacity=40)' });
+                }
             );
             $('.msg_links').hover(
-                    function () {
-                        $(this).css({opacity: 1.0, filter: 'alpha(opacity=100)'});
-                    },
-                    function () {
-                        $(this).css({opacity: 0.4, filter: 'alpha(opacity=40)'});
-                    }
+                function () {
+                    $(this).css({ opacity: 1.0, filter: 'alpha(opacity=100)' });
+                },
+                function () {
+                    $(this).css({ opacity: 0.4, filter: 'alpha(opacity=40)' });
+                }
             );
         });
     </script>

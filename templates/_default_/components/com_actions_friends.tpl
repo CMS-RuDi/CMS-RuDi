@@ -27,19 +27,19 @@
         </table>
         <script type="text/javascript">
             function selectUser(user_id) {
-                $('#actions_list').css({opacity: 0.4, filter: 'alpha(opacity=40)'});
+                $('#actions_list').css({ opacity: 0.4, filter: 'alpha(opacity=40)' });
                 $('input[name=user_id]').val(user_id);
                 $('td.selected').removeClass('selected');
                 $('#fr' + user_id).addClass('selected');
-                $.post('/actions', {user_id: user_id, 'do': 'view_user_feed_only'}, function (data) {
+                $.post('/actions', { user_id: user_id, 'do': 'view_user_feed_only' }, function (data) {
                     $('#actions_list').html(data);
-                    $('#actions_list').css({opacity: 1.0, filter: 'alpha(opacity=100)'});
+                    $('#actions_list').css({ opacity: 1.0, filter: 'alpha(opacity=100)' });
                 });
             }
             function listFriends(page, user_id) {
-                $('table.action_friends').css({opacity: 0.4, filter: 'alpha(opacity=40)'});
+                $('table.action_friends').css({ opacity: 0.4, filter: 'alpha(opacity=40)' });
                 var user_id = $('input[name=user_id]').val();
-                $.post('/actions', {page: page, user_id: user_id, 'do': 'view_user_friends_only'}, function (data) {
+                $.post('/actions', { page: page, user_id: user_id, 'do': 'view_user_friends_only' }, function (data) {
                     $('#fr_body').html(data);
                 });
             }

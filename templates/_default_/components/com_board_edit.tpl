@@ -217,12 +217,12 @@
         $("#obtype").prop("disabled", true);
         var category_id = $('select[name=category_id]').val();
         if (category_id != 0) {
-            $.post("/components/board/ajax/get_rubric.php", {value: category_id, obtype: '{$item.obtype}'}, function (data) {
+            $.post("/components/board/ajax/get_rubric.php", { value: category_id, obtype: '{$item.obtype}' }, function (data) {
                 $("#obtype").prop("disabled", false);
                 $("#obtype").html(data);
             });
     {if $form_do == 'add'}
-            $.post("/components/board/ajax/get_form.php", {value: category_id}, function (dataform) {
+            $.post("/components/board/ajax/get_form.php", { value: category_id }, function (dataform) {
                 if (dataform != 1) {
                     $('.cat_form').remove();
                     $("#before_form").after(dataform);

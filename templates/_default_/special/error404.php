@@ -39,9 +39,11 @@
 
                     <?php for ( $i = 2; $i <= 14; $i++ ) { ?>
 
-                        <?php if ( !isset($stack[$i]) ) {
+                        <?php
+                        if ( !isset($stack[$i]) ) {
                             break;
-                        } ?>
+                        }
+                        ?>
 
                             <?php $row = $stack[$i]; ?>
                         <li>

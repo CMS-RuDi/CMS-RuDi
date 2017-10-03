@@ -286,7 +286,6 @@
     });
     $(function () {
         $('#moderator_remove').click(function () {
-
             var user = new Array;
 
             $('#moderslist option:selected').each(function () {
@@ -299,10 +298,8 @@
                 $(opt).remove().appendTo('#userslist1');
                 $(opt2).remove();
             }
-
         });
         $('#moderator_add').click(function () {
-
             var user_id = new Array;
 
             $('#userslist1 option:selected').each(function () {
@@ -315,7 +312,6 @@
                 id = user_id.pop();
                 $('#userslist2 option[value=' + id + ']').remove();
             }
-
         });
 
         $('#member_remove').click(function () {
@@ -342,11 +338,9 @@
                 id = user_id.pop();
                 $('#moderslist option[value=' + id + ']').remove();
             }
-
         });
 
         $('#member_add').click(function () {
-
             var user_id = new Array;
 
             $('#userslist2 option:selected').each(function () {
@@ -354,7 +348,6 @@
             });
 
             $('#userslist2 option:selected').remove().appendTo('#memberslist');
-
         });
 
         $("#addform").submit(function () {

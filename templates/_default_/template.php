@@ -1,15 +1,14 @@
 <?php
-/* * *************************************************************************** */
-//                                                                            //
-//                           InstantCMS v1.10.7                               //
-//                        http://www.instantcms.ru/                           //
-//                                                                            //
-//                   written by InstantCMS Team, 2007-2015                    //
-//                produced by InstantSoft, (www.instantsoft.ru)               //
-//                                                                            //
-//                        LICENSED BY GNU/GPL v2                              //
-//                                                                            //
-/* * *************************************************************************** */
+/*
+ *                           InstantCMS v1.10.7
+ *                        http://www.instantcms.ru/
+ *
+ *                   written by InstantCMS Team, 2007-2017
+ *                produced by InstantSoft, (www.instantsoft.ru)
+ *
+ *                        LICENSED BY GNU/GPL v2
+ */
+
 /*
  * Доступны объекты $inCore $inUser $inPage($this) $inConf $inDB
  */
@@ -60,7 +59,8 @@ $this->addHead('<script type="text/javascript">var TEMPLATE = "' . TEMPLATE . '"
                         <div id="sitename"><a href="/"></a></div>
                     </div>
                     <div class="grid_10">
-                        <?php if ( $inConf->is_change_lang ) {
+                        <?php
+                        if ( $inConf->is_change_lang ) {
 
                             $langs = cmsCore::getDirsList('/languages');
                             ?>
@@ -104,8 +104,10 @@ $this->addHead('<script type="text/javascript">var TEMPLATE = "' . TEMPLATE . '"
                 <div class="clear"></div>
 
                 <div id="mainbody" class="container_12">
-                    <div id="main" class="<?php if ( $mod_count['sidebar'] ) { ?>grid_8<?php }
-                else { ?>grid_12<?php } ?>">
+                    <div id="main" class="<?php if ( $mod_count['sidebar'] ) { ?>grid_8<?php
+                    }
+                    else {
+                        ?>grid_12<?php } ?>">
                         <?php $this->printModules('maintop'); ?>
 
                         <?php $messages = cmsCore::getSessionMessages(); ?>
@@ -144,7 +146,7 @@ $this->addHead('<script type="text/javascript">var TEMPLATE = "' . TEMPLATE . '"
                     </a>
                 </div>
             </div>
-        </div> 
+        </div>
 
         <script type="text/javascript">
             $(function () {
@@ -161,8 +163,10 @@ $this->addHead('<script type="text/javascript">var TEMPLATE = "' . TEMPLATE . '"
                 );
             });
         </script>
-<?php if ( $inConf->debug && $inUser->is_admin ) {
-    cmsPage::includeTemplateFile('special/debug.php');
-} ?>
+        <?php
+        if ( $inConf->debug && $inUser->is_admin ) {
+            cmsPage::includeTemplateFile('special/debug.php');
+        }
+        ?>
     </body>
 </html>

@@ -15,43 +15,42 @@
 
             window.onload = function () {
                 var settings = {
-                    flash_url: "/includes/swfupload/swfupload.swf",
-                    upload_url: "{$upload_url}",
-                    post_params: {"sess_id": "{$sess_id}", "album_id": {$album.id}},
-                    file_size_limit: "20 MB",
-                    file_types: "*.jpg;*.png;*.gif;*.jpeg;*.JPG;*.PNG;*.GIF;*.JPEG",
-                    file_types_description: "{$LANG.PHOTO}",
-                    file_upload_limit: {if $max_limit}{$max_files}{else}100{/if},
-                                file_queue_limit: 0,
-                                custom_settings: {
-                                    progressTarget: "fsUploadProgress",
-                                    cancelButtonId: "btnCancel"
-                                },
-                                debug: false,
-                                button_image_url: "/includes/swfupload/uploadbtn199x36.png",
-                                button_width: "199",
-                                button_height: "36",
-                                button_placeholder_id: "spanButtonPlaceHolder",
-                                file_queued_handler: fileQueued,
-                                file_queue_error_handler: fileQueueError,
-                                file_dialog_complete_handler: fileDialogComplete,
-                                upload_start_handler: uploadStart,
-                                upload_progress_handler: uploadProgress,
-                                upload_error_handler: uploadError,
-                                upload_success_handler: uploadSuccess,
-                                upload_complete_handler: uploadComplete,
-                                queue_complete_handler: queueComplete
-                            };
+                        flash_url: "/includes/swfupload/swfupload.swf",
+                        upload_url: "{$upload_url}",
+                        post_params: { "sess_id": "{$sess_id}", "album_id": {$album.id} },
+                        file_size_limit: "20 MB",
+                        file_types: "*.jpg;*.png;*.gif;*.jpeg;*.JPG;*.PNG;*.GIF;*.JPEG",
+                        file_types_description: "{$LANG.PHOTO}",
+                        file_upload_limit: {if $max_limit}{$max_files}{else}100{/if},
+                        file_queue_limit: 0,
+                        custom_settings: {
+                            progressTarget: "fsUploadProgress",
+                            cancelButtonId: "btnCancel"
+                        },
+                        debug: false,
+                        button_image_url: "/includes/swfupload/uploadbtn199x36.png",
+                        button_width: "199",
+                        button_height: "36",
+                        button_placeholder_id: "spanButtonPlaceHolder",
+                        file_queued_handler: fileQueued,
+                        file_queue_error_handler: fileQueueError,
+                        file_dialog_complete_handler: fileDialogComplete,
+                        upload_start_handler: uploadStart,
+                        upload_progress_handler: uploadProgress,
+                        upload_error_handler: uploadError,
+                        upload_success_handler: uploadSuccess,
+                        upload_complete_handler: uploadComplete,
+                        queue_complete_handler: queueComplete
+                    };
 
-                            swfu = new SWFUpload(settings);
-                        };
+                swfu = new SWFUpload(settings);
+            };
 
-                        function queueComplete(numFilesUploaded) {
-                            if (numFilesUploaded > 0) {
-                                window.location.href = '{$upload_complete_url}';
-                            }
-                        }
-
+            function queueComplete(numFilesUploaded) {
+                if (numFilesUploaded > 0) {
+                    window.location.href = '{$upload_complete_url}';
+                }
+            }
         </script>
 
         <form id="usr_photos_upload_form" action="" method="post" enctype="multipart/form-data">
