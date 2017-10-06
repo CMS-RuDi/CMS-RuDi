@@ -35,7 +35,7 @@ class autoload
         'cmsUploadPhoto'           => 'upload_photo.class.php',
         'cmsUser'                  => 'user.class.php',
         'cmsBilling'               => 'billing.class.php',
-        'cmsTranslations'          => 'translations.class.php',
+        'translations'             => 'translations.class.php',
         'autokeyword'              => '../../includes/keywords.inc.php',
         'CCelkoNastedSet'          => '../../includes/nestedsets.php',
         'bbcode'                   => '../../includes/bbcode/bbcode.lib.php',
