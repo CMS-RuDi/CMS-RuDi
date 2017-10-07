@@ -40,32 +40,13 @@ class cmsCore
     public $single_run_plugins      = [ 'wysiwyg', 'captcha' ];
 
     /**
-     * Время запуска скрипта
-     * @var float
+     * ========= DEPRECATED =========
      */
-    protected $start_time;
-
-    /**
-     * В эту переменную сохроняем всю отладочную информацию
-     * @var array
-     */
-    protected static $debug_info = [
-        'modules'      => [],
-        'plugins'      => [],
-        'queries'      => [],
-        '_total_time_' => [],
-        '_error_'      => []
-    ];
-
-    /**
-     * Массив с таймерами
-     * @var array
-     */
-    protected static $timer = [];
+    public $events = [];
 
     protected function __construct($install_mode = false)
     {
-        $this->startGenTimer();
+        \cms\debug::startTimer('cms');
 
         // проверяем для совместимости
         if ( !defined('HOST') ) {
@@ -203,148 +184,6 @@ class cmsCore
     }
 
     /**
-     * Фиксирует время запуска скрипта
-     */
-    protected function startGenTimer()
-    {
-        if ( empty($this->start_time) ) {
-            $this->start_time = microtime(true);
-        }
-    }
-
-    /**
-     * Возвращает время прошедшее  с момента запуска скрипта
-     * @return float
-     */
-    public function getGenTime()
-    {
-        return microtime(true) - $this->start_time;
-    }
-
-    /**
-     * Запускает таймер события и возвращает его идентификатор
-     * @return string
-     */
-    public static function startTimer()
-    {
-        $time = microtime(true);
-
-        $key = substr(md5($time . mt_rand(0, 1000000)), 0, 8);
-
-        self::$timer[$key] = $time;
-
-        return $key;
-    }
-
-    /**
-     * Возвращает время с момента запуска таймера
-     * @param string $key
-     * @return float
-     */
-    public static function getTimer($key)
-    {
-        $time = 0;
-
-        if ( isset(self::$timer[$key]) ) {
-            $time = microtime(true) - self::$timer[$key];
-        }
-
-        return $time;
-    }
-
-    /**
-     * Сохраняет отладочную информацию
-     * @param string $name
-     * @param string $tkey
-     * @param string $text
-     */
-    public static function setDebugInfo($name, $tkey = false, $text = false, $data = false)
-    {
-        $trace = debug_backtrace();
-
-        if ( (isset($trace[2]['file']) || isset($trace[1]['file'])) && isset($trace[2]['function']) ) {
-            $src = (isset($trace[2]['file']) ? $trace[2]['file'] : $trace[1]['file']) . ' => ' . $trace[2]['function'] . '()';
-            $src = str_replace(PATH, '', $src);
-        }
-        else {
-            $src = '';
-        }
-
-        $time = false;
-
-        if ( !empty($tkey) ) {
-            $time = self::getTimer($tkey);
-
-            if ( !isset(self::$debug_info['_total_time_'][$name]) ) {
-                self::$debug_info['_total_time_'][$name] = 0;
-            }
-
-            self::$debug_info['_total_time_'][$name] += $time;
-        }
-
-        self::$debug_info[$name][] = [ 'text' => $text, 'src' => $src, 'time' => $time, 'data' => $data ];
-    }
-
-    /**
-     * Возвращает всю отладочную информацию по указанному разделу
-     * @param string $name
-     * @return array|false
-     */
-    public static function getDebugInfo($name)
-    {
-        return isset(self::$debug_info[$name]) ? self::$debug_info[$name] : false;
-    }
-
-    /**
-     * Возвращает всю отладочную информацию по всем разделам
-     * @return array
-     */
-    public static function getAllDebugInfo()
-    {
-        return self::$debug_info;
-    }
-
-    /**
-     * Возвращает общее время выполнения выполнения для указанных разделов
-     * @param string $name
-     * @return float
-     */
-    public static function getTotalRunTime($name)
-    {
-        return isset(self::$debug_info['_total_time_'][$name]) ? self::$debug_info['_total_time_'][$name] : 0;
-    }
-
-    /**
-     * Обработчик ошибок, сохраняет список ошибок для удобного вывода пользователю
-     * @param integer $errno
-     * @param string $errstr
-     * @param string $errfile
-     * @param integer $errline
-     */
-    public static function errorHandler($errno, $errstr, $errfile, $errline)
-    {
-        $errortype = [
-            E_WARNING    => 'E_WARNING',
-            E_NOTICE     => 'E_NOTICE',
-            E_STRICT     => 'E_STRICT',
-            E_DEPRECATED => 'E_DEPRECATED',
-        ];
-
-        if ( !isset($errortype[$errno]) ) {
-            return false;
-        }
-
-        self::$debug_info['_error_'][] = [
-            'type' => $errortype[$errno],
-            'msg'  => $errstr,
-            'file' => $errfile,
-            'line' => $errline
-        ];
-
-        return true;
-    }
-
-    /**
      * Возвращает содержимое текстового файла письма из папки с текущим языком
      * @param string $file Название файла без расширения
      * @return string
@@ -431,7 +270,7 @@ class cmsCore
      */
     public static function callEvent($event, $item, $is_all = false)
     {
-        $tkey = self::startTimer();
+        $tkey = \cms\debug::startTimer();
 
         $inCore = self::getInstance();
 
@@ -480,9 +319,9 @@ class cmsCore
         }
 
         if ( cmsConfig::getConfig('debug') ) {
-            self::setDebugInfo('plugins', $plugins ? $tkey : false, $event, [
-                'active' => isset($enabled_plugins) ? $enabled_plugins : array()
-            ]);
+            global $_LANG;
+
+            \cms\debug::setDebugInfo('events', $event . (isset($enabled_plugins) ? PHP_EOL . implode(', ', $enabled_plugins) : ''), $plugins ? $tkey : false );
         }
 
         return $is_all ? $plugins_list : $item;
@@ -2974,7 +2813,17 @@ class cmsCore
     }
 
     /**
-     * ====== DEPRECATED =========
+     * ========= DEPRECATED =========
+     * Возвращает время работы скрипта
+     * @return float
+     */
+    public static function getGenTime()
+    {
+        return \cms\debug::getTime('cms');
+    }
+
+    /**
+     * ========= DEPRECATED =========
      * Загружает модель для указанного компонента
      * @param string $component Название компонента
      * @return bool
@@ -2985,7 +2834,7 @@ class cmsCore
     }
 
     /**
-     * ====== DEPRECATED =========
+     * ========= DEPRECATED =========
      * Загружает класс из файла /core/classes/XXX.class.php, где XXX = $class
      * @param string $class
      * @return bool
@@ -2996,7 +2845,7 @@ class cmsCore
     }
 
     /**
-     * ====== DEPRECATED =========
+     * ========= DEPRECATED =========
      */
     public function initSmarty($tpl_folder, $tpl_file)
     {
@@ -3005,7 +2854,7 @@ class cmsCore
     }
 
     /**
-     * ====== DEPRECATED =========
+     * ========= DEPRECATED =========
      * используйте cmsUser::checkCsrfToken();
      */
     public static function validateForm()

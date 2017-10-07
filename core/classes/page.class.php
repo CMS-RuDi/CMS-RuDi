@@ -552,7 +552,7 @@ class cmsPage
      */
     private function renderModule($mod)
     {
-        $tkey = cmsCore::startTimer();
+        $tkey = \cms\debug::startTimer();
 
         $inCore = cmsCore::getInstance();
 
@@ -628,7 +628,9 @@ class cmsPage
         }
 
         if ( cmsConfig::getConfig('debug') ) {
-            cmsCore::setDebugInfo('modules', $tkey, $mod['title'] . ($cache ? ' (CACHE)' : ''), [ 'position' => $mod['mb_position'], 'name' => $mod['is_external'] ? $mod['content'] : 'html', 'empty_html' => empty($html) ]);
+            global $_LANG;
+
+            \cms\debug::setDebugInfo('modules', ($mod['is_external'] ? $mod['content'] : 'html') . PHP_EOL . $mod['title'] . ($cache ? ' (CACHE)' : '') . ' (' . $mod['mb_position'] . ')' . (empty($html) ? PHP_EOL . $_LANG['DEBUG_MODULE_NOT_DISPLAYED'] : ''), $tkey);
         }
 
         return $html;

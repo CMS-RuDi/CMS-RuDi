@@ -31,7 +31,7 @@ if ( !$inConf->debug ) {
 }
 else {
     error_reporting(E_ALL);
-    set_error_handler(array( 'cmsCore', 'errorHandler' ));
+    set_error_handler(array( '\\cms\\debug', 'errorHandler' ));
 }
 
 session_start();
