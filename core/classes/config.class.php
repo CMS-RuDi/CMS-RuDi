@@ -90,6 +90,8 @@ class cmsConfig
             'db_user'                 => '',
             'db_pass'                 => '',
             'db_prefix'               => 'cms',
+            'db_users_table'          => 'cms_users',
+            'db_engine'               => 'MyISAM',
             'show_pw'                 => 1,
             'last_item_pw'            => 1,
             'index_pw'                => 0,

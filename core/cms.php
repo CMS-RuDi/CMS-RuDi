@@ -210,19 +210,7 @@ class cmsCore
      */
     public static function arrayToYaml($input_array, $indent = 2, $word_wrap = 40)
     {
-        self::includeFile('includes/spyc/spyc.php');
-
-        if ( $input_array ) {
-            foreach ( $input_array as $key => $value ) {
-                $_k         = str_replace(array( '[', ']' ), '', $key);
-                $array[$_k] = $value;
-            }
-        }
-        else {
-            $array = array();
-        }
-
-        return Spyc::YAMLDump($array, $indent, $word_wrap);
+        return \cms\model::arrayToYaml($input_array, $indent, $word_wrap);
     }
 
     /**
@@ -232,9 +220,7 @@ class cmsCore
      */
     public static function yamlToArray($yaml)
     {
-        self::includeFile('includes/spyc/spyc.php');
-
-        return Spyc::YAMLLoad($yaml);
+        return \cms\model::yamlToArray($yaml);
     }
 
     /**
@@ -1050,11 +1036,11 @@ class cmsCore
      */
     public static function nestedSetsInit($table)
     {
-        self::includeFile('includes/nestedsets.php');
+        $ns = new \cms\nestedsets(\cms\db::getInstance());
 
-        $ns = new CCelkoNastedSet();
+        $ns->setTable(str_replace('cms_', '', $table));
 
-        $ns->TableName = $table;
+        $ns->setOption('parent_id', 'ordering', 'NSLeft', 'NSRight', 'NSDiffer', 'NSLevel', 'NSIgnore');
 
         return $ns;
     }
@@ -1751,25 +1737,19 @@ class cmsCore
             return;
         }
 
-        $inDB = cmsDatabase::getInstance();
+        $model = new \cms\model();
 
-        $result = $inDB->query("SELECT * FROM cms_menu ORDER BY id ASC");
-
-        if ( !$inDB->num_rows($result) ) {
-            return;
-        }
-
-        while ( $item = $inDB->fetch_assoc($result) ) {
-            $item['menu']   = cmsCore::yamlToArray($item['menu']);
-            $item['titles'] = cmsCore::yamlToArray($item['titles']);
+        $this->menu_struct = $model->get('menu', function($item, $model) {
+            $item['menu']   = \cms\model::yamlToArray($item['menu']);
+            $item['titles'] = \cms\model::yamlToArray($item['titles']);
 
             // переопределяем название пункта меню в зависимости от языка
-            if ( !empty($item['titles'][cmsConfig::getConfig('lang')]) ) {
-                $item['title'] = $item['titles'][cmsConfig::getConfig('lang')];
+            if ( !empty($item['titles'][\cmsConfig::getConfig('lang')]) ) {
+                $item['title'] = $item['titles'][\cmsConfig::getConfig('lang')];
             }
 
-            $this->menu_struct[$item['id']] = $item;
-        }
+            return $item;
+        });
 
         return;
     }

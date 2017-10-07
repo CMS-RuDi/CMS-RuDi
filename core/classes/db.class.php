@@ -22,19 +22,24 @@ class cmsDatabase
     public $limit    = '1000';
     public $page     = 1;
     public $perpage  = 10;
-    private $cache   = array(); // кеш некоторых запросов
-    public $db_link;
+    private $cache   = []; // кеш некоторых запросов
     private $db_prefix;
+
+    /**
+     * ========= DEPRECATED =========
+     */
+    public $q_dump = [];
+    private $db;
 
     protected function __construct()
     {
-        $this->db_link   = static::initConnection();
+        $this->db        = \cms\db::getInstance();
         $this->db_prefix = cmsConfig::getConfig('db_prefix') . '_';
     }
 
     public function __destruct()
     {
-        mysqli_close($this->db_link);
+        $this->db->__destruct();
     }
 
     public static function getInstance()
@@ -42,6 +47,7 @@ class cmsDatabase
         if ( self::$instance === null ) {
             self::$instance = new self;
         }
+
         return self::$instance;
     }
 
@@ -50,35 +56,12 @@ class cmsDatabase
      */
     public static function reinitializedConnection()
     {
-        $db = self::getInstance();
-
-        if ( !mysqli_ping($db->db_link) ) {
-            if ( !empty($db->db_link) ) {
-                mysqli_close($db->db_link);
-            }
-            $db->db_link = self::initConnection();
-        }
-
-        return true;
+        return self::getInstance()->reconnect();
     }
 
-    /**
-     * Устанавливает соединение с базой
-     * @return resource $db_link
-     */
-    protected static function initConnection()
+    public function reconnect()
     {
-        $inConf = cmsConfig::getInstance();
-
-        $db_link = mysqli_connect($inConf->db_host, $inConf->db_user, $inConf->db_pass, $inConf->db_base);
-
-        if ( mysqli_connect_errno() ) {
-            die('Cannot connect to MySQL server: ' . mysqli_connect_error());
-        }
-
-        mysqli_set_charset($db_link, 'utf8');
-
-        return $db_link;
+        return $this->db->reconnect();
     }
 
     /**
@@ -98,7 +81,7 @@ class cmsDatabase
 
     public function addJoin($join)
     {
-        $this->join .= $join . "\n";
+        $this->join .= $join . PHP_EOL;
         return $this;
     }
 
@@ -110,7 +93,7 @@ class cmsDatabase
 
     public function where($condition)
     {
-        $this->where .= ' AND (' . $condition . ')' . "\n";
+        $this->where .= ' AND (' . $condition . ')' . PHP_EOL;
         return $this;
     }
 
@@ -134,9 +117,11 @@ class cmsDatabase
     public function limitIs($from, $howmany = '')
     {
         $this->limit = (int) $from;
+
         if ( $howmany ) {
             $this->limit .= ', ' . $howmany;
         }
+
         return $this;
     }
 
@@ -144,6 +129,7 @@ class cmsDatabase
     {
         $this->page    = $page;
         $this->perpage = $perpage;
+
         return $this->limitIs(($page - 1) * $perpage, $perpage);
     }
 
@@ -156,6 +142,22 @@ class cmsDatabase
         return trim(str_replace($prefix, $this->db_prefix, $sql));
     }
 
+    protected static function replacePrefixTable($table)
+    {
+        $part = explode(' ', trim($table));
+
+        foreach ( $part as $key => $value ) {
+            if ( $key == 0 ) {
+                $part[$key] = str_replace('cms_', '', $value);
+            }
+            else {
+                $part[$key] = str_replace('cms_', '{#}', $value);
+            }
+        }
+
+        return implode(' ', $part);
+    }
+
     public function query($sql, $ignore_errors = false, $replace_prefix = true)
     {
         if ( empty($sql) ) {
@@ -164,51 +166,35 @@ class cmsDatabase
 
         $sql = $replace_prefix ? $this->replacePrefix($sql) : $sql;
 
-        $tkey = cmsCore::startTimer();
-
-        $result = mysqli_query($this->db_link, $sql);
-
-        if ( cmsConfig::getConfig('debug') ) {
-            cmsCore::setDebugInfo('queries', $tkey, $sql);
-
-            if ( !$ignore_errors ) {
-                $error = $this->error();
-
-                if ( $error ) {
-                    die('<h3>DATABASE ERROR:</h3><pre>' . $sql . '</pre><p>' . $error . '</p>');
-                }
-            }
-        }
-
-        return $result;
+        return $this->db->query($sql, false, !$ignore_errors);
     }
 
     public function num_rows($result)
     {
-        return mysqli_num_rows($result);
+        return $this->db->numRows($result);
     }
 
     public function fetch_assoc($result)
     {
-        return mysqli_fetch_assoc($result);
+        return $this->db->fetchAssoc($result);
     }
 
     public function fetch_row($result)
     {
-        return mysqli_fetch_row($result);
+        return $this->db->fetchRow($result);
     }
 
     public function free_result($result)
     {
-        return mysqli_free_result($result);
+        return $this->db->freeResult();
     }
 
     public function fetch_all($result)
     {
-        $array = array();
+        $array = [];
 
         if ( $this->num_rows($result) ) {
-            while ( $object = mysqli_fetch_object($result) ) {
+            while ( $object = $result->fetch_object() ) {
                 $array[] = $object;
             }
         }
@@ -218,16 +204,16 @@ class cmsDatabase
 
     public function affected_rows()
     {
-        return mysqli_affected_rows($this->db_link);
+        return $this->affectedRows();
     }
 
     public function get_last_id($table = '')
     {
         if ( !$table ) {
-            return (int) mysqli_insert_id($this->db_link);
+            return $this->db->lastId();
         }
 
-        $result = $this->query("SELECT LAST_INSERT_ID() as lastid FROM " . $table . " LIMIT 1");
+        $result = $this->query('SELECT LAST_INSERT_ID() as lastid FROM ' . $table . ' LIMIT 1');
 
         if ( $this->num_rows($result) ) {
             $data = $this->fetch_assoc($result);
@@ -238,80 +224,40 @@ class cmsDatabase
         }
     }
 
-    public function rows_count($table, $where, $limit = 0)
+    public function rows_count($table, $where, $limit = false)
     {
-        $sql = "SELECT 1 FROM " . $table . " WHERE " . $where;
-
-        if ( $limit ) {
-            $sql .= " LIMIT " . (int) $limit;
-        }
-
-        $result = $this->query($sql);
-
-        return $this->num_rows($result);
+        return $this->db->getRowsCount(self::replacePrefixTable($table), $where, $limit);
     }
 
-    public function get_field($table, $where, $field)
+    public function get_field($table, $where = '1', $field)
     {
-        $sql = "SELECT " . $field . " as getfield FROM " . $table . " WHERE " . $where . " LIMIT 1";
+        $row = $this->db->getRow(self::replacePrefixTable($table), $where, $field);
 
-        $result = $this->query($sql);
-
-        if ( $this->num_rows($result) ) {
-            $data = $this->fetch_assoc($result);
-            return $data['getfield'];
-        }
-        else {
+        if ( empty($row) ) {
             return false;
         }
+
+        return $row[$field];
     }
 
     public function get_fields($table, $where, $fields = '*', $order = 'id ASC')
     {
-        $sql = "SELECT " . $fields . " FROM " . $table . " WHERE " . $where . " ORDER BY " . $order . " LIMIT 1";
-
-        $result = $this->query($sql);
-
-        if ( $this->num_rows($result) ) {
-            $data = $this->fetch_assoc($result);
-            return $data;
-        }
-        else {
-            return false;
-        }
+        return $this->db->getRow(self::replacePrefixTable($table), $where, $fields, $order);
     }
 
     public function get_table($table, $where = '', $fields = '*')
     {
-        $list = array();
-
-        $sql = "SELECT " . $fields . " FROM " . $table;
-
-        if ( $where ) {
-            $sql .= ' WHERE ' . $where;
-        }
-
-        $result = $this->query($sql);
-
-        if ( $this->num_rows($result) ) {
-            while ( $data = $this->fetch_assoc($result) ) {
-                $list[] = $data;
-            }
-            return $list;
-        }
-        else {
-            return false;
-        }
+        return $this->db->getRows(self::replacePrefixTable($table), $where, $fields, 'id ASC', true);
     }
 
     public function errno()
     {
-        return mysqli_errno($this->db_link);
+        return $this->db->errno();
     }
 
     public function error()
     {
-        return mysqli_error($this->db_link);
+        return $this->db->error();
     }
 
     public function escape_string($value)
@@ -324,25 +270,17 @@ class cmsDatabase
             return $value;
         }
 
-        return mysqli_real_escape_string($this->db_link, stripcslashes($value));
+        return $this->db->escape(stripcslashes($value));
     }
 
     public function isFieldExists($table, $field)
     {
-        $sql = "SHOW COLUMNS FROM " . $table . " WHERE Field = '" . $field . "'";
-
-        $result = $this->query($sql);
-
-        if ( $this->errno() ) {
-            return false;
-        }
-
-        return (bool) $this->num_rows($result);
+        return $this->db->isFieldExists(str_replace('cms_', '', $table), $field);
     }
 
     public function isFieldType($table, $field, $type)
     {
-        $sql = "SHOW COLUMNS FROM " . $table . " WHERE Field = '" . $field . "' AND Type = '" . $type . "'";
+        $sql = 'SHOW COLUMNS FROM ' . $table . " WHERE Field = '" . $field . "' AND Type = '" . $type . "'";
 
         $result = $this->query($sql);
 
@@ -355,13 +293,7 @@ class cmsDatabase
 
     public function isTableExists($table)
     {
-        $this->query("SELECT 1 FROM " . $table . " LIMIT 1", true);
-
-        if ( $this->errno() ) {
-            return false;
-        }
-
-        return true;
+        return $this->db->isTableExists(str_replace('cms_', '', $table));
     }
 
     public static function optimizeTables($tlist = '')
@@ -370,8 +302,8 @@ class cmsDatabase
 
         if ( is_array($tlist) ) {
             foreach ( $tlist as $tname ) {
-                $inDB->query("OPTIMIZE TABLE " . $tname, true);
-                $inDB->query("ANALYZE TABLE " . $tname, true);
+                $inDB->query('OPTIMIZE TABLE ' . $tname, true);
+                $inDB->query('ANALYZE TABLE ' . $tname, true);
             }
         }
         else if ( $inDB->isTableExists('information_schema.tables') ) {
@@ -384,8 +316,8 @@ class cmsDatabase
             }
 
             foreach ( $tlist as $tname ) {
-                $inDB->query("OPTIMIZE TABLE " . $tname['table_name'], true);
-                $inDB->query("ANALYZE TABLE " . $tname['table_name'], true);
+                $inDB->query('OPTIMIZE TABLE ' . $tname['table_name'], true);
+                $inDB->query('ANALYZE TABLE ' . $tname['table_name'], true);
             }
         }
 
@@ -416,7 +348,7 @@ class cmsDatabase
 
         $i = $ignore ? 'IGNORE' : '';
 
-        $this->query("INSERT " . $i . " INTO " . $table . " SET " . $set);
+        $this->query('INSERT ' . $i . ' INTO ' . $table . ' SET ' . $set);
 
         if ( $this->errno() ) {
             return false;
@@ -450,13 +382,13 @@ class cmsDatabase
 
         // формируем запрос на вставку в базу
         foreach ( $update_array as $field => $value ) {
-            $set .= "`" . $field . "` = '" . $value . "',";
+            $set .= '`' . $field . "` = '" . $value . "',";
         }
 
         // убираем последнюю запятую
         $set = rtrim($set, ',');
 
-        $this->query("UPDATE " . $table . " SET " . $set . " WHERE " . $where);
+        $this->query('UPDATE ' . $table . ' SET ' . $set . ' WHERE ' . $where);
 
         if ( $this->errno() ) {
             return false;
@@ -471,9 +403,9 @@ class cmsDatabase
      */
     public function removeTheMissingCell($table, $array)
     {
-        $result = $this->query("SHOW COLUMNS FROM `" . $table . "`");
+        $result = $this->query('SHOW COLUMNS FROM `' . $table . '`');
 
-        $list = array();
+        $list = [];
 
         while ( $data = $this->fetch_assoc($result) ) {
             $list[$data['Field']] = '';
@@ -487,32 +419,20 @@ class cmsDatabase
         }
 
         if ( !$array || !is_array($array) ) {
-            return array();
+            return [];
         }
 
         return $array;
     }
 
-    public function delete($table, $where = '', $limit = 0)
+    public function delete($table, $where = '', $limit = false)
     {
-        $sql = "DELETE FROM " . $table . " WHERE " . $where;
-
-        if ( $limit ) {
-            $sql .= " LIMIT " . $limit;
-        }
-
-        $this->query($sql, true);
-
-        if ( $this->errno() ) {
-            return false;
-        }
-
-        return true;
+        return $this->db->delete(self::replacePrefixTable($table), $where, $limit);
     }
 
     public function setFlag($table, $id, $flag, $value)
     {
-        $this->query("UPDATE " . $table . " SET " . $flag . " = '" . $value . "' WHERE id='" . $id . "'");
+        $this->query('UPDATE ' . $table . ' SET ' . $flag . " = '" . $value . "' WHERE id='" . $id . "'");
         return $this;
     }
 
@@ -528,7 +448,7 @@ class cmsDatabase
             }
         }
 
-        $this->query("UPDATE " . $table . " SET " . $flag . " = '" . $value . "' WHERE `id` IN (" . implode(',', $ids) . ") LIMIT " . count($ids));
+        $this->query('UPDATE ' . $table . ' SET ' . $flag . " = '" . $value . "' WHERE `id` IN (" . implode(',', $ids) . ') LIMIT ' . count($ids));
 
         return $this;
     }
@@ -620,7 +540,7 @@ class cmsDatabase
     {
         $nested_sql = $only_nested ? '' : '=';
 
-        $path = $this->get_table($table, "NSLeft <" . $nested_sql . " " . $left_key . " AND NSRight >" . $nested_sql . " " . $right_key . " AND parent_id > 0 AND NSDiffer = '" . $differ . "' ORDER BY NSLeft", $fields);
+        $path = $this->get_table($table, 'NSLeft <' . $nested_sql . ' ' . $left_key . ' AND NSRight >' . $nested_sql . ' ' . $right_key . " AND parent_id > 0 AND NSDiffer = '" . $differ . "' ORDER BY NSLeft", $fields);
 
         return $path;
     }
@@ -641,15 +561,15 @@ class cmsDatabase
 
         // обновляем для нее сеолинк
         $cat_seolink = cmsCore::generateCatSeoLink($cat, $table, $is_url_cyrillic);
-        $this->query("UPDATE " . $table . " SET seolink='" . $cat_seolink . "' WHERE id = '" . $cat['id'] . "'");
+        $this->query('UPDATE ' . $table . " SET seolink='" . $cat_seolink . "' WHERE id = '" . $cat['id'] . "'");
 
         // Получаем вложенные категории для нее
-        $path_list = $this->get_table($table, "NSLeft > " . $cat['NSLeft'] . " AND NSRight < " . $cat['NSRight'] . " AND parent_id > 0 ORDER BY NSLeft");
+        $path_list = $this->get_table($table, 'NSLeft > ' . $cat['NSLeft'] . ' AND NSRight < ' . $cat['NSRight'] . ' AND parent_id > 0 ORDER BY NSLeft');
 
         if ( $path_list ) {
             foreach ( $path_list as $pcat ) {
                 $subcat_seolink = cmsCore::generateCatSeoLink($pcat, $table, $is_url_cyrillic);
-                $this->query("UPDATE " . $table . " SET seolink='" . $subcat_seolink . "' WHERE id = '" . $pcat['id'] . "'");
+                $this->query('UPDATE ' . $table . " SET seolink='" . $subcat_seolink . "' WHERE id = '" . $pcat['id'] . "'");
             }
         }
 
@@ -663,47 +583,7 @@ class cmsDatabase
      */
     public function importFromFile($sql_file)
     {
-        if ( !file_exists($sql_file) ) {
-            return false;
-        }
-
-        $lines  = file($sql_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        $buffer = '';
-
-        foreach ( $lines as $line ) {
-            if ( ($line = trim($line)) == '' ) {
-                continue;
-            }
-
-            if ( mb_substr(ltrim($line), 0, 2) == '--' ) {
-                continue;
-            }
-
-            // sql в несколько строк
-            if ( mb_substr($line, -1) != ';' ) {
-                // добавляем в буфер
-                $buffer .= $line;
-                // считываем следующую строку
-                continue;
-            }
-            else {
-                if ( $buffer ) {
-                    $line   = $buffer . $line;
-                    // сбрасываем буфер
-                    $buffer = '';
-                }
-            }
-
-            $line = mb_substr($line, 0, -1);
-
-            $result = $this->query(str_replace("#_", cmsConfig::getConfig('db_prefix'), $line), false, false);
-
-            if ( !$result ) {
-                die('DATABASE ERROR: <pre>' . $line . '</pre><br>' . $this->error());
-            }
-        }
-
-        return true;
+        return $this->db->importDump($sql_file);
     }
 
 }
