@@ -13,45 +13,32 @@
 class cmsPage
 {
 
-    public $title             = '';
-    public $page_head         = array();
-    public $page_keys         = '';
-    public $page_desc         = '';
-    public $page_img          = '';
-    public $page_body         = '';
-    private $page_lang        = array();
-    private $pathway          = array();
-    private $is_ajax          = false;
-    private $modules;
-    private $tpl_info;
-    private $default_tpl_info = array( 'author' => 'InstantCMS Team', 'renderer' => 'smartyTpl', 'ext' => 'tpl' );
-    private static $instance;
+    use \Singeltone;
+
+    public $title               = '';
+    public $page_head           = [];
+    public $page_keys           = '';
+    public $page_desc           = '';
+    public $page_img            = '';
+    public $page_body           = '';
+    public $lang;
+    protected $page_lang        = [];
+    protected $pathway          = [];
+    protected $is_ajax          = false;
+    protected $modules;
+    protected $tpl_info;
+    protected $default_tpl_info = [ 'author' => 'InstantCMS Team', 'renderer' => 'smartyTpl', 'ext' => 'tpl' ];
 
     private function __construct()
     {
-        global $_LANG;
-
+        $this->lang      = \cms\lang::getInstance();
         $this->site_cfg  = cmsConfig::getInstance();
         $this->title     = $this->homeTitle();
         $this->page_keys = $this->site_cfg->keywords;
         $this->page_desc = $this->site_cfg->metadesc;
 
         $this->setTplInfo();
-        $this->addPathway($_LANG['PATH_HOME'], '/');
-    }
-
-    private function __clone()
-    {
-
-    }
-
-    public static function getInstance()
-    {
-        if ( self::$instance === null ) {
-            self::$instance = new self;
-        }
-
-        return self::$instance;
+        $this->addPathway($this->lang->path_home, '/');
     }
 
     /**
@@ -119,8 +106,7 @@ class cmsPage
 
         // загружаем шаблонизатор текущего шаблона
         if ( !class_exists($tpl_info['renderer']) ) {
-            global $_LANG;
-            cmsCore::halt(sprintf($_LANG['TEMPLATE_CLASS_NOTFOUND'], $tpl_info['renderer']));
+            cmsCore::halt($thisObj->lang->vsprintf('template_class_notfound', $tpl_info['renderer']));
         }
 
         $tpl_class = new $tpl_info['renderer']($tpl_file, $is_exists_tpl_file ? TEMPLATE : '_default_');
@@ -258,8 +244,7 @@ class cmsPage
             $page = cmsCore::request('page', 'int', 1);
 
             if ( $page > 1 ) {
-                global $_LANG;
-                $this->title = $this->title . ' — ' . $_LANG['PAGE'] . ' №' . $page;
+                $this->title = $this->title . ' — ' . $this->lang->page . ' №' . $page;
             }
         }
 
@@ -398,7 +383,7 @@ class cmsPage
             return;
         }
 
-        cmsCore::halt($_LANG['TEMPLATE'] . ' "' . TEMPLATE . '" ' . $_LANG['NOT_FOUND']);
+        cmsCore::halt($this->lang->template . ' "' . TEMPLATE . '" ' . $this->lang->not_found);
     }
 
     /**
@@ -437,12 +422,11 @@ class cmsPage
      */
     public static function showSplash()
     {
-        if ( self::includeTemplateFile('splash/splash.php') ) {
-            cmsCore::setCookie('splash', md5('splash'), time() + 60 * 60 * 24 * 30);
-            return true;
-        }
+        self::initTemplate('splash', 'splash.tpl')->display('splash.tpl');
 
-        return false;
+        \cms\cookie::set('splash', md5('splash'), time() + 60 * 60 * 24 * 30);
+
+        return true;
     }
 
     /**
@@ -452,7 +436,7 @@ class cmsPage
     public static function isSplash()
     {
         if ( cmsConfig::getConfig('splash') ) {
-            return !cmsCore::getCookie('splash');
+            return !\cms\cookie::get('splash');
         }
         else {
             return false;
@@ -628,9 +612,7 @@ class cmsPage
         }
 
         if ( cmsConfig::getConfig('debug') ) {
-            global $_LANG;
-
-            \cms\debug::setDebugInfo('modules', ($mod['is_external'] ? $mod['content'] : 'html') . PHP_EOL . $mod['title'] . ($cache ? ' (CACHE)' : '') . ' (' . $mod['mb_position'] . ')' . (empty($html) ? PHP_EOL . $_LANG['DEBUG_MODULE_NOT_DISPLAYED'] : ''), $tkey);
+            \cms\debug::setDebugInfo('modules', ($mod['is_external'] ? $mod['content'] : 'html') . PHP_EOL . $mod['title'] . ($cache ? ' (CACHE)' : '') . ' (' . $mod['mb_position'] . ')' . (empty($html) ? PHP_EOL . $this->lang->debug_module_not_displayed : ''), $tkey);
         }
 
         return $html;
@@ -698,8 +680,6 @@ class cmsPage
      */
     public static function getCaptcha()
     {
-        global $_LANG;
-
         $captcha = cmsCore::callEvent('GET_CAPTCHA', '');
 
         if ( $captcha ) {
@@ -707,7 +687,7 @@ class cmsPage
             return;
         }
 
-        echo $_LANG['INSERT_CAPTCHA_ERROR'];
+        echo \cms\lang::getInstance()->insert_captcha_error;
 
         return;
     }
@@ -867,10 +847,10 @@ class cmsPage
             return $pagebar;
         }
 
-        global $_LANG;
+        $lang = \cms\lang::getInstance();
 
         $html = '<div class="pagebar">';
-        $html .= '<span class="pagebar_title"><strong>' . $_LANG['PAGES'] . ': </strong></span>';
+        $html .= '<span class="pagebar_title"><strong>' . $lang->pages . ': </strong></span>';
 
         $total_pages = ceil($total / $perpage);
 
@@ -912,8 +892,8 @@ class cmsPage
                 }
             }
 
-            $html .= ' <a href="' . str_replace('%page%', 1, $href) . '" class="pagebar_page">' . $_LANG['FIRST'] . '</a> ';
-            $html .= ' <a href="' . str_replace('%page%', ($page - 1), $href) . '" class="pagebar_page">' . $_LANG['PREVIOUS'] . '</a> ';
+            $html .= ' <a href="' . str_replace('%page%', 1, $href) . '" class="pagebar_page">' . $lang->first . '</a> ';
+            $html .= ' <a href="' . str_replace('%page%', ($page - 1), $href) . '" class="pagebar_page">' . $lang->previous . '</a> ';
         }
 
         //create the page links
@@ -945,8 +925,8 @@ class cmsPage
                 }
             }
 
-            $html .= ' <a href="' . str_replace('%page%', ($page + 1), $href) . '" class="pagebar_page">' . $_LANG['NEXT'] . '</a> ';
-            $html .= ' <a href="' . str_replace('%page%', $total_pages, $href) . '" class="pagebar_page">' . $_LANG['LAST'] . '</a> ';
+            $html .= ' <a href="' . str_replace('%page%', ($page + 1), $href) . '" class="pagebar_page">' . $lang->next . '</a> ';
+            $html .= ' <a href="' . str_replace('%page%', $total_pages, $href) . '" class="pagebar_page">' . $lang->last . '</a> ';
         }
 
         $html .= '</div>';

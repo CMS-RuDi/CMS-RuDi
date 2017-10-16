@@ -10,8 +10,6 @@
  *                        LICENSED BY GNU/GPL v2
  */
 
-$_LANG = array();
-
 $_LANG['PATH_HOME']                 = 'Home';
 $_LANG['TRACE_STACK']               = 'Recent calls';
 $_LANG['DEBUG_MEMORY']              = 'Memory consumption:';

@@ -5,7 +5,7 @@ namespace cms;
 class model
 {
 
-    public $name;
+    protected $name;
     public $db;
 
     const LEFT_JOIN                = 'LEFT JOIN';

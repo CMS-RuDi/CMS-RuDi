@@ -33,7 +33,6 @@ class cmsCore
     public $plugin_events           = [];
     protected static $filters;
     protected $url_without_com_name = false;
-    private static $is_ajax         = false;
     protected $module_configs;
     protected $component_configs;
     protected $template;
@@ -50,7 +49,7 @@ class cmsCore
 
         // проверяем для совместимости
         if ( !defined('HOST') ) {
-            define('HOST', 'http://' . self::getHost());
+            define('HOST', \cms\request::getScheme() . '://' . \cms\request::getHost());
         }
 
         if ( $install_mode ) {
@@ -67,7 +66,7 @@ class cmsCore
         self::loadLanguage('lang');
 
         // определяем контекст использования
-        self::detectContext();
+        \cms\request::getInstance()->setContext();
 
         //загрузим структуру меню в память
         $this->loadMenuStruct();
@@ -122,105 +121,6 @@ class cmsCore
         }
 
         return self::$instance;
-    }
-
-    public static function getHost()
-    {
-        // если вызван из командной строки
-        // ожидаем параметр с именем домена, например команда для CRON
-        // php -f /path_to_site/cron.php site.ru
-        if ( PHP_SAPI == 'cli' ) {
-            global $argv;
-            return isset($argv[1]) ? $argv[1] : '';
-        }
-
-        // если интернационализованный домен
-        if ( mb_strpos($_SERVER['HTTP_HOST'], 'xn--') !== false ) {
-            $IDN = new idna_convert();
-
-            return $IDN->decode($_SERVER['HTTP_HOST']);
-        }
-
-        return $_SERVER['HTTP_HOST'];
-    }
-
-    /**
-     * Определяет контекст текущего запроса (стандартный или ajax)
-     * @return bool
-     */
-    private static function detectContext()
-    {
-        if ( (isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-                $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') || isset($_SERVER['HTTP_X_PJAX']) ) {
-            self::$is_ajax = true;
-        }
-        else {
-            self::$is_ajax = false;
-        }
-    }
-
-    public static function isAjax()
-    {
-        return self::$is_ajax;
-    }
-
-    public static function loadLanguage($file)
-    {
-        global $_LANG;
-
-        $langfile = PATH . '/languages/' . cmsConfig::getConfig('lang') . '/' . $file . '.php';
-
-        if ( !file_exists($langfile) ) {
-            $langfile = PATH . '/languages/ru/' . $file . '.php';
-        }
-
-        if ( !file_exists($langfile) ) {
-            return false;
-        }
-
-        include_once($langfile);
-
-        return true;
-    }
-
-    /**
-     * Возвращает содержимое текстового файла письма из папки с текущим языком
-     * @param string $file Название файла без расширения
-     * @return string
-     */
-    public static function getLanguageTextFile($file)
-    {
-        $letter_file = PATH . '/languages/' . cmsConfig::getConfig('lang') . '/letters/' . $file . '.txt';
-
-        if ( !file_exists($letter_file) ) {
-            $letter_file = PATH . '/languages/ru/letters/' . $file . '.txt';
-        }
-
-        if ( !file_exists($letter_file) ) {
-            return false;
-        }
-
-        return file_get_contents($letter_file);
-    }
-
-    /**
-     * Преобразует массив в YAML
-     * @param array $input_array
-     * @return string
-     */
-    public static function arrayToYaml($input_array, $indent = 2, $word_wrap = 40)
-    {
-        return \cms\model::arrayToYaml($input_array, $indent, $word_wrap);
-    }
-
-    /**
-     * Преобразует YAML в массив
-     * @param string $yaml
-     * @return array
-     */
-    public static function yamlToArray($yaml)
-    {
-        return \cms\model::yamlToArray($yaml);
     }
 
     /**
@@ -593,44 +493,6 @@ class cmsCore
         return false;
     }
 
-    /**
-     * Устанавливает кукис посетителю
-     * @param string $name Название
-     * @param string $value Значение
-     * @param int $time Время жизни
-     */
-    public static function setCookie($name, $value, $time)
-    {
-        $key_name = cmsConfig::getConfig('cookie_key');
-        setcookie($key_name . '[' . $name . ']', $value, $time, '/', null, false, true);
-    }
-
-    /**
-     * Удаляет кукис пользователя
-     * @param string $name Название
-     */
-    public static function unsetCookie($name)
-    {
-        $key_name = cmsConfig::getConfig('cookie_key');
-        setcookie($key_name . '[' . $name . ']', '', time() - 3600, '/');
-    }
-
-    /**
-     * Возвращает значение кукиса
-     * @param string $name Название
-     * @return mixed
-     */
-    public static function getCookie($name)
-    {
-        $key_name = cmsConfig::getConfig('cookie_key');
-
-        if ( isset($_COOKIE[$key_name][$name]) ) {
-            return $_COOKIE[$key_name][$name];
-        }
-        else {
-            return false;
-        }
-    }
 
     /**
      * Добавляет сообщение в сессию
@@ -1069,164 +931,6 @@ class cmsCore
         $keyword = new autokeyword($params, "UTF-8");
 
         return $keyword->get_keywords();
-    }
-
-    /**
-     * Проверяет наличие переменной $var во входных параметрах
-     * @param string $var
-     * @return bool
-     */
-    public static function inRequest($var)
-    {
-        return isset($_REQUEST[$var]);
-    }
-
-    /**
-     * Получает в соответствии с заданным типом переменную $var из $_REQUEST
-     * @param string $var название переменной
-     * @param string $type тип int | str | html | email | array | array_int | array_str | массив допустимых значений
-     * @param string $default значение по умолчанию
-     * @param string $r Откуда брать значение get | post | request
-     * @return mixed
-     */
-    public static function request($var, $type = 'str', $default = false, $r = 'request')
-    {
-        // Задаем суперглобальный массив, из которого будем получать данные
-        switch ( $r ) {
-            case 'post':
-                $request = $_POST;
-                break;
-            case 'get':
-                $request = $_GET;
-                break;
-            default:
-                $request = $_REQUEST;
-                break;
-        }
-
-        if ( isset($request[$var]) ) {
-            return self::cleanVar($request[$var], $type, $default);
-        }
-        else {
-            return $default;
-        }
-    }
-
-    public static function cleanVar($var, $type = 'str', $default = false)
-    {
-        // массив возможных параметров
-        if ( is_array($type) ) {
-            if ( in_array($var, $type) ) {
-                return self::strClear((string) $var);
-            }
-            else {
-                return $default;
-            }
-        }
-
-        switch ( $type ) {
-            case 'int':
-                if ( $var !== '' ) {
-                    return (int) $var;
-                }
-                else {
-                    return (int) $default;
-                }
-                break;
-            case 'str':
-                if ( $var ) {
-                    return self::strClear((string) $var);
-                }
-                else {
-                    return (string) $default;
-                }
-                break;
-            case 'email':
-                if ( preg_match("/^(?:[a-z0-9\._\-]+)@(?:[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?\.)+(?:[a-z]{2,6})$/ui", (string) $var) ) {
-                    return $var;
-                }
-                else {
-                    return (string) $default;
-                }
-                break;
-            case 'html':
-                if ( $var ) {
-                    return self::strClear((string) $var, false);
-                }
-                else {
-                    return (string) $default;
-                }
-                break;
-            case 'array':
-                if ( is_array($var) ) {
-                    foreach ( $var as $k => $s ) {
-                        $arr[$k] = self::strClear($s, false);
-                    }
-
-                    return $arr;
-                }
-                else {
-                    return $default;
-                }
-                break;
-            case 'array_int':
-                if ( is_array($var) ) {
-                    foreach ( $var as $k => $i ) {
-                        $arr[$k] = (int) $i;
-                    }
-
-                    return $arr;
-                }
-                else {
-                    return $default;
-                }
-                break;
-            case 'array_str':
-                if ( is_array($var) ) {
-                    foreach ( $var as $k => $s ) {
-                        $arr[$k] = self::strClear($s);
-                    }
-
-                    return $arr;
-                }
-                else {
-                    return $default;
-                }
-                break;
-        }
-    }
-
-    /**
-     * Формирует массив данных из $_REQUEST в соответствии с параметрами
-     * @param array $types массив, ключами которого являются названия полей в базе данных,
-     * а значения его - массив параметров входной переменной
-     * @return array
-     */
-    public static function getArrayFromRequest($types)
-    {
-        $items = array();
-
-        foreach ( $types as $field => $type_list ) {
-            $items[$field] = self::request($type_list[0], $type_list[1], $type_list[2]);
-
-            // если передана функция обработки (ее название), обрабатываем
-            // полная поддержка анонимных функций невозможна из-за поддержки php 5.2.x
-            if ( isset($type_list[3]) ) {
-                // если пришел массив, считаем что передан объект/название класса и метод
-                if ( is_array($type_list[3]) ) {
-                    if ( class_exists($type_list[3][0]) && method_exists($type_list[3][0], $type_list[3][1]) ) {
-                        $items[$field] = call_user_func($type_list[3], $items[$field]);
-                    }
-                }
-
-                // в остальных случаях считаем, что пришло название функции
-                elseif ( function_exists($type_list[3]) ) {
-                    $items[$field] = call_user_func($type_list[3], $items[$field]);
-                }
-            }
-        }
-
-        return $items;
     }
 
     /**
@@ -2252,30 +1956,6 @@ class cmsCore
         return in_array($inUser->group_id, $access_list);
     }
 
-    public static function strClear($input, $strip_tags = true)
-    {
-        if ( is_array($input) ) {
-            foreach ( $input as $key => $string ) {
-                $value[self::strClear((string) $key)] = self::strClear($string, $strip_tags);
-            }
-
-            return $value;
-        }
-
-        $string = trim((string) $input);
-
-        //Если magic_quotes_gpc = On, сначала убираем экранирование
-        $string = (@get_magic_quotes_gpc()) ? stripslashes($string) : $string;
-
-        $string = rtrim($string, ' \\');
-
-        if ( $strip_tags ) {
-            $string = cmsDatabase::getInstance()->escape_string(strip_tags($string));
-        }
-
-        return $string;
-    }
-
     /**
      * Удаляет теги script iframe style meta
      * @param string $string
@@ -2792,51 +2472,121 @@ class cmsCore
         self::halt(json_encode($data));
     }
 
-    /**
-     * ========= DEPRECATED =========
-     * Возвращает время работы скрипта
-     * @return float
-     */
+    // ============================= DEPRECATED ==============================//
+
+    public static function isAjax()
+    {
+        return \cms\request::getInstance()->isAjax();
+    }
+    
+    public static function getHost()
+    {
+        return \cms\request::getHost();
+    }
+    
+    public static function setCookie($name, $value, $time)
+    {
+        return \cms\cookie::set($name, $value, $time);
+    }
+
+    public static function unsetCookie($name)
+    {
+        return \cms\cookie::delete($name);
+    }
+
+    public static function getCookie($name)
+    {
+        return \cms\cookie::get($name);
+    }
+    
+    public static function inRequest($var)
+    {
+        return \cms\request::getInstance()->has($name);
+    }
+
+    public static function request($var, $type = 'str', $default = false, $r = 'request')
+    {
+        return \cms\request::getInstance()->get($var, $type, $default, $r);
+    }
+
+    public static function getArrayFromRequest($types)
+    {
+        return \cms\request::getInstance()->getArrayFromRequest($types);
+    }
+
+    public static function cleanVar($var, $type = 'str', $default = false)
+    {
+        return \cms\request::cleanVar($var, $type, $default);
+    }
+
+    public static function strClear($input, $strip_tags = true)
+    {
+        return \cms\request::strClear($input);
+        /*
+        if ( is_array($input) ) {
+            foreach ( $input as $key => $string ) {
+                $value[self::strClear((string) $key)] = self::strClear($string, $strip_tags);
+            }
+
+            return $value;
+        }
+
+        $string = trim((string) $input);
+
+        //Если magic_quotes_gpc = On, сначала убираем экранирование
+        $string = (@get_magic_quotes_gpc()) ? stripslashes($string) : $string;
+
+        $string = rtrim($string, ' \\');
+
+        if ( $strip_tags ) {
+            $string = cmsDatabase::getInstance()->escape_string(strip_tags($string));
+        }
+
+        return $string;
+        */
+    }
+
+    public static function loadLanguage($file)
+    {
+        return \cms\lang::getInstance()->load($file);
+    }
+
+    public static function getLanguageTextFile($file)
+    {
+        return \cms\lang::getInstance()->getLetter($file);
+    }
+
+    public static function arrayToYaml($input_array, $indent = 2, $word_wrap = 40)
+    {
+        return \cms\model::arrayToYaml($input_array, $indent, $word_wrap);
+    }
+
+    public static function yamlToArray($yaml)
+    {
+        return \cms\model::yamlToArray($yaml);
+    }
+
     public static function getGenTime()
     {
         return \cms\debug::getTime('cms');
     }
 
-    /**
-     * ========= DEPRECATED =========
-     * Загружает модель для указанного компонента
-     * @param string $component Название компонента
-     * @return bool
-     */
     public static function loadModel($component)
     {
         return self::includeFile('components/' . $component . '/model.php');
     }
 
-    /**
-     * ========= DEPRECATED =========
-     * Загружает класс из файла /core/classes/XXX.class.php, где XXX = $class
-     * @param string $class
-     * @return bool
-     */
     public static function loadClass($class)
     {
         return self::includeFile('core/classes/' . $class . '.class.php');
     }
 
-    /**
-     * ========= DEPRECATED =========
-     */
     public function initSmarty($tpl_folder, $tpl_file)
     {
         trigger_error('initSmarty is DEPRECATED, use cmsPage::initTemplate', E_USER_NOTICE);
         return cmsPage::initTemplate($tpl_folder, $tpl_file);
     }
 
-    /**
-     * ========= DEPRECATED =========
-     * используйте cmsUser::checkCsrfToken();
-     */
     public static function validateForm()
     {
         return cmsUser::checkCsrfToken();
