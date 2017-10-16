@@ -66,6 +66,8 @@ class cmsConfig
     public static function getDefaultConfig()
     {
         $d_cfg = array(
+            'schema'                  => 'http',
+            'host'                    => '',
             'sitename'                => '',
             'title_and_sitename'      => 1,
             'title_and_page'          => 1,
