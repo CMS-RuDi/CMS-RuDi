@@ -118,6 +118,7 @@ class autoload
 }
 
 autoload::addDir(__DIR__);
+autoload::addDir(__DIR__ . '/../../includes/libs');
 autoload::addDir(__DIR__ . '/../..');
 
 spl_autoload_register(array( new autoload(), 'load' ));
