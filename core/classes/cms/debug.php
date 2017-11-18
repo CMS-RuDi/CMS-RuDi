@@ -195,10 +195,11 @@ class debug
     public static function errorHandler($errno, $errstr, $errfile, $errline)
     {
         $errortype = [
-            E_WARNING    => 'E_WARNING',
-            E_NOTICE     => 'E_NOTICE',
-            E_STRICT     => 'E_STRICT',
-            E_DEPRECATED => 'E_DEPRECATED',
+            E_WARNING     => 'E_WARNING',
+            E_NOTICE      => 'E_NOTICE',
+            E_USER_NOTICE => 'E_USER_NOTICE',
+            E_STRICT      => 'E_STRICT',
+            E_DEPRECATED  => 'E_DEPRECATED',
         ];
 
         if ( !isset($errortype[$errno]) ) {

@@ -119,6 +119,7 @@ class db
         }
 
         $this->setTimezone();
+        $this->setLcMessages();
 
         $this->prefix = $this->options['db_prefix'] . '_';
 
@@ -250,7 +251,7 @@ class db
 
     public function numRows($result)
     {
-        return $result->num_rows;
+        return $result ? $result->num_rows : false;
     }
 
     public function fetchAssoc($result)

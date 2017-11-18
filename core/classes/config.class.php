@@ -13,8 +13,9 @@
 class cmsConfig
 {
 
-    private static $instance = null;
-    private static $config   = array();
+    use \Singeltone;
+
+    private static $config = array();
 
     private function __construct()
     {
@@ -24,15 +25,7 @@ class cmsConfig
 
         date_default_timezone_set(self::$config['timezone']);
 
-        setlocale(LC_ALL, 'ru_RU.UTF-8');
-        setlocale(LC_NUMERIC, 'POSIX');
-
         return true;
-    }
-
-    private function __clone()
-    {
-
     }
 
     public function __get($name)
@@ -50,14 +43,6 @@ class cmsConfig
         return isset(self::$config[$name]);
     }
 
-    public static function getInstance()
-    {
-        if ( self::$instance === null ) {
-            self::$instance = new self;
-        }
-        return self::$instance;
-    }
-
     /**
      * Возвращает оригинальный массив конфигурации системы
      * отдельно используется только в админке и при установке
@@ -65,7 +50,7 @@ class cmsConfig
      */
     public static function getDefaultConfig()
     {
-        $d_cfg = array(
+        $d_cfg = [
             'schema'                  => 'http',
             'host'                    => '',
             'sitename'                => '',
@@ -109,8 +94,15 @@ class cmsConfig
             'timediff'                => '',
             'user_stats'              => 1,
             'seo_url_count'           => 40,
-            'allow_ip'                => ''
-        );
+            'allow_ip'                => '',
+            'detect_ip_key'           => 'REMOTE_ADDR',
+            'cache_enabled'           => false,
+            'cache_method'            => 'files',
+            'cache_ttl'               => 3600,
+            'cache_path'              => '/cache/data',
+            'cache_host'              => 'localhost',
+            'cache_port'              => 11211,
+        ];
 
         $f = PATH . '/includes/config.inc.php';
 
@@ -178,7 +170,7 @@ class cmsConfig
 
         fputs($cfg_file, "<?php \n");
         fputs($cfg_file, "if(!defined('VALID_CMS')) { die('ACCESS DENIED'); } \n");
-        fputs($cfg_file, '$_CFG = array();' . "\n");
+        fputs($cfg_file, '$_CFG = [];' . "\n");
 
         foreach ( $_CFG as $key => $value ) {
             if ( is_int($value) ) {

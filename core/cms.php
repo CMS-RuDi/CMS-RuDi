@@ -63,7 +63,7 @@ class cmsCore
             $inConf->lang = $_SESSION['lang'];
         }
 
-        self::loadLanguage('lang');
+        \cms\lang::getInstance()->setLocale();
 
         // определяем контекст использования
         \cms\request::getInstance()->setContext();
@@ -492,7 +492,6 @@ class cmsCore
 
         return false;
     }
-
 
     /**
      * Добавляет сообщение в сессию
@@ -2355,47 +2354,6 @@ class cmsCore
         return true;
     }
 
-    public static function strToURL($str, $is_cyr = false)
-    {
-        $str    = str_replace(' ', '-', mb_strtolower(trim($str)));
-        $string = rtrim(preg_replace('/[^a-zA-Zа-яёА-ЯЁ0-9\-]/iu', '-', $str), '-');
-
-        while ( mb_strstr($string, '--') ) {
-            $string = str_replace('--', '-', $string);
-        }
-
-        if ( !$is_cyr ) {
-            $ru_en = array(
-                'а' => 'a', 'б' => 'b', 'в' => 'v', 'г' => 'g', 'д' => 'd',
-                'е' => 'e', 'ё' => 'yo', 'ж' => 'zh', 'з' => 'z',
-                'и' => 'i', 'й' => 'i', 'к' => 'k', 'л' => 'l', 'м' => 'm',
-                'н' => 'n', 'о' => 'o', 'п' => 'p', 'р' => 'r', 'с' => 's',
-                'т' => 't', 'у' => 'u', 'ф' => 'f', 'х' => 'h', 'ц' => 'c',
-                'ч' => 'ch', 'ш' => 'sh', 'щ' => 'sch', 'ъ' => '', 'ы' => 'y',
-                'ь' => '', 'э' => 'ye', 'ю' => 'yu', 'я' => 'ja'
-            );
-
-            foreach ( $ru_en as $ru => $en ) {
-                $string = preg_replace('/([' . $ru . ']+?)/iu', $en, $string);
-            }
-        }
-
-        if ( !$string ) {
-            $string = 'untitled';
-        }
-
-        if ( is_numeric($string) ) {
-            $string .= 'untitled';
-        }
-
-        if ( !cmsConfig::getConfig('seo_url_count') ) {
-            return $string;
-        }
-        else {
-            return mb_substr($string, 0, cmsConfig::getConfig('seo_url_count'));
-        }
-    }
-
     /**
      * Возвращает seolink для ns категории
      * подразумевается, что категория существующая (созданная)
@@ -2474,16 +2432,21 @@ class cmsCore
 
     // ============================= DEPRECATED ==============================//
 
+    public static function strToURL($str, $dont_translit = false)
+    {
+        return \cms\lang::slug($str, !$dont_translit);
+    }
+
     public static function isAjax()
     {
         return \cms\request::getInstance()->isAjax();
     }
-    
+
     public static function getHost()
     {
         return \cms\request::getHost();
     }
-    
+
     public static function setCookie($name, $value, $time)
     {
         return \cms\cookie::set($name, $value, $time);
@@ -2498,15 +2461,15 @@ class cmsCore
     {
         return \cms\cookie::get($name);
     }
-    
-    public static function inRequest($var)
+
+    public static function inRequest($name)
     {
         return \cms\request::getInstance()->has($name);
     }
 
-    public static function request($var, $type = 'str', $default = false, $r = 'request')
+    public static function request($name, $type = 'str', $default = false, $r = 'request')
     {
-        return \cms\request::getInstance()->get($var, $type, $default, $r);
+        return \cms\request::getInstance()->get($name, $type, $default, $r);
     }
 
     public static function getArrayFromRequest($types)
@@ -2523,27 +2486,27 @@ class cmsCore
     {
         return \cms\request::strClear($input);
         /*
-        if ( is_array($input) ) {
-            foreach ( $input as $key => $string ) {
-                $value[self::strClear((string) $key)] = self::strClear($string, $strip_tags);
-            }
+          if ( is_array($input) ) {
+          foreach ( $input as $key => $string ) {
+          $value[self::strClear((string) $key)] = self::strClear($string, $strip_tags);
+          }
 
-            return $value;
-        }
+          return $value;
+          }
 
-        $string = trim((string) $input);
+          $string = trim((string) $input);
 
-        //Если magic_quotes_gpc = On, сначала убираем экранирование
-        $string = (@get_magic_quotes_gpc()) ? stripslashes($string) : $string;
+          //Если magic_quotes_gpc = On, сначала убираем экранирование
+          $string = (@get_magic_quotes_gpc()) ? stripslashes($string) : $string;
 
-        $string = rtrim($string, ' \\');
+          $string = rtrim($string, ' \\');
 
-        if ( $strip_tags ) {
-            $string = cmsDatabase::getInstance()->escape_string(strip_tags($string));
-        }
+          if ( $strip_tags ) {
+          $string = cmsDatabase::getInstance()->escape_string(strip_tags($string));
+          }
 
-        return $string;
-        */
+          return $string;
+         */
     }
 
     public static function loadLanguage($file)

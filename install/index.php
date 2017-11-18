@@ -16,7 +16,9 @@ header('Content-Type: text/html; charset=utf-8');
 define('VALID_CMS', 1);
 define('PATH', $_SERVER['DOCUMENT_ROOT']);
 
-include(PATH . '/core/cms.php');
+require(PATH . '/core/classes/autoload.php');
+
+$request = \cms\request::getInstance();
 
 cmsCore::includeFile('install/function.php');
 
@@ -27,8 +29,8 @@ $inConf->lang = isset($_SESSION['inst_lang']) ? $_SESSION['inst_lang'] : $inConf
 $langs        = cmsCore::getDirsList('/languages');
 
 // запрос на смену языка
-if ( cmsCore::inRequest('lang') ) {
-    $inst_lang = cmsCore::request('lang', 'html', 'ru');
+if ( $request->has('lang') ) {
+    $inst_lang = $request->get('lang', 'html', 'ru');
 
     if ( in_array($inst_lang, $langs) ) {
         $_SESSION['inst_lang'] = $inst_lang;
@@ -36,8 +38,7 @@ if ( cmsCore::inRequest('lang') ) {
     }
 }
 
-cmsCore::loadLanguage('lang');
-cmsCore::loadLanguage('install');
+$l = \cms\lang::getInstance()->load('install');
 
 $installed = false;
 
@@ -57,49 +58,49 @@ if ( $inConf->lang != 'ru' ) {
 if ( cmsCore::inRequest('install') ) {
     $errors = false;
 
-    $_CFG['offtext']  = $_LANG['CFG_OFFTEXT'];
-    $_CFG['keywords'] = $_LANG['CFG_KEYWORDS'];
-    $_CFG['metadesc'] = $_LANG['CFG_METADESC'];
+    $_CFG['offtext']  = $l->cfg_offtext;
+    $_CFG['keywords'] = $l->cfg_keywords;
+    $_CFG['metadesc'] = $l->cfg_metadesc;
 
-    $_CFG['sitename']  = cmsCore::request('sitename', 'html', $_LANG['CFG_SITENAME']);
-    $_CFG['db_host']   = cmsCore::request('db_server', 'html', '');
-    $_CFG['db_base']   = cmsCore::request('db_base', 'html', '');
-    $_CFG['db_user']   = cmsCore::request('db_user', 'html', '');
-    $_CFG['db_pass']   = cmsCore::request('db_password', 'html', '');
-    $_CFG['db_prefix'] = cmsCore::request('db_prefix', 'html', '');
+    $_CFG['sitename']  = $request->get('sitename', 'html', $l->cfg_sitename);
+    $_CFG['db_host']   = $request->get('db_server', 'html', '');
+    $_CFG['db_base']   = $request->get('db_base', 'html', '');
+    $_CFG['db_user']   = $request->get('db_user', 'html', '');
+    $_CFG['db_pass']   = $request->get('db_password', 'html', '');
+    $_CFG['db_prefix'] = $request->get('db_prefix', 'html', '');
     $_CFG['lang']      = $inConf->lang; // Какой язык выбрали при установке, тот и будет сохранен в конфигурации
-    $sql_file          = PATH . '/install/' . (cmsCore::request('demodata', 'int') ? $sqldumpdemo : $sqldumpempty);
+    $sql_file          = PATH . '/install/' . ($request->get('demodata', 'int') ? $sqldumpdemo : $sqldumpempty);
 
-    $admin_login    = cmsCore::request('admin_login', 'html', '');
-    $admin_password = cmsCore::request('admin_password', 'html', '');
+    $admin_login    = $request->get('admin_login', 'html', '');
+    $admin_password = $request->get('admin_password', 'html', '');
 
     if ( !$_CFG['db_host'] ) {
-        cmsCore::addSessionMessage($_LANG['INS_DB_HOST_EMPTY'], 'error');
+        cmsCore::addSessionMessage($l->ins_db_host_empty, 'error');
         $errors = true;
     }
 
     if ( !$_CFG['db_base'] ) {
-        cmsCore::addSessionMessage($_LANG['INS_DB_BASE_EMPTY'], 'error');
+        cmsCore::addSessionMessage($l->ins_db_base_empty, 'error');
         $errors = true;
     }
 
     if ( !$_CFG['db_user'] ) {
-        cmsCore::addSessionMessage($_LANG['INS_DB_USER_EMPTY'], 'error');
+        cmsCore::addSessionMessage($l->ins_db_user_empty, 'error');
         $errors = true;
     }
 
     if ( !$_CFG['db_prefix'] ) {
-        cmsCore::addSessionMessage($_LANG['INS_DB_PREFIX_EMPTY'], 'error');
+        cmsCore::addSessionMessage($l->ins_db_prefix_empty, 'error');
         $errors = true;
     }
 
     if ( mb_strlen($admin_login) < 3 ) {
-        cmsCore::addSessionMessage($_LANG['INS_ADMIN_LOGIN_EMPTY'], 'error');
+        cmsCore::addSessionMessage($l->ins_admin_login_empty, 'error');
         $errors = true;
     }
 
     if ( mb_strlen($admin_password) < 6 ) {
-        cmsCore::addSessionMessage($_LANG['INS_ADMIN_PASS_EMPTY'], 'error');
+        cmsCore::addSessionMessage($l->ins_admin_pass_empty, 'error');
         $errors = true;
     }
 
@@ -121,9 +122,9 @@ if ( cmsCore::inRequest('install') ) {
     $_CFG  = array_merge($d_cfg, $_CFG);
     $inConf->saveToFile($_CFG);
 
-    $sql = "UPDATE cms_users SET password = md5('{$admin_password}'), login = '{$admin_login}' WHERE id = 1";
+    $sql = "UPDATE cms_users SET password = md5('" . $admin_password . "'), login = '" . $admin_login . "' WHERE id = 1";
     $inDB->query($sql);
-    $sql = "UPDATE cms_users SET password = md5('{$admin_password}') WHERE id > 1";
+    $sql = "UPDATE cms_users SET password = md5('" . $admin_password . "') WHERE id > 1";
     $inDB->query($sql);
 
     $installed = true;
@@ -142,7 +143,7 @@ $php_path    = get_program_path('php');
 <!DOCTYPE html>
 <html>
     <head>
-        <title><?php echo $_LANG['INS_HEADER'] . ' ' . CORE_VERSION; ?></title>
+        <title><?php echo $l->ins_header . ' ' . CORE_VERSION; ?></title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <script src='/includes/jquery/jquery.js' type='text/javascript'></script>
         <script src='/install/js/jquery.wizard.js' type='text/javascript'></script>
@@ -154,7 +155,7 @@ $php_path    = get_program_path('php');
     <body>
         <div class="wrap">
             <?php if ( sizeof($langs) > 1 ) { ?>
-                <div title="<?php echo $_LANG['TEMPLATE_INTERFACE_LANG']; ?>" id="langs" style="background-image:  url(/templates/_default_/images/icons/langs/<?php echo $inConf->lang; ?>.png);">
+                <div title="<?php echo $l->template_interface_lang; ?>" id="langs" style="background-image:  url(/templates/_default_/images/icons/langs/<?php echo $inConf->lang; ?>.png);">
                     <span><?php echo $inConf->lang; ?></span>
                     <ul id="langs-select">
                         <?php
@@ -169,16 +170,16 @@ $php_path    = get_program_path('php');
                 </div>
             <?php } ?>
             <h1 id="header">
-                <?php echo $_LANG['INS_HEADER'] . ' ' . CORE_VERSION; ?>
+                <?php echo $l->ins_header . ' ' . CORE_VERSION; ?>
             </h1>
             <?php if ( !$installed ) { ?>
                 <!-- ================================================================ -->
                 <form class="wizard" action="#" method="post" >
                     <div class="wizard-nav">
-                        <a href="#start"><?php echo $_LANG['INS_START']; ?></a>
-                        <a href="#php"><?php echo $_LANG['INS_CHECK_PHP_TITLE']; ?></a>
-                        <a href="#folders"><?php echo $_LANG['INS_CHECK_FOLDER_TITLE']; ?></a>
-                        <a href="#install"><?php echo $_LANG['INS_INSTALL']; ?></a>
+                        <a href="#start"><?php echo $l->ins_start; ?></a>
+                        <a href="#php"><?php echo $l->ins_check_php_title; ?></a>
+                        <a href="#folders"><?php echo $l->ins_check_folder_title; ?></a>
+                        <a href="#install"><?php echo $l->ins_install; ?></a>
                     </div>
                     <?php $messages = cmsCore::getSessionMessages(); ?>
                     <?php if ( $messages ) { ?>
@@ -189,143 +190,143 @@ $php_path    = get_program_path('php');
                         </div>
                     <?php } ?>
                     <div id="start" class="wizardpage">
-                        <h2><?php echo $_LANG['INS_WELCOME']; ?></h2>
-                        <?php echo $_LANG['INS_WELCOME_NOTES']; ?>
+                        <h2><?php echo $l->ins_welcome; ?></h2>
+                        <?php echo $l->ins_welcome_notes; ?>
                         <p>
-                            <label><input type="checkbox" id="license_agree" onClick="checkAgree()" /><?php echo $_LANG['INS_ACCEPT_LICENSE']; ?></label>
+                            <label><input type="checkbox" id="license_agree" onClick="checkAgree()" /><?php echo $l->ins_accept_license; ?></label>
                         </p>
                     </div>
                     <!-- ================================================================ -->
                     <div id="php" class="wizardpage">
-                        <h2><?php echo $_LANG['INS_CHECK_PHP']; ?></h2>
-                        <p><?php echo $_LANG['INS_CHECKPHP_HINT']; ?></p>
-                        <h3><?php echo $_LANG['INS_PHP_VERSION']; ?></h3>
+                        <h2><?php echo $l->ins_check_php; ?></h2>
+                        <p><?php echo $l->ins_checkphp_hint; ?></p>
+                        <h3><?php echo $l->ins_php_version; ?></h3>
                         <table class="grid">
                             <tr>
-                                <td><?php echo $_LANG['INS_INSTALL_VERSION']; ?></td>
+                                <td><?php echo $l->ins_install_version; ?></td>
                                 <td class="value">
                                     <?php echo html_bool_span($info['php']['version'], $info['php']['valid']); ?>
                                 </td>
                             </tr>
                         </table>
-                        <h3><?php echo $_LANG['INS_NEED_EXTENTION']; ?></h3>
+                        <h3><?php echo $l->ins_need_extention; ?></h3>
                         <table class="grid">
                             <?php foreach ( $info['ext'] as $name => $valid ) { ?>
                                 <tr>
-                                    <td><a href="http://ru2.php.net/manual/ru/book.<?php echo str_replace('math', '', $name); ?>.php" target="_blank" title="<?php echo $_LANG['INS_PHPNET_HINT']; ?>"><?php echo $name; ?></a></td>
+                                    <td><a href="http://ru2.php.net/manual/ru/book.<?php echo str_replace('math', '', $name); ?>.php" target="_blank" title="<?php echo $l->ins_phpnet_hint; ?>"><?php echo $name; ?></a></td>
                                     <td class="value">
                                         <?php if ( $valid ) { ?>
-                                            <?php echo html_bool_span($_LANG['INS_INSTALL_OK'], $valid); ?>
-                                        <?php
+                                            <?php echo html_bool_span($l->ins_install_ok, $valid); ?>
+                                            <?php
                                         }
                                         else {
                                             ?>
-                                            <?php echo html_bool_span($_LANG['INS_INSTALL_NOTFOUND'], $valid); ?>
-        <?php } ?>
+                                            <?php echo html_bool_span($l->ins_install_notfound, $valid); ?>
+                                        <?php } ?>
                                     </td>
                                 </tr>
-    <?php } ?>
+                            <?php } ?>
                         </table>
                     </div>
                     <!-- ================================================================ -->
                     <div id="folders" class="wizardpage">
-                        <h2><?php echo $_LANG['INS_CHECK_FOLDER']; ?></h2>
-                            <?php echo $_LANG['INS_FOLDERS_NOTES']; ?>
+                        <h2><?php echo $l->ins_check_folder; ?></h2>
+                        <?php echo $l->ins_folders_notes; ?>
                         <table class="grid">
-    <?php foreach ( $permissions as $name => $permission ) { ?>
+                            <?php foreach ( $permissions as $name => $permission ) { ?>
                                 <tr>
                                     <td>/<?php
                                         echo $name;
-                                        echo $permission['perm'] ? ' | ' . $_LANG['INS_PERMISSION'] . ' ' . $permission['perm'] : '';
+                                        echo $permission['perm'] ? ' | ' . $l->ins_permission . ' ' . $permission['perm'] : '';
                                         ?></td>
                                     <td class="value">
                                         <?php if ( $permission['valid'] ) { ?>
-                                            <?php echo html_bool_span($_LANG['INS_PERMISSION_OK'], $permission['valid']); ?>
-                                        <?php
+                                            <?php echo html_bool_span($l->ins_permission_ok, $permission['valid']); ?>
+                                            <?php
                                         }
                                         else {
                                             ?>
-            <?php echo html_bool_span($_LANG['INS_PERMISSION_NO'], $permission['valid']); ?>
-                                <?php } ?>
+                                            <?php echo html_bool_span($l->ins_permission_no, $permission['valid']); ?>
+                                        <?php } ?>
                                     </td>
                                 </tr>
-    <?php } ?>
+                            <?php } ?>
                         </table>
                     </div>
                     <!-- ================================================================ -->
                     <div id="install" class="wizardpage">
-                        <h2><?php echo $_LANG['INS_INSTALL']; ?></h2>
-                        <p><?php echo $_LANG['INS_FORM_INSERT']; ?></p>
+                        <h2><?php echo $l->ins_install; ?></h2>
+                        <p><?php echo $l->ins_form_insert; ?></p>
                         <table class="instal_data">
                             <tr>
-                                <td><?php echo $_LANG['INS_FORM_SITE']; ?></td>
-                                <td><input name="sitename" type="text" class="txt" value="<?php echo $_LANG['CFG_SITENAME']; ?>"></td>
+                                <td><?php echo $l->ins_form_site; ?></td>
+                                <td><input name="sitename" type="text" class="txt" value="<?php echo $l->cfg_sitename; ?>"></td>
                             </tr>
                             <tr>
-                                <td><?php echo $_LANG['INS_FORM_LOGIN']; ?></td>
+                                <td><?php echo $l->ins_form_login; ?></td>
                                 <td><input name="admin_login" type="text" class="txt" value="admin"></td>
                             </tr>
                             <tr>
-                                <td><?php echo $_LANG['INS_FORM_PASS']; ?></td>
-                                <td><input name="admin_password" type="password" placeholder="<?php echo $_LANG['INS_ADMIN_PASS_6']; ?>" class="txt"></td>
+                                <td><?php echo $l->ins_form_pass; ?></td>
+                                <td><input name="admin_password" type="password" placeholder="<?php echo $l->ins_admin_pass_6; ?>" class="txt"></td>
                             </tr>
                             <tr>
-                                <td><?php echo $_LANG['INS_FORM_MYSQL']; ?></td>
+                                <td><?php echo $l->ins_form_mysql; ?></td>
                                 <td align="center"><input name="db_server" type="text" class="txt" value="localhost"></td>
                             </tr>
                             <tr>
-                                <td><?php echo $_LANG['INS_FORM_BDNAME']; ?></td>
+                                <td><?php echo $l->ins_form_bdname; ?></td>
                                 <td><input name="db_base" type="text" class="txt"></td>
                             </tr>
                             <tr>
-                                <td><?php echo $_LANG['INS_FORM_BDUSER']; ?></td>
+                                <td><?php echo $l->ins_form_bduser; ?></td>
                                 <td><input name="db_user" type="text" class="txt" value=""></td>
                             </tr>
                             <tr>
-                                <td><?php echo $_LANG['INS_BDPASS']; ?> </td>
+                                <td><?php echo $l->ins_bdpass; ?> </td>
                                 <td><input name="db_password" type="password" class="txt"></td>
                             </tr>
                             <tr>
-                                <td><?php echo $_LANG['INS_FORM_PREFIX']; ?></td>
+                                <td><?php echo $l->ins_form_prefix; ?></td>
                                 <td><input name="db_prefix" type="text" class="txt" value="cms"></td>
                             </tr>
                             <tr>
-                                <td><?php echo $_LANG['INS_FORM_DEMO']; ?></td>
+                                <td><?php echo $l->ins_form_demo; ?></td>
                                 <td align="center" valign="top">
                                     <?php if ( $sqldumpdemo == $sqldumpempty ) { ?>
-                                        <label><input disabled="true" name="demodata" type="radio" value="1" /><?php echo $_LANG['YES']; ?></label>
-                                        <label><input disabled="true" name="demodata" type="radio" value="0" checked="true" /> <?php echo $_LANG['NO']; ?></label>
-                                    <?php
+                                        <label><input disabled="true" name="demodata" type="radio" value="1" /><?php echo $l->yes; ?></label>
+                                        <label><input disabled="true" name="demodata" type="radio" value="0" checked="true" /> <?php echo $l->no; ?></label>
+                                        <?php
                                     }
                                     else {
                                         ?>
-                                        <label><input name="demodata" type="radio" value="1" checked /><?php echo $_LANG['YES']; ?></label>
-                                        <label><input name="demodata" type="radio" value="0" /> <?php echo $_LANG['NO']; ?></label>
-    <?php } ?>
+                                        <label><input name="demodata" type="radio" value="1" checked /><?php echo $l->yes; ?></label>
+                                        <label><input name="demodata" type="radio" value="0" /> <?php echo $l->no; ?></label>
+                                    <?php } ?>
                                 </td>
                             </tr>
                         </table>
-                        <div class="hint_text"><?php echo $_LANG['INS_FORM_NOTES']; ?></div>
+                        <div class="hint_text"><?php echo $l->ins_form_notes; ?></div>
                     </div>
                 </form>
-<?php
-}
-else {
-    ?>
+                <?php
+            }
+            else {
+                ?>
                 <div class="result_link">
-                    <a href="/"><?php echo $_LANG['INS_GO_SITE']; ?></a>
-                    <a href="/admin"><?php echo $_LANG['INS_GO_CP']; ?></a>
-                    <a id="tutorial" target="_blank" href="http://www.instantcms.ru/wiki/doku.php"><?php echo $_LANG['INS_GO_HANDBOOK']; ?></a>
-                    <a id="tutorial" target="_blank" href="http://addons.instantcms.ru/"><?php echo $_LANG['INS_GO_ADDONS']; ?></a>
+                    <a href="/"><?php echo $l->ins_go_site; ?></a>
+                    <a href="/admin"><?php echo $l->ins_go_cp; ?></a>
+                    <a id="tutorial" target="_blank" href="http://www.instantcms.ru/wiki/doku.php"><?php echo $l->ins_go_handbook; ?></a>
+                    <a id="tutorial" target="_blank" href="http://addons.instantcms.ru/"><?php echo $l->ins_go_addons; ?></a>
                     <a id="tutorial" target="_blank" href="https://github.com/instantsoft/icms1">GitHub</a>
                 </div>
                 <div class="sess_messages">
-                    <div class="message_success"><?php echo $_LANG['INS_FORM_SUCCESS']; ?></div>
+                    <div class="message_success"><?php echo $l->ins_form_success; ?></div>
                 </div>
                 <div class="wizardpage">
-                    <h2><?php echo $_LANG['INS_CRON_TODO']; ?></h2>
+                    <h2><?php echo $l->ins_cron_todo; ?></h2>
                     <p>
-                        <?php echo $_LANG['INS_CRON_NOTES']; ?>
+                        <?php echo $l->ins_cron_notes; ?>
                     </p>
                     <pre><?php
                         if ( $php_path ) {
@@ -334,12 +335,12 @@ else {
                         else {
                             ?>php<?php } ?> -f <?php echo PATH; ?>/cron.php <?php echo $_SERVER['HTTP_HOST']; ?> > /dev/null</pre>
                     <p>
-                <?php echo $_LANG['INS_FEEDBACK_SUPPORT']; ?>
+                        <?php echo $l->ins_feedback_support; ?>
                     </p>
-                    <h2><?php echo $_LANG['INS_ATTENTION']; ?></h2>
-                    <p><?php echo $_LANG['INS_DELETE_TODO']; ?></p>
+                    <h2><?php echo $l->ins_attention; ?></h2>
+                    <p><?php echo $l->ins_delete_todo; ?></p>
                 </div>
-<?php } ?>
+            <?php } ?>
         </div>
         <div id="footer">
             <div>

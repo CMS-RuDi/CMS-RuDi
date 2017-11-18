@@ -55,6 +55,7 @@ $_LANG['CLOSE']                     = 'Закрыть';
 $_LANG['SIZE_B']                    = 'б';
 $_LANG['SIZE_KB']                   = 'Кб';
 $_LANG['SIZE_MB']                   = 'Мб';
+$_LANG['SIZE_GB']                   = 'Гб';
 $_LANG['FILE_DOWNLOADED']           = 'Скачан';
 $_LANG['FILE_DOWNLOAD']             = 'Скачать';
 $_LANG['LOADING']                   = 'Загрузка';

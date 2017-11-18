@@ -24,7 +24,7 @@ class lang
      */
     public static function loadComponentLang($name)
     {
-        self::getInstance()->load('components/' . $name);
+        return self::getInstance()->load('components/' . $name);
     }
 
     /**
@@ -33,7 +33,7 @@ class lang
      */
     public static function loadModuleLang($name)
     {
-        self::getInstance()->load('modules/' . $name);
+        return self::getInstance()->load('modules/' . $name);
     }
 
     /**
@@ -42,7 +42,7 @@ class lang
      */
     public static function loadPluginLang($name)
     {
-        self::getInstance()->load('plugins/' . $name);
+        return self::getInstance()->load('plugins/' . $name);
     }
 
     //========================================================================//
@@ -50,6 +50,7 @@ class lang
     public function load($file)
     {
         $this->loadFromPath(PATH . '/languages/%lang%/' . $file . '.php');
+        return $this;
     }
 
     public function loadFromPath($file_path)
@@ -133,13 +134,19 @@ class lang
         self::$_LANG[mb_strtolower($name)] = $value;
     }
 
+    /**
+     * Добавляет указанные языковые переменные
+     * @global array $_LANG
+     * @param array $lang
+     * @return boolean
+     */
     public function setLangs($lang)
     {
         if ( is_array($lang) ) {
             global $_LANG;
 
             foreach ( $lang as $k => $v ) {
-                $_LANG[$k] = $v;
+                $_LANG[mb_strtoupper($k)] = $v;
 
                 $this->set($k, $v);
             }
@@ -150,6 +157,11 @@ class lang
         return false;
     }
 
+    /**
+     * Возвращает содержимое указанного файла из папки letters
+     * @param string $file название файла письма
+     * @return boolean|string
+     */
     public function getLetter($file)
     {
         $letter_file = PATH . '/languages/' . $this->lang . '/letters/' . $file . '.txt';
@@ -163,6 +175,76 @@ class lang
         }
 
         return file_get_contents($letter_file);
+    }
+
+    /**
+     * Транслитирует строку и обрезает в соответствии с настройками для использования в качестве seolink
+     * @param string $string строка для транслитерации
+     * @param string $translit заменить буквы национального алфавита указанного языка на транслит или нет
+     * @param string $lang язык для транслитерации, если не указан берется из настроек системы
+     * @return string
+     */
+    public static function slug($string, $translit = true, $lang = false)
+    {
+        $config_lang = \cmsConfig::getConfig('lang');
+
+        $lang = $lang ? $lang : $config_lang;
+
+        $class_name = '\\languages\\' . $lang . '\\' . $lang;
+
+        if ( class_exists($class_name) && method_exists($class_name, 'slug') ) {
+            $string = $class_name::slug($string, $translit);
+        }
+        else if ( $lang != $config_lang ) {
+            $string = self::slug($string, $translit, $config_lang);
+        }
+        else if ( $lang != 'ru' ) {
+            $string = self::slug($string, $translit, 'ru');
+        }
+
+        if ( !\cmsConfig::getConfig('seo_url_count') ) {
+            return $string;
+        }
+        else {
+            return mb_substr($string, 0, \cmsConfig::getConfig('seo_url_count'));
+        }
+    }
+
+    /**
+     * Возвращает транслитированную строку
+     * @param string $string строка для транслитерации
+     * @param string $lang язык для транслитерации, если не указан берется из настроек системы
+     * @return string
+     */
+    public static function translit($string, $lang = false)
+    {
+        $config_lang = \cmsConfig::getConfig('lang');
+
+        $lang = $lang ? $lang : $config_lang;
+
+        $class_name = '\\languages\\' . $lang . '\\' . $lang;
+
+        if ( class_exists($class_name) && method_exists($class_name, 'translit') ) {
+            return $class_name::translit($string);
+        }
+        else if ( $lang != $config_lang ) {
+            return self::translit($string, $config_lang);
+        }
+        else if ( $lang != 'ru' ) {
+            return self::translit($string, 'ru');
+        }
+    }
+
+    public function setLocale()
+    {
+        $class_name = '\\languages\\' . $this->lang . '\\' . $this->lang;
+
+        if ( class_exists($class_name) && method_exists($class_name, 'setLocale') ) {
+            return $class_name::setLocale();
+        }
+        else if ( $this->lang != ru ) {
+            return \languages\ru\ru::setLocale();
+        }
     }
 
     public function __get($name)

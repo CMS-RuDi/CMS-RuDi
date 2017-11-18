@@ -256,7 +256,7 @@ CREATE TABLE `#__board_cats` (
   `is_photos` tinyint(1) NOT NULL DEFAULT '1',
   `icon` varchar(200) DEFAULT 'folder_grey.png',
   `obtypes` text NOT NULL,
-  `form_id` int(11) NOT NULL,
+  `form_id` int(11) DEFAULT NULL,
   `pagetitle` varchar(200) NOT NULL DEFAULT '',
   `meta_keys` varchar(250) NOT NULL DEFAULT '',
   `meta_desc` varchar(250) NOT NULL DEFAULT '',
@@ -279,16 +279,16 @@ CREATE TABLE `#__board_items` (
   `obtype` varchar(50) NOT NULL,
   `title` varchar(250) NOT NULL,
   `content` text NOT NULL,
-  `formsdata` text NOT NULL,
+  `formsdata` text DEFAULT NULL,
   `city` varchar(100) NOT NULL,
   `pubdate` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `pubdays` int(11) NOT NULL,
   `published` tinyint(1) NOT NULL,
   `file` varchar(250) NOT NULL,
-  `more_images` text NOT NULL,
+  `more_images` text DEFAULT NULL,
   `hits` int(11) unsigned NOT NULL DEFAULT '0',
   `is_vip` tinyint(1) NOT NULL DEFAULT '0',
-  `vipdate` datetime NOT NULL,
+  `vipdate` datetime DEFAULT NULL,
   `ip` int(10) unsigned NOT NULL,
   `pagetitle` varchar(200) NOT NULL DEFAULT '',
   `meta_keys` varchar(250) NOT NULL DEFAULT '',
@@ -304,9 +304,9 @@ CREATE TABLE `#__board_items` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 INSERT INTO `#__board_items` (`id`, `category_id`, `user_id`, `obtype`, `title`, `content`, `city`, `pubdate`, `pubdays`, `published`, `file`, `hits`, `is_vip`, `vipdate`, `ip`) VALUES
-(4, 10, 1, 'Предлагаю', 'свои услуги', 'Могу выносить мусор и мыть пол.', 'Москва', '2016-06-11 14:11:18', 10, 1, '550de8a5de9b5301133a815de31be00d.jpg', 7, 0, '0000-00-00 00:00:00', 2130706433),
-(5, 9, 1, 'Обменяю', 'ВАЗ-2107 на Nissan Skyline GTR', 'Желательно новый и без доплаты.', 'Москва', '2016-06-12 14:14:24', 10, 1, '931f90c50adcea1ff18177bc22d4ceac.jpg', 34, 0, '0000-00-00 00:00:00', 2130706433),
-(6, 8, 2, 'Сдам', '2-х комнатную квартиру', 'Семье из 2-3 человек', 'Москва', '2016-06-13 15:57:22', 10, 1, '80204e6bad519060bca9d456949158dc.jpg', 2, 0, '0000-00-00 00:00:00', 2130706433);
+(4, 10, 1, 'Предлагаю', 'свои услуги', 'Могу выносить мусор и мыть пол.', 'Москва', '2016-06-11 14:11:18', 10, 1, '550de8a5de9b5301133a815de31be00d.jpg', 7, 0, NULL, 2130706433),
+(5, 9, 1, 'Обменяю', 'ВАЗ-2107 на Nissan Skyline GTR', 'Желательно новый и без доплаты.', 'Москва', '2016-06-12 14:14:24', 10, 1, '931f90c50adcea1ff18177bc22d4ceac.jpg', 34, 0, NULL, 2130706433),
+(6, 8, 2, 'Сдам', '2-х комнатную квартиру', 'Семье из 2-3 человек', 'Москва', '2016-06-13 15:57:22', 10, 1, '80204e6bad519060bca9d456949158dc.jpg', 2, 0, NULL, 2130706433);
 
 DROP TABLE IF EXISTS `#__cache`;
 CREATE TABLE `#__cache` (
@@ -496,7 +496,7 @@ CREATE TABLE `#__content` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `category_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL DEFAULT '1',
-  `pubdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `pubdate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `enddate` date NOT NULL,
   `is_end` tinyint(1) NOT NULL,
   `title` varchar(200) NOT NULL,
@@ -707,7 +707,7 @@ CREATE TABLE `#__form_fields` (
   `kind` varchar(30) NOT NULL,
   `mustbe` int(11) NOT NULL,
   `config` text NOT NULL,
-  `show_for_group` tinytext NOT NULL,
+  `show_for_group` tinytext DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `form_id` (`form_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
@@ -728,7 +728,7 @@ CREATE TABLE `#__forums` (
   `title` varchar(250) NOT NULL,
   `description` varchar(300) NOT NULL,
   `access_list` tinytext NOT NULL,
-  `moder_list` tinytext NOT NULL,
+  `moder_list` tinytext DEFAULT NULL,
   `ordering` int(11) NOT NULL,
   `published` tinyint(1) NOT NULL DEFAULT '1',
   `parent_id` int(11) NOT NULL,
@@ -866,7 +866,7 @@ CREATE TABLE `#__menu` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `menu` tinytext NOT NULL,
   `title` varchar(200) NOT NULL,
-  `titles` tinytext NOT NULL,
+  `titles` tinytext DEFAULT NULL,
   `css_class` varchar(15) NOT NULL DEFAULT '',
   `link` varchar(200) NOT NULL,
   `linktype` varchar(12) NOT NULL DEFAULT 'link',
@@ -926,7 +926,7 @@ CREATE TABLE `#__modules` (
   `position` varchar(20) NOT NULL,
   `name` varchar(200) NOT NULL,
   `title` varchar(200) NOT NULL,
-  `titles` tinytext NOT NULL,
+  `titles` tinytext DEFAULT NULL,
   `is_external` tinyint(1) NOT NULL,
   `content` text NOT NULL,
   `ordering` int(11) NOT NULL default '1',
@@ -1148,7 +1148,7 @@ CREATE TABLE `#__photo_files` (
   `album_id` int(11) NOT NULL,
   `title` varchar(200) NOT NULL,
   `description` text NOT NULL,
-  `pubdate` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  `pubdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `file` varchar(200) NOT NULL,
   `published` tinyint(1) NOT NULL,
   `hits` int(11) NOT NULL,
@@ -1168,11 +1168,11 @@ CREATE TABLE `#__photo_files` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 INSERT INTO `#__photo_files` (`id`, `album_id`, `title`, `description`, `pubdate`, `file`, `published`, `hits`, `showdate`, `comments`, `user_id`, `owner`) VALUES
-(10, 1, 'Закат на пляже', '', '2016-06-31 18:26:43', 'd0633d5a84f03a27f1b7d0419947e968.jpg', 1, 25, 1, 1, 1, 'photos'),
-(11, 1, 'Флорида', '', '2016-06-31 18:27:33', '5e7a09ffcaa383df24d25d56c315f0d0.jpg', 1, 28, 1, 1, 1, 'photos'),
-(15, 1034, 'Красивый цветок', '', '2016-06-12 13:47:32', '312604de74e4de8aec59626ac024c7d3.jpg', 1, 6, 1, 1, 1, 'photos'),
-(16, 1034, 'Густые джунгли', '', '2016-06-12 13:47:52', 'e223946b3d76cc37417d0304c9cb23a1.jpg', 1, 40, 1, 1, 1, 'photos'),
-(17, 1034, 'Вид на озеро', '<p>Красивый темный пейзаж с видом на озеро</p>', '2016-06-12 17:00:27', '38fde6623d0ad43c79c4d90a88a07009.jpg', 1, 25, 1, 1, 1, 'photos');
+(10, 1, 'Закат на пляже', '', FROM_UNIXTIME('2016-06-31 18:26:43'), 'd0633d5a84f03a27f1b7d0419947e968.jpg', 1, 25, 1, 1, 1, 'photos'),
+(11, 1, 'Флорида', '', FROM_UNIXTIME('2016-06-31 18:27:33'), '5e7a09ffcaa383df24d25d56c315f0d0.jpg', 1, 28, 1, 1, 1, 'photos'),
+(15, 1034, 'Красивый цветок', '', FROM_UNIXTIME('2016-06-12 13:47:32'), '312604de74e4de8aec59626ac024c7d3.jpg', 1, 6, 1, 1, 1, 'photos'),
+(16, 1034, 'Густые джунгли', '', FROM_UNIXTIME('2016-06-12 13:47:52'), 'e223946b3d76cc37417d0304c9cb23a1.jpg', 1, 40, 1, 1, 1, 'photos'),
+(17, 1034, 'Вид на озеро', '<p>Красивый темный пейзаж с видом на озеро</p>', FROM_UNIXTIME('2016-06-12 17:00:27'), '38fde6623d0ad43c79c4d90a88a07009.jpg', 1, 25, 1, 1, 1, 'photos');
 
 DROP TABLE IF EXISTS `#__plugins`;
 CREATE TABLE `#__plugins` (
@@ -1451,7 +1451,7 @@ CREATE TABLE `#__uc_items` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `category_id` int(11) NOT NULL,
   `title` varchar(200) NOT NULL,
-  `pubdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `pubdate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `published` tinyint(1) NOT NULL DEFAULT '1',
   `imageurl` varchar(200) NOT NULL,
   `fieldsdata` text NOT NULL,
@@ -1517,9 +1517,9 @@ CREATE TABLE `#__users` (
   `email` varchar(100) NOT NULL,
   `phone` varchar(12) NOT NULL DEFAULT '',
   `icq` varchar(15) NOT NULL,
-  `regdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `logdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `birthdate` date NOT NULL DEFAULT '0000-00-00',
+  `regdate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `logdate` datetime DEFAULT NULL,
+  `birthdate` date DEFAULT NULL,
   `is_locked` tinyint(1) NOT NULL,
   `is_deleted` tinyint(1) NOT NULL,
   `is_logged_once` tinyint(1) NOT NULL DEFAULT '0',
@@ -1621,8 +1621,8 @@ CREATE TABLE `#__user_clubs` (
   KEY `club_id` (`club_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-INSERT INTO `#__user_clubs` (`user_id`, `club_id`, `role`, `pubdate`) VALUES
-(3, 14, 'member', '0000-00-00 00:00:00');
+INSERT INTO `#__user_clubs` (`user_id`, `club_id`, `role`) VALUES
+(3, 14, 'member');
 
 DROP TABLE IF EXISTS `#__user_files`;
 CREATE TABLE `#__user_files` (
@@ -1773,17 +1773,17 @@ CREATE TABLE `#__user_profiles` (
   `imageurl` varchar(250) NOT NULL,
   `allow_who` varchar(35) NOT NULL DEFAULT 'all',
   `signature` varchar(240) NOT NULL,
-  `signature_html` varchar(300) NOT NULL,
+  `signature_html` varchar(300) DEFAULT NULL,
   `gender` varchar(1) NOT NULL,
-  `formsdata` varchar(800) NOT NULL,
+  `formsdata` varchar(800) DEFAULT NULL,
   `email_newmsg` int(11) NOT NULL DEFAULT '1',
   `cm_subscribe` varchar(4) NOT NULL DEFAULT 'both',
   `stats` varchar(500) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   KEY `city` (`city`),
-  KEY `description` (`description`),
-  KEY `formsdata` (`formsdata`),
+  KEY `description` (`description`(333)),
+  KEY `formsdata` (`formsdata`(333)),
   KEY `gender` (`gender`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 

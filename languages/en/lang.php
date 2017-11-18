@@ -55,6 +55,7 @@ $_LANG['CLOSE']                     = 'Close';
 $_LANG['SIZE_B']                    = 'b';
 $_LANG['SIZE_KB']                   = 'Kb';
 $_LANG['SIZE_MB']                   = 'Mb';
+$_LANG['SIZE_GB']                   = 'Gb';
 $_LANG['FILE_DOWNLOADED']           = 'Downloaded';
 $_LANG['FILE_DOWNLOAD']             = 'Download';
 $_LANG['LOADING']                   = 'Loading';
