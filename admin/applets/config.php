@@ -80,7 +80,7 @@ function applet_config()
         $newCFG['smtpport']   = cmsCore::request('smtpport', 'int', '25');
 
         $newCFG['timezone']   = cmsCore::request('timezone', 'str', '');
-        $newCFG['timediff']   = cmsCore::request('timediff', 'str', '');
+        $newCFG['timediff']   = cmsCore::request('timediff', 'int', 0);
         $newCFG['user_stats'] = cmsCore::request('user_stats', 'int', 0);
 
         $newCFG['seo_url_count'] = cmsCore::request('seo_url_count', 'int', 0);

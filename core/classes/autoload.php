@@ -1,92 +1,101 @@
 <?php
 
-/*
- *                           CMS RuDi v1.0.0
- *                        https://ds-soft.ru/
- *
- *                    written by DS Soft, 2015-2017
- *
- *                        LICENSED BY GNU/GPL v2
+/**
+ * @author DS Soft <admin@ds-soft.ru>
+ * @version 2.0.0
+ * @package Classes
  */
-
 class autoload
 {
 
-    private static $classes = [
-        'cmsCore'                  => '../cms.php',
-        'cmsAdmin'                 => '../cms_admin.php',
-        'tplMainClass'             => '../tpl_classes/tplMainClass.php',
-        'phpTpl'                   => '../tpl_classes/phpTpl.php',
-        'smartyTpl'                => '../tpl_classes/smartyTpl.php',
-        'fenomTpl'                 => '../tpl_classes/fenomTpl.php',
-        'cmsActions'               => 'actions.class.php',
-        'cmsBlogs'                 => 'blog.class.php',
-        'cmsConfig'                => 'config.class.php',
-        'cmsCron'                  => 'cron.class.php',
-        'cmsDatabase'              => 'db.class.php',
-        'cmsForm'                  => 'form.class.php',
-        'cmsFormGen'               => 'formgen.class.php',
-        'cmsgeo'                   => 'geo.class.php',
-        'idna_convert'             => 'idna_convert.class.php',
-        'Jevix'                    => 'jevix.class.php',
-        'cmsPage'                  => 'page.class.php',
-        'cmsPhoto'                 => 'photo.class.php',
-        'cmsPlugin'                => 'plugin.class.php',
-        'cmsUploadPhoto'           => 'upload_photo.class.php',
-        'cmsUser'                  => 'user.class.php',
-        'cmsBilling'               => 'billing.class.php',
-        'translations'             => 'translations.class.php',
-        'autokeyword'              => '../../includes/keywords.inc.php',
-        'CCelkoNastedSet'          => '../../includes/nestedsets.php',
-        'bbcode'                   => '../../includes/bbcode/bbcode.lib.php',
-        'Lingua_Stem_Ru'           => '../../includes/stemmer/stemmer.php',
-        'Spyc'                     => '../../includes/spyc/spyc.php',
-        'SphinxClient'             => '../../includes/sphinx/sphinxapi.php',
-        'Smarty'                   => '../../includes/smarty/libs/Smarty.class.php',
-        'lastRSS'                  => '../../includes/rss/lastRSS.php',
-        'PHPMailer'                => '../../includes/phpmailer/class.phpmailer.php',
-        'GeSHi'                    => '../../includes/geshi/geshi.php',
-        'Spreadsheet_Excel_Reader' => '../../includes/excel/excel_reader2.php'
+    /**
+     * Ассоциативный массив где в качестве ключа используется пространство имен
+     * класса а в качестве значения абсолюный путь к классу или относительный, относительно
+     * одной из директорий добавленных методом autoload::addDir($dir);
+     *
+     * @var array
+     */
+    protected static $namespaces_map = [
+        'Mso\\IdnaConvert' => PATH . '/includes/libs/IdnaConvert',
     ];
-    private static $dirs    = [];
 
-    public function load($class = false)
+    /**
+     * Ассоциативный массив где в качестве ключа используется название класса
+     * а в качестве значения абсолюный путь к классу или относительный, относительно
+     * одной из директорий добавленных методом autoload::addDir($dir);
+     *
+     * @var array
+     */
+    protected static $classes_map = [
+        'cmsCore'                  => PATH . '/core/cms.php',
+        'cmsAdmin'                 => PATH . '/cms_admin.php',
+        'tplMainClass'             => PATH . '/core/tpl_classes/tplMainClass.php',
+        'phpTpl'                   => PATH . '/core/tpl_classes/phpTpl.php',
+        'smartyTpl'                => PATH . '/core/tpl_classes/smartyTpl.php',
+        'fenomTpl'                 => PATH . '/core/tpl_classes/fenomTpl.php',
+        'cmsActions'               => PATH . '/core/classes/actions.class.php',
+        'cmsBlogs'                 => PATH . '/core/classes/blog.class.php',
+        'cmsConfig'                => PATH . '/core/classes/config.class.php',
+        'cmsCron'                  => PATH . '/core/classes/cron.class.php',
+        'cmsDatabase'              => PATH . '/core/classes/db.class.php',
+        'cmsForm'                  => PATH . '/core/classes/form.class.php',
+        'cmsFormGen'               => PATH . '/core/classes/formgen.class.php',
+        'cmsgeo'                   => PATH . '/core/classes/geo.class.php',
+        'idna_convert'             => PATH . '/core/classes/idna_convert.class.php',
+        'Jevix'                    => PATH . '/core/classes/jevix.class.php',
+        'cmsPage'                  => PATH . '/core/classes/page.class.php',
+        'cmsPhoto'                 => PATH . '/core/classes/photo.class.php',
+        'cmsPlugin'                => PATH . '/core/classes/plugin.class.php',
+        'cmsUploadPhoto'           => PATH . '/core/classes/upload_photo.class.php',
+        'cmsUser'                  => PATH . '/core/classes/user.class.php',
+        'cmsBilling'               => PATH . '/core/classes/billing.class.php',
+        'translations'             => PATH . '/core/classes/translations.class.php',
+        'autokeyword'              => PATH . '/includes/keywords.inc.php',
+        'CCelkoNastedSet'          => PATH . '/includes/nestedsets.php',
+        'bbcode'                   => PATH . '/includes/bbcode/bbcode.lib.php',
+        'Lingua_Stem_Ru'           => PATH . '/includes/stemmer/stemmer.php',
+        'Spyc'                     => PATH . '/includes/spyc/spyc.php',
+        'SphinxClient'             => PATH . '/includes/sphinx/sphinxapi.php',
+        'Smarty'                   => PATH . '/includes/smarty/libs/Smarty.class.php',
+        'lastRSS'                  => PATH . '/includes/rss/lastRSS.php',
+        'PHPMailer'                => PATH . '/includes/phpmailer/class.phpmailer.php',
+        'GeSHi'                    => PATH . '/includes/geshi/geshi.php',
+        'Spreadsheet_Excel_Reader' => PATH . '/includes/excel/excel_reader2.php'
+    ];
+
+    /**
+     * Массив директорий в которых и относительно которых будут искаться классы
+     *
+     * @var array
+     */
+    protected static $dirs = [];
+
+    /**
+     * Ищет и подключает файл с указанным классом
+     *
+     * @param string $class_name Название класса
+     * @return boolean
+     */
+    public function load($class_name = false)
     {
-        if ( empty($class) ) {
+        if ( empty($class_name) ) {
             return false;
         }
 
-        $class = str_replace('\\', '/', $class);
-
         $required = false;
 
-        if ( isset(self::$classes[$class]) ) {
-            foreach ( self::$dirs as $dir ) {
-                if ( file_exists($dir . '/' . self::$classes[$class]) ) {
-                    require_once($dir . '/' . self::$classes[$class]);
-                    $required = true;
-                    break;
-                }
-            }
+        $this->loadByNamespace($class_name, $required);
+
+        if ( !$required ) {
+            $this->loadByClassesMap($class_name, $required);
         }
 
         if ( !$required ) {
-            foreach ( self::$dirs as $dir ) {
-                if ( file_exists($dir . '/' . $class . '.php') ) {
-                    require_once($dir . '/' . $class . '.php');
-                    $required = true;
-                    break;
-                }
-            }
+            $this->loadByDirs($class_name, $required);
         }
 
-        if ( !$required && strstr($class, 'cms_model_') && file_exists(__DIR__ . '/../../components/' . str_replace('cms_model_', '', $class) . '/model.php') ) {
-            require_once(__DIR__ . '/../../components/' . str_replace('cms_model_', '', $class) . '/model.php');
-            $required = true;
-        }
-        elseif ( !$required && substr($class, 0, 2) == 'p_' && file_exists(__DIR__ . '/../../plugins/' . $class . '/plugin.php') ) {
-            require_once(__DIR__ . '/../../plugins/' . $class . '/plugin.php');
-            $required = true;
+        if ( !$required ) {
+            $this->loadByRule($class_name, $required);
         }
 
         return $required ? true : false;
@@ -94,8 +103,12 @@ class autoload
 
     /**
      * Добавляет связь названия класса и его местоположения
-     * @param string $class - название класса
-     * @param string $path - путь от папки /core/classes например если некий класс blabla лежит в папке /lib/class/blabla.class.php от корня сайта то путь нужно указать такой ../../lib/class/blabla.class.php
+     *
+     * @param string $class Название класса
+     * @param string $path Путь к файлу класса, может быть абсолютным или относительным
+     * относительно корня сайта, относительно папки /core/classes или относительно
+     * папки /includes/libs или любой другой директори предварительно добавленной
+     * методом addDir($path)
      */
     public static function add($class, $path)
     {
@@ -104,21 +117,120 @@ class autoload
 
     /**
      * Добавляет новую директорию для поиска классов
-     * @param string $path - абсолютный путь до директории
+     *
+     * @param string $path Абсолютный путь до директории
      */
     public static function addDir($path)
     {
-        $path = rtrim($path);
+        $path = rtrim($path, '/\\ ');
 
         if ( !in_array($path, self::$dirs) ) {
             self::$dirs[] = $path;
         }
     }
 
+    /**
+     * Добавляет связку пространство имен => директория
+     *
+     * @param string $namespace Название пространства имен
+     * @param string $path Абсолютный путь к директории с классами указанного пространства имен
+     */
+    public static function addNamespaceDir($namespace, $path)
+    {
+        self::$namespaces_map[trim($namespace, '\\ ')] = rtrim($path, '/\\ ');
+    }
+
+    //========================================================================//
+
+    /**
+     * Подключает файл класса, если указана папка для его имени пространства
+     *
+     * @param string $class_name Название класса
+     * @param boolean $required Флаг указывающий что файл найден и подключен
+     */
+    protected function loadByNamespace($class_name, &$required)
+    {
+        if ( empty(self::$namespaces_map) ) {
+            return;
+        }
+
+        $parts = explode('\\', $class_name);
+
+        $namespace = '';
+
+        while ( count($parts) > 1 ) {
+            $namespace .= (empty($namespace) ? '' : '\\') . array_shift($parts);
+
+            if ( isset(self::$namespaces_map[$namespace]) ) {
+                $folder     = self::$namespaces_map[$namespace];
+                $class_file = implode('/', $parts) . '.php';
+
+                if ( file_exists($folder . '/' . $class_file) ) {
+                    require_once($folder . '/' . $class_file);
+                    $required = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Подключает файл класса, если он указан в массива self::$classes_map
+     *
+     * @param string $class_name Название класса
+     * @param boolean $required Флаг указывающий что файл найден и подключен
+     */
+    protected function loadByClassesMap($class_name, &$required)
+    {
+        if ( isset(self::$classes_map[$class_name]) && file_exists(self::$classes_map[$class_name]) ) {
+            require_once(self::$classes_map[$class_name]);
+            $required = true;
+        }
+    }
+
+    /**
+     * Подключает файл класса ищя его в добавленных для поиска классов директориях
+     *
+     * @param string $class_name Название класса
+     * @param boolean $required Флаг указывающий что файл найден и подключен
+     */
+    protected function loadByDirs($class_name, &$required)
+    {
+        $class_file = str_replace('\\', '/', $class_name) . '.php';
+
+        foreach ( self::$dirs as $dir ) {
+            if ( file_exists($dir . '/' . $class_file) ) {
+                require_once($dir . '/' . $class_file);
+                $required = true;
+                break;
+            }
+        }
+    }
+
+    /**
+     * Подключает файл класса модели и плагина IstantCMS 1.x
+     *
+     * @param string $class_name Название класса
+     * @param boolean $required Флаг указывающий что файл найден и подключен
+     */
+    protected function loadByRule($class_name, &$required = false)
+    {
+        $class_file = str_replace('\\', '/', $class_name);
+
+        if ( strstr($class_file, 'cms_model_') && file_exists(__DIR__ . '/../../components/' . str_replace('cms_model_', '', $class_file) . '/model.php') ) {
+            require_once(__DIR__ . '/../../components/' . str_replace('cms_model_', '', $class_file) . '/model.php');
+            $required = true;
+        }
+        elseif ( substr($class_file, 0, 2) == 'p_' && file_exists(__DIR__ . '/../../plugins/' . $class_file . '/plugin.php') ) {
+            require_once(__DIR__ . '/../../plugins/' . $class_file . '/plugin.php');
+            $required = true;
+        }
+    }
+
 }
 
-autoload::addDir(__DIR__);
-autoload::addDir(__DIR__ . '/../../includes/libs');
-autoload::addDir(__DIR__ . '/../..');
+autoload::addDir(PATH . '/core/classes');
+autoload::addDir(PATH . '/includes/libs');
+autoload::addDir(PATH);
 
 spl_autoload_register(array( new autoload(), 'load' ));

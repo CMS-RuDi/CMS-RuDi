@@ -1,6 +1,6 @@
 <?php
 
-class idna_convert extends IdnaConvert\IdnaConvert
+class idna_convert extends \Mso\IdnaConvert\IdnaConver
 {
 
 }

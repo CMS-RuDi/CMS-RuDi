@@ -28,7 +28,7 @@
  * @version 1.0.1 2016-01-24
  */
 
-namespace IdnaConvert;
+namespace Mso\IdnaConvert;
 
 class Punycode implements PunycodeInterface
 {

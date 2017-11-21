@@ -9,7 +9,7 @@
  * @version 1.0.0 2016-01-08
  */
 
-namespace IdnaConvert;
+namespace Mso\IdnaConvert;
 
 class EncodingHelper
 {

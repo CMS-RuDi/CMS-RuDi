@@ -1,6 +1,6 @@
 <?php
 
-namespace IdnaConvert;
+namespace Mso\IdnaConvert;
 
 class NamePrepData2003 extends NamePrepData implements NamePrepDataInterface
 {

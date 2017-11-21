@@ -50,7 +50,7 @@
  * @version 1.0.1-dev 2016-01-12
  */
 
-namespace IdnaConvert;
+namespace Mso\IdnaConvert;
 
 class IdnaConvert
 {
@@ -59,9 +59,9 @@ class IdnaConvert
     const SubVersion = 'main';
 
     // Internal settings, do not touch!
-    protected $encoding   = 'utf8';          // Default input charset is UTF-8
-    protected $strictMode = false;         // Behave strict or not
-    protected $idnVersion = '2008';          // Can be either 2003 (old) or 2008 (default)
+    protected $encoding          = 'utf8';          // Default input charset is UTF-8
+    protected $strictMode        = false;         // Behave strict or not
+    protected $idnVersion        = '2008';          // Can be either 2003 (old) or 2008 (default)
     protected $NamePrepData      = null;
     protected $UnicodeTranscoder = null;
 

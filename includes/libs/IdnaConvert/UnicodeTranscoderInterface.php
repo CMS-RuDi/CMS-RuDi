@@ -17,7 +17,7 @@
  * @version 0.1.0 2016-01-08
  */
 
-namespace IdnaConvert;
+namespace Mso\IdnaConvert;
 
 interface UnicodeTranscoderInterface
 {

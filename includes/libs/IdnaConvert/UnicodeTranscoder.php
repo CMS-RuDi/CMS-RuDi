@@ -17,7 +17,7 @@
  * @version 0.1.1 2016-01-24
  */
 
-namespace IdnaConvert;
+namespace Mso\IdnaConvert;
 
 class UnicodeTranscoder implements UnicodeTranscoderInterface
 {

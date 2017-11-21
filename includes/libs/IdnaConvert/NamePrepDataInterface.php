@@ -1,6 +1,6 @@
 <?php
 
-namespace IdnaConvert;
+namespace Mso\IdnaConvert;
 
 interface NamePrepDataInterface
 {
