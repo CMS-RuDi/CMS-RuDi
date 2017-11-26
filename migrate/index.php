@@ -14,12 +14,12 @@
 session_start();
 
 header('Content-Type: text/html; charset=utf-8');
+
 define('VALID_CMS', 1);
-
 define('PATH', $_SERVER['DOCUMENT_ROOT']);
+require(PATH . '/core/classes/autoload.php');
 
-include(PATH . '/core/cms.php');
-$inCore = cmsCore::getInstance(false, true);
+$inCore = cmsAdmin::getInstance();
 
 $inConf = cmsConfig::getInstance();
 $inDB   = cmsDatabase::getInstance();

@@ -17,13 +17,15 @@ define('ONLINE_INTERVAL', 3); // интервал в минутах, когда 
 class cmsUser
 {
 
+    use \Singeltone;
+
     const PROFILE_LINK_PREFIX = 'users/';
 
+    protected static $_ip;
     private static $csrf_token           = '';
     private $friends                     = array();
     private $new_msg                     = array();
     private $geo_is_loaded               = false;
-    private static $instance;
     private static $guest_group_info     = array();
     private static $cache                = array();
     private $loads_users                 = array();
@@ -33,25 +35,6 @@ class cmsUser
     public $is_admin                     = 0;
     public $online_users;
     public $online_users_ids;
-
-    private function __construct()
-    {
-
-    }
-
-    private function __clone()
-    {
-
-    }
-
-    public static function getInstance()
-    {
-        if ( self::$instance === null ) {
-            self::$instance = new self;
-        }
-
-        return self::$instance;
-    }
 
     /**
      * Обновляет данные пользователя, если он не забанен
@@ -184,7 +167,7 @@ class cmsUser
 
         $info = $inDB->fetch_assoc($result);
 
-        $info['ip'] = cmsCore::strClear($_SERVER['REMOTE_ADDR']);
+        $info['ip'] = self::getIp();
 
         $info['imageurl'] = self::getUserAvatarUrl($info['id'], 'small', $info['imageurl'], $info['is_deleted']);
 
@@ -934,7 +917,7 @@ class cmsUser
                 $data['group_id']       = $data['id'];
                 $data['access']         = explode(',', str_replace(', ', ',', $data['access']));
                 $data['id']             = 0;
-                $data['ip']             = cmsCore::strClear($_SERVER['REMOTE_ADDR']);
+                $data['ip']             = self::getIp();
                 $data['is_admin']       = 0;
                 $data['karma']          = -1000000;
                 $data['logdate']        = self::getUserLogdate();
@@ -2130,6 +2113,21 @@ class cmsUser
         }
 
         return in_array($access_type, $inUser->access);
+    }
+
+    public static function getIp()
+    {
+        if ( self::$_ip === null ) {
+            $config = cmsConfig::getInstance();
+
+            self::$_ip = isset($_SERVER[$config->detect_ip_key]) ? $_SERVER[$config->detect_ip_key] : '127.0.0.1';
+
+            if ( !filter_var(self::$_ip, FILTER_VALIDATE_IP) ) {
+                self::$_ip = '127.0.0.1';
+            }
+        }
+
+        return self::$_ip;
     }
 
 }

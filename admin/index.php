@@ -22,11 +22,11 @@ define('VALID_CMS_ADMIN', 1);
 
 define('PATH', $_SERVER['DOCUMENT_ROOT']);
 
-require(PATH . '/core/cms.php');
+require(PATH . '/core/classes/autoload.php');
 require(PATH . '/admin/includes/cp.php');
 require(PATH . '/includes/tools.inc.php');
 
-$inCore = cmsCore::getInstance(false, true);
+$inCore = cmsAdmin::getInstance();
 
 $inPage = cmsPage::getInstance();
 $inConf = cmsConfig::getInstance();

@@ -18,7 +18,8 @@ define('CORE_BUILD_DATE', '2016-07-26');
 class cmsCore
 {
 
-    private static $instance;
+    use Singeltone;
+
     private static $jevix;
     protected $menu_item;
     protected $menu_id;
@@ -101,26 +102,6 @@ class cmsCore
         define('TEMPLATE', $inConf->template);
         define('TEMPLATE_DIR', PATH . '/templates/' . $inConf->template . '/');
         define('DEFAULT_TEMPLATE_DIR', PATH . '/templates/_default_/');
-    }
-
-    protected function __clone()
-    {
-
-    }
-
-    public static function getInstance($install_mode = false, $is_admin = false)
-    {
-        if ( self::$instance === null ) {
-            if ( !$is_admin ) {
-                self::$instance = new self($install_mode);
-            }
-            else {
-                self::includeFile('core/cms_admin.php');
-                self::$instance = new cmsAdmin($install_mode);
-            }
-        }
-
-        return self::$instance;
     }
 
     /**
@@ -2578,34 +2559,28 @@ function icms_substr_replace($str, $replacement, $offset, $length = NULL)
 
 /**
  * Обрезает строку по заданному кол-ву символов
- * @return str
+ *
+ * @return string
  */
-function crop($string, $length = 250, $etc = '')
+function crop($text, $length = 250, $etc = '')
 {
-    if ( $length == 0 ) {
-        return '';
-    }
-
-    $string = str_replace("\n", ' ', strip_tags($string));
-
-    if ( mb_strlen($string) > $length ) {
-        $length -= min($length, mb_strlen($etc));
-
-        $string = preg_replace('/\s+?(\S+)?$/u', '', mb_substr($string, 0, $length + 1));
-
-        return mb_substr($string, 0, $length) . $etc;
-    }
-    else {
-        return $string;
-    }
+    return \cms\helper\str::crop($text, $length, $etc);
 }
 
-function dump($i)
+/**
+ * Выводит информацию об переменной, и при необходимости завершает работу скрипта
+ *
+ * @param mixed $var
+ */
+function dump($var, $halt = true)
 {
     echo '<pre>';
-    print_r($i);
+    print_r($var);
     echo '</pre>';
-    die;
+
+    if ( $halt ) {
+        die();
+    }
 }
 
 require_once __DIR__ . '/classes/autoload.php';

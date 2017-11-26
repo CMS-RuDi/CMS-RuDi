@@ -25,10 +25,15 @@ trait Singeltone
 
     }
 
-    public static function getInstance()
+    /**
+     * Возвращает объект текущего класса
+     *
+     * @return self
+     */
+    public static function getInstance(...$params)
     {
         if ( self::$_instance === null ) {
-            self::$_instance = new self();
+            self::$_instance = new self(...$params);
         }
 
         return self::$_instance;
