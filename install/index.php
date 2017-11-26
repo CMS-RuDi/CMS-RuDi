@@ -10,7 +10,6 @@
  */
 
 session_start();
-setlocale(LC_ALL, "ru_RU.UTF-8");
 header('Content-Type: text/html; charset=utf-8');
 
 define('VALID_CMS', 1);
@@ -18,15 +17,14 @@ define('PATH', $_SERVER['DOCUMENT_ROOT']);
 
 require(PATH . '/core/classes/autoload.php');
 
-$request = \cms\request::getInstance();
+$request      = \cms\request::getInstance();
+$inConf       = cmsConfig::getInstance();
+$inConf->lang = isset($_SESSION['inst_lang']) ? $_SESSION['inst_lang'] : $inConf->lang;
 
 cmsCore::includeFile('install/function.php');
 
-$inConf = cmsConfig::getInstance();
-
 // Мультиязычная установка
-$inConf->lang = isset($_SESSION['inst_lang']) ? $_SESSION['inst_lang'] : $inConf->lang;
-$langs        = cmsCore::getDirsList('/languages');
+$langs = cmsCore::getDirsList('/languages');
 
 // запрос на смену языка
 if ( $request->has('lang') ) {
@@ -38,7 +36,8 @@ if ( $request->has('lang') ) {
     }
 }
 
-$l = \cms\lang::getInstance()->load('install');
+$l = \cms\lang::getInstance()->setLocale();
+$l->load('install');
 
 $installed = false;
 
@@ -55,7 +54,7 @@ if ( $inConf->lang != 'ru' ) {
 
 //============================ процесс установки =============================//
 
-if ( cmsCore::inRequest('install') ) {
+if ( $request->has('install') ) {
     $errors = false;
 
     $_CFG['offtext']  = $l->cfg_offtext;
