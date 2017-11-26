@@ -32,11 +32,11 @@ trait Singeltone
      */
     public static function getInstance(...$params)
     {
-        if ( self::$_instance === null ) {
-            self::$_instance = new self(...$params);
+        if ( static::$_instance === null ) {
+            static::$_instance = new static(...$params);
         }
 
-        return self::$_instance;
+        return static::$_instance;
     }
 
 }
