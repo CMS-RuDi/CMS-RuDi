@@ -37,7 +37,7 @@
             </form>
         </td>
         <td valign="top">
-            {callEvent event='LOGINZA_BUTTON'}
+            {callEvent event='loginza.button'}
         </td>
     </tr>
 </table>

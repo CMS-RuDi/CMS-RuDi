@@ -248,19 +248,19 @@ function cpMenu()
     </div>
 
     <?php
-    echo cmsCore::callEvent('CPMENU', ob_get_clean());
+    echo \cms\plugin::callEvent('admin.main_menu', ob_get_clean());
 
     return;
 }
 
 function cpToolMenu($toolmenu_list)
 {
-    $toolmenu_list = cmsCore::callEvent('CPTOOLMENU_' . strtoupper($GLOBALS['applet']) . (!empty($GLOBALS['component']) ? '_' . strtoupper($GLOBALS['component']) : ''), $toolmenu_list);
+    $toolmenu_list = \cms\plugin::callEvent('admin.toolmenu_' . strtolower($GLOBALS['applet']) . (!empty($GLOBALS['component']) ? '_' . strtolower($GLOBALS['component']) : ''), $toolmenu_list);
 
     if ( $toolmenu_list ) {
         echo '<table width="100%" cellpadding="2" border="0" class="toolmenu" style="margin:0px"><tr><td>';
-        foreach ( $toolmenu_list as $toolmenu ) {
 
+        foreach ( $toolmenu_list as $toolmenu ) {
             if ( !$toolmenu ) {
                 echo '<div class="toolmenuseparator"></div>';
                 continue;
@@ -270,6 +270,7 @@ function cpToolMenu($toolmenu_list)
             $target         = isset($toolmenu['target']) ? 'target="' . $toolmenu['target'] . '"' : '';
             echo '<a class="' . $class_selected . ' toolmenuitem uittip" href="' . $toolmenu['link'] . '" title="' . $toolmenu['title'] . '" ' . $target . '><img src="images/toolmenu/' . $toolmenu['icon'] . '" border="0" /></a>';
         }
+
         echo '</td></tr></table>';
     }
 
@@ -405,9 +406,9 @@ function cpAddParam($query, $param, $value)
 
 function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title')
 {
-    $event = 'ADMIN_CPLISTTABLE_' . strtoupper($table) . '_' . strtoupper($GLOBALS['applet']) . (!empty($GLOBALS['component']) ? '_' . strtoupper($GLOBALS['component']) : '');
+    $event = 'admin.listtable_' . strtolower($table) . '_' . strtolower($GLOBALS['applet']) . (!empty($GLOBALS['component']) ? '_' . strtolower($GLOBALS['component']) : '');
 
-    list($table, $_fields, $_actions, $where, $orderby) = cmsCore::callEvent($event, array( $table, $_fields, $_actions, $where, $orderby ));
+    list($table, $_fields, $_actions, $where, $orderby) = \cms\plugin::callEvent($event, array( $table, $_fields, $_actions, $where, $orderby ));
 
     global $_LANG;
     $inDB = cmsDatabase::getInstance();
@@ -1102,12 +1103,13 @@ function dbDeleteList($table, $list)
     }
 }
 
-///////////////////////////////////////////// HTML GENERATORS ////////////////////////////////////////////////
+//============================ HTML GENERATORS ===============================//
+
 function insertPanel()
 {
     global $_LANG;
 
-    $p_html = cmsCore::callEvent('REPLACE_PANEL', array( 'html' => '' ));
+    $p_html = \cms\plugin::callEvent('admin.replace_panel', array( 'html' => '' ));
 
     if ( $p_html['html'] ) {
         return $p_html['html'];
@@ -1202,7 +1204,6 @@ function insertPanel()
     echo '<script type="text/javascript">showIns();</script>';
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function cpBuildList($attr_name, $list, $selected_id = false)
 {
     global $_LANG;

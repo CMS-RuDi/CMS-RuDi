@@ -13,7 +13,6 @@
 class cms_model_comments
 {
 
-    private $childs;
     public $is_can_delete    = false;
     public $is_can_moderate  = false;
     public $is_can_bbcode    = false;
@@ -67,7 +66,7 @@ class cms_model_comments
 
     public function addComment($item)
     {
-        $item = cmsCore::callEvent('ADD_COMMENT', $item);
+        $item = \cms\plugin::callEvent('comments.add_item', $item);
 
         $item['target_title'] = $this->inDB->escape_string($item['target_title']);
 
@@ -117,7 +116,7 @@ class cms_model_comments
 
     private function getCommentChilds($comment_id)
     {
-        $sql = "SELECT id FROM cms_comments WHERE parent_id = '$comment_id'";
+        $sql = "SELECT id FROM cms_comments WHERE parent_id = '" . $comment_id . "'";
 
         $result = $this->inDB->query($sql);
 
@@ -125,39 +124,34 @@ class cms_model_comments
             return false;
         }
 
+        $childs = [];
+
         while ( $child = $this->inDB->fetch_assoc($result) ) {
-            $this->childs[] = $child;
-            $this->getCommentChilds($child['id']);
+            $childs[] = $child;
         }
 
-        return true;
+        return $childs;
     }
 
     public function deleteComment($comment_id)
     {
-        cmsCore::callEvent('DELETE_COMMENT', $comment_id);
+        \cms\plugin::callEvent('comments.delete_item', $comment_id);
 
-        $this->childs = array();
+        $childs = $this->getCommentChilds($comment_id);
 
-        $this->getCommentChilds($comment_id);
+        if ( $childs ) {
+            foreach ( $childs as $child ) {
+                $this->deleteComment($child['id']);
+            }
+        }
 
-        $sql = "DELETE FROM cms_comments WHERE id = '$comment_id' LIMIT 1";
+        $sql = "DELETE FROM cms_comments WHERE id = '" . $comment_id . "' LIMIT 1";
+
         $this->inDB->query($sql);
 
         cmsCore::deleteRatings('comment', $comment_id);
         cmsActions::removeObjectLog('add_comment', $comment_id);
         cmsCore::deleteUploadImages($comment_id, 'comment');
-
-        if ( $this->childs ) {
-            foreach ( $this->childs as $child ) {
-                cmsCore::callEvent('DELETE_COMMENT', $child['id']);
-                $sql = "DELETE FROM cms_comments WHERE id = '{$child['id']}' LIMIT 1";
-                $this->inDB->query($sql);
-                cmsCore::deleteRatings('comment', $child['id']);
-                cmsActions::removeObjectLog('add_comment', $child['id']);
-                cmsCore::deleteUploadImages($child['id'], 'comment');
-            }
-        }
 
         return true;
     }
@@ -306,7 +300,7 @@ class cms_model_comments
             $comments = $this->buildTree(0, 0, $comments);
         }
 
-        return $from_module ? cmsCore::callEvent('GET_COMMENTS_MODULE', $comments) : cmsCore::callEvent('GET_COMMENTS', $comments);
+        return \cms\plugin::callEvent($from_module ? 'comments.get_items_from_module' : 'comments.get_items', $comments);
     }
 
     /**
@@ -352,7 +346,7 @@ class cms_model_comments
 
         $comment['is_editable'] = $this->isEditable($comment['pubdate']);
 
-        return cmsCore::callEvent('GET_COMMENT', $comment);
+        return \cms\plugin::callEvent('comments.get_item', $comment);
     }
 
     private function buildTree($parent_id, $level, $comments, $tree = array())

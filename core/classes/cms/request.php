@@ -44,7 +44,7 @@ class request
             $scheme = 'http';
         }
 
-        if ( !empty($cscheme) && $cscheme != $scheme ) {
+        if ( $cscheme == 'https' && $cscheme != $scheme ) {
             \cmsCore::redirect($cscheme . '://' . self::getHost() . '/' . ltrim($_SERVER['REQUEST_URI'], '/'), 301);
         }
 

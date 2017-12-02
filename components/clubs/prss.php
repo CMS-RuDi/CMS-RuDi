@@ -74,7 +74,7 @@ function rss_clubs($item_id, $cfg)
 
     $inDB->addSelect('b.user_id as bloglink');
 
-    $posts = $inBlog->getPosts(false, $model, true);
+    $posts = $model->getPosts(false, true);
 
     if ( $posts ) {
         foreach ( $posts as $post ) {

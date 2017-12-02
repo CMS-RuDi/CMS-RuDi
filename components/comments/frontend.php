@@ -129,7 +129,7 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
 
             $inDB->orderBy('c.pubdate', 'ASC');
 
-            $comments = cmsCore::callEvent('BEFORE_SHOW_COMMENTS', $model->getComments(!($inUser->is_admin || $model->is_can_moderate), true));
+            $comments = \cms\plugin::callEvent('comments.before_show', $model->getComments(!($inUser->is_admin || $model->is_can_moderate), true));
 
             $total = count($comments);
 
@@ -408,7 +408,7 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
 
         $com_new['content'] = stripslashes(str_replace(array( '\r', '\n' ), ' ', $com_new['content']));
 
-        $com_new = cmsCore::callEvent('GET_COMMENT', $com_new);
+        $com_new = \cms\plugin::callEvent('comments.get_item', $com_new);
 
         cmsCore::jsonOutput(array( 'error' => false, 'text' => $com_new['content'], 'comment_id' => $comment['id'] ));
     }

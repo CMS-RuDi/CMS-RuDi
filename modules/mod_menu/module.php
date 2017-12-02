@@ -56,8 +56,8 @@ function mod_menu($mod, $cfg)
                     ($item['is_lax'] || cmsCore::checkContentAccess($item['access_list'], false)) && $item['published'] ) {
                 $item['link']        = cmsUser::stringReplaceUserProperties($item['link']);
                 $item['title']       = cmsUser::stringReplaceUserProperties($item['title'], true);
-                $item['icon_as_img'] = ($item['iconurl'] && file_exists(PATH . $item['iconurl']) ? true : false);
-                $item['icon_as_css'] = ($item['iconurl'] && !file_exists(PATH . $item['iconurl']) ? true : false);
+                $item['icon_as_img'] = ($item['iconurl'] && file_exists(PATH . '/images/menuicons/' . $item['iconurl']) ? true : false);
+                $item['icon_as_css'] = ($item['iconurl'] && !file_exists(PATH . '/images/menuicons/' . $item['iconurl']) ? true : false);
                 $items[]             = $item;
                 // массивы для сортировки
                 $nsl[]               = $item['NSLeft'];
@@ -71,8 +71,8 @@ function mod_menu($mod, $cfg)
                     ($item['is_lax'] || cmsCore::checkContentAccess($item['access_list'], false)) && $item['published'] ) {
                 $item['link']        = cmsUser::stringReplaceUserProperties($item['link']);
                 $item['title']       = cmsUser::stringReplaceUserProperties($item['title'], true);
-                $item['icon_as_img'] = ($item['iconurl'] && file_exists(PATH . $item['iconurl']) ? true : false);
-                $item['icon_as_css'] = ($item['iconurl'] && !file_exists(PATH . $item['iconurl']) ? true : false);
+                $item['icon_as_img'] = ($item['iconurl'] && file_exists(PATH . '/images/menuicons/' . $item['iconurl']) ? true : false);
+                $item['icon_as_css'] = ($item['iconurl'] && !file_exists(PATH . '/images/menuicons/' . $item['iconurl']) ? true : false);
                 $items[]             = $item;
                 // массивы для сортировки
                 $nsl[]               = $item['NSLeft'];

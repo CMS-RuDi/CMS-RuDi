@@ -1180,7 +1180,7 @@ function catalog()
             }
 
             if ( !$cfg['premod'] || $inUser->is_admin ) {
-                cmsCore::callEvent('ADD_CATALOG_DONE', $item);
+                \cms\plugin::callEvent('catalog.add_item_done', $item);
 
                 //регистрируем событие
                 cmsActions::log('add_catalog', array(
@@ -1236,7 +1236,7 @@ function catalog()
 
         $cat = $inDB->get_fields('cms_uc_cats', 'id=' . $item['category_id'], 'id, title');
 
-        cmsCore::callEvent('ADD_CATALOG_DONE', $item);
+        \cms\plugin::callEvent('catalog.add_item_done', $item);
 
         //регистрируем событие
         cmsActions::log('add_catalog', array(

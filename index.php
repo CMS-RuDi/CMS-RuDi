@@ -15,15 +15,15 @@ header('X-Powered-By: InstantCMS');
 define('PATH', __DIR__);
 define('VALID_CMS', 1);
 
-// Проверяем, что система установлена
-if ( !file_exists(PATH . '/includes/config.inc.php') ) {
-    header('location:/install/');
-    die();
-}
-
 require(PATH . '/core/classes/autoload.php');
 
 $inConf = cmsConfig::getInstance();
+
+// Проверяем, что система установлена
+if ( !$inConf->isReady() ) {
+    header('location:/install/');
+    die();
+}
 
 // дебаг отключен - скрываем все сообщения об ошибках
 if ( !$inConf->debug ) {
@@ -44,7 +44,7 @@ if ( is_dir(PATH . '/install') || is_dir(PATH . '/migrate') ) {
     cmsCore::halt();
 }
 
-cmsCore::callEvent('GET_INDEX', '');
+\cms\plugin::callEvent('get_index', '');
 
 $inPage = cmsPage::getInstance();
 $inUser = cmsUser::getInstance();

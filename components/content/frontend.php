@@ -37,7 +37,7 @@ function content()
 //============================ VIEW CATEGORY =================================//
 
     if ( $do == 'view' ) {
-        $cat = $inDB->getNsCategory('cms_category', $seolink);
+        $cat = $model->getCategory($seolink);
 
         // если не найдена категория и мы не на главной, 404
         if ( !$cat && $inCore->menuId() !== 1 ) {
@@ -48,7 +48,7 @@ function content()
         $cat = translations::process(cmsConfig::getConfig('lang'), 'content_category', $cat);
 
         // Плагины
-        $cat = cmsCore::callEvent('GET_CONTENT_CAT', $cat);
+        $cat = \cms\plugin::callEvent('content.view_category', $cat);
 
         // Неопубликованные показываем только админам
         if ( !$cat['published'] && !$inUser->is_admin ) {
@@ -57,14 +57,12 @@ function content()
 
         // Проверяем доступ к категории
         if ( !$inCore->checkUserAccess('category', $cat['id']) ) {
-
             cmsCore::addSessionMessage($_LANG['NO_PERM_FOR_VIEW_TEXT'] . '<br>' . $_LANG['NO_PERM_FOR_VIEW_RULES'], 'error');
-            cmsCore::redirect('/content');
+            cmsCore::redirect('/');
         }
 
         // если не корень категорий
         if ( $cat['NSLevel'] > 0 ) {
-
             $inPage->setTitle($cat['pagetitle'] ? $cat['pagetitle'] : $cat['title']);
 
             $pagetitle = $cat['title'];
@@ -75,7 +73,6 @@ function content()
 
         // Если корневая категория
         if ( $cat['NSLevel'] == 0 ) {
-
             if ( $model->config['hide_root'] ) {
                 cmsCore::error404();
             }
@@ -90,11 +87,9 @@ function content()
         $path_list = $inDB->getNsCategoryPath('cms_category', $cat['NSLeft'], $cat['NSRight'], 'id, title, NSLevel, seolink, url');
 
         if ( $path_list ) {
-
             $path_list = translations::process(cmsConfig::getConfig('lang'), 'content_category', $path_list);
 
             foreach ( $path_list as $pcat ) {
-
                 if ( !$inCore->checkUserAccess('category', $pcat['id']) ) {
                     cmsCore::addSessionMessage($_LANG['NO_PERM_FOR_VIEW_TEXT'] . '<br>' . $_LANG['NO_PERM_FOR_VIEW_RULES'], 'error');
                     cmsCore::redirect('/content');
@@ -192,7 +187,7 @@ function content()
 
         $article = translations::process(cmsConfig::getConfig('lang'), 'content_content', $article);
 
-        $article = cmsCore::callEvent('GET_ARTICLE', $article);
+        $article = \cms\plugin::callEvent('content.get_item', $article);
 
         $is_admin      = $inUser->is_admin;
         $is_author     = $inUser->id == $article['user_id'];
@@ -406,7 +401,7 @@ function content()
             $inPage->initAutocomplete();
             $autocomplete_js = $inPage->getAutocompleteJS('tagsearch', 'tags');
 
-            $item = cmsCore::callEvent('PRE_EDIT_ARTICLE', (@$item ? $item : array()));
+            $item = \cms\plugin::callEvent('content.pre_edit_item', (!empty($item) ? $item : []));
 
             cmsPage::initTemplate('components', 'com_content_edit')->
                     assign('mod', $item)->
@@ -480,7 +475,7 @@ function content()
             $article['description'] = $inDB->escape_string($article['description']);
             $article['content']     = $inDB->escape_string($article['content']);
 
-            $article = cmsCore::callEvent('AFTER_EDIT_ARTICLE', $article);
+            $article = \cms\plugin::callEvent('content.after_edit_item', $article);
 
             // добавление статьи
             if ( $do == 'addarticle' ) {
@@ -591,7 +586,7 @@ function content()
 
         $inDB->setFlag('cms_content', $article['id'], 'published', 1);
 
-        cmsCore::callEvent('ADD_ARTICLE_DONE', $article);
+        \cms\plugin::callEvent('content.add_item_done', $article);
 
         if ( IS_BILLING ) {
             $author        = $inDB->get_fields('cms_users', "id='{$article['user_id']}'", '*');

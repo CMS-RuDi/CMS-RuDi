@@ -285,7 +285,7 @@ class cmsForm
             $where = "title LIKE '{$form_id}'";
         }
 
-        return cmsCore::callEvent('GET_FORM', cmsDatabase::getInstance()->get_fields('cms_forms', $where, '*'));
+        return \cms\plugin::callEvent('forms.get_form', cmsDatabase::getInstance()->get_fields('cms_forms', $where, '*'));
     }
 
     /**
@@ -319,7 +319,7 @@ class cmsForm
             }
         }
 
-        return cmsCore::callEvent('GET_FORM_FIELDS', $form_fields);
+        return \cms\plugin::callEvent('forms.get_form_fields', $form_fields);
     }
 
     /**

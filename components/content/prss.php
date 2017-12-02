@@ -32,8 +32,6 @@ function rss_content($item_id, $cfg)
             return false;
         }
 
-        $cat = cmsCore::callEvent('GET_CONTENT_CAT', $cat);
-
         if ( !$cat['published'] ) {
             return false;
         }

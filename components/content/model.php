@@ -13,6 +13,14 @@
 class cms_model_content
 {
 
+    const CATEGORY_TABLE = 'category';
+    const CONTENT_TABLE  = 'content';
+
+    /**
+     * @var \cmsDatabase
+     */
+    public $inDB;
+
     public function __construct()
     {
         $this->inDB   = cmsDatabase::getInstance();
@@ -48,7 +56,7 @@ class cms_model_content
 
         switch ( $target ) {
 
-            case 'article': $article = $this->inDB->get_fields('cms_content', "id='{$target_id}'", 'seolink, title');
+            case 'article': $article = $this->inDB->get_fields($this->inDB->prefix . self::CONTENT_TABLE, "id='{$target_id}'", 'seolink, title');
                 if ( !$article ) {
                     return false;
                 }
@@ -68,13 +76,24 @@ class cms_model_content
 
         switch ( $target ) {
             case 'content':
-                $sql = "UPDATE cms_content SET rating = rating + (" . $points . ") WHERE id = '" . $item_id . "'";
+                $sql = "UPDATE " . $this->inDB->prefix . self::CONTENT_TABLE . " SET rating = rating + (" . $points . ") WHERE id = '" . $item_id . "'";
                 break;
         }
 
         $this->inDB->query($sql);
 
         return true;
+    }
+
+    public function getCategory($id_or_link)
+    {
+        if ( !$id_or_link ) {
+            return false;
+        }
+
+        $cat = $this->inDB->getNsCategory($this->inDB->prefix . self::CATEGORY_TABLE, $id_or_link);
+
+        return \cms\plugin::callEvent('content.get_category', $cat);
     }
 
     /**
@@ -91,7 +110,7 @@ class cms_model_content
         }
 
         $sql = "SELECT *
-                FROM cms_category
+                FROM " . $this->inDB->prefix . self::CATEGORY_TABLE . "
                 WHERE " . $where . " AND published = 1 ORDER BY NSLeft";
 
         $result = $this->inDB->query($sql);
@@ -109,7 +128,7 @@ class cms_model_content
 
         $subcats = translations::process(cmsConfig::getConfig('lang'), 'content_category', $subcats);
 
-        return cmsCore::callEvent('GET_CONTENT_SUBCATS', $subcats);
+        return \cms\plugin::callEvent('content.get_sub_categories', $subcats);
     }
 
     /**
@@ -119,8 +138,8 @@ class cms_model_content
     public function getArticleCountFromCat($left_key, $right_key)
     {
         $sql = "SELECT con.id
-                        FROM cms_content con
-                        INNER JOIN cms_category cat ON cat.id = con.category_id AND cat.NSLeft >= '" . $left_key . "' AND cat.NSRight <= '" . $right_key . "'
+                        FROM " . $this->inDB->prefix . self::CONTENT_TABLE . " con
+                        INNER JOIN " . $this->inDB->prefix . self::CATEGORY_TABLE . " cat ON cat.id = con.category_id AND cat.NSLeft >= '" . $left_key . "' AND cat.NSRight <= '" . $right_key . "'
                         WHERE con.published = 1 AND con.is_arhive = 0";
 
         $result = $this->inDB->query($sql);
@@ -140,7 +159,7 @@ class cms_model_content
                         cat.NSRight as NSRight,
                         cat.NSLevel as NSLevel,
                         cat.seolink as seolink
-                FROM cms_category cat
+                FROM " . $this->inDB->prefix . self::CATEGORY_TABLE . " cat
                 WHERE cat.NSLevel>0
                 ORDER BY cat.NSLeft";
 
@@ -155,7 +174,7 @@ class cms_model_content
             $subcats[] = $subcat;
         }
 
-        $subcats = cmsCore::callEvent('GET_CONTENT_CATS_TREE', $subcats);
+        $subcats = \cms\plugin::callEvent('content.get_categories_tree', $subcats);
 
         return translations::process(cmsConfig::getConfig('lang'), 'content_category', $subcats);
     }
@@ -169,8 +188,8 @@ class cms_model_content
         $inCore = cmsCore::getInstance();
         $inUser = cmsUser::getInstance();
 
-        $nested_sets = $inCore->nestedSetsInit('cms_category');
-        $rootid      = $this->inDB->getNsRootCatId('cms_category');
+        $nested_sets = $inCore->nestedSetsInit($this->inDB->prefix . self::CATEGORY_TABLE);
+        $rootid      = $this->inDB->getNsRootCatId($this->inDB->prefix . self::CATEGORY_TABLE);
 
         $rs_rows = $nested_sets->SelectSubNodes($rootid);
 
@@ -184,7 +203,7 @@ class cms_model_content
             }
         }
 
-        $subcats = cmsCore::callEvent('GET_CONTENT_PUBCATS', $subcats);
+        $subcats = \cms\plugin::callEvent('content.get_publishing_categories', $subcats);
 
         return translations::process(cmsConfig::getConfig('lang'), 'content_category', $subcats);
     }
@@ -224,8 +243,8 @@ class cms_model_content
                        cat.showdesc,
                        u.nickname as author,
                        u.login as user_login
-                FROM cms_content con
-                    INNER JOIN cms_category cat ON cat.id = con.category_id
+                FROM " . $this->inDB->prefix . self::CONTENT_TABLE . " con
+                    INNER JOIN " . $this->inDB->prefix . self::CATEGORY_TABLE . " cat ON cat.id = con.category_id
                     LEFT JOIN cms_users u ON u.id = con.user_id
                 WHERE con.is_arhive = 0
                 {$this->inDB->where}
@@ -257,7 +276,7 @@ class cms_model_content
             $articles[]           = $article;
         }
 
-        $articles = cmsCore::callEvent('GET_ARTICLES', $articles);
+        $articles = \cms\plugin::callEvent('content.get_items', $articles);
 
         return translations::process(cmsConfig::getConfig('lang'), 'content_content', $articles);
     }
@@ -276,8 +295,8 @@ class cms_model_content
         }
 
         $sql = "SELECT 1
-                FROM cms_content con
-                        INNER JOIN cms_category cat ON cat.id = con.category_id
+                FROM " . $this->inDB->prefix . self::CONTENT_TABLE . " con
+                        INNER JOIN " . $this->inDB->prefix . self::CATEGORY_TABLE . " cat ON cat.id = con.category_id
                 WHERE con.is_arhive = 0
                 {$this->inDB->where}
 
@@ -294,7 +313,7 @@ class cms_model_content
      */
     public function moveArticlesToArchive()
     {
-        return $this->inDB->query("UPDATE cms_content SET is_arhive = 1 WHERE is_end = 1 AND enddate < NOW()");
+        return $this->inDB->query("UPDATE " . $this->inDB->prefix . self::CONTENT_TABLE . " SET is_arhive = 1 WHERE is_end = 1 AND enddate < NOW()");
     }
 
     /**
@@ -314,8 +333,8 @@ class cms_model_content
         $sql = "SELECT  con.*,
                         cat.title cat_title, cat.id cat_id, cat.NSLeft as leftkey, cat.NSRight as rightkey, cat.modgrp_id,
                         cat.showtags as showtags, cat.seolink as catseolink, cat.cost, u.nickname as author, u.login as user_login
-                    FROM cms_content con
-                        INNER JOIN cms_category cat ON cat.id = con.category_id
+                    FROM " . $this->inDB->prefix . self::CONTENT_TABLE . " con
+                        INNER JOIN " . $this->inDB->prefix . self::CATEGORY_TABLE . " cat ON cat.id = con.category_id
                         LEFT JOIN cms_users u ON u.id = con.user_id
                     WHERE {$where} LIMIT 1";
 
@@ -338,7 +357,7 @@ class cms_model_content
     {
         $sign = $dir > 0 ? '+' : '-';
 
-        $current = $this->inDB->get_field('cms_content', "id={$item_id}", 'ordering');
+        $current = $this->inDB->get_field($this->inDB->prefix . self::CONTENT_TABLE, "id={$item_id}", 'ordering');
 
         if ( $current === false ) {
             return false;
@@ -347,7 +366,7 @@ class cms_model_content
         if ( $dir > 0 ) {
             //движение вверх
             //у элемента следующего за текущим нужно уменьшить порядковый номер
-            $sql = "UPDATE cms_content
+            $sql = "UPDATE " . $this->inDB->prefix . self::CONTENT_TABLE . "
                     SET ordering = ordering-1
                     WHERE category_id='{$cat_id}' AND ordering = ({$current}+1)
                     LIMIT 1";
@@ -356,14 +375,14 @@ class cms_model_content
         if ( $dir < 0 ) {
             //движение вниз
             //у элемента предшествующего текущему нужно увеличить порядковый номер
-            $sql = "UPDATE cms_content
+            $sql = "UPDATE " . $this->inDB->prefix . self::CONTENT_TABLE . "
                     SET ordering = ordering+1
                     WHERE category_id='{$cat_id}' AND ordering = ({$current}-1)
                     LIMIT 1";
             $this->inDB->query($sql);
         }
 
-        $sql = "UPDATE cms_content
+        $sql = "UPDATE " . $this->inDB->prefix . self::CONTENT_TABLE . "
                    SET ordering = ordering {$sign} 1
                    WHERE id='{$item_id}'";
         $this->inDB->query($sql);
@@ -387,7 +406,7 @@ class cms_model_content
 
         foreach ( $art as $a ) {
             $seolink = $this->getSeoLink($a);
-            $this->inDB->query("UPDATE cms_content SET seolink='{$seolink}' WHERE id = '{$a['id']}'");
+            $this->inDB->query("UPDATE " . $this->inDB->prefix . self::CONTENT_TABLE . " SET seolink='{$seolink}' WHERE id = '{$a['id']}'");
             $this->updateContentCommentsLink($a['id']);
         }
 
@@ -406,9 +425,9 @@ class cms_model_content
     {
         $seolink = '';
 
-        $cat = $this->inDB->getNsCategory('cms_category', $article['category_id']);
+        $cat = $this->inDB->getNsCategory($this->inDB->prefix . self::CATEGORY_TABLE, $article['category_id']);
 
-        $path_list = $this->inDB->getNsCategoryPath('cms_category', $cat['NSLeft'], $cat['NSRight'], 'id, title, NSLevel, seolink, url');
+        $path_list = $this->inDB->getNsCategoryPath($this->inDB->prefix . self::CATEGORY_TABLE, $cat['NSLeft'], $cat['NSRight'], 'id, title, NSLevel, seolink, url');
 
         if ( $path_list ) {
             foreach ( $path_list as $pcat ) {
@@ -425,7 +444,7 @@ class cms_model_content
             $where = '';
         }
 
-        $is_exists = $this->inDB->get_field('cms_content', "seolink='{$seolink}'" . $where, 'id');
+        $is_exists = $this->inDB->get_field($this->inDB->prefix . self::CONTENT_TABLE, "seolink='{$seolink}'" . $where, 'id');
 
         if ( $is_exists ) {
             $seolink .= '-' . (!empty($article['id']) ? $article['id'] : uniqid());
@@ -478,9 +497,9 @@ class cms_model_content
      */
     public function deleteArticle($id)
     {
-        cmsCore::callEvent('DELETE_ARTICLE', $id);
+        \cms\plugin::callEvent('content.delete_item', $id);
 
-        $this->inDB->delete('cms_content', "id='$id'", 1);
+        $this->inDB->delete($this->inDB->prefix . self::CONTENT_TABLE, "id='$id'", 1);
         $this->inDB->delete('cms_tags', "target='content' AND item_id='$id'");
 
         cmsCore::clearAccess($id, 'material');
@@ -518,27 +537,27 @@ class cms_model_content
      */
     public function addArticle($article)
     {
-        $article = cmsCore::callEvent('ADD_ARTICLE', $article);
+        $article = \cms\plugin::callEvent('content.add_item', $article);
 
         if ( $article['url'] ) {
             $article['url'] = cmsCore::strToURL($article['url'], $this->config['is_url_cyrillic']);
         }
 
         // получаем значение порядка последней статьи
-        $last_ordering       = (int) $this->inDB->get_field('cms_content', "category_id = '{$article['category_id']}' ORDER BY ordering DESC", 'ordering');
+        $last_ordering       = (int) $this->inDB->get_field($this->inDB->prefix . self::CONTENT_TABLE, "category_id = '{$article['category_id']}' ORDER BY ordering DESC", 'ordering');
         $article['ordering'] = $last_ordering + 1;
 
-        $article['id'] = $this->inDB->insert('cms_content', $article);
+        $article['id'] = $this->inDB->insert($this->inDB->prefix . self::CONTENT_TABLE, $article);
 
         if ( $article['id'] ) {
             $article['seolink'] = $this->getSeoLink($article);
 
-            $this->inDB->query("UPDATE cms_content SET seolink='{$article['seolink']}' WHERE id = '{$article['id']}'");
+            $this->inDB->query("UPDATE " . $this->inDB->prefix . self::CONTENT_TABLE . " SET seolink='{$article['seolink']}' WHERE id = '{$article['id']}'");
 
             cmsInsertTags($article['tags'], 'content', $article['id']);
 
             if ( $article['published'] ) {
-                cmsCore::callEvent('ADD_ARTICLE_DONE', $article);
+                \cms\plugin::callEvent('content.add_item_done', $article);
             }
         }
 
@@ -569,9 +588,9 @@ class cms_model_content
             $article['user_id'] = cmsUser::getInstance()->id;
         }
 
-        $article = cmsCore::callEvent('UPDATE_ARTICLE', $article);
+        $article = \cms\plugin::callEvent('content.update_item', $article);
 
-        $this->inDB->update('cms_content', $article, $id);
+        $this->inDB->update($this->inDB->prefix . self::CONTENT_TABLE, $article, $id);
 
         if ( !$not_upd_seo ) {
             $this->updateContentCommentsLink($id);
@@ -588,7 +607,7 @@ class cms_model_content
      */
     public function updateCatMenu()
     {
-        return $this->inDB->query("UPDATE cms_menu m, cms_category cat SET m.link = CONCAT('/', cat.seolink) WHERE m.linkid = cat.id AND m.linktype = 'category'");
+        return $this->inDB->query("UPDATE cms_menu m, " . $this->inDB->prefix . self::CATEGORY_TABLE . " cat SET m.link = CONCAT('/', cat.seolink) WHERE m.linkid = cat.id AND m.linktype = 'category'");
     }
 
     /**
@@ -597,7 +616,7 @@ class cms_model_content
      */
     public function updateContentMenu()
     {
-        return $this->inDB->query("UPDATE cms_menu m, cms_content con SET m.link = CONCAT('/', con.seolink, '.html') WHERE m.linkid = con.id AND m.linktype = 'content'");
+        return $this->inDB->query("UPDATE cms_menu m, " . $this->inDB->prefix . self::CONTENT_TABLE . " con SET m.link = CONCAT('/', con.seolink, '.html') WHERE m.linkid = con.id AND m.linktype = 'content'");
     }
 
     /**
@@ -607,7 +626,7 @@ class cms_model_content
     public function updateContentCommentsLink($article_id)
     {
         // Обновляем ссылки в комменатриях
-        $this->inDB->query("UPDATE cms_comments c, cms_content a SET
+        $this->inDB->query("UPDATE cms_comments c, " . $this->inDB->prefix . self::CONTENT_TABLE . " a SET
                                    c.target_link = CONCAT('/', a.seolink, '.html')
                                    WHERE a.id = '$article_id' AND c.target = 'article' AND c.target_id = a.id");
 
@@ -615,7 +634,7 @@ class cms_model_content
         $action = cmsActions::getAction('add_comment');
 
         if ( $action ) {
-            $this->inDB->query("UPDATE cms_actions_log log, cms_content a SET
+            $this->inDB->query("UPDATE cms_actions_log log, " . $this->inDB->prefix . self::CONTENT_TABLE . " a SET
                                    log.target_url = CONCAT('/', a.seolink, '.html'), log.object_url = CONCAT('/', a.seolink, '.html#c', log.object_id)
                                    WHERE a.id = '$article_id' AND log.action_id='{$action['id']}' AND log.target_id='{$article_id}'");
         }
@@ -629,11 +648,11 @@ class cms_model_content
      */
     public function getNestedArticles($category_id)
     {
-        $cat = $this->inDB->getNsCategory('cms_category', $category_id);
+        $cat = $this->inDB->getNsCategory($this->inDB->prefix . self::CATEGORY_TABLE, $category_id);
 
         $sql = "SELECT con.id, con.title, con.seolink, con.url, con.category_id
-				FROM cms_content con
-				JOIN cms_category cat ON cat.id = con.category_id AND cat.NSLeft >= {$cat['NSLeft']} AND cat.NSRight <= {$cat['NSRight']}";
+				FROM " . $this->inDB->prefix . self::CONTENT_TABLE . " con
+				JOIN " . $this->inDB->prefix . self::CATEGORY_TABLE . " cat ON cat.id = con.category_id AND cat.NSLeft >= {$cat['NSLeft']} AND cat.NSRight <= {$cat['NSRight']}";
 
         $result = $this->inDB->query($sql);
 
@@ -657,7 +676,7 @@ class cms_model_content
     public function deleteCategory($id, $is_with_content = false)
     {
         $articles = $this->getNestedArticles($id);
-        $rootid   = $this->inDB->getNsRootCatId('cms_category');
+        $rootid   = $this->inDB->getNsRootCatId($this->inDB->prefix . self::CATEGORY_TABLE);
 
         if ( $articles ) {
             foreach ( $articles as $article ) {
@@ -666,14 +685,14 @@ class cms_model_content
                     $this->deleteArticle($article['id']);
                 }
                 else { // или переносим в корень и в архив
-                    $this->inDB->query("UPDATE cms_content SET category_id = '$rootid', is_arhive = 1, seolink = SUBSTRING_INDEX(seolink, '/', -1) WHERE id = '{$article['id']}'");
+                    $this->inDB->query("UPDATE " . $this->inDB->prefix . self::CONTENT_TABLE . " SET category_id = '$rootid', is_arhive = 1, seolink = SUBSTRING_INDEX(seolink, '/', -1) WHERE id = '{$article['id']}'");
                 }
             }
         }
 
         translations::deleteTargetTranslation('content_category', $id);
 
-        return $this->inDB->deleteNS('cms_category', $id);
+        return $this->inDB->deleteNS($this->inDB->prefix . self::CATEGORY_TABLE, $id);
     }
 
     /**

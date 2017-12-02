@@ -75,8 +75,8 @@ class str
     }
 
     /**
-     * Разбивает строку по разделителю, затем собирает обратно в CamelCase
-     * Например "my_own_string" => "MyOwnString", разделитель "_"
+     * Разбивает строку по разделителю, затем собирает обратно в camelCase
+     * Например "my_own_string" => "myOwnString", разделитель "_"
      *
      * @param char $delimiter Разделитель
      * @param string $string Исходная строка
@@ -88,8 +88,10 @@ class str
         $result = '';
         $words  = explode($delimiter, mb_strtolower($string));
 
-        foreach ( $words as $word ) {
-            $result .= ucfirst($word);
+        foreach ( $words as $k => $word ) {
+            if ( $k > 0 ) {
+                $result .= ucfirst($word);
+            }
         }
 
         return $result;

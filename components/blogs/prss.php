@@ -35,7 +35,7 @@ function rss_blogs($item_id, $cfg)
 
     // Формируем канал
     if ( $item_id ) {
-        $blog = $inBlog->getBlog($item_id);
+        $blog = $model->getBlog($item_id);
 
         if ( !$blog ) {
             return false;
@@ -65,7 +65,7 @@ function rss_blogs($item_id, $cfg)
 
     $inDB->limit($cfg['maxitems']);
 
-    $posts = $inBlog->getPosts(false, $model, true);
+    $posts = $model->getPosts(false, true);
 
     if ( $posts ) {
         foreach ( $posts as $post ) {

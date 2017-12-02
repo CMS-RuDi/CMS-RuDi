@@ -12,7 +12,7 @@
 function applet_config()
 {
     // получаем оригинальный конфиг
-    $config = cmsConfig::getDefaultConfig();
+    $config = cmsConfig::getInstance()->getConfig();
     $inPage = cmsPage::getInstance();
     $inDB   = cmsDatabase::getInstance();
 

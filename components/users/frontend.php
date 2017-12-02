@@ -362,8 +362,8 @@ function users()
                 cmsCore::redirectBack();
             }
 
-            $inDB->update('cms_user_profiles', cmsCore::callEvent('UPDATE_USER_PROFILES', array_merge(array( 'id' => $usr['pid'], 'user_id' => $usr['id'] ), $profiles)), $usr['pid']);
-            $inDB->update('cms_users', cmsCore::callEvent('UPDATE_USER_USERS', array_merge(array( 'id' => $usr['id'] ), $users)), $usr['id']);
+            $inDB->update('cms_user_profiles', \cms\plugin::callEvent('users.update_profile', array_merge(array( 'id' => $usr['pid'], 'user_id' => $usr['id'] ), $profiles)), $usr['pid']);
+            $inDB->update('cms_users', \cms\plugin::callEvent('users.update_data', array_merge(array( 'id' => $usr['id'] ), $users)), $usr['id']);
 
             cmsCore::addSessionMessage($_LANG['PROFILE_SAVED'], 'info');
             cmsCore::redirect(cmsUser::getProfileURL($usr['login']));
@@ -395,7 +395,7 @@ function users()
                 cmsCore::redirectBack();
             }
 
-            cmsCore::callEvent('UPDATE_USER_PASSWORD', array( 'user_id' => $usr['id'], 'oldpass' => $oldpass, 'newpass' => $newpass ));
+            \cms\plugin::callEvent('users.update_password', array( 'user_id' => $usr['id'], 'oldpass' => $oldpass, 'newpass' => $newpass ));
 
             $sql = "UPDATE cms_users SET password='" . md5($newpass) . "' WHERE id = '$id' AND password='" . md5($oldpass) . "'";
             $inDB->query($sql);
@@ -619,7 +619,7 @@ function users()
                 cmsCore::error404();
             }
 
-            $output = cmsCore::callEvent('USER_SEND_MESSEDGE', array( 'text' => $message, 'to_id' => $id ));
+            $output = \cms\plugin::callEvent('users.send_message', array( 'text' => $message, 'to_id' => $id ));
 
             $message = $output['text'];
             $id      = $output['to_id'];
@@ -1003,7 +1003,7 @@ function users()
                 'description' => ''
             ));
 
-            cmsCore::callEvent('USER_ACCEPT_FRIEND', $id);
+            \cms\plugin::callEvent('users.accept_friend', $id);
 
             cmsCore::jsonOutput(array( 'error' => false, 'text' => $_LANG['ADD_FRIEND_OK'] . $usr['nickname'] ));
         }

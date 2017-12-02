@@ -237,7 +237,7 @@ class cmsPage
     {
         $this->addHeadJsLang(array( 'SEND', 'CONTINUE', 'CLOSE', 'SAVE', 'CANCEL', 'ATTENTION', 'CONFIRM', 'LOADING', 'ERROR', 'ADD', 'SELECT_CITY', 'SELECT' ));
 
-        $this->page_head = cmsCore::callEvent('PRINT_PAGE_HEAD', $this->page_head);
+        $this->page_head = \cms\plugin::callEvent('page.print_head', $this->page_head);
 
         // Если есть пагинация и страница больше первой, добавляем "страница №"
         if ( $this->site_cfg->title_and_page ) {
@@ -291,7 +291,7 @@ class cmsPage
             }
         }
 
-        $this->page_body = cmsCore::callEvent('PRINT_PAGE_BODY', $this->page_body);
+        $this->page_body = \cms\plugin::callEvent('page.print_body', $this->page_body);
 
         echo $this->page_body;
     }
@@ -680,7 +680,7 @@ class cmsPage
      */
     public static function getCaptcha()
     {
-        $captcha = cmsCore::callEvent('GET_CAPTCHA', '');
+        $captcha = \cms\plugin::callEvent('captcha.get', '', 'single');
 
         if ( $captcha ) {
             echo $captcha;
@@ -699,7 +699,7 @@ class cmsPage
      */
     public static function checkCaptchaCode()
     {
-        return cmsCore::callEvent('CHECK_CAPTCHA', false);
+        return \cms\plugin::callEvent('captcha.check', false, 'single');
     }
 
     /**
@@ -734,16 +734,16 @@ class cmsPage
     public static function getBBCodeToolbar($field_id, $images = 0, $component = 'forum', $target = 'post', $target_id = 0)
     {
         // Поддержка плагинов панели ббкодов (ее замены)
-        $p_toolbar = cmsCore::callEvent('REPLACE_BBCODE_BUTTONS', array(
+        $p_toolbar = \cms\plugin::callEvent('bbcode.replace_buttons', [
                     'html'      => '',
                     'field_id'  => $field_id,
                     'images'    => $images,
                     'component' => $component,
                     'target'    => $target,
-                    'target_id' => $target_id ));
+                    'target_id' => $target_id ]);
 
         if ( $p_toolbar['html'] ) {
-            return cmsCore::callEvent('GET_BBCODE_BUTTON', $p_toolbar['html']);
+            return \cms\plugin::callEvent('bbcode.get_button', $p_toolbar['html']);
         }
 
         $inPage = self::getInstance();
@@ -762,7 +762,7 @@ class cmsPage
             'target'    => $target,
             'target_id' => $target_id ));
 
-        return cmsCore::callEvent('GET_BBCODE_BUTTON', ob_get_clean());
+        return \cms\plugin::callEvent('bbcode.get_button', ob_get_clean());
     }
 
     /**
@@ -772,7 +772,7 @@ class cmsPage
      */
     public static function getSmilesPanel($for_field_id)
     {
-        $p_html = cmsCore::callEvent('REPLACE_SMILES', array( 'html' => '', 'for_field_id' => $for_field_id ));
+        $p_html = \cms\plugin::callEvent('smiles.replace', array( 'html' => '', 'for_field_id' => $for_field_id ));
 
         if ( $p_html['html'] ) {
             return $p_html['html'];
@@ -841,7 +841,7 @@ class cmsPage
      */
     public static function getPagebar($total, $page, $perpage, $link, $params = array())
     {
-        $pagebar = cmsCore::callEvent('GET_PAGEBAR', array( $total, $page, $perpage, $link, $params ));
+        $pagebar = \cms\plugin::callEvent('page.get_pagebar', array( $total, $page, $perpage, $link, $params ));
 
         if ( !is_array($pagebar) && $pagebar ) {
             return $pagebar;

@@ -13,7 +13,8 @@
 class cmsDatabase
 {
 
-    private static $instance;
+    use \Singeltone;
+
     public $join     = '';
     public $select   = '';
     public $where    = '';
@@ -23,7 +24,7 @@ class cmsDatabase
     public $page     = 1;
     public $perpage  = 10;
     private $cache   = []; // кеш некоторых запросов
-    private $db_prefix;
+    public $prefix;
 
     /**
      * ========= DEPRECATED =========
@@ -33,22 +34,13 @@ class cmsDatabase
 
     protected function __construct()
     {
-        $this->db        = \cms\db::getInstance();
-        $this->db_prefix = cmsConfig::getConfig('db_prefix') . '_';
+        $this->db     = \cms\db::getInstance();
+        $this->prefix = cmsConfig::getConfig('db_prefix') . '_';
     }
 
     public function __destruct()
     {
         $this->db->__destruct();
-    }
-
-    public static function getInstance()
-    {
-        if ( self::$instance === null ) {
-            self::$instance = new self;
-        }
-
-        return self::$instance;
     }
 
     /**
@@ -135,11 +127,11 @@ class cmsDatabase
 
     protected function replacePrefix($sql, $prefix = 'cms_')
     {
-        if ( $prefix == $this->db_prefix ) {
+        if ( $prefix == $this->prefix ) {
             return trim($sql);
         }
 
-        return trim(str_replace($prefix, $this->db_prefix, $sql));
+        return trim(str_replace($prefix, $this->prefix, $sql));
     }
 
     protected static function replacePrefixTable($table)
@@ -229,7 +221,7 @@ class cmsDatabase
         return $this->db->getRowsCount(self::replacePrefixTable($table), $where, $limit);
     }
 
-    public function get_field($table, $where = '1', $field)
+    public function get_field($table, $where = '1', $field = 'id')
     {
         $row = $this->db->getRow(self::replacePrefixTable($table), $where, $field);
 

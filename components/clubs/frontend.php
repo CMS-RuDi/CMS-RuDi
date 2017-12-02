@@ -195,7 +195,7 @@ function clubs()
 
             $inDB->limit($model->config['club_posts_perpage']);
 
-            $club['blog_posts'] = $inBlog->getPosts(($is_admin || $is_moder), $model, true);
+            $club['blog_posts'] = $model->getPosts(($is_admin || $is_moder), true);
         }
 
         /////////////////////////////////////////////
@@ -481,7 +481,7 @@ function clubs()
                 cmsCore::halt();
             }
 
-            cmsCore::callEvent('LEAVE_CLUB', $club);
+            \cms\plugin::callEvent('clubs.leave', $club);
 
             $model->removeUserFromClub($club['id'], $inUser->id);
             // Пересчитываем рейтинг
@@ -539,7 +539,7 @@ function clubs()
         // Обработка заявки
         //
         if ( cmsCore::inRequest('confirm') ) {
-            cmsCore::callEvent('JOIN_CLUB', $club);
+            \cms\plugin::callEvent('clubs.join', $club);
 
             //списываем оплату если клуб платный
             if ( IS_BILLING && $club['is_vip'] && $club['join_cost'] && !$inUser->is_admin ) {
@@ -991,7 +991,7 @@ function clubs()
             return false;
         }
 
-        $photo = cmsCore::callEvent('VIEW_CLUB_PHOTO', $photo);
+        $photo = \cms\plugin::callEvent('clubs.view_photo', $photo);
 
         // получаем клуб
         $club = $model->getClub($photo['auser_id']);

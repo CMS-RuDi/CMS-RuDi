@@ -199,7 +199,7 @@ class cms_model_clubs
         }
 
         // добавляем запись
-        $wall_id = $this->inDB->insert('cms_user_wall', cmsCore::callEvent('ADD_WALL', $item));
+        $wall_id = $this->inDB->insert('cms_user_wall', \cms\plugin::callEvent('clubs.add_wall_item', $item));
 
         if ( $club['clubtype'] == 'private' ) {
             return $wall_id;
@@ -289,7 +289,7 @@ class cms_model_clubs
             $clubs[$club['id']] = $club;
         }
 
-        $clubs = cmsCore::callEvent('GET_CLUBS', $clubs);
+        $clubs = \cms\plugin::callEvent('clubs.get_items', $clubs);
 
         return $clubs;
     }
@@ -345,7 +345,7 @@ class cms_model_clubs
         $club['enabled_blogs']  = ($club['enabled_blogs'] == -1) ? $this->config['enabled_blogs'] : $club['enabled_blogs'];
         $club['enabled_photos'] = ($club['enabled_photos'] == -1) ? $this->config['enabled_photos'] : $club['enabled_photos'];
 
-        return $this->clubs[$club_id] = cmsCore::callEvent('GET_CLUB', $club);
+        return $this->clubs[$club_id] = \cms\plugin::callEvent('clubs.get_club', $club);
     }
 
     /**
@@ -506,7 +506,7 @@ class cms_model_clubs
     {
         global $_LANG;
 
-        $item = cmsCore::callEvent('ADD_CLUB', $item);
+        $item = \cms\plugin::callEvent('clubs.create_club', $item);
 
         $club_id = $this->inDB->insert('cms_clubs', $item);
         if ( !$club_id ) {
@@ -516,11 +516,11 @@ class cms_model_clubs
         // Создаем блог клуба
         $inBlog = cmsBlogs::getInstance();
 
-        $inBlog->addBlog(array( 'user_id'   => $club_id,
-            'title'     => $_LANG['CLUB_BLOG'] . ' - ' . $item['title'],
-            'allow_who' => $item['clubtype'] == 'private' ? 'friends' : 'all',
-            'ownertype' => 'multi',
-            'owner'     => 'club' ));
+        $inBlog->addBlog(\cms\plugin::callEvent('clubs.add_blog', [ 'user_id'   => $club_id,
+                    'title'     => $_LANG['CLUB_BLOG'] . ' - ' . $item['title'],
+                    'allow_who' => $item['clubtype'] == 'private' ? 'friends' : 'all',
+                    'ownertype' => 'multi',
+                    'owner'     => 'club' ]));
 
         // Создаем корневой фотоальбом
         $this->inDB->addRootNsCategory('cms_photo_albums', 'club' . $club_id, array( 'user_id'   => $club_id,
@@ -691,7 +691,7 @@ class cms_model_clubs
 
         $this->inDB->query($sql);
 
-        $item = cmsCore::callEvent('UPDATE_CLUB', $item);
+        $item = \cms\plugin::callEvent('clubs.update_club', $item);
 
         return $this->inDB->update('cms_clubs', $item, $club_id);
     }
@@ -726,7 +726,7 @@ class cms_model_clubs
      */
     public function deleteClub($club_id)
     {
-        cmsCore::callEvent('DELETE_CLUB', $club_id);
+        \cms\plugin::callEvent('clubs.delete_club', $club_id);
 
         $club = $this->getClub($club_id);
 
@@ -749,6 +749,7 @@ class cms_model_clubs
         $this->inDB->query("DELETE FROM cms_user_clubs WHERE club_id = '$club_id'");
 
         //Удаляем блог клуба
+        \cms\plugin::callEvent('clubs.delete_blog', $this->getClubBlogId($club_id));
         $inBlog->deleteBlog($this->getClubBlogId($club_id));
 
         //Удаляем фотоальбомы клуба
@@ -903,6 +904,21 @@ class cms_model_clubs
         $page_section = ($page > 1 ? '/page-' . $page : '');
 
         return '/clubs/' . $club_id . '_blog' . $cat_section . $page_section;
+    }
+
+    public function getBlog($id_or_link)
+    {
+        return \cms\plugin::callEvent('clubs.get_blog', $this->initBlog()->getBlog($id_or_link));
+    }
+
+    public function getPost($id_or_link)
+    {
+        return \cms\plugin::callEvent('clubs.get_blog_post', $this->initBlog()->getPost($id_or_link));
+    }
+
+    public function getPosts($show_all = false, $is_short = false)
+    {
+        return \cms\plugin::callEvent('clubs.get_blog_posts', $this->initBlog()->getPosts($show_all, $this, $is_short));
     }
 
 }

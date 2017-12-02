@@ -141,7 +141,7 @@ class cms_model_board
 
         $category['ob_links'] = $this->getTypesLinks($category['id'], $category['obtypes']);
 
-        $category = cmsCore::callEvent('GET_BOARD_CAT', $category);
+        $category = \cms\plugin::callEvent('board.get_category', $category);
 
         return $category;
     }
@@ -175,7 +175,7 @@ class cms_model_board
             $cats[]               = $cat;
         }
 
-        $cats = cmsCore::callEvent('GET_BOARD_SUBCATS', $cats);
+        $cats = \cms\plugin::callEvent('board.get_sub_categories', $cats);
 
         return $cats;
     }
@@ -287,7 +287,7 @@ class cms_model_board
             $records[] = $item;
         }
 
-        return cmsCore::callEvent('GET_BOARD_RECORDS', $records);
+        return \cms\plugin::callEvent('board.get_items', $records);
     }
 
     public function getAdvertsCount($show_all = false, $is_cats = false)
@@ -361,21 +361,21 @@ class cms_model_board
             $record['form_array'] = cmsCore::yamlToArray($record['formsdata']);
         }
 
-        return cmsCore::callEvent('GET_BOARD_RECORD', $record);
+        return \cms\plugin::callEvent('board.get_item', $record);
     }
 
     public function addRecord($item)
     {
         $item['ip'] = ip2long(cmsUser::getInstance()->ip);
 
-        $item = cmsCore::callEvent('ADD_BOARD_RECORD', $item);
+        $item = \cms\plugin::callEvent('board.add_item', $item);
 
         return $this->inDB->insert('cms_board_items', $item);
     }
 
     public function updateRecord($id, $item)
     {
-        $item = cmsCore::callEvent('UPDATE_BOARD_RECORD', $item);
+        $item = \cms\plugin::callEvent('board.update_item', $item);
 
         $this->inDB->update('cms_board_items', $item, $id);
 
@@ -384,7 +384,7 @@ class cms_model_board
 
     public function deleteRecord($item_id)
     {
-        cmsCore::callEvent('DELETE_BOARD_RECORD', $item_id);
+        \cms\plugin::callEvent('board.delete_item', $item_id);
 
         $item = $this->getRecord($item_id);
         if ( !$item ) {

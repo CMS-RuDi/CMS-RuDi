@@ -54,7 +54,7 @@ function mod_blogs($mod, $cfg)
     $inDB->orderBy('p.' . $cfg['sort'], 'DESC')->groupBy('p.id');
     $inDB->limit($cfg['shownum']);
 
-    $posts = $inBlog->getPosts(false, $model);
+    $posts = $model->getPosts(false);
     if ( !$posts ) {
         return false;
     }

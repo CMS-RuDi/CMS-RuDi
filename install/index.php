@@ -36,7 +36,8 @@ if ( $request->has('lang') ) {
     }
 }
 
-$l = \cms\lang::getInstance()->setLocale();
+$l = \cms\lang::getInstance();
+$l->setLocale();
 $l->load('install');
 
 $installed = false;
@@ -117,7 +118,7 @@ if ( $request->has('install') ) {
 
     $inDB->importFromFile($sql_file);
 
-    $d_cfg = $inConf->getDefaultConfig();
+    $d_cfg = $inConf->getConfig();
     $_CFG  = array_merge($d_cfg, $_CFG);
     $inConf->saveToFile($_CFG);
 

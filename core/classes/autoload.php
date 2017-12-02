@@ -28,7 +28,7 @@ class autoload
      */
     protected static $classes_map = [
         'cmsCore'                  => PATH . '/core/cms.php',
-        'cmsAdmin'                 => PATH . '/cms_admin.php',
+        'cmsAdmin'                 => PATH . '/core/cms_admin.php',
         'tplMainClass'             => PATH . '/core/tpl_classes/tplMainClass.php',
         'phpTpl'                   => PATH . '/core/tpl_classes/phpTpl.php',
         'smartyTpl'                => PATH . '/core/tpl_classes/smartyTpl.php',

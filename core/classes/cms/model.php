@@ -1271,10 +1271,12 @@ class model
 
     /**
      * Управляет индексами в запросе
+     *
      * @param string $index_name Название индекса в БД
      * @param string $action FORCE | IGNORE | USE
      * @param int $for 1 - FOR JOIN, 2 - FOR ORDER BY, 3 - FOR GROUP BY
-     * @return \cmsModel
+     *
+     * @return self
      */
     protected function indexHint($index_name, $action, $for = '')
     {
@@ -2012,6 +2014,54 @@ class model
         }
 
         return null;
+    }
+
+    //========================================================================//
+
+    public static function getModelClassName($component_name)
+    {
+        $new_class_name = '\\components\\' . $component_name . '\\model';
+        $old_class_name = 'cms_model_' . $component_name;
+
+        if ( class_exists($new_class_name) ) {
+            return $new_class_name;
+        }
+        else if ( class_exists($old_class_name) ) {
+            return $old_class_name;
+        }
+
+        return false;
+    }
+
+    public static function loadModel($component_name)
+    {
+        $class_name = self::getModelClassName($component_name);
+
+        if ( class_exists($class_name) ) {
+            if ( method_exists($old_class_name, 'getInstance') ) {
+                return $old_class_name::getInstance();
+            }
+            else if ( method_exists($old_class_name, 'initModel') ) {
+                return $old_class_name::initModel();
+            }
+            else {
+                return new $old_class_name();
+            }
+        }
+    }
+
+    public static function getDefaultConfig($component_name)
+    {
+        $class_name = self::getModelClassName($component_name);
+
+        if ( class_exists($class_name) ) {
+            if ( method_exists($class_name, 'getDefaultConfig') ) {
+                return $class_name::getDefaultConfig();
+            }
+        }
+
+
+        return [];
     }
 
 }

@@ -128,6 +128,13 @@ class cms_model_blogs
         return true;
     }
 
+    public function initBlog()
+    {
+        $inBlog        = cmsBlogs::getInstance();
+        $inBlog->owner = 'user';
+        return $inBlog;
+    }
+
     public static function getPostURL($bloglink, $seolink)
     {
         return '/blogs/' . $bloglink . '/' . $seolink . '.html';
@@ -139,6 +146,32 @@ class cms_model_blogs
         $page_section = ($page > 1 ? '/page-' . $page : '');
 
         return '/blogs/' . $bloglink . $cat_section . $page_section;
+    }
+
+    public function getBlog($id_or_link)
+    {
+        return \cms\plugin::callEvent('blogs.get_blog', $this->initBlog()->getBlog($id_or_link));
+    }
+
+    public function deleteBlog($ids)
+    {
+        $ids = is_array($ids) ? $ids : [ $ids ];
+
+        foreach ( $ids as $id ) {
+            \cms\plugin::callEvent('blogs.delete', $id);
+        }
+
+        $this->initBlog()->deleteBlogd($ids);
+    }
+
+    public function getPost($id_or_link)
+    {
+        return \cms\plugin::callEvent('blogs.get_post', $this->initBlog()->getPost($id_or_link));
+    }
+
+    public function getPosts($show_all = false, $is_short = false)
+    {
+        return \cms\plugin::callEvent('blogs.get_posts', $this->initBlog()->getPosts($show_all, $this, $is_short));
     }
 
 }

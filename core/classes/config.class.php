@@ -15,7 +15,60 @@ class cmsConfig
 
     use \Singeltone;
 
-    private static $config = array();
+    protected static $default_config = [
+        'schema'                  => 'http',
+        'host'                    => '',
+        'sitename'                => '',
+        'title_and_sitename'      => 1,
+        'title_and_page'          => 1,
+        'hometitle'               => '',
+        'homecom'                 => '',
+        'siteoff'                 => 0,
+        'debug'                   => 0,
+        'offtext'                 => '',
+        'keywords'                => '',
+        'metadesc'                => '',
+        'lang'                    => 'ru',
+        'is_change_lang'          => 0,
+        'sitemail'                => '',
+        'sitemail_name'           => '',
+        'wmark'                   => 'watermark.png',
+        'template'                => '_default_',
+        'com_without_name_in_url' => 'content',
+        'splash'                  => 0,
+        'slight'                  => 1,
+        'db_host'                 => '',
+        'db_base'                 => '',
+        'db_user'                 => '',
+        'db_pass'                 => '',
+        'db_prefix'               => 'cms',
+        'db_users_table'          => 'cms_users',
+        'db_engine'               => 'MyISAM',
+        'show_pw'                 => 1,
+        'last_item_pw'            => 1,
+        'index_pw'                => 0,
+        'fastcfg'                 => 1,
+        'mailer'                  => 'mail',
+        'smtpsecure'              => '',
+        'smtpauth'                => 0,
+        'smtpuser'                => '',
+        'smtppass'                => '',
+        'smtphost'                => 'localhost',
+        'smtpport'                => 25,
+        'timezone'                => 'Europe/Moscow',
+        'timediff'                => 0,
+        'user_stats'              => 1,
+        'seo_url_count'           => 40,
+        'allow_ip'                => '',
+        'detect_ip_key'           => 'REMOTE_ADDR',
+        'cache_enabled'           => false,
+        'cache_method'            => 'files',
+        'cache_ttl'               => 3600,
+        'cache_path'              => '/cache/data',
+        'cache_host'              => 'localhost',
+        'cache_port'              => 11211,
+    ];
+    protected static $config         = array();
 
     private function __construct()
     {
@@ -30,7 +83,7 @@ class cmsConfig
 
     public function __get($name)
     {
-        return self::$config[$name];
+        return isset(self::$config[$name]) ? self::$config[$name] : null;
     }
 
     public function __set($name, $value)
@@ -44,76 +97,36 @@ class cmsConfig
     }
 
     /**
+     * Возвращает результат проверки наличия конфигурационного файла, при налиичии
+     * которого считается что система усановлена
+     *
+     * @return bool
+     */
+    public function isReady()
+    {
+        return isset(self::$config['is_ready']);
+    }
+
+    /**
      * Возвращает оригинальный массив конфигурации системы
      * отдельно используется только в админке и при установке
+     *
      * @return array
      */
     public static function getDefaultConfig()
     {
-        $d_cfg = [
-            'schema'                  => 'http',
-            'host'                    => '',
-            'sitename'                => '',
-            'title_and_sitename'      => 1,
-            'title_and_page'          => 1,
-            'hometitle'               => '',
-            'homecom'                 => '',
-            'siteoff'                 => 0,
-            'debug'                   => 0,
-            'offtext'                 => '',
-            'keywords'                => '',
-            'metadesc'                => '',
-            'lang'                    => 'ru',
-            'is_change_lang'          => 0,
-            'sitemail'                => '',
-            'sitemail_name'           => '',
-            'wmark'                   => 'watermark.png',
-            'template'                => '_default_',
-            'com_without_name_in_url' => 'content',
-            'splash'                  => 0,
-            'slight'                  => 1,
-            'db_host'                 => '',
-            'db_base'                 => '',
-            'db_user'                 => '',
-            'db_pass'                 => '',
-            'db_prefix'               => 'cms',
-            'db_users_table'          => 'cms_users',
-            'db_engine'               => 'MyISAM',
-            'show_pw'                 => 1,
-            'last_item_pw'            => 1,
-            'index_pw'                => 0,
-            'fastcfg'                 => 1,
-            'mailer'                  => 'mail',
-            'smtpsecure'              => '',
-            'smtpauth'                => 0,
-            'smtpuser'                => '',
-            'smtppass'                => '',
-            'smtphost'                => 'localhost',
-            'smtpport'                => 25,
-            'timezone'                => 'Europe/Moscow',
-            'timediff'                => 0,
-            'user_stats'              => 1,
-            'seo_url_count'           => 40,
-            'allow_ip'                => '',
-            'detect_ip_key'           => 'REMOTE_ADDR',
-            'cache_enabled'           => false,
-            'cache_method'            => 'files',
-            'cache_ttl'               => 3600,
-            'cache_path'              => '/cache/data',
-            'cache_host'              => 'localhost',
-            'cache_port'              => 11211,
-        ];
-
         $f = PATH . '/includes/config.inc.php';
 
         if ( file_exists($f) ) {
             require($f);
+
+            $_CFG['is_ready'] = true;
         }
         else {
             $_CFG = array();
         }
 
-        $cfg = array_merge($d_cfg, $_CFG);
+        $cfg = array_merge(self::$default_config, $_CFG);
 
         foreach ( $cfg as $key => $value ) {
             $cfg[$key] = stripslashes($value);
@@ -127,7 +140,9 @@ class cmsConfig
     /**
      * Возвращает значение опции конфигурации
      * или полный массив значений
-     * @param str $value
+     *
+     * @param string $value
+     *
      * @return mixed
      */
     public static function getConfig($value = '')
@@ -147,7 +162,10 @@ class cmsConfig
 
     /**
      * Сохраняет массив в файл конфигурации
+     *
      * @param array $_CFG
+     *
+     * @return bool
      */
     public static function saveToFile($_CFG, $file = 'config.inc.php')
     {
@@ -169,15 +187,15 @@ class cmsConfig
         $cfg_file = fopen($filepath, 'w+');
 
         fputs($cfg_file, "<?php \n");
-        fputs($cfg_file, "if(!defined('VALID_CMS')) { die('ACCESS DENIED'); } \n");
-        fputs($cfg_file, '$_CFG = [];' . "\n");
+        fputs($cfg_file, "if (!defined('VALID_CMS')) { die('ACCESS DENIED'); }" . PHP_EOL);
+        fputs($cfg_file, '$_CFG = [];' . PHP_EOL);
 
         foreach ( $_CFG as $key => $value ) {
             if ( is_int($value) ) {
-                $s = '$_CFG' . "['" . $key . "'] \t= $value;\n";
+                $s = '$_CFG' . "['" . $key . "'] = " . $value . ";" . PHP_EOL;
             }
             else {
-                $s = '$_CFG' . "['" . $key . "'] \t= '" . addslashes($value) . "';\n";
+                $s = '$_CFG' . "['" . $key . "'] = '" . addslashes($value) . "';" . PHP_EOL;
             }
 
             fwrite($cfg_file, $s);

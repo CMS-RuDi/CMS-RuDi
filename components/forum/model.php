@@ -244,7 +244,7 @@ class cms_model_forum
         $thread['fpubdate']    = cmsCore::dateFormat($thread['pubdate']);
         $thread['is_mythread'] = $thread['user_id'] == cmsUser::getInstance()->id;
 
-        return cmsCore::callEvent('GET_FORUM_THREAD', $thread);
+        return \cms\plugin::callEvent('forum.get_thread', $thread);
     }
 
     /**
@@ -267,7 +267,7 @@ class cms_model_forum
             return false;
         }
 
-        return cmsCore::callEvent('GET_FORUM_CAT', $cat);
+        return \cms\plugin::callEvent('forum.get_category', $cat);
     }
 
     /**
@@ -289,7 +289,7 @@ class cms_model_forum
             $forum['last_msg_array']['fpubdate'] = cmsCore::dateFormat($forum['last_msg_array']['pubdate']);
         }
 
-        return cmsCore::callEvent('GET_FORUM', $forum);
+        return \cms\plugin::callEvent('forum.get_forum', $forum);
     }
 
     /**
@@ -305,7 +305,7 @@ class cms_model_forum
             return false;
         }
 
-        return cmsCore::callEvent('GET_FORUM_POST', $post);
+        return \cms\plugin::callEvent('forum.get_post', $post);
     }
 
     /**
@@ -426,7 +426,7 @@ class cms_model_forum
             }
         }
 
-        return cmsCore::callEvent('GET_FORUMS', $nested_forums);
+        return \cms\plugin::callEvent('forum.get_forums', $nested_forums);
     }
 
     public function whereDayIntervalIs($day)
@@ -492,7 +492,7 @@ class cms_model_forum
             $threads[] = $thread;
         }
 
-        return cmsCore::callEvent('GET_THREADS', $threads);
+        return \cms\plugin::callEvent('forum.get_threads', $threads);
     }
 
     public function getThreadsCount()
@@ -574,7 +574,7 @@ class cms_model_forum
 
         $this->resetAbstractArray();
 
-        return cmsCore::callEvent('GET_FORUM_POSTS', $posts);
+        return \cms\plugin::callEvent('forum.get_posts', $posts);
     }
 
     public function getPostsCount()
@@ -684,7 +684,7 @@ class cms_model_forum
             return $last_post['id'];
         }
 
-        $post_id = $this->inDB->insert('cms_forum_posts', cmsCore::callEvent('ADD_FORUM_POST', $post));
+        $post_id = $this->inDB->insert('cms_forum_posts', \cms\plugin::callEvent('forum.add_post', $post));
 
         // регистрируем загруженные изображения
         cmsCore::setIdUploadImage('post', $post_id);
@@ -694,7 +694,7 @@ class cms_model_forum
 
     public function updatePost($post, $post_id)
     {
-        cmsCore::callEvent('UPDATE_FORUM_POST', $post_id);
+        \cms\plugin::callEvent('forum.update_post', $post_id);
 
         cmsCore::setIdUploadImage('post', $post_id);
 
@@ -703,7 +703,7 @@ class cms_model_forum
 
     public function deletePost($post_id)
     {
-        cmsCore::callEvent('DELETE_POST', $post_id);
+        \cms\plugin::callEvent('forum.delete_post', $post_id);
 
         $this->deletePostAttachments($post_id);
         cmsCore::deleteUploadImages($post_id, 'post');
@@ -720,12 +720,12 @@ class cms_model_forum
 
     public function addThread($thread)
     {
-        return $this->inDB->insert('cms_forum_threads', cmsCore::callEvent('ADD_THREAD', $thread));
+        return $this->inDB->insert('cms_forum_threads', \cms\plugin::callEvent('forum.add_thread', $thread));
     }
 
     public function closeThread($thread_id)
     {
-        cmsCore::callEvent('CLOSE_THREAD', $thread_id);
+        \cms\plugin::callEvent('forum.close_thread', $thread_id);
 
         global $_LANG;
 
@@ -736,7 +736,7 @@ class cms_model_forum
 
     public function openThread($thread_id)
     {
-        cmsCore::callEvent('OPEN_THREAD', $thread_id);
+        \cms\plugin::callEvent('forum.open_thread', $thread_id);
 
         global $_LANG;
 
@@ -769,7 +769,7 @@ class cms_model_forum
 
     public function updateThread($thread, $thread_id)
     {
-        cmsCore::callEvent('UPDATE_THREAD', $thread_id);
+        \cms\plugin::callEvent('forum.update_thread', $thread_id);
 
         return $this->inDB->update('cms_forum_threads', $thread, $thread_id);
     }
@@ -904,7 +904,7 @@ class cms_model_forum
      */
     public function deletePostAttachment($file, $whith_db = true)
     {
-        cmsCore::callEvent('DELETE_POST_FILE', $file);
+        \cms\plugin::callEvent('forum.delete_post_file', $file);
 
         @unlink(PATH . '/upload/forum/post' . $file['post_id'] . '/' . $file['filename']);
         @rmdir(PATH . '/upload/forum/post' . $file['post_id']);
@@ -930,7 +930,7 @@ class cms_model_forum
             return false;
         }
 
-        return cmsCore::callEvent('GET_POST_FILE', $file);
+        return \cms\plugin::callEvent('forum.get_post_file', $file);
     }
 
     /**
@@ -963,7 +963,7 @@ class cms_model_forum
             $files[] = $file;
         }
 
-        return cmsCore::callEvent('GET_POST_FILES', $files);
+        return \cms\plugin::callEvent('forum.get_post_files', $files);
     }
 
 //========================== методы для опросов ==============================//
@@ -1008,7 +1008,7 @@ class cms_model_forum
         $t_poll['answers']   = $this->inDB->escape_string(cmsCore::arrayToYaml($answers));
         $t_poll['thread_id'] = $thread_id;
 
-        return $this->inDB->insert('cms_forum_polls', cmsCore::callEvent('ADD_FORUM_POLL', $t_poll));
+        return $this->inDB->insert('cms_forum_polls', \cms\plugin::callEvent('forum.add_poll', $t_poll));
     }
 
     /**
@@ -1058,7 +1058,7 @@ class cms_model_forum
 
         $t_poll['answers'] = $this->inDB->escape_string(cmsCore::arrayToYaml($answers));
 
-        return $this->inDB->update('cms_forum_polls', cmsCore::callEvent('UPDATE_FORUM_POLL', $t_poll), $latest_poll['id']);
+        return $this->inDB->update('cms_forum_polls', \cms\plugin::callEvent('forum.update_poll', $t_poll), $latest_poll['id']);
     }
 
     public function getLastAddPollError()
@@ -1139,12 +1139,12 @@ class cms_model_forum
         $poll['fenddate']    = cmsCore::dateFormat($poll['enddate']);
         $poll['show_result'] = false;
 
-        return cmsCore::callEvent('GET_THREAD_POLL', $poll);
+        return \cms\plugin::callEvent('forum.get_thread_poll', $poll);
     }
 
     public function deletePoll($poll_id)
     {
-        cmsCore::callEvent('DELETE_FORUM_POLL', $poll_id);
+        \cms\plugin::callEvent('forum.delete_poll', $poll_id);
 
         $this->inDB->delete('cms_forum_polls', "id = '" . $poll_id . "'", 1);
         $this->inDB->delete('cms_forum_votes', "poll_id = '" . $poll_id . "'", 1);

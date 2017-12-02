@@ -103,7 +103,7 @@ class cmsActions
 
         $action = cmsDatabase::getInstance()->get_fields('cms_actions', "name='" . $action_name . "' " . $tracked, '*');
 
-        return is_array($action) ? cmsCore::callEvent('GET_ACTION', $action) : false;
+        return is_array($action) ? \cms\plugin::callEvent('actions.get_action', $action) : false;
     }
 
     /**
@@ -135,7 +135,7 @@ class cmsActions
         $params['action_id'] = $action['id'];
         $params['pubdate']   = date("Y-m-d H:i:s");
 
-        cmsDatabase::getInstance()->insert('cms_actions_log', cmsCore::callEvent('LOG_ACTION', $params));
+        cmsDatabase::getInstance()->insert('cms_actions_log', \cms\plugin::callEvent('actions.log_action', $params));
 
         return true;
     }
@@ -150,7 +150,7 @@ class cmsActions
     {
         $arg = func_get_args();
 
-        cmsCore::callEvent('DELETE_OBJECT_LOG', $arg);
+        \cms\plugin::callEvent('actions.delete_object_log', $arg);
 
         $action = self::getAction($action_name);
 
@@ -171,7 +171,7 @@ class cmsActions
     {
         $arg = func_get_args();
 
-        cmsCore::callEvent('DELETE_TARGET_LOG', $arg);
+        \cms\plugin::callEvent('actions.delete_target_log', $arg);
 
         $action = self::getAction($action_name);
 
@@ -184,7 +184,7 @@ class cmsActions
 
     public static function removeLogById($id)
     {
-        cmsCore::callEvent('DELETE_LOG', $id);
+        \cms\plugin::callEvent('actions.delete_log', $id);
 
         return cmsDatabase::getInstance()->delete('cms_actions_log', "id = '" . $id . "'");
     }
@@ -209,7 +209,7 @@ class cmsActions
 
         $arg = func_get_args();
 
-        cmsCore::callEvent('UPDATE_LOG', $arg);
+        \cms\plugin::callEvent('actions.update_log', $arg);
 
         // Получаем id записи
         $action = self::getAction($action_name);
@@ -364,7 +364,7 @@ class cmsActions
             $this->inDB->where('log.is_users_only = 0');
         }
 
-        $pactions = cmsCore::callEvent('GET_BEFORE_ACTIONS', false);
+        $pactions = \cms\plugin::callEvent('actions.get_before_actions', false);
         if ( $pactions !== false ) {
             return $pactions;
         }
@@ -450,7 +450,7 @@ class cmsActions
             $actions[] = $action;
         }
 
-        return cmsCore::callEvent('GET_ACTIONS', $actions);
+        return \cms\plugin::callEvent('actions.get_actions', $actions);
     }
 
     /**

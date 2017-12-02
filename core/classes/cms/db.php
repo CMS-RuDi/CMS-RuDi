@@ -181,7 +181,7 @@ class db
      * @param string $sql Строка запроса
      * @param array|string $params Аргументы запроса, которые будут переданы в vsprintf
      * @param bool $quiet В случае ошибки запроса отдавать false, а не "умирать"
-     * @return boolean
+     * @return boolean|\mysqli_result
      */
     public function query($sql, $params = false, $quiet = false)
     {

@@ -18,7 +18,7 @@ define('CORE_BUILD_DATE', '2016-07-26');
 class cmsCore
 {
 
-    use Singeltone;
+    use \Singeltone;
 
     private static $jevix;
     protected $menu_item;
@@ -30,19 +30,19 @@ class cmsCore
     public $component;
     public $do;
     public $components;
-    public $plugins                 = [];
-    public $plugin_events           = [];
     protected static $filters;
     protected $url_without_com_name = false;
     protected $module_configs;
     protected $component_configs;
     protected $template;
-    public $single_run_plugins      = [ 'wysiwyg', 'captcha' ];
 
     /**
      * ========= DEPRECATED =========
      */
-    public $events = [];
+    public $events             = [];
+    public $plugins            = [];
+    public $plugin_events      = [];
+    public $single_run_plugins = [];
 
     protected function __construct($install_mode = false)
     {
@@ -69,20 +69,20 @@ class cmsCore
         // определяем контекст использования
         \cms\request::getInstance()->setContext();
 
-        //загрузим структуру меню в память
+        // загрузим структуру меню в память
         $this->loadMenuStruct();
 
-        //получим URI
+        // получим URI
         $this->uri = $this->detectURI();
 
-        //загрузим все компоненты в память
+        // загрузим все компоненты в память
         $this->components = $this->getAllComponents();
 
-        //определим компонент
+        // определим компонент
         $this->component = $this->detectComponent();
 
-        //загрузим все события плагинов в память
-        $this->loadPluginsData();
+        // загрузим все события плагинов в память
+        \cms\plugin::loadEvents();
 
         // массив текущего пункта меню
         $this->menu_item = $this->getMenuItem($this->menuId());
@@ -105,199 +105,35 @@ class cmsCore
     }
 
     /**
-     * Задает полный список зарегистрированных
-     * событий в соответствии с включенными плагинами
-     * @return array
-     */
-    private function loadPluginsData()
-    {
-        $inDB = cmsDatabase::getInstance();
-
-        $sql = "SELECT p.id, p.plugin, p.config, e.event FROM cms_event_hooks e LEFT JOIN cms_plugins p ON e.plugin_id = p.id WHERE p.published = 1";
-
-        $result = $inDB->query($sql);
-
-        if ( $inDB->num_rows($result) ) {
-            while ( $plugin = $inDB->fetch_assoc($result) ) {
-                $this->plugins[$plugin['plugin']]        = $plugin;
-                $this->plugin_events[$plugin['event']][] = $plugin['plugin'];
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Производит событие, вызывая все назначенные на него плагины
-     * в цикле перебирая все плагины и накладывая результат на исходный массив
-     * @param string $event Название эвента
-     * @param mixed $item Исходные данные
-     * @param bool $is_all Вернуть для каждого плагина свой результат
-     * @return mixed Данные, после их обработки всеми плагинами или массив всех результатов выполнения плагинов
-     */
-    public static function callEvent($event, $item, $is_all = false)
-    {
-        $tkey = \cms\debug::startTimer();
-
-        $inCore = self::getInstance();
-
-        $plugins_list = array();
-
-        //получаем все активные плагины, привязанные к указанному событию
-        $plugins = $inCore->getEventPlugins($event);
-
-        if ( $plugins ) {
-            //перебираем плагины и вызываем каждый из них, передавая элемент $item
-            foreach ( $plugins as $plugin_name ) {
-                $plugin = $inCore->loadPlugin($plugin_name);
-
-                if ( $plugin !== false ) {
-                    // для отладки запоминаем названия
-                    if ( cmsConfig::getConfig('debug') ) {
-                        $enabled_plugins[] = $plugin->info['title'];
-                    }
-
-                    $result = $plugin->execute($event, $item);
-
-                    if ( isset($plugin->info['plugin_type']) ) {
-                        if ( in_array($plugin->info['plugin_type'], $inCore->single_run_plugins) ) {
-                            $item = $result;
-                            break;
-                        }
-                    }
-
-                    // если нужно вернуть для каждого плагина свой результат
-                    if ( $is_all ) {
-                        if ( $result !== false ) {
-                            $plugins_list[] = array(
-                                'result' => $result,
-                                'info'   => $plugin->info,
-                                'config' => $plugin->config
-                            );
-                        }
-                    }
-                    else {
-                        $item = $result;
-                    }
-
-                    unset($plugin);
-                }
-            }
-        }
-
-        if ( cmsConfig::getConfig('debug') ) {
-            global $_LANG;
-
-            \cms\debug::setDebugInfo('events', $event . (isset($enabled_plugins) ? PHP_EOL . implode(', ', $enabled_plugins) : ''), $plugins ? $tkey : false );
-        }
-
-        return $is_all ? $plugins_list : $item;
-    }
-
-    public static function callAllEvent($event, $item)
-    {
-        return self::callEvent($event, $item, true);
-    }
-
-    /**
-     * Возвращает массив с именами плагинов, привязанных к событию $event
-     * @param string $event
-     * @return array
-     */
-    public function getEventPlugins($event)
-    {
-        return !empty($this->plugin_events[$event]) ? $this->plugin_events[$event] : array();
-    }
-
-    /**
-     * Возвращает кофигурацию плагина в виде массива
-     * @param string $plugin_name Название плагина
-     * @return array
-     */
-    public function loadPluginConfig($plugin_name)
-    {
-        if ( empty($this->plugins[$plugin_name]['config']) ) {
-            return array();
-        }
-
-        if ( !is_array($this->plugins[$plugin_name]['config']) ) {
-            $this->plugins[$plugin_name]['config'] = self::yamlToArray($this->plugins[$plugin_name]['config']);
-        }
-
-        return $this->plugins[$plugin_name]['config'];
-    }
-
-    /**
      * Сохраняет настройки плагина в базу
+     *
      * @param string $plugin_name Название плагина
      * @param array $config Массив настроек плагина
+     *
      * @return bool
      */
     public function savePluginConfig($plugin_name, $config)
     {
-        $inDB = cmsDatabase::getInstance();
+        $obj = \cms\plugin::load($plugin_name);
 
-        //конвертируем массив настроек в YAML
-        $config_yaml = $inDB->escape_string(self::arrayToYaml($config));
-
-        //обновляем плагин в базе
-        $update_query = "UPDATE cms_plugins SET config='" . $config_yaml . "' WHERE plugin = '" . $plugin_name . "'";
-
-        $inDB->query($update_query);
+        $obj->setConfig($config)->saveConfig();
 
         return true;
     }
 
     /**
-     * Загружает плагин и возвращает его объект
-     * @param string $plugin Название плагина
-     * @return cmsPlugin
-     */
-    public static function loadPlugin($plugin)
-    {
-        $plugin_file = PATH . '/plugins/' . $plugin . '/plugin.php';
-
-        if ( file_exists($plugin_file) ) {
-            include_once($plugin_file);
-            self::loadLanguage('plugins/' . $plugin);
-
-            if ( class_exists($plugin) ) {
-                $plugin_obj = new $plugin();
-                return $plugin_obj;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Задает полный список компонентов
+     * Возвращает полный список компонентов
      * @return array
      */
     public function getAllComponents()
     {
-        // если уже получали, возвращаемся
-        if ( is_array($this->components) ) {
-            return $this->components;
-        }
+        $components = \cms\controller::getAllComponents();
 
-        $inDB = cmsDatabase::getInstance();
-
-        $sql = "SELECT id, title, link, config, internal, published, version, system FROM cms_components ORDER BY title";
-
-        $result = $inDB->query($sql);
-
-        if ( $inDB->num_rows($result) ) {
-            while ( $c = $inDB->fetch_assoc($result) ) {
-                $this->components[$c['link']] = $c;
-            }
-        }
-
-        if ( !$this->components ) {
+        if ( !$components ) {
             die('kernel panic');
         }
 
-        return $this->components;
+        return $components;
     }
 
     /**
@@ -307,13 +143,7 @@ class cmsCore
      */
     public function isComponentEnable($component)
     {
-        $enable = false;
-
-        if ( isset($this->components[$component]) ) {
-            $enable = (bool) $this->components[$component]['published'];
-        }
-
-        return $enable;
+        return \cms\controller::isComponentEnabled($component);
     }
 
     /**
@@ -342,29 +172,7 @@ class cmsCore
      */
     public function loadComponentConfig($component)
     {
-        if ( isset($this->component_configs[$component]) ) {
-            return $this->component_configs[$component];
-        }
-
-        $config = array();
-
-        if ( isset($this->components[$component]) ) {
-            $config = self::yamlToArray($this->components[$component]['config']);
-
-            // проверяем настройки по умолчанию в модели
-            $is_model_loaded = class_exists('cms_model_' . $component);
-
-            if ( $is_model_loaded && method_exists('cms_model_' . $component, 'getDefaultConfig') ) {
-                $default_cfg = call_user_func(array( 'cms_model_' . $component, 'getDefaultConfig' ));
-                $config      = array_merge($default_cfg, $config);
-            }
-
-            $config['component_enabled'] = $this->components[$component]['published'];
-        }
-
-        $this->cacheComponentConfig($component, $config);
-
-        return $config;
+        return \cms\controller::loadOptions($component);
     }
 
     /**
@@ -443,33 +251,26 @@ class cmsCore
     }
 
     /**
-     * Выводит WYSIWYG редактор
-     * @global array $_LANG
-     * @param str $name Название поля
-     * @param str $text Текст в редакторе
+     * Выводит визуальный редактор
+     *
+     * @param string $name Название поля
+     * @param string $text Текст в редакторе
      * @param int $height Высота
      * @param int $width Ширина
-     * @param str $toolbar Название тулбара
+     * @param string $toolbar Название тулбара
+     *
      * @return bool
      */
     public static function insertEditor($name, $text = '', $height = '350', $width = '500', $toolbar = 'full')
     {
-        global $_LANG;
-
-        $editor = self::callEvent('INSERT_WYSIWYG', array(
-                    'name'    => $name,
-                    'text'    => $text,
-                    'toolbar' => $toolbar,
-                    'height'  => $height,
-                    'width'   => $width
-        ));
+        $editor = self::callEvent('INSERT_WYSIWYG', [ 'name' => $name, 'text' => $text, 'toolbar' => $toolbar, 'height' => $height, 'width' => $width ], 'single');
 
         if ( !is_array($editor) ) {
             echo $editor;
             return true;
         }
 
-        echo $_LANG['INSERT_WYSIWYG_ERROR'];
+        echo \cms\lang::getInstance()->insert_wysiwyg_error;
 
         return false;
     }
@@ -719,7 +520,7 @@ class cmsCore
         }
 
         $routes = call_user_func('routes_' . $this->component);
-        $routes = self::callEvent('GET_ROUTE_' . strtoupper($this->component), $routes);
+        $routes = \cms\plugin::callEvent('core.get_route_' . $this->component, $routes);
 
         // Флаг удачного перебора
         $is_found = false;
@@ -786,7 +587,7 @@ class cmsCore
         $components = array( $this->component );
 
         if ( $this->url_without_com_name ) {
-            $components = cmsCore::callEvent('URL_WITHOUT_COM_NAME', $components);
+            $components = \cms\plugin::callEvent('core.get_main_components', $components);
         }
 
         foreach ( $components as $component ) {
@@ -814,7 +615,7 @@ class cmsCore
             // Вызываем сначала плагин (если он есть) на действие
             // Успешность выполнения должна определяться в методе execute плагина
             // Он должен вернуть true
-            if ( !cmsCore::callEvent(strtoupper('get_' . $this->component . '_action_' . $this->do), false) ) {
+            if ( !\cms\plugin::callEvent('core.get_' . $this->component . '_action_' . $this->do, false) ) {
                 self::includeFile('components/' . $this->component . '/frontend.php');
 
                 if ( function_exists($this->component) ) {
@@ -826,10 +627,10 @@ class cmsCore
             }
 
             if ( self::isAjax() ) {
-                cmsCore::halt(cmsCore::callEvent('AFTER_COMPONENT_' . strtoupper($this->component), ob_get_clean()));
+                cmsCore::halt(\cms\plugin::callEvent('core.after_component_' . $this->component, ob_get_clean()));
             }
 
-            cmsPage::getInstance()->page_body = cmsCore::callEvent('AFTER_COMPONENT_' . strtoupper($this->component), ob_get_clean());
+            cmsPage::getInstance()->page_body = \cms\plugin::callEvent('core.after_component_' . $this->component, ob_get_clean());
 
             return true;
         }
@@ -880,7 +681,11 @@ class cmsCore
     {
         $ns = new \cms\nestedsets(\cms\db::getInstance());
 
-        $ns->setTable(str_replace('cms_', '', $table));
+        if ( substr($table, 0, 4) == 'cms_' ) {
+            $table = substr($table, 4);
+        }
+
+        $ns->setTable($table);
 
         $ns->setOption('parent_id', 'ordering', 'NSLeft', 'NSRight', 'NSDiffer', 'NSLevel', 'NSIgnore');
 
@@ -2312,7 +2117,7 @@ class cmsCore
      */
     public static function clearCache()
     {
-        cmsCore::callEvent('CLEAR_CACHE', '');
+        \cms\plugin::callEvent('core.clear_cache', '');
 
         $directory = PATH . '/cache';
 
@@ -2412,6 +2217,33 @@ class cmsCore
     }
 
     // ============================= DEPRECATED ==============================//
+    // Методы не желательные к использованию в новых компонентах, плагинах и модулях
+    // но оставленные для совместимости со старыми версиями
+
+    public static function callEvent($event, $item, $is_all = false)
+    {
+        return \cms\plugin::callEvent($event, $item, ($is_all === true ? 'multi' : 'single'));
+    }
+
+    public static function callAllEvent($event, $item)
+    {
+        return \cms\plugin::callEvent($event, $item, 'multi');
+    }
+
+    public function loadPluginConfig($plugin_name)
+    {
+        return \cms\plugin::getCfg($plugin_name);
+    }
+
+    public function getEventPlugins($event)
+    {
+        return \cms\plugin::getEventPlugins($event);
+    }
+
+    public static function loadPlugin($plugin)
+    {
+        return \cms\plugin::load($plugin);
+    }
 
     public static function strToURL($str, $dont_translit = false)
     {

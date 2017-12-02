@@ -90,10 +90,10 @@ if ( $opt == 'saveconfig' ) {
 
 if ( $opt == 'delete_blog' ) {
     if ( !isset($_REQUEST['item']) ) {
-        $inBlog->deleteBlog(cmsCore::request('item_id', 'int', 0));
+        $model->deleteBlog(cmsCore::request('item_id', 'int', 0));
     }
     else {
-        $inBlog->deleteBlogs(cmsCore::request('item', 'array_int', array()));
+        $model->deleteBlog(cmsCore::request('item', 'array_int', array()));
     }
     cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'], 'success');
     cmsCore::redirectBack();
@@ -104,14 +104,14 @@ if ( $opt == 'update_blog' ) {
         cmsCore::error404();
     }
 
-    $blog = $inBlog->getBlog(cmsCore::request('item_id', 'int', 0));
+    $blog = $model->getBlog(cmsCore::request('item_id', 'int', 0));
     if ( !$blog ) {
         cmsCore::error404();
     }
 
     $title = cmsCore::request('title', 'str', $blog['title']);
 
-    $seolink_new = $inBlog->updateBlog($blog['id'], array( 'title' => $title ), true);
+    $seolink_new = $inBlog->updateBlog($blog['id'], \cms\plugin::callEvent('blogs.update', array( 'title' => $title )), true);
 
     $blog['seolink'] = $seolink_new ? $seolink_new : $blog['seolink'];
 

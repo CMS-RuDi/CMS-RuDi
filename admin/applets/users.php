@@ -137,7 +137,7 @@ function applet_users()
             $sql = "DELETE FROM cms_users_activate WHERE code = '$code'";
             $inDB->query($sql);
 
-            cmsCore::callEvent('USER_ACTIVATED', $user_id);
+            \cms\plugin::callEvent('users.activated', $user_id);
 
             // Регистрируем событие
             cmsActions::log('add_user', array(

@@ -173,7 +173,7 @@ class cmsUser
 
         $info['access'] = explode(',', str_replace(', ', ',', $info['access']));
 
-        return $this->loads_users[$info['id']] = cmsCore::callEvent('LOAD_USER', $info);
+        return $this->loads_users[$info['id']] = \cms\plugin::callEvent('users.load_user', $info);
     }
 
     /**
@@ -238,7 +238,7 @@ class cmsUser
 
             if ( $user ) {
                 $_SESSION['user'] = $user;
-                cmsCore::callEvent('USER_LOGIN', $_SESSION['user']);
+                \cms\plugin::callEvent('users.login', $_SESSION['user']);
                 self::setUserLogdate($user['id']);
             }
             else {
@@ -612,7 +612,7 @@ class cmsUser
             return false;
         }
 
-        cmsCore::callEvent('ADD_FRIEND', $user_id);
+        \cms\plugin::callEvent('users.add_friend', $user_id);
 
         $my_id = self::getInstance()->id;
 
@@ -642,7 +642,7 @@ class cmsUser
         $friend_field_id = self::getFriendFieldId($user_id);
 
         if ( $friend_field_id ) {
-            cmsCore::callEvent('DELETE_FRIEND', $user_id);
+            \cms\plugin::callEvent('users.delete_friend', $user_id);
 
             cmsDatabase::getInstance()->query("DELETE FROM cms_user_friends WHERE id = '" . $friend_field_id . "'");
 
@@ -827,7 +827,7 @@ class cmsUser
                 $records[]          = $record;
             }
 
-            $records = cmsCore::callEvent('GET_WALL_POSTS', $records);
+            $records = \cms\plugin::callEvent('users.get_wall_posts', $records);
         }
 
         ob_start();
@@ -922,7 +922,7 @@ class cmsUser
                 $data['karma']          = -1000000;
                 $data['logdate']        = self::getUserLogdate();
                 $data['city']           = '';
-                self::$guest_group_info = cmsCore::callEvent('GET_GUEST', $data);
+                self::$guest_group_info = \cms\plugin::callEvent('users.get_guest', $data);
             }
             else {
                 self::$guest_group_info = array();
@@ -1289,7 +1289,7 @@ class cmsUser
 
         self::sendMessage(USER_UPDATER, $user_id, '<b>' . $_LANG['RECEIVED_AWARD'] . ':</b> <a href="' . cmsUser::getProfileURL($user['login']) . '#upr_awards">' . $award['title'] . '</a>');
 
-        return cmsCore::callEvent('GIVE_AWARD', $award_id);
+        return \cms\plugin::callEvent('users.give_award', $award_id);
     }
 
     /**
@@ -1899,7 +1899,7 @@ class cmsUser
 
         // иначе пытаемся авторизоваться через плагины
         if ( !$user ) {
-            $user = cmsCore::callEvent('SIGNIN_USER', array( 'login' => $login, 'pass' => $passw ));
+            $user = \cms\plugin::callEvent('users.signin', array( 'login' => $login, 'pass' => $passw ));
         }
 
         if ( !$user ) {
@@ -1908,7 +1908,7 @@ class cmsUser
 
         $_SESSION['user'] = $user;
 
-        cmsCore::callEvent('USER_LOGIN', $_SESSION['user']);
+        \cms\plugin::callEvent('users.login', $_SESSION['user']);
 
         if ( $remember_pass ) {
             $cookie_code = md5($user['id'] . $user['password'] . PATH);
@@ -1961,6 +1961,7 @@ class cmsUser
                     break;
                 case 'editprofile': $url = '/users/' . $user['id'] . '/editprofile.html';
                     break;
+                default : $url = $default_back_url;
             }
 
             return $url;
@@ -1981,7 +1982,7 @@ class cmsUser
 
         $sess_id = session_id();
 
-        cmsCore::callEvent('USER_LOGOUT', $this->id);
+        \cms\plugin::callEvent('users.logout', $this->id);
 
         self::setUserLogdate($this->id);
 
@@ -2012,7 +2013,7 @@ class cmsUser
                 return self::$cache['is_admin'][$user_id];
             }
 
-            $is_admin = cmsDatabase::getInstance()->get_field('cms_users u LEFT JOIN cms_user_groups g ON g.id = u.group_id', "u.id = '" . $user_id . "'", 'g.is_admin');
+            $is_admin = cmsDatabase::getInstance()->get_field('cms_users u LEFT JOIN cms_user_groups g ON g.id = u.group_id', "u.id = '" . $user_id . "'", 'is_admin');
 
             return self::$cache['is_admin'][$user_id] = $is_admin;
         }

@@ -1,56 +1,43 @@
 <?php
 
-/*
- *                           InstantCMS v1.10.7
- *                        http://www.instantcms.ru/
+/**
+ * Оставлен для совместимости со старыми плагинами, для новых плагинов в качестве
+ * родителя используйте \cms\plugin и ознакомьтесь с новой документацией по созданию
+ * плагинов
  *
- *                   written by InstantCMS Team, 2007-2017
- *                produced by InstantSoft, (www.instantsoft.ru)
- *
- *                        LICENSED BY GNU/GPL v2
+ * @package Classes
+ * @subpackage Old
  */
-
-class cmsPlugin
+class cmsPlugin extends \cms\plugin
 {
 
     protected $inDB;
-    protected $inCore;
-    protected $inPage;
     public $info;
-    public $events;
-    public $config = [];
 
     public function __construct()
     {
-        $this->inCore = cmsCore::getInstance();
-        $this->inDB   = cmsDatabase::getInstance();
-        $this->inPage = cmsPage::getInstance();
-        $this->config = array_merge($this->config, $this->inCore->loadPluginConfig(get_called_class()));
-    }
+        parent::__construct();
 
-    public function __clone()
-    {
+        $this->inDB = cmsDatabase::getInstance();
 
-    }
+        $this->config = array_merge($this->config, self::getCfg($this->name));
 
-    public function install()
-    {
-        return $this->inCore->installPlugin($this->info, $this->events, $this->config);
-    }
+        // Выставляем информацию о плагине
 
-    public function upgrade()
-    {
-        return $this->inCore->upgradePlugin($this->info, $this->events, $this->config);
-    }
+        $title = $this->getTitle();
 
-    public function execute($event = '', $item = array())
-    {
+        if ( empty($title) ) {
+            $this->lang->set($this->lang_prefix . '_title', $this->info['title']);
+        }
 
-    }
+        $description = $this->getDescription();
 
-    public function saveConfig()
-    {
-        $this->inCore->savePluginConfig($this->info['plugin'], $this->config);
+        if ( empty($description) ) {
+            $this->lang->set($this->lang_prefix . '_description', $this->info['description']);
+        }
+
+        $this->version = $this->info['version'];
+        $this->author  = $this->info['author'];
     }
 
 }
