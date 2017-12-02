@@ -217,7 +217,7 @@ class p_loginza extends cmsPlugin
             $login .= ($max['id'] + 1);
         }
 
-        $user_array = \cms\plugin::callEvent('users.before_register', array(
+        $user_array = \cms\plugins::callEvent('users.before_register', array(
                     'status'      => (!empty($advanced['status']) ? $advanced['status'] : ''),
                     'status_date' => date('Y-m-d H:i:s'),
                     'login'       => $login,
@@ -268,7 +268,7 @@ class p_loginza extends cmsPlugin
                 'gender'   => (!empty($profile->gender) ? strtolower($profile->gender) : 'm')
             ));
 
-            \cms\plugin::callEvent('users.register', $user_array);
+            \cms\plugins::callEvent('users.register', $user_array);
 
             cmsActions::log('add_user', array(
                 'object'      => '',

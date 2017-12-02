@@ -111,7 +111,7 @@ if ( $opt == 'update_blog' ) {
 
     $title = cmsCore::request('title', 'str', $blog['title']);
 
-    $seolink_new = $inBlog->updateBlog($blog['id'], \cms\plugin::callEvent('blogs.update', array( 'title' => $title )), true);
+    $seolink_new = $inBlog->updateBlog($blog['id'], \cms\plugins::callEvent('blogs.update', array( 'title' => $title )), true);
 
     $blog['seolink'] = $seolink_new ? $seolink_new : $blog['seolink'];
 

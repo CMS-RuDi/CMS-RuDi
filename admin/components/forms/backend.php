@@ -179,10 +179,10 @@ if ( in_array($opt, array( 'add_field', 'update_field' )) ) {
     }
 
     if ( $opt == 'add_field' ) {
-        $inDB->insert('cms_form_fields', \cms\plugin::callEvent('forms.add_field', $item));
+        $inDB->insert('cms_form_fields', \cms\plugins::callEvent('forms.add_field', $item));
     }
     else {
-        $inDB->update('cms_form_fields', \cms\plugin::callEvent('forms.update_field', $item), cmsCore::request('field_id', 'int'));
+        $inDB->update('cms_form_fields', \cms\plugins::callEvent('forms.update_field', $item), cmsCore::request('field_id', 'int'));
     }
 
     cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS']);
@@ -206,13 +206,13 @@ if ( in_array($opt, array( 'submit', 'update' )) ) {
     $item['tpl']         = cmsCore::request('tpl', 'str', 'form');
 
     if ( $opt == 'submit' ) {
-        $form_id = $inDB->insert('cms_forms', \cms\plugin::callEvent('forms.add_form', $item));
+        $form_id = $inDB->insert('cms_forms', \cms\plugins::callEvent('forms.add_form', $item));
         cmsCore::addSessionMessage($_LANG['AD_FORM_SUCCESFULL_CREATED']);
     }
     else {
         $form_id = cmsCore::request('item_id', 'int');
 
-        $inDB->update('cms_forms', \cms\plugin::callEvent('forms.update_form', $item), $form_id);
+        $inDB->update('cms_forms', \cms\plugins::callEvent('forms.update_form', $item), $form_id);
         cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'] . '.');
     }
 
@@ -226,7 +226,7 @@ if ( $opt == 'delete' ) {
         cmsCore::error404();
     }
 
-    \cms\plugin::callEvent('forms.delete_form', $item_id);
+    \cms\plugins::callEvent('forms.delete_form', $item_id);
 
     $inDB->delete('cms_forms', "id = '{$item_id}'", 1);
 

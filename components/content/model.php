@@ -93,7 +93,7 @@ class cms_model_content
 
         $cat = $this->inDB->getNsCategory($this->inDB->prefix . self::CATEGORY_TABLE, $id_or_link);
 
-        return \cms\plugin::callEvent('content.get_category', $cat);
+        return \cms\plugins::callEvent('content.get_category', $cat);
     }
 
     /**
@@ -128,7 +128,7 @@ class cms_model_content
 
         $subcats = translations::process(cmsConfig::getConfig('lang'), 'content_category', $subcats);
 
-        return \cms\plugin::callEvent('content.get_sub_categories', $subcats);
+        return \cms\plugins::callEvent('content.get_sub_categories', $subcats);
     }
 
     /**
@@ -174,7 +174,7 @@ class cms_model_content
             $subcats[] = $subcat;
         }
 
-        $subcats = \cms\plugin::callEvent('content.get_categories_tree', $subcats);
+        $subcats = \cms\plugins::callEvent('content.get_categories_tree', $subcats);
 
         return translations::process(cmsConfig::getConfig('lang'), 'content_category', $subcats);
     }
@@ -203,7 +203,7 @@ class cms_model_content
             }
         }
 
-        $subcats = \cms\plugin::callEvent('content.get_publishing_categories', $subcats);
+        $subcats = \cms\plugins::callEvent('content.get_publishing_categories', $subcats);
 
         return translations::process(cmsConfig::getConfig('lang'), 'content_category', $subcats);
     }
@@ -276,7 +276,7 @@ class cms_model_content
             $articles[]           = $article;
         }
 
-        $articles = \cms\plugin::callEvent('content.get_items', $articles);
+        $articles = \cms\plugins::callEvent('content.get_items', $articles);
 
         return translations::process(cmsConfig::getConfig('lang'), 'content_content', $articles);
     }
@@ -497,7 +497,7 @@ class cms_model_content
      */
     public function deleteArticle($id)
     {
-        \cms\plugin::callEvent('content.delete_item', $id);
+        \cms\plugins::callEvent('content.delete_item', $id);
 
         $this->inDB->delete($this->inDB->prefix . self::CONTENT_TABLE, "id='$id'", 1);
         $this->inDB->delete('cms_tags', "target='content' AND item_id='$id'");
@@ -537,7 +537,7 @@ class cms_model_content
      */
     public function addArticle($article)
     {
-        $article = \cms\plugin::callEvent('content.add_item', $article);
+        $article = \cms\plugins::callEvent('content.add_item', $article);
 
         if ( $article['url'] ) {
             $article['url'] = cmsCore::strToURL($article['url'], $this->config['is_url_cyrillic']);
@@ -557,7 +557,7 @@ class cms_model_content
             cmsInsertTags($article['tags'], 'content', $article['id']);
 
             if ( $article['published'] ) {
-                \cms\plugin::callEvent('content.add_item_done', $article);
+                \cms\plugins::callEvent('content.add_item_done', $article);
             }
         }
 
@@ -588,7 +588,7 @@ class cms_model_content
             $article['user_id'] = cmsUser::getInstance()->id;
         }
 
-        $article = \cms\plugin::callEvent('content.update_item', $article);
+        $article = \cms\plugins::callEvent('content.update_item', $article);
 
         $this->inDB->update($this->inDB->prefix . self::CONTENT_TABLE, $article, $id);
 

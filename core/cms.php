@@ -82,7 +82,7 @@ class cmsCore
         $this->component = $this->detectComponent();
 
         // загрузим все события плагинов в память
-        \cms\plugin::loadEvents();
+        \cms\plugins::loadEvents();
 
         // массив текущего пункта меню
         $this->menu_item = $this->getMenuItem($this->menuId());
@@ -114,7 +114,7 @@ class cmsCore
      */
     public function savePluginConfig($plugin_name, $config)
     {
-        $obj = \cms\plugin::load($plugin_name);
+        $obj = \cms\plugins::load($plugin_name);
 
         $obj->setConfig($config)->saveConfig();
 
@@ -520,7 +520,7 @@ class cmsCore
         }
 
         $routes = call_user_func('routes_' . $this->component);
-        $routes = \cms\plugin::callEvent('core.get_route_' . $this->component, $routes);
+        $routes = \cms\plugins::callEvent('core.get_route_' . $this->component, $routes);
 
         // Флаг удачного перебора
         $is_found = false;
@@ -587,7 +587,7 @@ class cmsCore
         $components = array( $this->component );
 
         if ( $this->url_without_com_name ) {
-            $components = \cms\plugin::callEvent('core.get_main_components', $components);
+            $components = \cms\plugins::callEvent('core.get_main_components', $components);
         }
 
         foreach ( $components as $component ) {
@@ -615,7 +615,7 @@ class cmsCore
             // Вызываем сначала плагин (если он есть) на действие
             // Успешность выполнения должна определяться в методе execute плагина
             // Он должен вернуть true
-            if ( !\cms\plugin::callEvent('core.get_' . $this->component . '_action_' . $this->do, false) ) {
+            if ( !\cms\plugins::callEvent('core.get_' . $this->component . '_action_' . $this->do, false) ) {
                 self::includeFile('components/' . $this->component . '/frontend.php');
 
                 if ( function_exists($this->component) ) {
@@ -627,10 +627,10 @@ class cmsCore
             }
 
             if ( self::isAjax() ) {
-                cmsCore::halt(\cms\plugin::callEvent('core.after_component_' . $this->component, ob_get_clean()));
+                cmsCore::halt(\cms\plugins::callEvent('core.after_component_' . $this->component, ob_get_clean()));
             }
 
-            cmsPage::getInstance()->page_body = \cms\plugin::callEvent('core.after_component_' . $this->component, ob_get_clean());
+            cmsPage::getInstance()->page_body = \cms\plugins::callEvent('core.after_component_' . $this->component, ob_get_clean());
 
             return true;
         }
@@ -2117,7 +2117,7 @@ class cmsCore
      */
     public static function clearCache()
     {
-        \cms\plugin::callEvent('core.clear_cache', '');
+        \cms\plugins::callEvent('core.clear_cache', '');
 
         $directory = PATH . '/cache';
 
@@ -2222,27 +2222,27 @@ class cmsCore
 
     public static function callEvent($event, $item, $is_all = false)
     {
-        return \cms\plugin::callEvent($event, $item, ($is_all === true ? 'multi' : 'single'));
+        return \cms\plugins::callEvent($event, $item, ($is_all === true ? 'multi' : 'single'));
     }
 
     public static function callAllEvent($event, $item)
     {
-        return \cms\plugin::callEvent($event, $item, 'multi');
+        return \cms\plugins::callEvent($event, $item, 'multi');
     }
 
     public function loadPluginConfig($plugin_name)
     {
-        return \cms\plugin::getCfg($plugin_name);
+        return \cms\plugins::getConfig($plugin_name);
     }
 
     public function getEventPlugins($event)
     {
-        return \cms\plugin::getEventPlugins($event);
+        return \cms\plugins::getEventPlugins($event);
     }
 
     public static function loadPlugin($plugin)
     {
-        return \cms\plugin::load($plugin);
+        return \cms\plugins::load($plugin);
     }
 
     public static function strToURL($str, $dont_translit = false)

@@ -44,7 +44,7 @@ if ( is_dir(PATH . '/install') || is_dir(PATH . '/migrate') ) {
     cmsCore::halt();
 }
 
-\cms\plugin::callEvent('get_index', '');
+\cms\plugins::callEvent('get_index', '');
 
 $inPage = cmsPage::getInstance();
 $inUser = cmsUser::getInstance();

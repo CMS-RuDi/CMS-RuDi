@@ -173,7 +173,7 @@ class cmsUser
 
         $info['access'] = explode(',', str_replace(', ', ',', $info['access']));
 
-        return $this->loads_users[$info['id']] = \cms\plugin::callEvent('users.load_user', $info);
+        return $this->loads_users[$info['id']] = \cms\plugins::callEvent('users.load_user', $info);
     }
 
     /**
@@ -238,7 +238,7 @@ class cmsUser
 
             if ( $user ) {
                 $_SESSION['user'] = $user;
-                \cms\plugin::callEvent('users.login', $_SESSION['user']);
+                \cms\plugins::callEvent('users.login', $_SESSION['user']);
                 self::setUserLogdate($user['id']);
             }
             else {
@@ -612,7 +612,7 @@ class cmsUser
             return false;
         }
 
-        \cms\plugin::callEvent('users.add_friend', $user_id);
+        \cms\plugins::callEvent('users.add_friend', $user_id);
 
         $my_id = self::getInstance()->id;
 
@@ -642,7 +642,7 @@ class cmsUser
         $friend_field_id = self::getFriendFieldId($user_id);
 
         if ( $friend_field_id ) {
-            \cms\plugin::callEvent('users.delete_friend', $user_id);
+            \cms\plugins::callEvent('users.delete_friend', $user_id);
 
             cmsDatabase::getInstance()->query("DELETE FROM cms_user_friends WHERE id = '" . $friend_field_id . "'");
 
@@ -827,7 +827,7 @@ class cmsUser
                 $records[]          = $record;
             }
 
-            $records = \cms\plugin::callEvent('users.get_wall_posts', $records);
+            $records = \cms\plugins::callEvent('users.get_wall_posts', $records);
         }
 
         ob_start();
@@ -922,7 +922,7 @@ class cmsUser
                 $data['karma']          = -1000000;
                 $data['logdate']        = self::getUserLogdate();
                 $data['city']           = '';
-                self::$guest_group_info = \cms\plugin::callEvent('users.get_guest', $data);
+                self::$guest_group_info = \cms\plugins::callEvent('users.get_guest', $data);
             }
             else {
                 self::$guest_group_info = array();
@@ -1289,7 +1289,7 @@ class cmsUser
 
         self::sendMessage(USER_UPDATER, $user_id, '<b>' . $_LANG['RECEIVED_AWARD'] . ':</b> <a href="' . cmsUser::getProfileURL($user['login']) . '#upr_awards">' . $award['title'] . '</a>');
 
-        return \cms\plugin::callEvent('users.give_award', $award_id);
+        return \cms\plugins::callEvent('users.give_award', $award_id);
     }
 
     /**
@@ -1899,7 +1899,7 @@ class cmsUser
 
         // иначе пытаемся авторизоваться через плагины
         if ( !$user ) {
-            $user = \cms\plugin::callEvent('users.signin', array( 'login' => $login, 'pass' => $passw ));
+            $user = \cms\plugins::callEvent('users.signin', array( 'login' => $login, 'pass' => $passw ));
         }
 
         if ( !$user ) {
@@ -1908,7 +1908,7 @@ class cmsUser
 
         $_SESSION['user'] = $user;
 
-        \cms\plugin::callEvent('users.login', $_SESSION['user']);
+        \cms\plugins::callEvent('users.login', $_SESSION['user']);
 
         if ( $remember_pass ) {
             $cookie_code = md5($user['id'] . $user['password'] . PATH);
@@ -1982,7 +1982,7 @@ class cmsUser
 
         $sess_id = session_id();
 
-        \cms\plugin::callEvent('users.logout', $this->id);
+        \cms\plugins::callEvent('users.logout', $this->id);
 
         self::setUserLogdate($this->id);
 

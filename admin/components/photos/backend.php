@@ -272,7 +272,7 @@ if ( $opt == 'submit_album' ) {
     $album['meta_desc']   = cmsCore::request('meta_desc', 'str', '');
     $album['pagetitle']   = cmsCore::request('pagetitle', 'str', '');
 
-    $album = \cms\plugin::callEvent('photos.add_album', $album);
+    $album = \cms\plugins::callEvent('photos.add_album', $album);
 
     $inDB->addNsCategory('cms_photo_albums', $album);
 

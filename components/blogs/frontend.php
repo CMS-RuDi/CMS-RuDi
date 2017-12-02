@@ -159,7 +159,7 @@ function blogs()
             }
 
             //Добавляем блог в базу
-            $blog_id   = $inBlog->addBlog(\cms\plugin::callEvent('blogs.add', [ 'user_id' => $inUser->id, 'title' => $title, 'allow_who' => $allow_who, 'ownertype' => $ownertype, 'forall' => 1 ]));
+            $blog_id   = $inBlog->addBlog(\cms\plugins::callEvent('blogs.add', [ 'user_id' => $inUser->id, 'title' => $title, 'allow_who' => $allow_who, 'ownertype' => $ownertype, 'forall' => 1 ]));
             $blog_link = $inDB->get_field('cms_blogs', "id='{$blog_id}'", 'seolink');
             //регистрируем событие
             cmsActions::log('add_blog', array(
@@ -206,7 +206,7 @@ function blogs()
         //Если нет запроса на сохранение, показываем форму настроек блога
         if ( !cmsCore::inRequest('goadd') ) {
             //Получаем список авторов блога
-            $authors = \cms\plugin::callEvent('blogs.get_authors', $inBlog->getBlogAuthors($blog['id']));
+            $authors = \cms\plugins::callEvent('blogs.get_authors', $inBlog->getBlogAuthors($blog['id']));
 
             cmsPage::initTemplate('components', 'com_blog_config')->
                     assign('blog', $blog)->
@@ -266,11 +266,11 @@ function blogs()
             }
 
             //сохраняем авторов
-            \cms\plugin::callEvent('blogs.update_authors', [ $blog['id'], &$authors ]);
+            \cms\plugins::callEvent('blogs.update_authors', [ $blog['id'], &$authors ]);
             $inBlog->updateBlogAuthors($blog['id'], $authors);
 
             //сохраняем настройки блога
-            $blog['seolink_new'] = $inBlog->updateBlog($blog['id'], \cms\plugin::callEvent('blogs.update', [
+            $blog['seolink_new'] = $inBlog->updateBlog($blog['id'], \cms\plugins::callEvent('blogs.update', [
                         'title'     => $title,
                         'pagetitle' => $page_title,
                         'meta_keys' => $meta_keys,
@@ -315,7 +315,7 @@ function blogs()
         $inDB->limitPage($page, $model->config['perpage_blog']);
 
         //Получаем список блогов
-        $blogs = \cms\plugin::callEvent('blogs.get_blogs', $inBlog->getBlogs($model));
+        $blogs = \cms\plugins::callEvent('blogs.get_blogs', $inBlog->getBlogs($model));
         if ( !$blogs && $page > 1 ) {
             cmsCore::error404();
         }
@@ -439,7 +439,7 @@ function blogs()
         $blogcats = false;
         // Если нужно, получаем список рубрик (категорий) этого блога
         if ( $blog['showcats'] ) {
-            $blogcats = \cms\plugin::callEvent('blogs.get_categories', $inBlog->getBlogCats($blog['id']));
+            $blogcats = \cms\plugins::callEvent('blogs.get_categories', $inBlog->getBlogCats($blog['id']));
         }
 
         //Считаем количество постов, ожидающих модерации
@@ -640,7 +640,7 @@ function blogs()
                 $mod['user_id'] = $inUser->id;
 
                 // добавляем пост, получая его id и seolink
-                $added = $inBlog->addPost(\cms\plugin::callEvent('blogs.add_post', $mod));
+                $added = $inBlog->addPost(\cms\plugins::callEvent('blogs.add_post', $mod));
                 $mod   = array_merge($mod, $added);
 
                 if ( $mod['published'] ) {
@@ -648,7 +648,7 @@ function blogs()
 
                     if ( $blog['allow_who'] != 'nobody' && $mod['allow_who'] != 'nobody' ) {
 
-                        \cms\plugin::callEvent('blogs.add_post_done', $mod);
+                        \cms\plugins::callEvent('blogs.add_post_done', $mod);
 
                         cmsActions::log('add_post', array(
                             'object'          => $mod['title'],
@@ -689,7 +689,7 @@ function blogs()
                 $mod['edit_times'] = (int) $post['edit_times'] + 1;
                 $mod['edit_date']  = date('Y-m-d H:i:s');
 
-                $new_post_seolink = $inBlog->updatePost($post['id'], \cms\plugin::callEvent('blogs.update_post', $mod), $model->config['update_seo_link']);
+                $new_post_seolink = $inBlog->updatePost($post['id'], \cms\plugins::callEvent('blogs.update_post', $mod), $model->config['update_seo_link']);
 
                 $post['seolink'] = is_string($new_post_seolink) ? $new_post_seolink : $post['seolink'];
 
@@ -730,7 +730,7 @@ function blogs()
 
         // Для редактирования сначала получаем рубрику
         if ( $do == 'editcat' ) {
-            $cat = \cms\plugin::callEvent('blogs.get_category', $inBlog->getBlogCategory($cat_id));
+            $cat = \cms\plugins::callEvent('blogs.get_category', $inBlog->getBlogCategory($cat_id));
 
             if ( !$cat ) {
                 cmsCore::halt();
@@ -777,12 +777,12 @@ function blogs()
             //новая рубрика
             if ( $do == 'newcat' ) {
 
-                $cat['id'] = $inBlog->addBlogCategory(\cms\plugin::callEvent('blogs.add_category', $new_cat));
+                $cat['id'] = $inBlog->addBlogCategory(\cms\plugins::callEvent('blogs.add_category', $new_cat));
                 cmsCore::addSessionMessage($_LANG['CAT_IS_ADDED'], 'success');
             }
             //редактирование рубрики
             if ( $do == 'editcat' ) {
-                $inBlog->updateBlogCategory($cat['id'], \cms\plugin::callEvent('blogs.update_category', $new_cat));
+                $inBlog->updateBlogCategory($cat['id'], \cms\plugins::callEvent('blogs.update_category', $new_cat));
                 cmsCore::addSessionMessage($_LANG['CAT_IS_UPDATED'], 'success');
             }
 
@@ -801,7 +801,7 @@ function blogs()
             cmsCore::error404();
         }
 
-        $cat = \cms\plugin::callEvent('blogs.get_category', $inBlog->getBlogCategory($cat_id));
+        $cat = \cms\plugins::callEvent('blogs.get_category', $inBlog->getBlogCategory($cat_id));
 
         if ( !$cat ) {
             cmsCore::halt();
@@ -820,7 +820,7 @@ function blogs()
             cmsCore::halt();
         }
 
-        $inBlog->deleteBlogCategory(\cms\plugin::callEvent('blogs.delete_category', $cat['id']));
+        $inBlog->deleteBlogCategory(\cms\plugins::callEvent('blogs.delete_category', $cat['id']));
 
         cmsCore::addSessionMessage($_LANG['CAT_IS_DELETED'], 'success');
 
@@ -876,7 +876,7 @@ function blogs()
         $inPage->setKeywords($post['meta_keys'] ? $post['meta_keys'] : $post['title']);
 
         if ( $post['cat_id'] ) {
-            $cat = \cms\plugin::callEvent('blogs.get_category', $inBlog->getBlogCategory($post['cat_id']));
+            $cat = \cms\plugins::callEvent('blogs.get_category', $inBlog->getBlogCategory($post['cat_id']));
         }
 
         $post['tags'] = cmsTagBar('blogpost', $post['id']);
@@ -941,7 +941,7 @@ function blogs()
             cmsCore::halt();
         }
 
-        \cms\plugin::callEvent('blogs.delete_post', $post['id']);
+        \cms\plugins::callEvent('blogs.delete_post', $post['id']);
         $inBlog->deletePost($post['id']);
 
         if ( $inUser->id != $post['user_id'] ) {
@@ -984,7 +984,7 @@ function blogs()
         $post['seolink'] = $model->getPostURL($blog['seolink'], $post['seolink']);
 
         if ( $blog['allow_who'] == 'all' && $post['allow_who'] == 'all' ) {
-            \cms\plugin::callEvent('blogs.add_post_done', $post);
+            \cms\plugins::callEvent('blogs.add_post_done', $post);
         }
 
         if ( $blog['allow_who'] != 'nobody' && $post['allow_who'] != 'nobody' ) {

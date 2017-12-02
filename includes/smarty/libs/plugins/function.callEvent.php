@@ -12,5 +12,5 @@
 
 function smarty_function_callEvent($params, &$smarty)
 {
-    \cms\plugin::callEvent($params['event'], (empty($params['item']) ? array() : $params['item']));
+    \cms\plugins::callEvent($params['event'], (empty($params['item']) ? array() : $params['item']));
 }

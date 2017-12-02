@@ -351,7 +351,7 @@ function registration()
             $item['invited_by'] = 0;
         }
 
-        $item = \cms\plugin::callEvent('users.before_register', $item);
+        $item = \cms\plugins::callEvent('users.before_register', $item);
 
         $item['id']      = $item['user_id'] = $inDB->insert('cms_users', $item);
         if ( !$item['id'] ) {
@@ -360,7 +360,7 @@ function registration()
 
         $inDB->insert('cms_user_profiles', $item);
 
-        \cms\plugin::callEvent('users.register', $item);
+        \cms\plugins::callEvent('users.register', $item);
 
         if ( $item['is_locked'] ) {
             $model->sendActivationNotice($pass, $item['id']);
@@ -467,7 +467,7 @@ function registration()
         $inDB->query("UPDATE cms_users SET is_locked = 0 WHERE id = '" . $user_id . "'");
         $inDB->query("DELETE FROM cms_users_activate WHERE code = '" . $code . "'");
 
-        \cms\plugin::callEvent('users.activated', $user_id);
+        \cms\plugins::callEvent('users.activated', $user_id);
 
         if ( $model->config['send_greetmsg'] ) {
             $model->sendGreetsMessage($user_id);

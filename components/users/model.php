@@ -126,7 +126,7 @@ class cms_model_users
         }
 
         // добавляем запись
-        $wall_id = $this->inDB->insert('cms_user_wall', \cms\plugin::callEvent('users.add_wall', $item));
+        $wall_id = $this->inDB->insert('cms_user_wall', \cms\plugins::callEvent('users.add_wall', $item));
 
         $message = strip_tags($item['content']);
         $message = mb_strlen($message) > 100 ? mb_substr($message, 0, 100) : $message;
@@ -351,12 +351,12 @@ class cms_model_users
             }
         }
 
-        return \cms\plugin::callEvent('users.get_user', $user);
+        return \cms\plugins::callEvent('users.get_user', $user);
     }
 
     public function deleteUser($user_id, $is_delete = false)
     {
-        \cms\plugin::callEvent('users.delete_user', $user_id);
+        \cms\plugins::callEvent('users.delete_user', $user_id);
 
         if ( $user_id == 1 ) {
             return false;
@@ -382,7 +382,7 @@ class cms_model_users
             $user_blog = $inBlog->getBlogByUserId($user_id);
 
             if ( $user_blog ) {
-                \cms\plugin::callEvent('blogs.delete', $user_blog['id']);
+                \cms\plugins::callEvent('blogs.delete', $user_blog['id']);
                 $inBlog->deleteBlog($user_blog['id']);
             }
         }
@@ -407,7 +407,7 @@ class cms_model_users
 
     public function deleteGroup($group_id)
     {
-        \cms\plugin::callEvent('users.delete_group', $group_id);
+        \cms\plugins::callEvent('users.delete_group', $group_id);
 
         $sql = "SELECT id FROM cms_users WHERE group_id = '" . $group_id . "'";
 
@@ -643,7 +643,7 @@ class cms_model_users
 
     public function addPhotoAlbum($album)
     {
-        $album = \cms\plugin::callEvent('users.add_photo_album', $album);
+        $album = \cms\plugins::callEvent('users.add_photo_album', $album);
 
         if ( !$album['allow_who'] ) {
             $album['allow_who'] = 'all';
@@ -804,7 +804,7 @@ class cms_model_users
         }
 
         if ( $only_private ) {
-            $albums = \cms\plugin::callEvent('users.get_albums', $albums);
+            $albums = \cms\plugins::callEvent('users.get_albums', $albums);
             return $albums;
         }
 
@@ -830,7 +830,7 @@ class cms_model_users
             }
         }
 
-        $albums = \cms\plugin::callEvent('users.get_albums', $albums);
+        $albums = \cms\plugins::callEvent('users.get_albums', $albums);
 
         return $albums;
     }
@@ -868,7 +868,7 @@ class cms_model_users
             }
         }
 
-        $photos = \cms\plugin::callEvent('users.get_uploaded_photos', $photos);
+        $photos = \cms\plugins::callEvent('users.get_uploaded_photos', $photos);
 
         return $photos ? $photos : false;
     }

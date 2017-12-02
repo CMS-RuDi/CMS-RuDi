@@ -481,7 +481,7 @@ function clubs()
                 cmsCore::halt();
             }
 
-            \cms\plugin::callEvent('clubs.leave', $club);
+            \cms\plugins::callEvent('clubs.leave', $club);
 
             $model->removeUserFromClub($club['id'], $inUser->id);
             // Пересчитываем рейтинг
@@ -539,7 +539,7 @@ function clubs()
         // Обработка заявки
         //
         if ( cmsCore::inRequest('confirm') ) {
-            \cms\plugin::callEvent('clubs.join', $club);
+            \cms\plugins::callEvent('clubs.join', $club);
 
             //списываем оплату если клуб платный
             if ( IS_BILLING && $club['is_vip'] && $club['join_cost'] && !$inUser->is_admin ) {
@@ -991,7 +991,7 @@ function clubs()
             return false;
         }
 
-        $photo = \cms\plugin::callEvent('clubs.view_photo', $photo);
+        $photo = \cms\plugins::callEvent('clubs.view_photo', $photo);
 
         // получаем клуб
         $club = $model->getClub($photo['auser_id']);

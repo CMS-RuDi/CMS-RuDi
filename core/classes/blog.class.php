@@ -86,7 +86,7 @@ class cmsBlogs
             $cats[] = $cat;
         }
 
-        return \cms\plugin::callEvent('blog.get_categories', $cats);
+        return \cms\plugins::callEvent('blog.get_categories', $cats);
     }
 
     /**
@@ -98,7 +98,7 @@ class cmsBlogs
     {
         $cat = $this->inDB->get_fields('cms_blog_cats', "id = '" . $cat_id . "'", '*');
 
-        return $cat ? \cms\plugin::callEvent('blog.get_category', $cat) : false;
+        return $cat ? \cms\plugins::callEvent('blog.get_category', $cat) : false;
     }
 
     /**
@@ -108,7 +108,7 @@ class cmsBlogs
      */
     public function addBlogCategory($item)
     {
-        return $this->inDB->insert('cms_blog_cats', \cms\plugin::callEvent('blog.add_category', $item));
+        return $this->inDB->insert('cms_blog_cats', \cms\plugins::callEvent('blog.add_category', $item));
     }
 
     /**
@@ -119,7 +119,7 @@ class cmsBlogs
      */
     public function updateBlogCategory($cat_id, $item)
     {
-        return $this->inDB->update('cms_blog_cats', \cms\plugin::callEvent('blog.update_category', $item), $cat_id);
+        return $this->inDB->update('cms_blog_cats', \cms\plugins::callEvent('blog.update_category', $item), $cat_id);
     }
 
     /**
@@ -129,7 +129,7 @@ class cmsBlogs
      */
     public function deleteBlogCategory($cat_id)
     {
-        \cms\plugin::callEvent('blog.delete_category', $cat_id);
+        \cms\plugins::callEvent('blog.delete_category', $cat_id);
 
         $this->inDB->query("UPDATE cms_blog_posts SET cat_id=0 WHERE cat_id = '" . $cat_id . "'");
 
@@ -153,7 +153,7 @@ class cmsBlogs
             }
         }
 
-        return \cms\plugin::callEvent('blog.get_authors', $authors);
+        return \cms\plugins::callEvent('blog.get_authors', $authors);
     }
 
     /**
@@ -228,7 +228,7 @@ class cmsBlogs
 
         $blog['pubdate'] = cmsCore::dateFormat($blog['pubdate']);
 
-        return \cms\plugin::callEvent('blog.get_blog', $blog);
+        return \cms\plugins::callEvent('blog.get_blog', $blog);
     }
 
     /**
@@ -290,7 +290,7 @@ class cmsBlogs
             $blogs[]         = $blog;
         }
 
-        return \cms\plugin::callEvent('blog.get_blogs', $blogs);
+        return \cms\plugins::callEvent('blog.get_blogs', $blogs);
     }
 
     /**
@@ -361,7 +361,7 @@ class cmsBlogs
      */
     public function addBlog($item)
     {
-        $item['id'] = $this->inDB->insert('cms_blogs', \cms\plugin::callEvent('blog.add', $item));
+        $item['id'] = $this->inDB->insert('cms_blogs', \cms\plugins::callEvent('blog.add', $item));
 
         if ( $item['id'] ) {
             $item['seolink'] = $this->generateBlogSeoLink($item);
@@ -387,7 +387,7 @@ class cmsBlogs
             $item['seolink'] = $this->generateBlogSeoLink($item);
         }
 
-        $item = \cms\plugin::callEvent('blog.update', $item);
+        $item = \cms\plugins::callEvent('blog.update', $item);
 
         $this->inDB->update('cms_blogs', $item, $id);
 
@@ -401,7 +401,7 @@ class cmsBlogs
      */
     public function deleteBlog($blog_id)
     {
-        \cms\plugin::callEvent('blog.delete', $blog_id);
+        \cms\plugins::callEvent('blog.delete', $blog_id);
 
         // удаляем сам блог
         $this->inDB->query("DELETE FROM cms_blogs WHERE id = '" . $blog_id . "'");
@@ -445,7 +445,7 @@ class cmsBlogs
         //Удаляем прежний набор авторов
         $this->inDB->query("DELETE FROM cms_blog_authors WHERE blog_id = '" . $id . "'");
 
-        $authors = \cms\plugin::callEvent('blog.update_authors', $authors);
+        $authors = \cms\plugins::callEvent('blog.update_authors', $authors);
 
         if ( $authors ) {
             foreach ( $authors as $key => $author_id ) {
@@ -575,7 +575,7 @@ class cmsBlogs
             $posts[] = $post;
         }
 
-        return \cms\plugin::callEvent('blog.get_posts', $posts);
+        return \cms\plugins::callEvent('blog.get_posts', $posts);
     }
 
     /**
@@ -621,7 +621,7 @@ class cmsBlogs
      */
     public function isUserBlogWriter($blog, $user_id)
     {
-        \cms\plugin::callEvent('blog.is_writer', $blog);
+        \cms\plugins::callEvent('blog.is_writer', $blog);
 
         // в персональные блоги может писать только автор
         if ( $blog['ownertype'] == 'single' ) {
@@ -675,7 +675,7 @@ class cmsBlogs
         $post['content_html']  = preg_replace('/\[(cut=)\s*(.*?)\]/ui', '', $post['content_html']);
         $post['author_avatar'] = cmsUser::getUserAvatarUrl($post['user_id'], 'small', $post['author_image'], $post['author_deleted']);
 
-        return \cms\plugin::callEvent('blog.get_post', $post);
+        return \cms\plugins::callEvent('blog.get_post', $post);
     }
 
     /**
@@ -685,7 +685,7 @@ class cmsBlogs
      */
     public function addPost($item)
     {
-        $item = \cms\plugin::callEvent('blog.add_post', $item);
+        $item = \cms\plugins::callEvent('blog.add_post', $item);
 
         //парсим bb-код перед записью в базу
         // Парсим по отдельности части текста, если есть тег [cut
@@ -738,7 +738,7 @@ class cmsBlogs
     {
         $item['id'] = $post_id;
 
-        $item = \cms\plugin::callEvent('blog.update_post', $item);
+        $item = \cms\plugins::callEvent('blog.update_post', $item);
 
         if ( $update_seo_link ) {
             $item['seolink'] = $this->generatePostSeoLink($item);
@@ -773,7 +773,7 @@ class cmsBlogs
      */
     public function deletePost($post_id)
     {
-        \cms\plugin::callEvent('blog.delete_post', $post_id);
+        \cms\plugins::callEvent('blog.delete_post', $post_id);
 
         $post = $this->getPost($post_id);
 

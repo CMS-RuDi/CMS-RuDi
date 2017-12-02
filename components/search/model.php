@@ -223,7 +223,7 @@ class cms_model_search
             $rs[] = $res;
         }
 
-        return \cms\plugin::callEvent('search.get_result', $rs);
+        return \cms\plugins::callEvent('search.get_result', $rs);
     }
 
     /**
