@@ -10,7 +10,6 @@
  *                        LICENSED BY GNU/GPL v2
  */
 
-$_LANG['FILE_NOT_FOUND']         = 'File not found';
 $_LANG['FILE_EXTERNAL_LINK']     = 'Link to a Fraudulent Site';
 $_LANG['FILE_EXTERNAL_LINK_1']   = 'You are leaving the website "<a href="%s">%s</a>" an external link <a rel="nofollow" href="%s">%s</a>.';
 $_LANG['FILE_EXTERNAL_LINK_2']   = 'We are not responsible for the site content <b>%s</b> and strongly recommend that you <b>do not specify</b> any personal data on third-party sites.';

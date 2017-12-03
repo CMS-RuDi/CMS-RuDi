@@ -20,6 +20,12 @@ class cmsCore
 
     use \Singeltone;
 
+    /**
+     * Массив с объектами моделей компонентов
+     *
+     * @var array
+     */
+    protected static $models        = [];
     private static $jevix;
     protected $menu_item;
     protected $menu_id;
@@ -33,7 +39,6 @@ class cmsCore
     protected static $filters;
     protected $url_without_com_name = false;
     protected $module_configs;
-    protected $component_configs;
     protected $template;
 
     /**
@@ -82,7 +87,7 @@ class cmsCore
         $this->component = $this->detectComponent();
 
         // загрузим все события плагинов в память
-        \cms\plugins::loadEvents();
+        \cms\events::loadListeners();
 
         // массив текущего пункта меню
         $this->menu_item = $this->getMenuItem($this->menuId());
@@ -114,7 +119,7 @@ class cmsCore
      */
     public function savePluginConfig($plugin_name, $config)
     {
-        $obj = \cms\plugins::load($plugin_name);
+        $obj = \cms\plugin::load($plugin_name);
 
         $obj->setConfig($config)->saveConfig();
 
@@ -123,6 +128,7 @@ class cmsCore
 
     /**
      * Возвращает полный список компонентов
+     *
      * @return array
      */
     public function getAllComponents()
@@ -137,88 +143,30 @@ class cmsCore
     }
 
     /**
-     * Проверяет включен ли компонент
-     * @param string $component Название компонента
-     * @return bool
-     */
-    public function isComponentEnable($component)
-    {
-        return \cms\controller::isComponentEnabled($component);
-    }
-
-    /**
      * Возвращает массив компонента по ID
-     * @param int $component_id ID компонента
+     *
+     * @param int $id ID компонента
+     *
      * @return array
      */
-    public function getComponent($component_id)
+    public function getComponent($id)
     {
-        $c = array();
+        $components = \cms\controller::getAllComponents();
 
-        foreach ( $this->components as $inst_component ) {
-            if ( $inst_component['id'] == $component_id ) {
-                $c = $inst_component;
-                break;
+        foreach ( $components as $component ) {
+            if ( $component['id'] == $id ) {
+                return $component;
             }
         }
 
-        return $c;
-    }
-
-    /**
-     * Возвращает кофигурацию компонента в виде массива
-     * @param string $component Название компонента
-     * @return float
-     */
-    public function loadComponentConfig($component)
-    {
-        return \cms\controller::loadOptions($component);
-    }
-
-    /**
-     * Сохраняет настройки компонента в базу
-     * @param string $component Название компонета
-     * @param array $config
-     * @return bool
-     */
-    public function saveComponentConfig($component, $config)
-    {
-        $inDB = cmsDatabase::getInstance();
-
-        //конвертируем массив настроек в YAML
-        $config_yaml = $inDB->escape_string(self::arrayToYaml($config));
-
-        //обновляем плагин в базе
-        $update_query = "UPDATE cms_components SET config='" . $config_yaml . "' WHERE link = '" . $component . "'";
-
-        return $inDB->query($update_query);
-    }
-
-    /**
-     * Кэширует конфигурацию компонента на время выполнения скрипта
-     * @param string $component
-     * @param array $config
-     * @return boolean
-     */
-    public function cacheComponentConfig($component, $config)
-    {
-        $this->component_configs[$component] = $config;
-        return true;
-    }
-
-    /**
-     * Проверяет, установлен ли компонент
-     * @param string $component Название компонента
-     * @return bool
-     */
-    public function isComponentInstalled($component)
-    {
-        return isset($this->components[$component]);
+        return [];
     }
 
     /**
      * Загружает библиотеку из файла /core/lib_XXX.php, где XXX = $lib
+     *
      * @param string $lib
+     *
      * @return bool
      */
     public static function loadLib($lib)
@@ -228,7 +176,9 @@ class cmsCore
 
     /**
      * Подключает внешний файл
+     *
      * @param string $file Путь от корня сайта без начального слеша
+     *
      * @return bool
      */
     public static function includeFile($file)
@@ -263,7 +213,7 @@ class cmsCore
      */
     public static function insertEditor($name, $text = '', $height = '350', $width = '500', $toolbar = 'full')
     {
-        $editor = self::callEvent('INSERT_WYSIWYG', [ 'name' => $name, 'text' => $text, 'toolbar' => $toolbar, 'height' => $height, 'width' => $width ], 'single');
+        $editor = \cms\events::call('INSERT_WYSIWYG', [ 'name' => $name, 'text' => $text, 'toolbar' => $toolbar, 'height' => $height, 'width' => $width ], 'single');
 
         if ( !is_array($editor) ) {
             echo $editor;
@@ -277,6 +227,7 @@ class cmsCore
 
     /**
      * Добавляет сообщение в сессию
+     *
      * @param string $message
      * @param string $class
      */
@@ -316,6 +267,7 @@ class cmsCore
      * Возвращает текущий URI
      * Нужна для того, чтобы иметь возможность переопределить URI.
      * По сути является эмулятором внутреннего mod_rewrite
+     *
      * @return string
      */
     private function detectURI()
@@ -452,24 +404,25 @@ class cmsCore
      * Определяет текущий компонент
      * Считается, что компонент указан в первом сегменте URI,
      * иначе подключается компонент для главной страницы
+     *
      * @return string $component
      */
     private function detectComponent()
     {
-        //главная страница
+        // главная страница
         if ( !$this->uri ) {
             return cmsConfig::getConfig('homecom');
         }
 
-        //определяем, есть ли слэши в адресе
+        // определяем, есть ли слэши в адресе
         $first_slash_pos = mb_strpos($this->uri, '/');
 
         if ( $first_slash_pos ) {
-            //если есть слэши, то компонент это сегмент до первого слэша
+            // если есть слэши, то компонент это сегмент до первого слэша
             $component = mb_substr($this->uri, 0, $first_slash_pos);
         }
         else {
-            //если слэшей нет, то компонент совпадает с адресом
+            // если слэшей нет, то компонент совпадает с адресом
             $component = $this->uri;
         }
 
@@ -477,11 +430,11 @@ class cmsCore
         $component = preg_replace('/[^a-z0-9]/iu', '', $component);
 
         if ( $this->isComponentInstalled($component) ) {
-            //если компонент определен и существует
+            // если компонент определен и существует
             return $component;
         }
         else {
-            //если компонент не существует, считаем что это content
+            // если компонент не существует, считаем что это content
             $this->uri = cmsConfig::getConfig('com_without_name_in_url') . '/' . $this->uri;
 
             $this->url_without_com_name = true;
@@ -500,6 +453,7 @@ class cmsCore
      * и вызывает метод route_component(), которые возвращает массив правил
      * для анализа URI. Если в массиве найдено совпадение с текущим URI,
      * то URI парсится и переменные, содержащиеся в нем, забиваются в массив $_REQUEST.
+     *
      * @return boolean
      */
     private function parseComponentRoute()
@@ -520,7 +474,7 @@ class cmsCore
         }
 
         $routes = call_user_func('routes_' . $this->component);
-        $routes = \cms\plugins::callEvent('core.get_route_' . $this->component, $routes);
+        $routes = \cms\events::call('core.get_route_' . $this->component, $routes);
 
         // Флаг удачного перебора
         $is_found = false;
@@ -579,7 +533,7 @@ class cmsCore
     {
         ob_start();
 
-        //проверяем что компонент указан
+        // проверяем что компонент указан
         if ( !$this->component ) {
             return false;
         }
@@ -587,7 +541,7 @@ class cmsCore
         $components = array( $this->component );
 
         if ( $this->url_without_com_name ) {
-            $components = \cms\plugins::callEvent('core.get_main_components', $components);
+            $components = \cms\events::call('core.get_main_components', $components);
         }
 
         foreach ( $components as $component ) {
@@ -602,7 +556,7 @@ class cmsCore
                 $this->uri = $this->component . strstr($this->uri, '/');
             }
 
-            //парсим адрес и заполняем массив $_REQUEST
+            // парсим адрес и заполняем массив $_REQUEST
             if ( !$this->parseComponentRoute() ) {
                 continue;
             }
@@ -615,7 +569,7 @@ class cmsCore
             // Вызываем сначала плагин (если он есть) на действие
             // Успешность выполнения должна определяться в методе execute плагина
             // Он должен вернуть true
-            if ( !\cms\plugins::callEvent('core.get_' . $this->component . '_action_' . $this->do, false) ) {
+            if ( !\cms\events::call('core.get_' . $this->component . '_action_' . $this->do, false) ) {
                 self::includeFile('components/' . $this->component . '/frontend.php');
 
                 if ( function_exists($this->component) ) {
@@ -627,10 +581,10 @@ class cmsCore
             }
 
             if ( self::isAjax() ) {
-                cmsCore::halt(\cms\plugins::callEvent('core.after_component_' . $this->component, ob_get_clean()));
+                cmsCore::halt(\cms\events::call('core.after_component_' . $this->component, ob_get_clean()));
             }
 
-            cmsPage::getInstance()->page_body = \cms\plugins::callEvent('core.after_component_' . $this->component, ob_get_clean());
+            cmsPage::getInstance()->page_body = \cms\events::call('core.after_component_' . $this->component, ob_get_clean());
 
             return true;
         }
@@ -2117,7 +2071,7 @@ class cmsCore
      */
     public static function clearCache()
     {
-        \cms\plugins::callEvent('core.clear_cache', '');
+        \cms\events::call('core.clear_cache', '');
 
         $directory = PATH . '/cache';
 
@@ -2216,33 +2170,119 @@ class cmsCore
         self::halt(json_encode($data));
     }
 
+    //========================================================================//
+
+    public static function getComponentDefaultConfig($component_name)
+    {
+        $class_name = self::getModelClassName($component_name);
+
+        if ( class_exists($class_name) ) {
+            if ( method_exists($class_name, 'getDefaultConfig') ) {
+                return $class_name::getDefaultConfig();
+            }
+        }
+
+        return [];
+    }
+
+    public static function getModelClassName($component_name)
+    {
+        $new_class_name = '\\components\\' . $component_name . '\\model';
+        $old_class_name = 'cms_model_' . $component_name;
+
+        if ( class_exists($new_class_name) ) {
+            return $new_class_name;
+        }
+        else if ( class_exists($old_class_name) ) {
+            return $old_class_name;
+        }
+
+        return false;
+    }
+
+    /**
+     * Возвращает объект модели компонента
+     *
+     * @param string $component_name Название компонента
+     * @param bool $reinit Флаг указывающий следует ли переинициализировать класс
+     * модели или нет. Имеет смысл при отсутствии методов getInstace() и initModel()
+     * которые всегда возвращают один и тот же объект класса.
+     *
+     * @return \cms\model
+     */
+    public static function getModel($component_name, $reinit = false)
+    {
+        if ( !isset(self::$models[$component_name]) || $reinit === true ) {
+            $class_name = self::getModelClassName($component_name);
+
+            if ( class_exists($class_name) ) {
+                if ( method_exists($class_name, 'getInstance') ) {
+                    self::$models[$component_name] = $class_name::getInstance();
+                }
+                else if ( method_exists($class_name, 'initModel') ) {
+                    self::$models[$component_name] = $class_name::initModel();
+                }
+                else {
+                    self::$models[$component_name] = new $class_name();
+                }
+            }
+        }
+
+        return self::$models[$component_name];
+    }
+
     // ============================= DEPRECATED ==============================//
     // Методы не желательные к использованию в новых компонентах, плагинах и модулях
     // но оставленные для совместимости со старыми версиями
 
+    public function isComponentEnable($component)
+    {
+        return \cms\controller::enabled($component);
+    }
+
+    public function loadComponentConfig($component)
+    {
+        return \cms\controller::loadOptions($component);
+    }
+
+    public function saveComponentConfig($component, $config)
+    {
+        return \cms\controller::saveOptions($component, $config);
+    }
+
+    public function isComponentInstalled($component)
+    {
+        return \cms\controller::installed($component);
+    }
+
+    public function cacheComponentConfig($component, $config)
+    {
+        return true;
+    }
+
     public static function callEvent($event, $item, $is_all = false)
     {
-        return \cms\plugins::callEvent($event, $item, ($is_all === true ? 'multi' : 'single'));
+        return \cms\events::call($event, $item, ($is_all === true ? 'multi' : 'single'));
     }
 
     public static function callAllEvent($event, $item)
     {
-        return \cms\plugins::callEvent($event, $item, 'multi');
+        return \cms\events::call($event, $item, 'multi');
     }
 
     public function loadPluginConfig($plugin_name)
     {
-        return \cms\plugins::getConfig($plugin_name);
+        return \cms\plugin::loadConfig($plugin_name);
     }
 
     public function getEventPlugins($event)
     {
-        return \cms\plugins::getEventPlugins($event);
+        return \cms\events::getEventPlugins($event);
     }
 
     public static function loadPlugin($plugin)
     {
-        return \cms\plugins::load($plugin);
+        return \cms\plugin::load($plugin);
     }
 
     public static function strToURL($str, $dont_translit = false)
@@ -2347,9 +2387,9 @@ class cmsCore
         return \cms\debug::getTime('cms');
     }
 
-    public static function loadModel($component)
+    public static function loadModel($component_name)
     {
-        return self::includeFile('components/' . $component . '/model.php');
+        return self::getModelClassName($component_name) === false ? false : true;
     }
 
     public static function loadClass($class)

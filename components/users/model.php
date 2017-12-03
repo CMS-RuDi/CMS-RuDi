@@ -126,7 +126,7 @@ class cms_model_users
         }
 
         // добавляем запись
-        $wall_id = $this->inDB->insert('cms_user_wall', \cms\plugins::callEvent('users.add_wall', $item));
+        $wall_id = $this->inDB->insert('cms_user_wall', \cms\events::call('users.add_wall', $item));
 
         $message = strip_tags($item['content']);
         $message = mb_strlen($message) > 100 ? mb_substr($message, 0, 100) : $message;
@@ -351,12 +351,12 @@ class cms_model_users
             }
         }
 
-        return \cms\plugins::callEvent('users.get_user', $user);
+        return \cms\events::call('users.get_user', $user);
     }
 
     public function deleteUser($user_id, $is_delete = false)
     {
-        \cms\plugins::callEvent('users.delete_user', $user_id);
+        \cms\events::call('users.delete_user', $user_id);
 
         if ( $user_id == 1 ) {
             return false;
@@ -382,7 +382,7 @@ class cms_model_users
             $user_blog = $inBlog->getBlogByUserId($user_id);
 
             if ( $user_blog ) {
-                \cms\plugins::callEvent('blogs.delete', $user_blog['id']);
+                \cms\events::call('blogs.delete', $user_blog['id']);
                 $inBlog->deleteBlog($user_blog['id']);
             }
         }
@@ -407,7 +407,7 @@ class cms_model_users
 
     public function deleteGroup($group_id)
     {
-        \cms\plugins::callEvent('users.delete_group', $group_id);
+        \cms\events::call('users.delete_group', $group_id);
 
         $sql = "SELECT id FROM cms_users WHERE group_id = '" . $group_id . "'";
 
@@ -435,19 +435,24 @@ class cms_model_users
 
     public function getPluginsOutput($user)
     {
-        $plugins = cmsCore::callAllEvent('USER_PROFILE', $user);
+        $plugins_list = [];
 
-        if ( empty($plugins) ) {
-            return array();
-        }
+        $data = \cms\events::call('users.view_profile', $user, 'multi');
 
-        foreach ( $plugins as $plugin_data ) {
-            $plugins_list[] = array(
-                'name'      => $plugin_data['info']['plugin'],
-                'title'     => !empty($plugin_data['info']['tab']) ? $plugin_data['info']['tab'] : $plugin_data['info']['title'],
-                'ajax_link' => !empty($plugin_data['info']['ajax_link']) ? $plugin_data['info']['ajax_link'] : '',
-                'html'      => $plugin_data['result']
-            );
+        if ( !empty($data) ) {
+            foreach ( $data as $plugin_data ) {
+                if ( isset($plugin_data['info']['plugin']) && isset($plugin_data['config']) ) {
+                    $plugins_list[] = array(
+                        'name'      => $plugin_data['info']['plugin'],
+                        'title'     => !empty($plugin_data['info']['tab']) ? $plugin_data['info']['tab'] : $plugin_data['info']['title'],
+                        'ajax_link' => !empty($plugin_data['info']['ajax_link']) ? $plugin_data['info']['ajax_link'] : '',
+                        'html'      => $plugin_data['result']
+                    );
+                }
+                else {
+                    $plugins_list[] = $plugin_data;
+                }
+            }
         }
 
         return $plugins_list;
@@ -643,7 +648,7 @@ class cms_model_users
 
     public function addPhotoAlbum($album)
     {
-        $album = \cms\plugins::callEvent('users.add_photo_album', $album);
+        $album = \cms\events::call('users.add_photo_album', $album);
 
         if ( !$album['allow_who'] ) {
             $album['allow_who'] = 'all';
@@ -804,7 +809,7 @@ class cms_model_users
         }
 
         if ( $only_private ) {
-            $albums = \cms\plugins::callEvent('users.get_albums', $albums);
+            $albums = \cms\events::call('users.get_albums', $albums);
             return $albums;
         }
 
@@ -830,7 +835,7 @@ class cms_model_users
             }
         }
 
-        $albums = \cms\plugins::callEvent('users.get_albums', $albums);
+        $albums = \cms\events::call('users.get_albums', $albums);
 
         return $albums;
     }
@@ -868,7 +873,7 @@ class cms_model_users
             }
         }
 
-        $photos = \cms\plugins::callEvent('users.get_uploaded_photos', $photos);
+        $photos = \cms\events::call('users.get_uploaded_photos', $photos);
 
         return $photos ? $photos : false;
     }

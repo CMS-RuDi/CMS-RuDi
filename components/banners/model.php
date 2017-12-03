@@ -28,7 +28,7 @@ class cms_model_banners
         $banner = cmsDatabase::getInstance()->get_fields('cms_banners', "id = '$id'", '*');
 
         if ( $banner ) {
-            return \cms\plugins::callEvent('banners.get_banner', $banner);
+            return \cms\events::call('banners.get_banner', $banner);
         }
         else {
             return false;
@@ -140,7 +140,7 @@ class cms_model_banners
     {
         cmsDatabase::getInstance()->query("UPDATE cms_banners SET clicks = clicks + 1 WHERE id = '$id'");
 
-        \cms\plugins::callEvent('banners.click_banner', $id);
+        \cms\events::call('banners.click_banner', $id);
 
         return true;
     }

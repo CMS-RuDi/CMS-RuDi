@@ -32,12 +32,12 @@ class cms_model_polls
         $poll['answers']       = cmsCore::yamlToArray($poll['answers']);
         $poll['total_answers'] = $this->getVoteCount($poll['answers']);
 
-        return \cms\plugins::callEvent('poll.get_poll', $poll);
+        return \cms\events::call('poll.get_poll', $poll);
     }
 
     public function deletePoll($poll_id)
     {
-        \cms\plugins::callEvent('poll.delete_poll', $poll_id);
+        \cms\events::call('poll.delete_poll', $poll_id);
 
         $sql = "DELETE FROM cms_polls WHERE id = '" . $poll_id . "' LIMIT 1";
         $this->inDB->query($sql);

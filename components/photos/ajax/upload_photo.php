@@ -62,7 +62,7 @@ if ( !$album ) {
     exit(0);
 }
 
-$album = \cms\plugins::callEvent('photos.get_album', $album);
+$album = \cms\events::call('photos.get_album', $album);
 
 if ( !$album['published'] && !$inUser->is_admin ) {
     header("HTTP/1.1 500 File Upload Error");
@@ -107,7 +107,7 @@ if ( $file ) {
     $photo['id'] = $inPhoto->addPhoto($photo);
 
     if ( $photo['published'] ) {
-        \cms\plugins::callEvent('photos.add_photo_done', $photo);
+        \cms\events::call('photos.add_photo_done', $photo);
 
         $description = '<a href="/photos/photo' . $photo['id'] . '.html" class="act_photo"><img src="/images/photos/small/' . $photo['file'] . '" alt="' . htmlspecialchars(stripslashes($photo['title'])) . '" /></a>';
 

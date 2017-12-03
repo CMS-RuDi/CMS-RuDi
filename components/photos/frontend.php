@@ -56,7 +56,7 @@ function photos()
             cmsCore::error404();
         }
 
-        $album = \cms\plugins::callEvent('photos.get_album', $album);
+        $album = \cms\events::call('photos.get_album', $album);
 
         // если не корневой альбом
         if ( $album['id'] != $root_album_id ) {
@@ -162,7 +162,7 @@ function photos()
 
     if ( $do == 'viewphoto' ) {
         // получаем фото
-        $photo = \cms\plugins::callEvent('photos.get_photo', $inPhoto->getPhoto($id));
+        $photo = \cms\events::call('photos.get_photo', $inPhoto->getPhoto($id));
 
         if ( !$photo ) {
             cmsCore::error404();
@@ -261,7 +261,7 @@ function photos()
             cmsCore::error404();
         }
 
-        $album = \cms\plugins::callEvent('photos.get_album', $album);
+        $album = \cms\events::call('photos.get_album', $album);
 
         // права доступа
         // загружаем только в разрешенные альбомы
@@ -300,7 +300,7 @@ function photos()
         }
 
         // получаем фото
-        $photo = \cms\plugins::callEvent('photos.get_photo', $inPhoto->getPhoto($id));
+        $photo = \cms\events::call('photos.get_photo', $inPhoto->getPhoto($id));
         if ( !$photo ) {
             cmsCore::halt();
         }
@@ -367,7 +367,7 @@ function photos()
             cmsCore::halt();
         }
 
-        $photo = \cms\plugins::callEvent('photos.get_photo', $inPhoto->getPhoto($id));
+        $photo = \cms\events::call('photos.get_photo', $inPhoto->getPhoto($id));
         if ( !$photo ) {
             cmsCore::halt();
         }
@@ -389,7 +389,7 @@ function photos()
             cmsCore::jsonOutput(array( 'error' => false, 'html' => ob_get_clean() ));
         }
         else {
-            $album = \cms\plugins::callEvent('photos.get_album', $inDB->getNsCategory('cms_photo_albums', cmsCore::request('album_id', 'int')));
+            $album = \cms\events::call('photos.get_album', $inDB->getNsCategory('cms_photo_albums', cmsCore::request('album_id', 'int')));
 
             if ( !$album ) {
                 cmsCore::halt();
@@ -432,7 +432,7 @@ function photos()
             cmsCore::halt();
         }
 
-        $photo = \cms\plugins::callEvent('photos.get_photo', $inPhoto->getPhoto($id));
+        $photo = \cms\events::call('photos.get_photo', $inPhoto->getPhoto($id));
 
         if ( !$photo ) {
             cmsCore::halt();
@@ -468,7 +468,7 @@ function photos()
             cmsCore::halt();
         }
 
-        $photo = \cms\plugins::callEvent('photos.get_photo', $inPhoto->getPhoto($id));
+        $photo = \cms\events::call('photos.get_photo', $inPhoto->getPhoto($id));
 
         if ( !$photo ) {
             cmsCore::halt();
@@ -480,7 +480,7 @@ function photos()
 
         $inPhoto->publishPhoto($photo['id']);
 
-        \cms\plugins::callEvent('photos.add_photo_done', $photo);
+        \cms\events::call('photos.add_photo_done', $photo);
 
         $description = '<a href="/photos/photo' . $photo['id'] . '.html" class="act_photo"><img src="/images/photos/small/' . $photo['file'] . '" alt="' . htmlspecialchars(stripslashes($photo['title'])) . '" /></a>';
 

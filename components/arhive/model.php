@@ -134,7 +134,7 @@ class cms_model_arhive
             $content[] = $item;
         }
 
-        return \cms\plugins::callEvent('arhive.get_items', translations::process(cmsConfig::getConfig('lang'), 'content_content', $content));
+        return \cms\events::call('arhive.get_items', translations::process(cmsConfig::getConfig('lang'), 'content_content', $content));
     }
 
 }

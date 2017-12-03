@@ -6,6 +6,20 @@ class plugin
 {
 
     /**
+     * Массив со списком активных плагинов
+     *
+     * @var array
+     */
+    private static $plugins = [];
+
+    /**
+     * Массив опций плагинов
+     *
+     * @var array
+     */
+    private static $configs = [];
+
+    /**
      * @var \cms\db
      */
     protected $db;
@@ -79,7 +93,7 @@ class plugin
         $this->inPage = \cmsPage::getInstance();
 
         $this->name   = get_called_class();
-        $this->config = array_merge($this->default_config, self::getConfig($this->name));
+        $this->config = array_merge($this->default_config, self::loadConfig($this->name));
 
         $this->setLangPrefix();
 
@@ -266,12 +280,7 @@ class plugin
      */
     public function getConfig()
     {
-        if ( !empty($this->config) ) {
-            return $this->config;
-        }
-        else {
-            return plugins::getConfig($this->name);
-        }
+        return $this->config;
     }
 
     /**
@@ -321,14 +330,87 @@ class plugin
 
     public function execute($event, $data = [])
     {
-        $method_name = \cms\helper\str::toCamel('.', $event);
-        $method_name = \cms\helper\str::toCamel('_', $method_name);
+        $method_name = \cms\helper\str::toCamel('_', str_replace('.', '_', $event));
 
         if ( method_exists($this, $method_name) ) {
             return $this->{$method_name}($data);
         }
 
         return $data;
+    }
+
+    //========================================================================//
+
+    /**
+     * Возвращает конфигурацию плагина
+     *
+     * @param string $name Название плагина
+     *
+     * @return array
+     */
+    final public static function loadConfig($name)
+    {
+        if ( !isset(self::$configs[$name]) ) {
+            self::loadEnabledPlugins();
+
+            if ( isset(self::$plugins[$name]) ) {
+                self::$configs[$name] = self::$plugins[$name]['config'];
+            }
+            else {
+                $config = db::getInstance()->getField('plugins', "plugin='" . $name . "'", 'config');
+
+                if ( !empty($config) ) {
+                    self::$configs[$name] = model::yamlToArray($config);
+                }
+            }
+
+            if ( empty(self::$configs[$name]) ) {
+                self::$configs[$name] = [];
+            }
+        }
+
+        return self::$configs[$name];
+    }
+
+    /**
+     * Загружает плагин и возвращает его объект
+     *
+     * @param string $plugin Название плагина
+     *
+     * @return self
+     */
+    final public static function load($plugin)
+    {
+        if ( !class_exists($plugin) ) {
+            return false;
+        }
+
+        return new $plugin();
+    }
+
+    /**
+     * Возвращает массив активных плагинов
+     *
+     * @return array
+     */
+    final public static function getEnabledPlugins()
+    {
+        self::loadEnabledPlugins();
+
+        return self::$plugins;
+    }
+
+    /**
+     * Загружает список активных плагинов
+     */
+    final private static function loadEnabledPlugins()
+    {
+        if ( empty(self::$plugins) ) {
+            self::$plugins = (new model())->filterEqual('published', 1)->useCache('plugins')->get('plugins', function ($item, $model) {
+                $item['config'] = model::yamlToArray($item['config']);
+                return $item;
+            }, 'plugin');
+        }
     }
 
 }

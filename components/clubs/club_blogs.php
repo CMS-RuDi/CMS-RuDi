@@ -174,14 +174,14 @@ if ( in_array($bdo, array( 'newpost', 'editpost' )) ) {
             $mod['published'] = ($is_admin || $is_moder || !$club['blog_premod']) ? 1 : 0;
 
             // добавляем пост, получая его id и seolink
-            $added = $inBlog->addPost(\cms\plugins::callEvent('clubs.add_blog_post', $mod));
+            $added = $inBlog->addPost(\cms\events::call('clubs.add_blog_post', $mod));
             $mod   = array_merge($mod, $added);
 
             if ( $mod['published'] ) {
                 $mod['seolink'] = $model->getPostURL($club['id'], $mod['seolink']);
 
                 if ( $club['clubtype'] != 'private' && $mod['allow_who'] != 'nobody' ) {
-                    \cms\plugins::callEvent('clubs.add_post_done', $mod);
+                    \cms\events::call('clubs.add_post_done', $mod);
 
                     cmsActions::log($inBlog->getTarget('actions_post'), array(
                         'object'          => $mod['title'],
@@ -220,7 +220,7 @@ if ( in_array($bdo, array( 'newpost', 'editpost' )) ) {
                 $mod['published'] = !$club['blog_premod'] ? 1 : 0;
             }
 
-            $inBlog->updatePost($post['id'], \cms\plugins::callEvent('clubs.update_blog_post', $mod));
+            $inBlog->updatePost($post['id'], \cms\events::call('clubs.update_blog_post', $mod));
 
             cmsActions::updateLog($inBlog->getTarget('actions_post'), array( 'object' => $mod['title'] ), $post['id']);
 
@@ -295,7 +295,7 @@ if ( $bdo == 'post' ) {
     $inPage->setKeywords($post['meta_keys'] ? $post['meta_keys'] : $post['title']);
 
     if ( $post['cat_id'] ) {
-        $cat = \cms\plugins::callEvent('clubs.get_blog_category', $inBlog->getBlogCategory($post['cat_id']));
+        $cat = \cms\events::call('clubs.get_blog_category', $inBlog->getBlogCategory($post['cat_id']));
     }
 
     $post['tags'] = cmsTagBar($inBlog->getTarget('tags'), $post['id']);
@@ -370,7 +370,7 @@ if ( $bdo == 'delpost' ) {
         cmsCore::halt();
     }
 
-    \cms\plugins::callEvent('clubs.delete_blog_post', $post['id']);
+    \cms\events::call('clubs.delete_blog_post', $post['id']);
     $inBlog->deletePost($post['id']);
 
     if ( $inUser->id != $post['user_id'] ) {
@@ -467,7 +467,7 @@ if ( $bdo == 'blog' ) {
     $blogcats = false;
     // Если нужно, получаем список рубрик (категорий) этого блога
     if ( $blog['showcats'] ) {
-        $blogcats = \cms\plugins::callEvent('clubs.get_blog_categories', $blogcats);
+        $blogcats = \cms\events::call('clubs.get_blog_categories', $blogcats);
     }
 
     //Считаем количество постов, ожидающих модерации
@@ -525,7 +525,7 @@ if ( in_array($bdo, array( 'newcat', 'editcat' )) ) {
     }
 
     if ( $bdo == 'editcat' ) {
-        $cat = \cms\plugins::callEvent('clubs.get_blog_category', $inBlog->getBlogCategory($cat_id));
+        $cat = \cms\events::call('clubs.get_blog_category', $inBlog->getBlogCategory($cat_id));
 
         if ( !$cat ) {
             cmsCore::halt();
@@ -592,12 +592,12 @@ if ( in_array($bdo, array( 'newcat', 'editcat' )) ) {
         }
 
         if ( $bdo == 'newcat' ) {
-            $cat['id'] = $inBlog->addBlogCategory(\cms\plugins::callEvent('clubs.add_category', $new_cat));
+            $cat['id'] = $inBlog->addBlogCategory(\cms\events::call('clubs.add_category', $new_cat));
             cmsCore::addSessionMessage($_LANG['CAT_IS_ADDED'], 'success');
         }
 
         if ( $bdo == 'editcat' ) {
-            $inBlog->updateBlogCategory($cat['id'], \cms\plugins::callEvent('clubs.update_blog_category', $new_cat));
+            $inBlog->updateBlogCategory($cat['id'], \cms\events::call('clubs.update_blog_category', $new_cat));
             cmsCore::addSessionMessage($_LANG['CAT_IS_UPDATED'], 'success');
         }
 
@@ -612,7 +612,7 @@ if ( $bdo == 'delcat' ) {
         return false;
     }
 
-    $cat = \cms\plugins::callEvent('clubs.get_blog_category', $inBlog->getBlogCategory($cat_id));
+    $cat = \cms\events::call('clubs.get_blog_category', $inBlog->getBlogCategory($cat_id));
 
     if ( !$cat ) {
         cmsCore::halt();
@@ -647,7 +647,7 @@ if ( $bdo == 'delcat' ) {
         cmsCore::halt();
     }
 
-    $inBlog->deleteBlogCategory(\cms\plugins::callEvent('clubs.delete_blog_category', $cat['id']));
+    $inBlog->deleteBlogCategory(\cms\events::call('clubs.delete_blog_category', $cat['id']));
 
     cmsCore::addSessionMessage($_LANG['CAT_IS_DELETED'], 'success');
 
@@ -697,7 +697,7 @@ if ( $bdo == 'publishpost' ) {
     $post['seolink'] = $model->getPostURL($club['id'], $post['seolink']);
 
     if ( $club['clubtype'] != 'private' && $post['allow_who'] == 'all' ) {
-        \cms\plugins::callEvent('clubs.add_post_done', $post);
+        \cms\events::call('clubs.add_post_done', $post);
     }
 
     if ( $club['clubtype'] != 'private' && $post['allow_who'] != 'nobody' ) {

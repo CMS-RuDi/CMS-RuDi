@@ -33,6 +33,6 @@ if ( cmsConfig::getConfig('siteoff') && !$inUser->is_admin ) {
     cmsCore::halt();
 }
 
-\cms\plugins::callEvent('loginza.auth', array());
+\cms\events::call('loginza.auth', array());
 
 cmsCore::halt();

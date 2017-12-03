@@ -300,9 +300,11 @@ $_LANG['CBOX_IMG_ERROR']      = 'Photo upload failed.';
 $_LANG['CBOX_SLIDESHOWSTOP']  = 'Stop slideshow';
 $_LANG['CBOX_SLIDESHOWSTART'] = 'Start slideshow';
 
-$_LANG['FILE_SELECTED']  = 'Selected files: $file';
-$_LANG['FILE_DENIED']    = 'You cannot choose $ext file.\nThis file type is not allowed...';
-$_LANG['FILE_DUPLICATE'] = 'This file has already been selected:\n$file!';
+$_LANG['FILE_NOT_FOUND']    = 'File not found';
+$_LANG['FILE_SELECTED']     = 'Selected files: $file';
+$_LANG['FILE_DENIED']       = 'You cannot choose $ext file.\nThis file type is not allowed...';
+$_LANG['FILE_DUPLICATE']    = 'This file has already been selected:\n$file!';
+$_LANG['CLASS_NOT_DEFINED'] = 'In the %s file class <b>%s</b> not defined';
 
 $_LANG['SEO_PAGETITLE']      = 'Pagetitle, "title" tag';
 $_LANG['SEO_PAGETITLE_HINT'] = 'If not specified, will use the same name';

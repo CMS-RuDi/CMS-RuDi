@@ -94,7 +94,7 @@ class cmsPhoto
      */
     public function addPhoto($photo)
     {
-        $photo_id = $this->inDB->insert('cms_photo_files', \cms\plugins::callEvent('photos.add_photo', $photo));
+        $photo_id = $this->inDB->insert('cms_photo_files', \cms\events::call('photos.add_photo', $photo));
 
         if ( $photo['tags'] ) {
             cmsInsertTags($photo['tags'], $this->getTarget('tags'), $photo_id);
@@ -111,7 +111,7 @@ class cmsPhoto
      */
     public function updatePhoto($photo, $id)
     {
-        $this->inDB->update('cms_photo_files', \cms\plugins::callEvent('photos.update_photo', $photo), $id);
+        $this->inDB->update('cms_photo_files', \cms\events::call('photos.update_photo', $photo), $id);
 
         if ( $photo['tags'] ) {
             cmsInsertTags($photo['tags'], $this->getTarget('tags'), $id);
@@ -156,7 +156,7 @@ class cmsPhoto
      */
     public function deletePhoto($photo, $inUploadPhoto)
     {
-        $photo = \cms\plugins::callEvent('photos.delete_photo', $photo);
+        $photo = \cms\events::call('photos.delete_photo', $photo);
 
         if ( !$this->deletePhotoFile($photo['file'], $inUploadPhoto) ) {
             return false;
@@ -180,7 +180,7 @@ class cmsPhoto
      */
     public function publishPhoto($photo_id)
     {
-        \cms\plugins::callEvent('photos.publish_photo', $photo_id);
+        \cms\events::call('photos.publish_photo', $photo_id);
 
         return $this->inDB->query("UPDATE cms_photo_files SET published = 1 WHERE id = '" . $photo_id . "'");
     }
@@ -271,7 +271,7 @@ class cmsPhoto
             $albums[]         = $album;
         }
 
-        return \cms\plugins::callEvent('photos.get_albums', $albums);
+        return \cms\events::call('photos.get_albums', $albums);
     }
 
     /**
@@ -289,7 +289,7 @@ class cmsPhoto
             return false;
         }
 
-        \cms\plugins::callEvent('photos.delete_album', $album_id);
+        \cms\events::call('photos.delete_album', $album_id);
 
         //устанавливаем нужный альбом и все вложенные
         $this->whereThisAndNestedCats($album['NSLeft'], $album['NSRight']);
@@ -365,7 +365,7 @@ class cmsPhoto
             $photos[]         = $photo;
         }
 
-        return \cms\plugins::callEvent('photos.get_photos', $photos);
+        return \cms\events::call('photos.get_photos', $photos);
     }
 
     /**

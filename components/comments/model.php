@@ -66,7 +66,7 @@ class cms_model_comments
 
     public function addComment($item)
     {
-        $item = \cms\plugins::callEvent('comments.add_item', $item);
+        $item = \cms\events::call('comments.add_item', $item);
 
         $item['target_title'] = $this->inDB->escape_string($item['target_title']);
 
@@ -135,7 +135,7 @@ class cms_model_comments
 
     public function deleteComment($comment_id)
     {
-        \cms\plugins::callEvent('comments.delete_item', $comment_id);
+        \cms\events::call('comments.delete_item', $comment_id);
 
         $childs = $this->getCommentChilds($comment_id);
 
@@ -300,7 +300,7 @@ class cms_model_comments
             $comments = $this->buildTree(0, 0, $comments);
         }
 
-        return \cms\plugins::callEvent($from_module ? 'comments.get_items_from_module' : 'comments.get_items', $comments);
+        return \cms\events::call($from_module ? 'comments.get_items_from_module' : 'comments.get_items', $comments);
     }
 
     /**
@@ -346,7 +346,7 @@ class cms_model_comments
 
         $comment['is_editable'] = $this->isEditable($comment['pubdate']);
 
-        return \cms\plugins::callEvent('comments.get_item', $comment);
+        return \cms\events::call('comments.get_item', $comment);
     }
 
     private function buildTree($parent_id, $level, $comments, $tree = array())

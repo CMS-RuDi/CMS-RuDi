@@ -2,23 +2,15 @@
 
 namespace cms;
 
-class plugin
+class events
 {
 
     /**
-     * Массив со списком активных плагинов
+     * Массив включенных событий и их слушателей
      *
      * @var array
      */
-    protected static $plugins = [];
-
-    /**
-     * Массив активных событий, в качестве ключа идет название события, в качестве
-     * значения массив плагинов подписанных на это событие
-     *
-     * @var array
-     */
-    protected static $plugin_events = [];
+    protected static $events = [];
 
     /**
      * Массив из названий событий, где в качестве ключа идет новое название а в
@@ -194,69 +186,41 @@ class plugin
     ];
 
     /**
-     * Возвращает кофигурацию плагина по его названию
-     *
-     * @param string $name
-     *
-     * @return array
+     * Формирует список слушателей
      */
-    public static function getConfig($name)
+    public static function loadListeners()
     {
-        self::loadConfig($name);
+        if ( empty(self::$events) ) {
+            self::$events['plugin']    = [];
+            self::$events['component'] = [];
 
-        if ( empty(self::$plugins[$name]) ) {
-            return [];
-        }
+            $events = db::getInstance()->getRows('events FORCE INDEX (is_enabled)', '`is_enabled` = 1', '*', 'ordering ASC', true);
 
-        $config = self::$plugins[$name]['config'];
-
-        if ( !is_array($config) ) {
-            $config                         = \cms\model::yamlToArray($config);
-            self::$plugins[$name]['config'] = $config;
-        }
-
-        return $config;
-    }
-
-    /**
-     * Возвращает настройки плагина из базы данных
-     *
-     * @param string $name
-     *
-     * @return array
-     */
-    protected static function loadConfig($name)
-    {
-        if ( !isset(self::$plugins[$name]) ) {
-            $plugin = $this->db->getFields('plugins', "plugin='" . $name . "'", 'id, plugin, config');
-
-            if ( !empty($plugin) ) {
-                self::$plugins[$plugin['plugin']] = $plugin;
+            foreach ( $events as $event ) {
+                self::$events[$event['type']][$event['event']]   = [];
+                self::$events[$event['type']][$event['event']][] = $event['name'];
             }
         }
     }
 
     /**
-     * Получает список событий для включенных плагинов
+     * Возвращает массив компонентов подписанных на указанное событие
+     *
+     * @param string $event
+     *
+     * @return array
      */
-    public static function loadEvents()
+    public static function getEventComponents($event)
     {
-        if ( empty(self::$plugin_events) ) {
-            $db = \cms\db::getInstance();
-
-            $result = $db->query("SELECT p.id, p.plugin, p.config, e.event FROM {#}event_hooks e LEFT JOIN {#}plugins p ON e.plugin_id = p.id WHERE p.published = 1");
-
-            if ( $result->num_rows ) {
-                while ( $plugin = $result->fetch_assoc() ) {
-                    self::$plugins[$plugin['plugin']]        = $plugin;
-                    self::$plugin_events[$plugin['event']][] = $plugin['plugin'];
-                }
-            }
+        if ( isset(self::$events['component'][$event]) ) {
+            return self::$events['component'][$event];
         }
+
+        return [];
     }
 
     /**
-     * Возвращает массив с именами плагинов, привязанных к событию $event
+     * Возвращает массив плагинов подписанных на указанное событие
      *
      * @param string $event
      *
@@ -264,18 +228,18 @@ class plugin
      */
     public static function getEventPlugins($event)
     {
-        $plugins = !empty(self::$plugin_events[$event]) ? self::$plugin_events[$event] : [];
+        $plugins = !empty(self::$events['plugin'][$event]) ? self::$events['plugin'][$event] : [];
 
-        if ( isset(self::$old_events_names[$event]) && !empty(self::$plugin_events[self::$old_events_names[$event]]) ) {
-            $plugins = array_merge($plugins, self::$plugin_events[self::$old_events_names[$event]]);
+        if ( isset(self::$old_events_names[$event]) && !empty(self::$events['plugin'][self::$old_events_names[$event]]) ) {
+            $plugins = array_merge($plugins, self::$events['plugin'][self::$old_events_names[$event]]);
         }
 
         if ( mb_strpos($event, 'admin.toolmenu') !== false || mb_strpos($event, 'admin.listtable') !== false || mb_strpos($event, 'core.') !== false ) {
             $event = str_replace([ 'admin.toolmenu', 'admin.listtable', 'core.' ], [ 'cptoolmenu', 'admin_cplisttable', '' ], $event);
             $event = strtoupper($event);
 
-            if ( !empty(self::$plugin_events[$event]) ) {
-                $plugins = array_merge($plugins, self::$plugin_events[$event]);
+            if ( !empty(self::$events['plugin'][$event]) ) {
+                $plugins = array_merge($plugins, self::$events['plugin'][$event]);
             }
         }
 
@@ -283,8 +247,8 @@ class plugin
     }
 
     /**
-     * Производит событие, вызывая все назначенные на него плагины
-     * в цикле перебирая все плагины и накладывая результат на исходный массив
+     * Производит событие, вызывая все назначенные на него плагины и компоненты
+     * в цикле перебирая все плагины и компоненты и накладывая результат на исходный массив
      *
      * @param string $event Название эвента
      * @param mixed $data Исходные данные
@@ -295,78 +259,103 @@ class plugin
      *
      * @return mixed Данные, после их обработки всеми плагинами или массив всех результатов выполнения плагинов
      */
-    public static function callEvent($event, $data, $mode = 'normal')
+    public static function call($event, $data, $mode = 'normal')
     {
-        $tkey = \cms\debug::startTimer();
+        $called = false;
 
         $results = [];
 
-        //получаем все активные плагины, привязанные к указанному событию
-        $plugins = self::getEventPlugins($event);
+        self::callComponents($event, $data, $results, $mode, $called);
 
-        if ( $plugins ) {
-            //перебираем плагины и вызываем каждый из них, передавая элемент $item
-            foreach ( $plugins as $plugin_name ) {
-                $plugin = self::load($plugin_name);
-
-                if ( $plugin !== false ) {
-                    // для отладки запоминаем названия
-                    if ( \cmsConfig::getConfig('debug') ) {
-                        $enabled_plugins[] = $plugin->getTitle();
-                    }
-
-                    $result = $plugin->execute($event, $data);
-
-                    if ( $mode == 'single' ) {
-                        $data = $result;
-                        break;
-                    }
-
-                    // если нужно вернуть для каждого плагина свой результат
-                    if ( $mode == 'multi' ) {
-                        if ( $result !== false ) {
-                            if ( $plugin instanceof \cmsPlugin ) {
-                                $results[] = array(
-                                    'result' => $result,
-                                    'info'   => $plugin->getInfo(),
-                                    'config' => $plugin->getConfig()
-                                );
-                            }
-                            else {
-                                $results[] = $result;
-                            }
-                        }
-                    }
-                    else {
-                        $data = $result;
-                    }
-
-                    unset($plugin);
-                }
-            }
+        if ( $called && $mode == 'single' ) {
+            return $data;
         }
 
-        if ( \cmsConfig::getConfig('debug') ) {
-            \cms\debug::setDebugInfo('events', $event . (isset($enabled_plugins) ? PHP_EOL . implode(', ', $enabled_plugins) : ''), $plugins ? $tkey : false );
-        }
+        self::callPlugins($event, $data, $results, $mode, $called);
 
         return $mode == 'multi' ? $results : $data;
     }
 
-    /**
-     * Загружает плагин и возвращает его объект
-     *
-     * @param string $plugin Название плагина
-     *
-     * @return self
-     */
-    public static function load($plugin)
+    private static function callComponents($event, &$data, &$results, $mode, &$called)
     {
-        if ( !class_exists($plugin) ) {
-            return false;
+        $components = self::getEventComponents($event);
+
+        foreach ( $components as $component ) {
+            if ( !controller::enabled($component) ) {
+                continue;
+            }
+
+            $class_name = '\\components\\' . $component . '\\frontend';
+
+            \cmsCore::includeFile('components/' . $component . '/frontend.php');
+
+            if ( !class_exists($class_name, false) ) {
+                continue;
+            }
+
+            $controller = new $class_name();
+        }
+    }
+
+    private static function callPlugins($event, &$data, &$results, $mode, &$called)
+    {
+        $enplugins = \cms\plugin::getEnabledPlugins();
+
+        $plugins = self::getEventPlugins($event);
+
+        if ( empty($plugins) ) {
+            return;
         }
 
-        return new $plugin();
+        foreach ( $plugins as $plugin_name ) {
+            if ( !isset($enplugins[$plugin_name]) ) {
+                continue;
+            }
+
+            $plugin = \cms\plugin::load($plugin_name);
+
+            if ( $plugin !== false ) {
+                if ( \cmsConfig::getConfig('debug') ) {
+                    \cms\debug::startTimer($event);
+                }
+
+                if ( $plugin instanceof \cmsPlugin ) {
+                    $result = $plugin->execute(self::$old_events_names[$event], $data);
+                }
+                else {
+                    $result = $plugin->execute($event, $data);
+                }
+
+                if ( \cmsConfig::getConfig('debug') ) {
+                    \cms\debug::setDebugInfo('events', $plugin_name . ': ' . $event, $event);
+                }
+
+                $called = true;
+
+                if ( $mode == 'single' ) {
+                    $data = $result;
+                    break;
+                }
+
+                if ( $mode == 'multi' ) {
+                    if ( $result !== false ) {
+                        if ( $plugin instanceof \cmsPlugin ) {
+                            $results[] = array(
+                                'result' => $result,
+                                'info'   => $plugin->getInfo(),
+                                'config' => $plugin->getConfig()
+                            );
+                        }
+                        else {
+                            $results[] = $result;
+                        }
+                    }
+                }
+                else {
+                    $data = $result;
+                }
+            }
+        }
     }
 
 }

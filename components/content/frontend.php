@@ -48,7 +48,7 @@ function content()
         $cat = translations::process(cmsConfig::getConfig('lang'), 'content_category', $cat);
 
         // Плагины
-        $cat = \cms\plugins::callEvent('content.view_category', $cat);
+        $cat = \cms\events::call('content.view_category', $cat);
 
         // Неопубликованные показываем только админам
         if ( !$cat['published'] && !$inUser->is_admin ) {
@@ -187,7 +187,7 @@ function content()
 
         $article = translations::process(cmsConfig::getConfig('lang'), 'content_content', $article);
 
-        $article = \cms\plugins::callEvent('content.get_item', $article);
+        $article = \cms\events::call('content.get_item', $article);
 
         $is_admin      = $inUser->is_admin;
         $is_author     = $inUser->id == $article['user_id'];
@@ -401,7 +401,7 @@ function content()
             $inPage->initAutocomplete();
             $autocomplete_js = $inPage->getAutocompleteJS('tagsearch', 'tags');
 
-            $item = \cms\plugins::callEvent('content.pre_edit_item', (!empty($item) ? $item : []));
+            $item = \cms\events::call('content.pre_edit_item', (!empty($item) ? $item : []));
 
             cmsPage::initTemplate('components', 'com_content_edit')->
                     assign('mod', $item)->
@@ -475,7 +475,7 @@ function content()
             $article['description'] = $inDB->escape_string($article['description']);
             $article['content']     = $inDB->escape_string($article['content']);
 
-            $article = \cms\plugins::callEvent('content.after_edit_item', $article);
+            $article = \cms\events::call('content.after_edit_item', $article);
 
             // добавление статьи
             if ( $do == 'addarticle' ) {
@@ -586,7 +586,7 @@ function content()
 
         $inDB->setFlag('cms_content', $article['id'], 'published', 1);
 
-        \cms\plugins::callEvent('content.add_item_done', $article);
+        \cms\events::call('content.add_item_done', $article);
 
         if ( IS_BILLING ) {
             $author        = $inDB->get_fields('cms_users', "id='{$article['user_id']}'", '*');

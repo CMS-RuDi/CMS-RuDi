@@ -881,7 +881,7 @@ function forum()
                 cmsCore::halt();
             }
 
-            \cms\plugins::callEvent('forum.move_post', array( 'thread' => $thread, 'post_id' => $post_id ));
+            \cms\events::call('forum.move_post', array( 'thread' => $thread, 'post_id' => $post_id ));
 
             if ( !cmsCore::inRequest('gomove') ) {
                 cmsPage::initTemplate('components', 'com_forum_move_post')->

@@ -248,14 +248,14 @@ function cpMenu()
     </div>
 
     <?php
-    echo \cms\plugins::callEvent('admin.main_menu', ob_get_clean());
+    echo \cms\events::call('admin.main_menu', ob_get_clean());
 
     return;
 }
 
 function cpToolMenu($toolmenu_list)
 {
-    $toolmenu_list = \cms\plugins::callEvent('admin.toolmenu_' . strtolower($GLOBALS['applet']) . (!empty($GLOBALS['component']) ? '_' . strtolower($GLOBALS['component']) : ''), $toolmenu_list);
+    $toolmenu_list = \cms\events::call('admin.toolmenu_' . strtolower($GLOBALS['applet']) . (!empty($GLOBALS['component']) ? '_' . strtolower($GLOBALS['component']) : ''), $toolmenu_list);
 
     if ( $toolmenu_list ) {
         echo '<table width="100%" cellpadding="2" border="0" class="toolmenu" style="margin:0px"><tr><td>';
@@ -408,7 +408,7 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
 {
     $event = 'admin.listtable_' . strtolower($table) . '_' . strtolower($GLOBALS['applet']) . (!empty($GLOBALS['component']) ? '_' . strtolower($GLOBALS['component']) : '');
 
-    list($table, $_fields, $_actions, $where, $orderby) = \cms\plugins::callEvent($event, array( $table, $_fields, $_actions, $where, $orderby ));
+    list($table, $_fields, $_actions, $where, $orderby) = \cms\events::call($event, array( $table, $_fields, $_actions, $where, $orderby ));
 
     global $_LANG;
     $inDB = cmsDatabase::getInstance();
@@ -1109,7 +1109,7 @@ function insertPanel()
 {
     global $_LANG;
 
-    $p_html = \cms\plugins::callEvent('admin.replace_panel', array( 'html' => '' ));
+    $p_html = \cms\events::call('admin.replace_panel', array( 'html' => '' ));
 
     if ( $p_html['html'] ) {
         return $p_html['html'];

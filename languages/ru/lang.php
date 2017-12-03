@@ -307,9 +307,11 @@ $_LANG['CBOX_IMG_ERROR']      = 'Не удалось загрузить фото
 $_LANG['CBOX_SLIDESHOWSTOP']  = 'Остановить слайдшоу';
 $_LANG['CBOX_SLIDESHOWSTART'] = 'Запустить слайдшоу';
 
-$_LANG['FILE_SELECTED']  = 'Выбраны файлы: $file';
-$_LANG['FILE_DENIED']    = 'Вы не можете выбрать $ext файл.\nДанный тип файла не разрешен...';
-$_LANG['FILE_DUPLICATE'] = 'Этот файл уже был выбран:\n$file!';
+$_LANG['FILE_NOT_FOUND']    = 'Файл не найден';
+$_LANG['FILE_SELECTED']     = 'Выбраны файлы: $file';
+$_LANG['FILE_DENIED']       = 'Вы не можете выбрать $ext файл.\nДанный тип файла не разрешен...';
+$_LANG['FILE_DUPLICATE']    = 'Этот файл уже был выбран:\n$file!';
+$_LANG['CLASS_NOT_DEFINED'] = 'В файле %s не определён класс <b>%s</b>';
 
 $_LANG['SEO_PAGETITLE']      = 'Название страницы, тег title';
 $_LANG['SEO_PAGETITLE_HINT'] = 'Если не указано, будет совпадать с названием';

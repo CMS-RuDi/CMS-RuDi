@@ -77,7 +77,7 @@ class cms_model_catalog
 
     public function updateItem($id, $item)
     {
-        $item = \cms\plugins::callEvent('catalog.update_item', $item);
+        $item = \cms\events::call('catalog.update_item', $item);
 
         $this->inDB->update('cms_uc_items', $item, $id);
 
@@ -86,7 +86,7 @@ class cms_model_catalog
 
     public function renewItem($id)
     {
-        \cms\plugins::callEvent('catalog.renew_item', $id);
+        \cms\events::call('catalog.renew_item', $id);
         $sql = "UPDATE cms_uc_items SET pubdate = NOW() WHERE id = $id";
         $this->inDB->query($sql);
     }
@@ -94,13 +94,13 @@ class cms_model_catalog
     public function getItemImageUrl($id)
     {
         $imageurl = $this->inDB->get_field('cms_uc_items', "id={$id}", 'imageurl');
-        $imageurl = \cms\plugins::callEvent('catalog.get_item_image', $imageurl);
+        $imageurl = \cms\events::call('catalog.get_item_image', $imageurl);
         return $imageurl;
     }
 
     public function addItem($item)
     {
-        $item = \cms\plugins::callEvent('catalog.add_item', $item);
+        $item = \cms\events::call('catalog.add_item', $item);
 
         $item_id = $this->inDB->insert('cms_uc_items', $item);
 
@@ -111,7 +111,7 @@ class cms_model_catalog
 
     public function copyItem($id, $copies)
     {
-        \cms\plugins::callEvent('catalog.copy_item', $id);
+        \cms\events::call('catalog.copy_item', $id);
 
         $item = $this->inDB->get_fields('cms_uc_items', "id = '$id'", 'category_id, title, pubdate, published, imageurl, fieldsdata, is_comments, tags, rating, meta_desc, meta_keys, price, canmany, user_id, on_moderate');
         if ( !$item ) {
@@ -135,26 +135,26 @@ class cms_model_catalog
 
     public function deleteDiscount($id)
     {
-        \cms\plugins::callEvent('catalog.delete_discount', $id);
+        \cms\events::call('catalog.delete_discount', $id);
         $sql = "DELETE FROM cms_uc_discount WHERE id = $id LIMIT 1";
         $this->inDB->query($sql);
     }
 
     public function updateDiscount($id, $item)
     {
-        $item = \cms\plugins::callEvent('catalog.update_discount', $item);
+        $item = \cms\events::call('catalog.update_discount', $item);
         return $this->inDB->update('cms_uc_discount', $item, $id);
     }
 
     public function addDiscount($item)
     {
-        $item = \cms\plugins::callEvent('catalog.add_discount', $item);
+        $item = \cms\events::call('catalog.add_discount', $item);
         return $this->inDB->insert('cms_uc_discount', $item);
     }
 
     public function deleteCategory($id)
     {
-        \cms\plugins::callEvent('catalog.delete_category', $id);
+        \cms\events::call('catalog.delete_category', $id);
         $sql    = "SELECT id FROM cms_uc_items WHERE category_id = '$id'";
         $result = $this->inDB->query($sql);
 
@@ -177,7 +177,7 @@ class cms_model_catalog
             return false;
         }
 
-        $cat = \cms\plugins::callEvent('catalog.update_category', $cat);
+        $cat = \cms\events::call('catalog.update_category', $cat);
 
         if ( $cat['parent_id'] != $old['parent_id'] && $cat['parent_id'] != $id ) {
             cmsCore::nestedSetsInit('cms_uc_cats')->MoveNode($id, $cat['parent_id']);
@@ -207,7 +207,7 @@ class cms_model_catalog
             return false;
         }
 
-        \cms\plugins::callEvent('catalog.copy_category', $id);
+        \cms\events::call('catalog.copy_category', $id);
 
         for ( $c = 1; $c <= $copies; $c++ ) {
             $cat_id = $ns->AddNode($rootid);
@@ -271,7 +271,7 @@ class cms_model_catalog
             $subcats[] = $subcat;
         }
 
-        $subcats = \cms\plugins::callEvent('catalog.get_sub_categories', $subcats);
+        $subcats = \cms\events::call('catalog.get_sub_categories', $subcats);
 
         return $subcats;
     }

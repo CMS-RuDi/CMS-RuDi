@@ -340,7 +340,7 @@ if ( $opt == 'submit_cat' || $opt == 'update_cat' ) {
     $cat['fieldsstruct'] = $inDB->escape_string($fstruct);
 
     if ( $opt == 'submit_cat' ) {
-        $cat_id = $inDB->addNsCategory('cms_uc_cats', \cms\plugins::callEvent('catalog.add_category', $cat));
+        $cat_id = $inDB->addNsCategory('cms_uc_cats', \cms\events::call('catalog.add_category', $cat));
     }
     else {
         $cat_id = cmsCore::request('item_id', 'int', 0);

@@ -20,7 +20,7 @@ class cmsPlugin extends \cms\plugin
 
         $this->inDB = cmsDatabase::getInstance();
 
-        $this->config = array_merge($this->config, \cms\plugins::getConfig($this->name));
+        $this->config = array_merge($this->config, self::loadConfig($this->name));
 
         // Выставляем информацию о плагине
 

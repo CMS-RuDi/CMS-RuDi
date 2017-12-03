@@ -76,14 +76,17 @@ class str
 
     /**
      * Разбивает строку по разделителю, затем собирает обратно в camelCase
-     * Например "my_own_string" => "myOwnString", разделитель "_"
+     * Например
+     * "my_own_string" => "myOwnString", разделитель "_" $first_uc = false
+     * "my_own_string" => "MyOwnString", разделитель "_" $first_uc = true
      *
      * @param char $delimiter Разделитель
      * @param string $string Исходная строка
+     * @param bool $first_uc Флаг указывающий нужно ли переводить в верхний регистр первую букву в финальной строке
      *
      * @return string
      */
-    public static function toCamel($delimiter, $string)
+    public static function toCamel($delimiter, $string, $first_uc = false)
     {
         $result = '';
         $words  = explode($delimiter, mb_strtolower($string));

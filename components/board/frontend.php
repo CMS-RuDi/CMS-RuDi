@@ -467,7 +467,7 @@ function board()
                     'description' => ''
                 ));
                 cmsCore::addSessionMessage($_LANG['ADV_IS_ADDED'], 'success');
-                \cms\plugins::callEvent('board.add_item_done', $add);
+                \cms\events::call('board.add_item_done', $add);
                 cmsCore::redirect('/board/read' . $add['id'] . '.html');
             }
 
@@ -671,7 +671,7 @@ function board()
         // публикуем
         $inDB->setFlag('cms_board_items', $model->item_id, 'published', 1);
 
-        \cms\plugins::callEvent('board.add_item_done', $item);
+        \cms\events::call('board.add_item_done', $item);
 
         if ( $item['user_id'] ) {
             //регистрируем событие

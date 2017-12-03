@@ -150,7 +150,7 @@ class cms_model_blogs
 
     public function getBlog($id_or_link)
     {
-        return \cms\plugins::callEvent('blogs.get_blog', $this->initBlog()->getBlog($id_or_link));
+        return \cms\events::call('blogs.get_blog', $this->initBlog()->getBlog($id_or_link));
     }
 
     public function deleteBlog($ids)
@@ -158,7 +158,7 @@ class cms_model_blogs
         $ids = is_array($ids) ? $ids : [ $ids ];
 
         foreach ( $ids as $id ) {
-            \cms\plugins::callEvent('blogs.delete', $id);
+            \cms\events::call('blogs.delete', $id);
         }
 
         $this->initBlog()->deleteBlogd($ids);
@@ -166,12 +166,12 @@ class cms_model_blogs
 
     public function getPost($id_or_link)
     {
-        return \cms\plugins::callEvent('blogs.get_post', $this->initBlog()->getPost($id_or_link));
+        return \cms\events::call('blogs.get_post', $this->initBlog()->getPost($id_or_link));
     }
 
     public function getPosts($show_all = false, $is_short = false)
     {
-        return \cms\plugins::callEvent('blogs.get_posts', $this->initBlog()->getPosts($show_all, $this, $is_short));
+        return \cms\events::call('blogs.get_posts', $this->initBlog()->getPosts($show_all, $this, $is_short));
     }
 
 }

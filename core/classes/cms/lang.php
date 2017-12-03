@@ -70,15 +70,17 @@ class lang
     public function remoteLoad($lang_file_url)
     {
         if ( !empty($this->lang_uri) && !empty($lang_file_url) ) {
-            $inCurl = \cms\curl::init()->request('get', $lang_file_url)->execute();
+            $data = \cms\helper\files::getContent($lang_file_url);
 
-            $lang = $inCurl->json();
+            if ( !empty($data) ) {
+                $lang = json_decode($data, true);
 
-            if ( is_array($lang) ) {
-                $this->setLangs($lang);
+                if ( is_array($lang) ) {
+                    $this->setLangs($lang);
+
+                    return true;
+                }
             }
-
-            return true;
         }
 
         return false;
@@ -107,16 +109,16 @@ class lang
         return false;
     }
 
-    public function vsprintf($name, $params)
+    public function vsprintf($name, ...$params)
     {
         $string = $this->get($name);
 
         if ( !empty($string) ) {
-            if ( !is_array($params) ) {
-                $params = [ $params ];
+            if ( count($params) == 1 && is_array($params[0]) ) {
+                $params = $params[0];
             }
 
-            return vsprintf($string, $params);
+            return sprintf($string, ...$params);
         }
 
         return false;
