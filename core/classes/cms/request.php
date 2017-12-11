@@ -503,7 +503,7 @@ class request
                         if ( $v === UPLOAD_ERR_OK && is_uploaded_file($_FILES[$name]['tmp_name'][$k]) ) {
                             $fname = basename($_FILES[$name]['name'][$k]);
 
-                            $dist = realpath($folder . '/' . (!empty($file_name) ? $k . '_' . $file_name : $fname));
+                            $dist = realpath($folder) . '/' . (!empty($file_name) ? $k . '_' . $file_name : $fname);
 
                             move_uploaded_file($_FILES[$name]['tmp_name'][$k], $dist);
 
@@ -523,7 +523,7 @@ class request
             }
 
             if ( is_uploaded_file($src) ) {
-                $dist = realpath($folder . '/' . (!empty($file_name) ? $file_name : $fname));
+                $dist = realpath($folder) . '/' . (!empty($file_name) ? $file_name : $fname);
 
                 move_uploaded_file($src, $dist);
 

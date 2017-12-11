@@ -78,7 +78,7 @@ class controller
      */
     public $current_params;
 
-    public function __construct($request)
+    public function __construct($request = null)
     {
         self::loadComponents();
 
@@ -336,8 +336,9 @@ class controller
      * Находит и запускает требуемый экшен
      *
      * @param string $action_name
-     *
      * @param array $params
+     *
+     * @return bool
      */
     public function runAction($action_name, $params = [])
     {
@@ -357,7 +358,7 @@ class controller
             $result = $this->runExternalAction($action_name, $this->current_params);
         }
         else {
-            $method_name = 'action' . string_to_camel('_', $action_name, true);
+            $method_name = 'action' . helper\str::toCamel('_', $action_name, true);
 
             // Если файла нет, ищем метод класса
             if ( method_exists($this, $method_name) ) {
@@ -366,20 +367,13 @@ class controller
             else {
                 // если нет экшена в отдельном файле,
                 // проверяем метод route()
-                if ( method_exists($this, 'route') ) {
-                    $route_uri = $action_name;
+                $route_uri = $action_name;
 
-                    if ( $this->current_params ) {
-                        $route_uri .= '/' . implode('/', $this->current_params);
-                    }
+                if ( $this->current_params ) {
+                    $route_uri .= '/' . implode('/', $this->current_params);
+                }
 
-                    $result = $this->route($route_uri);
-                }
-                else {
-                    // если метода route() тоже нет,
-                    // то 404
-                    \cmsCore::error404();
-                }
+                $result = $this->route($route_uri);
             }
         }
 
@@ -392,23 +386,32 @@ class controller
      * Выполняет экшен, находящийся в отдельном файле ./actions/$action_name.php
      *
      * @param string $action_name
+     * @param array $params
+     * @param bool $exit_if_error
      */
-    public function runExternalAction($action_name, $params = array())
+    public function runExternalAction($action_name, $params = array(), $exit_if_error = false)
     {
         $action_file = $this->root_path . 'actions/' . $action_name . '.php';
 
         $class_name = '\\components\\' . $this->name . '\\actions\\' . $action_name;
 
         if ( !is_readable($action_file) ) {
-            \cmsCore::halt($this->lang->file_not_found . ': ' . str_replace(PATH, '', $action_file));
+            if ( $exit_if_error ) {
+                \cmsCore::halt($this->lang->file_not_found . ': ' . str_replace(PATH, '', $action_file));
 //            \cmsCore::error($this->lang->file_not_found . ': ' . str_replace(PATH, '', $action_file));
+            }
+
+            return false;
         }
 
         include_once $action_file;
 
         if ( !class_exists($class_name, false) ) {
-            \cmsCore::halt($this->lang->vsprintf('class_not_defined', str_replace(PATH, '', $action_file), $class_name));
+            if ( $exit_if_error ) {
+                \cmsCore::halt($this->lang->vsprintf('class_not_defined', str_replace(PATH, '', $action_file), $class_name));
 //            cmsCore::error($this->lang->vsprintf('class_not_defined', str_replace(PATH, '', $action_file), $class_name));
+            }
+            return false;
         }
 
         return (new $class_name($this))->run(...$params);
@@ -492,7 +495,7 @@ class controller
         $file = $this->root_path . 'routes.php';
 
         if ( !is_readable($file) ) {
-            return array();
+            return [];
         }
 
         include_once($file);
@@ -502,7 +505,7 @@ class controller
         $routes = call_user_func($routes_func);
 
         if ( !is_array($routes) ) {
-            return array();
+            return [];
         }
 
         return $routes;
@@ -525,6 +528,17 @@ class controller
         return $action_name;
     }
 
+    public function route($uri)
+    {
+        $action_name = $this->parseRoute($uri);
+
+        if ( !$action_name ) {
+            return false;
+        }
+
+        $this->runAction($action_name);
+    }
+
     /**
      * Определяет экшен, по списку маршрутов из файла router.php контроллера
      *
@@ -542,13 +556,13 @@ class controller
         // Название найденного экшена
         $action_name = false;
 
-        //перебираем все маршруты
+        // перебираем все маршруты
         if ( $routes ) {
             foreach ( $routes as $route ) {
-                //сравниваем шаблон маршрута с текущим URI
+                // сравниваем шаблон маршрута с текущим URI
                 preg_match($route['pattern'], $uri, $matches);
 
-                //Если найдено совпадение
+                // Если найдено совпадение
                 if ( $matches ) {
                     $action_name = $route['action'];
 
@@ -557,14 +571,14 @@ class controller
                     unset($route['pattern']);
                     unset($route['action']);
 
-                    //перебираем параметры маршрута в виде ключ=>значение
+                    // перебираем параметры маршрута в виде ключ=>значение
                     foreach ( $route as $key => $value ) {
                         if ( is_integer($key) ) {
-                            //Если ключ - целое число, то значением является сегмент URI
+                            // Если ключ - целое число, то значением является сегмент URI
                             $this->request->set($value, $matches[$key]);
                         }
                         else {
-                            //иначе, значение берется из маршрута
+                            // иначе, значение берется из маршрута
                             $this->request->set($key, $value);
                         }
                     }

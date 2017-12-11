@@ -272,61 +272,53 @@ class cmsCore
      */
     private function detectURI()
     {
-        if ( strpos($_SERVER['REQUEST_URI'], '/', 1) === 1 ) {
-            return -1;
-        }
+        $uri = trim(urldecode($_SERVER['REQUEST_URI']));
 
-        $request_uri = ltrim(urldecode(trim($_SERVER['REQUEST_URI'])), '/');
+        $uri = ltrim($uri, '/');
 
-        if ( !$request_uri ) {
+        if ( !$uri ) {
             return '';
         }
 
         // игнорируемые для детекта url
-        if ( preg_match('/^(admin|install|migrate|index)(.*)/ui', $request_uri) ) {
-            return -1;
+        if ( preg_match('/^(admin|install|migrate|index)(\/|\?|\.)(.*)/ui', $uri) ) {
+            return '';
         }
 
-        // Есть ли в url GET параметры
-        $pos_que = mb_strpos($request_uri, '?');
+        // если в URL присутствует знак вопроса, значит в нем есть GET-параметры
+        // которые нужно распарсить и добавить в массив $_REQUEST
+        $pos_que = mb_strpos($uri, '?');
 
-        // если есть и это не go/url= и load/url=
-        if ( $pos_que !== false && (mb_strpos($request_uri, '/url=') === false) ) {
+        if ( $pos_que !== false && (mb_strpos($uri, '/url=') === false) ) {
             // получаем строку запроса
-            $query_data = array();
-            $query_str  = mb_substr($request_uri, $pos_que + 1);
+            $query_data = [];
+            $query_str  = mb_substr($uri, $pos_que + 1);
 
             // удаляем строку запроса из URL
-            $uri = rtrim(mb_substr($request_uri, 0, $pos_que), '/');
+            $uri = rtrim(mb_substr($uri, 0, $pos_que), '/');
 
             // парсим строку запроса
             parse_str($query_str, $query_data);
 
+            $this->uri_query = $query_data;
+
             // добавляем к полученным данным $_REQUEST
             // именно в таком порядке, чтобы POST имел преимущество над GET
-            // это необходимо если в $_REQUEST GET запроса нет, но в url он есть
             $_REQUEST = array_merge($query_data, $_REQUEST);
-
-            // если в $uri пусто (например главная страница)
-            if ( !$uri ) {
-                return '';
-            }
-        }
-        else {
-            $uri = $request_uri;
         }
 
-        $rules = array();
+        $rules = [];
 
         if ( self::includeFile('url_rewrite.php') ) {
-            //подключаем список rewrite-правил
+            // подключаем список rewrite-правил
             if ( function_exists('rewrite_rules') ) {
                 //получаем правила
                 $rules = rewrite_rules();
             }
         }
+
         if ( self::includeFile('custom_rewrite.php') ) {
-            //подключаем список пользовательских rewrite-правил
+            // подключаем список пользовательских rewrite-правил
             if ( function_exists('custom_rewrite_rules') ) {
                 //добавляем к полученным ранее правилам пользовательские
                 $rules = array_merge($rules, custom_rewrite_rules());
@@ -339,17 +331,17 @@ class cmsCore
         $this->real_uri = $uri;
 
         if ( $rules ) {
-            //перебираем правила
+            // перебираем правила
             foreach ( $rules as $rule ) {
-                //небольшая валидация правила
+                // небольшая валидация правила
                 if ( !$rule['source'] || !$rule['target'] || !$rule['action'] ) {
                     continue;
                 }
 
-                //проверяем совпадение выражения source с текущим uri
+                // проверяем совпадение выражения source с текущим uri
                 if ( preg_match($rule['source'], $uri, $matches) ) {
-                    //перебираем совпавшие сегменты и добавляем их в target
-                    //чтобы сохранить параметры из $uri в новом адресе
+                    // перебираем совпавшие сегменты и добавляем их в target
+                    // чтобы сохранить параметры из $uri в новом адресе
                     foreach ( $matches as $key => $value ) {
                         if ( !$key ) {
                             continue;
@@ -360,7 +352,7 @@ class cmsCore
                         }
                     }
 
-                    //выполняем действие
+                    // выполняем действие
                     switch ( $rule['action'] ) {
                         case 'rewrite':
                             $uri   = $rule['target'];
@@ -410,21 +402,14 @@ class cmsCore
     private function detectComponent()
     {
         // главная страница
-        if ( !$this->uri ) {
+        if ( empty($this->uri) ) {
             return cmsConfig::getConfig('homecom');
         }
 
-        // определяем, есть ли слэши в адресе
-        $first_slash_pos = mb_strpos($this->uri, '/');
+        // разбиваем URL на сегменты
+        $segments = explode('/', $this->uri);
 
-        if ( $first_slash_pos ) {
-            // если есть слэши, то компонент это сегмент до первого слэша
-            $component = mb_substr($this->uri, 0, $first_slash_pos);
-        }
-        else {
-            // если слэшей нет, то компонент совпадает с адресом
-            $component = $this->uri;
-        }
+        $component = $segments[0];
 
         // в названии только буквы и цифры
         $component = preg_replace('/[^a-z0-9]/iu', '', $component);
@@ -458,7 +443,7 @@ class cmsCore
      */
     private function parseComponentRoute()
     {
-        //если uri нет, все равно возвращаем истину - для опции "компонент на главной"
+        // если uri нет, все равно возвращаем истину - для опции "компонент на главной"
         if ( !$this->uri ) {
             return true;
         }
@@ -468,36 +453,67 @@ class cmsCore
             return true;
         }
 
-        //подключаем список маршрутов компонента
-        if ( !self::includeFile('components/' . $this->component . '/router.php') ) {
+        $routes = [];
+
+        // подключаем список маршрутов компонента
+        if ( self::includeFile('components/' . $this->component . '/router.php') ) {
+            $fn_name = 'routes_' . $this->component;
+
+            if ( function_exists($fn_name) ) {
+                $routes = $fn_name();
+            }
+        }
+
+        $routes = \cms\events::call('core.get_route_' . $this->component, $routes);
+
+        if ( empty($routes) ) {
             return false;
         }
 
-        $routes = call_user_func('routes_' . $this->component);
-        $routes = \cms\events::call('core.get_route_' . $this->component, $routes);
+        // Поддерживаются routes в формате icms2 но в отличии от него в pattern
+        // не должно быть названия компонента например запись
+        // 'pattern' => '/^photos\/([a-z0-9\-\/]+).html$/i',
+        // неправильная должно быть так
+        // 'pattern' => '/^([a-z0-9\-\/]+).html$/i',
+        // для routes в формате icms1 где паттерн указан в ключе _uri все по старому
+        //
+        //
+        // Ссылка без названия компонента
+        $uri = substr($this->uri, strpos($this->uri, '/') + 1);
 
         // Флаг удачного перебора
         $is_found = false;
 
-        //перебираем все маршруты
+        // перебираем все маршруты
         if ( $routes ) {
             foreach ( $routes as $route ) {
-                //сравниваем шаблон маршрута с текущим URI
-                preg_match($route['_uri'], $this->uri, $matches);
+                // сравниваем шаблон маршрута с текущим URI
+                if ( isset($route['pattern']) ) {
+                    preg_match($route['pattern'], $uri, $matches);
+                }
+                else {
+                    preg_match($route['_uri'], $this->uri, $matches);
+                }
 
-                //Если найдено совпадение
+                // Если найдено совпадение
                 if ( $matches ) {
-                    //удаляем шаблон из параметров маршрута, чтобы не мешал при переборе
+                    // удаляем шаблон из параметров маршрута, чтобы не мешал при переборе
                     unset($route['_uri']);
+                    unset($route['pattern']);
 
-                    //перебираем параметры маршрута в виде ключ=>значение
+                    if ( isset($route['action']) && !isset($route['do']) ) {
+                        $route['do'] = $route['action'];
+                        unset($route['action']);
+                    }
+
+                    // перебираем параметры маршрута в виде ключ=>значение
                     foreach ( $route as $key => $value ) {
                         if ( is_integer($key) ) {
-                            //Если ключ - целое число, то значением является сегмент URI
+                            // Если ключ - целое число, то значением является сегмент URI
                             $_REQUEST[$value] = isset($matches[$key]) ? $matches[$key] : null;
                         }
                         else {
-                            //иначе, значение берется из маршрута
+                            // иначе, значение берется из маршрута
                             $_REQUEST[$key] = $value;
                         }
                     }
@@ -505,7 +521,7 @@ class cmsCore
                     // совпадение есть
                     $is_found = true;
 
-                    //раз найдено совпадение, прерываем цикл
+                    // раз найдено совпадение, прерываем цикл
                     break;
                 }
             }
@@ -556,25 +572,68 @@ class cmsCore
                 $this->uri = $this->component . strstr($this->uri, '/');
             }
 
-            // парсим адрес и заполняем массив $_REQUEST
-            if ( !$this->parseComponentRoute() ) {
-                continue;
+            $class_name = '\\components\\' . $this->component . '\\frontend';
+
+            if ( class_exists($class_name) ) {
+                $com = new $class_name();
+
+                $segments = explode('/', $this->uri);
+
+                // Определяем действие из второго сегмента
+                if ( isset($segments[1]) ) {
+                    $action_name = $segments[1];
+                }
+                else {
+                    $action_name = 'index';
+                }
+
+                $params = [];
+
+                // Определяем параметры действия из всех остальных сегментов
+                if ( sizeof($segments) > 2 ) {
+                    $params = array_slice($segments, 2);
+                }
+
+                $this->do = $action_name;
+
+                $result = $com->runAction($action_name, $params);
+
+                if ( $result === false ) {
+                    continue;
+                }
+
+                if ( is_string($result) ) {
+                    echo $result;
+                }
+
+                unset($result);
             }
+            else {
+                // парсим адрес и заполняем массив $_REQUEST
+                if ( !$this->parseComponentRoute() ) {
+                    continue;
+                }
 
-            // узнаем действие в компоненте
-            $this->detectAction();
+                // узнаем действие в компоненте
+                $this->detectAction();
 
-            self::loadLanguage('components/' . $this->component);
+                self::loadLanguage('components/' . $this->component);
 
-            // Вызываем сначала плагин (если он есть) на действие
-            // Успешность выполнения должна определяться в методе execute плагина
-            // Он должен вернуть true
-            if ( !\cms\events::call('core.get_' . $this->component . '_action_' . $this->do, false) ) {
-                self::includeFile('components/' . $this->component . '/frontend.php');
+                // Вызываем сначала плагин (если он есть) на действие
+                // Успешность выполнения должна определяться в методе execute плагина
+                // Он должен вернуть true
+                if ( !\cms\events::call('core.get_' . $this->component . '_action_' . $this->do, false) ) {
+                    self::includeFile('components/' . $this->component . '/frontend.php');
 
-                if ( function_exists($this->component) ) {
-                    // в компонетах вместо error404() лучше использовать return false
-                    if ( call_user_func($this->component) === false ) {
+                    if ( function_exists($component) ) {
+                        $result = $component();
+
+                        // в компонетах вместо error404() лучше использовать return false
+                        if ( $result === false ) {
+                            continue;
+                        }
+                    }
+                    else {
                         continue;
                     }
                 }

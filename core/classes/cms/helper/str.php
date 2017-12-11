@@ -91,13 +91,14 @@ class str
         $result = '';
         $words  = explode($delimiter, mb_strtolower($string));
 
+        $first_word = $words[0];
+        unset($words[0]);
+
         foreach ( $words as $k => $word ) {
-            if ( $k > 0 ) {
-                $result .= ucfirst($word);
-            }
+            $result .= ucfirst($word);
         }
 
-        return $result;
+        return ($first_uc === true ? ucfirst($first_word) : $first_word) . $result;
     }
 
     /**
