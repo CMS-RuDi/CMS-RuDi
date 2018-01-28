@@ -18,14 +18,24 @@ if ( PHP_SAPI != 'cli' ) {
     die('Access denied');
 }
 
-Error_Reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+define('PATH', __DIR__);
+define('VALID_CMS', 1);
 
-define('PATH', dirname(__FILE__));
-define("VALID_CMS", 1);
+require(PATH . '/core/classes/autoload.php');
 
-include(PATH . '/core/cms.php');
+$inConf = cmsConfig::getInstance();
+
+// Проверяем, что система установлена
+if ( !$inConf->isReady() ) {
+    die();
+}
+
+error_reporting(E_ALL);
+set_error_handler(array( '\\cms\\debug', 'errorHandler' ));
 
 cmsCore::getInstance();
+
+\cms\events::call('start_cron');
 
 $jobs = cmsCron::getJobs();
 
@@ -33,7 +43,6 @@ $jobs = cmsCron::getJobs();
 if ( is_array($jobs) ) {
     // выполняем их
     foreach ( $jobs as $job ) {
-
         // проверяем интервал запуска
         if ( !$job['job_interval'] || ($job['hours_ago'] > $job['job_interval']) || $job['is_new'] ) {
             // запускаем задачу
@@ -41,5 +50,7 @@ if ( is_array($jobs) ) {
         }
     }
 }
+
+\cms\events::call('end_cron');
 
 cmsCore::halt();

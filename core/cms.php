@@ -2285,6 +2285,9 @@ class cmsCore
                     self::$models[$component_name] = new $class_name();
                 }
             }
+            else {
+                return new \cms\model();
+            }
         }
 
         return self::$models[$component_name];

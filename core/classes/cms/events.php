@@ -259,7 +259,7 @@ class events
      *
      * @return mixed Данные, после их обработки всеми плагинами или массив всех результатов выполнения плагинов
      */
-    public static function call($event, $data, $mode = 'normal')
+    public static function call($event, $data = false, $mode = 'normal')
     {
         $called = false;
 
