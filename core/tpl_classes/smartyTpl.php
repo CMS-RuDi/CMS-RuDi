@@ -22,17 +22,12 @@ class smartyTpl extends tplMainClass
             self::$tpl = new \Smarty();
 
             self::$tpl->addTemplateDir(
-                    array(
+                    [
                         'templates' => PATH . '/templates',
                         TEMPLATE    => TEMPLATE_DIR,
                         '_default_' => DEFAULT_TEMPLATE_DIR
-                    )
+                    ]
             );
-
-            self::$tpl->assign('is_ajax', cmsCore::isAjax());
-            self::$tpl->assign('is_auth', cmsUser::getInstance()->id);
-            self::$tpl->assign('user_id', cmsUser::getInstance()->id);
-            self::$tpl->assign('is_admin', cmsUser::getInstance()->is_admin);
         }
     }
 
@@ -40,7 +35,7 @@ class smartyTpl extends tplMainClass
     {
         $this->preInit();
 
-        self::$tpl->fetch($this->tpl_file, null, null, null, true);
+        self::$tpl->display($this->tpl_file);
 
         $this->postInit();
     }
@@ -65,7 +60,12 @@ class smartyTpl extends tplMainClass
         global $_LANG;
 
         $this->tpl_vars['LANG']     = $_LANG;
+        $this->tpl_vars['lang']     = \cms\lang::getInstance();
         $this->tpl_vars['template'] = $this->template;
+        $this->tpl_vars['is_ajax']  = \cmsCore::isAjax();
+        $this->tpl_vars['user_id']  = \cmsUser::getInstance()->id;
+        $this->tpl_vars['is_auth']  = $this->tpl_vars['user_id'];
+        $this->tpl_vars['is_admin'] = \cmsUser::getInstance()->is_admin;
 
         self::$tpl->assign($this->tpl_vars);
 
@@ -79,15 +79,14 @@ class smartyTpl extends tplMainClass
         $folders               = explode('/', $this->tpl_file);
         self::$tpl->compile_id = $folders[0];
 
-        self::$tpl->addTemplateDir(
-                array(
-                    $this->template . '_' . $folders[0] => PATH . '/templates/' . $this->template . '/' . $folders[0]
-                )
-        );
+        self::$tpl->addTemplateDir([
+            $this->template . '_' . $folders[0] => PATH . '/templates/' . $this->template . '/' . $folders[0]
+        ]);
     }
 
     /**
-     * Выполняется после генерации html из шаблона smarty и удаляет переменные, чтобы к ним не было доступа из других шаблонов
+     * Выполняется после генерации html из шаблона smarty и удаляет переменные,
+     * чтобы к ним не было доступа из других шаблонов
      */
     protected function postInit()
     {

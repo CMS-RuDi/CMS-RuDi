@@ -2,9 +2,10 @@
 
 /*
  *                           CMS RuDi v1.0.0
- *                        https://ds-soft.ru/
+ *                        http://www.cmsrudi.ru/
  *
- *                    written by DS Soft, 2015-2017
+ *                   written by DS Soft Team, 2017-2018
+ *                  produced by DS Soft, (www.ds-soft.ru)
  *
  *                        LICENSED BY GNU/GPL v2
  */
@@ -78,7 +79,7 @@ abstract class tplMainClass
 
     public function __call($name, $arguments)
     {
-        return call_user_func_array(array( self::$tpl, $name ), $arguments);
+        return self::$tpl->{$name}(...$arguments);
     }
 
 }
