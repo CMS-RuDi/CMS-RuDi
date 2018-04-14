@@ -6,6 +6,13 @@ class controller
 {
 
     /**
+     * Массив объектов админок и фронтэндов компонентов
+     *
+     * @var array
+     */
+    protected static $factory = [];
+
+    /**
      * @var null|array
      */
     protected static $mapping;
@@ -109,7 +116,7 @@ class controller
                 $this->title = $this->name;
             }
 
-            $this->model = \cmsCore::getModel($this->name);
+            $this->model = self::getModel($this->name);
 
             $this->options = $this->getOptions();
         }
@@ -137,6 +144,40 @@ class controller
         self::loadComponents();
 
         return self::$components;
+    }
+
+    /**
+     * Возвращает компонент по его строковому идентификатору
+     *
+     * @param string $name
+     *
+     * @return boolean|array
+     */
+    public static function getComponentByName($name)
+    {
+        self::loadComponents();
+
+        return isset(self::$components[$name]) ? self::$components[$name] : false;
+    }
+
+    /**
+     * Возвращает компонент по его числовому идентификатору
+     *
+     * @param integer $id
+     *
+     * @return boolean|array
+     */
+    public static function getComponentById($id)
+    {
+        self::loadComponents();
+
+        foreach ( self::$components as $component ) {
+            if ( $component['id'] == $id ) {
+                return $component;
+            }
+        }
+
+        return false;
     }
 
     public function hasSlug()
@@ -414,7 +455,7 @@ class controller
             return false;
         }
 
-        return (new $class_name($this))->run(...$params);
+        return (new $class_name($this, $params))->run(...$params);
     }
 
     //========================================================================//
@@ -869,7 +910,7 @@ class controller
 //            return ERR_VALIDATE_INVALID;
 //        }
 //
-//        $content_model = \cmsCore::getModel('content');
+//        $content_model = self::getModel('content');
 //        $table_name    = $content_model->table_prefix . $ctype_name;
 //
 //        if ( $content_model->db->isFieldExists($table_name, $value) ) {
@@ -906,4 +947,152 @@ class controller
 //
 //        return true;
 //    }
+    //========================================================================//
+
+    /**
+     * Возвращает объект контроллера компонента
+     *
+     * @param string $component
+     * @param bool $reinit
+     * @param \cms\request $request
+     *
+     * @return \self|false
+     */
+    public static function getController($component, $reinit = false, $request = false)
+    {
+        if ( !isset(self::$factory['cotrollers'][$component]) || $reinit === true ) {
+            $class_name = '\\components\\' . $component . '\\frontend';
+
+            if ( \cmsCore::includeFile('components/' . $component . '/frontend.php') && class_exists($class_name, false) ) {
+                self::$factory['cotrollers'][$component] = new $class_name($request instanceof \cms\request ? $request : \cms\request::getInstance());
+            }
+        }
+
+        return isset(self::$factory['cotrollers'][$component]) ? self::$factory['cotrollers'][$component] : false;
+    }
+
+    public static function getModelClassName($component_name)
+    {
+        $new_class_name = '\\components\\' . $component_name . '\\model';
+        $old_class_name = 'cms_model_' . $component_name;
+
+        if ( class_exists($new_class_name) ) {
+            return $new_class_name;
+        }
+        else if ( class_exists($old_class_name) ) {
+            return $old_class_name;
+        }
+
+        return false;
+    }
+
+    /**
+     * Возвращает объект модели компонента
+     *
+     * @param string $component Название компонента
+     * @param bool $reinit Флаг указывающий следует ли переинициализировать класс
+     * модели или нет. Имеет смысл при отсутствии методов getInstace() и initModel()
+     * которые всегда возвращают один и тот же объект класса.
+     *
+     * @return \cms\model
+     */
+    public static function getModel($component, $reinit = false)
+    {
+        if ( !isset(self::$factory['models'][$component]) || $reinit === true ) {
+            $class_name = self::getModelClassName($component);
+
+            if ( class_exists($class_name) ) {
+                if ( method_exists($class_name, 'getInstance') ) {
+                    self::$factory['models'][$component] = $class_name::getInstance();
+                }
+                else if ( method_exists($class_name, 'initModel') ) {
+                    self::$factory['models'][$component] = $class_name::initModel();
+                }
+                else {
+                    self::$factory['models'][$component] = new $class_name();
+                }
+            }
+            else {
+                return new \cms\model();
+            }
+        }
+
+        return self::$factory['models'][$component];
+    }
+
+    /**
+     * Возвращает объект модели указанного компонента, если компонент не указан
+     * то возвращается объект модели для текущего компонента
+     *
+     * @param string $component Название компонента
+     *
+     * @return \cms\model
+     */
+    public function model($component = false)
+    {
+        if ( empty($component) ) {
+            return $this->model;
+        }
+        else {
+            self::getModel($component);
+        }
+    }
+
+    /**
+     * Редирект на собственный экшен
+     *
+     * @param string $action
+     * @param array|string $params
+     * @param array $query
+     */
+    public function redirectToAction($action = '', $params = [], $query = [])
+    {
+        \cmsCore::redirect($this->genActionUrl($action, $params, $query));
+    }
+
+    /**
+     * Генерирует и возвращает ссылку на экшен
+     *
+     * @param string $action
+     * @param array|string $params
+     * @param array $query
+     *
+     * @return string
+     */
+    public function genActionUrl($action = '', $params = [], $query = [])
+    {
+        $location = '/' . $this->root_url;
+
+        if ( !empty($action) && $action != 'index' ) {
+            $location .= '/' . $action;
+        }
+
+        if ( !empty($params) ) {
+            if ( is_array($params) ) {
+                $location .= '/' . implode('/', $params);
+            }
+            else {
+                $location .= '/' . $params;
+            }
+        }
+
+        if ( $query ) {
+            $location .= '?' . http_build_query($query);
+        }
+
+        return $location;
+    }
+
+    //========================================================================//
+
+    public function page()
+    {
+        return $this->page;
+    }
+
+    public function request()
+    {
+        return $this->request;
+    }
+
 }
