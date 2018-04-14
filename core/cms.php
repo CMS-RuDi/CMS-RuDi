@@ -20,12 +20,6 @@ class cmsCore
 
     use \Singeltone;
 
-    /**
-     * Массив с объектами моделей компонентов
-     *
-     * @var array
-     */
-    protected static $models        = [];
     private static $jevix;
     protected $menu_item;
     protected $menu_id;
@@ -104,9 +98,11 @@ class cmsCore
             $inConf->template = $_SESSION['template'];
         }
 
-        define('TEMPLATE', $inConf->template);
-        define('TEMPLATE_DIR', PATH . '/templates/' . $inConf->template . '/');
-        define('DEFAULT_TEMPLATE_DIR', PATH . '/templates/_default_/');
+        if ( !defined('TEMPLATE') ) {
+            define('TEMPLATE', $inConf->template);
+            define('TEMPLATE_DIR', PATH . '/templates/' . $inConf->template . '/');
+            define('DEFAULT_TEMPLATE_DIR', PATH . '/templates/_default_/');
+        }
     }
 
     /**
@@ -213,7 +209,7 @@ class cmsCore
      */
     public static function insertEditor($name, $text = '', $height = '350', $width = '500', $toolbar = 'full')
     {
-        $editor = \cms\events::call('INSERT_WYSIWYG', [ 'name' => $name, 'text' => $text, 'toolbar' => $toolbar, 'height' => $height, 'width' => $width ], 'single');
+        $editor = \cms\events::call('wysiwyg', [ 'name' => $name, 'text' => $text, 'toolbar' => $toolbar, 'height' => $height, 'width' => $width ], 'single');
 
         if ( !is_array($editor) ) {
             echo $editor;
@@ -653,6 +649,7 @@ class cmsCore
 
     /**
      * Возвращает заголовок текущего компонента
+     *
      * @return str
      */
     public function getComponentTitle()
@@ -688,7 +685,8 @@ class cmsCore
 
     /**
      * Инициализирует вложенные множества и возвращает объект CCelkoNastedSet
-     * @return object NS
+     *
+     * @return \cms\nestedsets
      */
     public static function nestedSetsInit($table)
     {
@@ -707,7 +705,9 @@ class cmsCore
 
     /**
      * Возвращает ключевые слова для заданного текста
+     *
      * @param string $text
+     *
      * @return string
      */
     public static function getKeywords($text)
@@ -735,6 +735,7 @@ class cmsCore
      * Получет из request переменную $search и кладет в сессию
      * при отсутствии в request переменной $search берет из сессии
      * или возвращает $default
+     *
      * @return str
      */
     public static function getSearchVar($search = '', $default = '')
@@ -762,12 +763,35 @@ class cmsCore
         return $value;
     }
 
+    /**
+     * Редирект на компонент
+     *
+     * @param string $controller
+     * @param string $action
+     * @param array $params
+     * @param array $query
+     */
+    public static function redirectTo($controller, $action = '', $params = [], $query = [], $code = 303)
+    {
+        $location = '/' . $controller . (($action && $action != 'index') ? '/' . $action : '');
+
+        if ( $params ) {
+            $location .= '/' . implode('/', $params);
+        }
+
+        if ( $query ) {
+            $location .= '?' . http_build_query($query, '', '&');
+        }
+
+        self::redirect($location, $code);
+    }
+
     public static function redirectBack()
     {
         self::redirect(self::getBackURL(false));
     }
 
-    public static function redirect($url, $code = '303')
+    public static function redirect($url, $code = 303)
     {
         if ( $code == '301' ) {
             header('HTTP/1.1 301 Moved Permanently');
@@ -784,7 +808,9 @@ class cmsCore
     /**
      * Возвращает предыдущий URL для редиректа назад.
      * Если находит переменную $_REQUEST['back'], то возвращает ее
+     *
      * @param bool $is_request Учитывать $_REQUEST['back']
+     *
      * @return string
      */
     public static function getBackURL($is_request = true)
@@ -807,9 +833,11 @@ class cmsCore
 
     /**
      * Закачивает файл на сервер и отслеживает ошибки
+     *
      * @param string $source
      * @param string $destination
      * @param int $errorCode
+     *
      * @return bool
      */
     public static function moveUploadedFile($source, $destination, $errorCode)
@@ -870,7 +898,9 @@ class cmsCore
 
     /**
      * Возвращает массив с настройками модуля
+     *
      * @param int $module_id
+     *
      * @return array
      */
     public function loadModuleConfig($module_id)
@@ -898,8 +928,10 @@ class cmsCore
 
     /**
      * Сохраняет настройки модуля в базу
+     *
      * @param int $module_id
      * @param array $config
+     *
      * @return bool
      */
     public function saveModuleConfig($module_id, $config)
@@ -919,8 +951,10 @@ class cmsCore
 
     /**
      * Кэширует конфигурацию модуля на время выполнения скрипта
+     *
      * @param int $module_id
      * @param array $config
+     *
      * @return boolean
      */
     public function cacheModuleConfig($module_id, $config)
@@ -936,6 +970,7 @@ class cmsCore
 
     /**
      * Возвращает массив с установленными в системе фильтрами
+     *
      * @return array or false
      */
     public static function getFilters()
@@ -965,7 +1000,9 @@ class cmsCore
 
     /**
      * Применяет фильтры к тексту
+     *
      * @param str $content
+     *
      * @return str
      */
     public static function processFilters($content)
@@ -985,7 +1022,9 @@ class cmsCore
 
     /**
      * Возвращает количество загрузок файла
+     *
      * @param string $fileurl
+     *
      * @return int
      */
     public static function fileDownloadCount($fileurl)
@@ -1001,7 +1040,9 @@ class cmsCore
 
     /**
      * Возвращает тег <img> с иконкой, соответствующей типу файла
+     *
      * @param string $filename
+     *
      * @return int
      */
     public static function fileIcon($filename)
@@ -1096,7 +1137,9 @@ class cmsCore
     /**
      * Проверяет наличие ссылки в пункте меню
      * в случае обнаружения, возвращает его заголовок
+     *
      * @param str $link
+     *
      * @return string
      */
     public function getLinkInMenu($link)
@@ -1116,6 +1159,7 @@ class cmsCore
 
     /**
      * Возвращает заголовок текущего пункта меню
+     *
      * @return string
      */
     public function menuTitle()
@@ -1130,8 +1174,10 @@ class cmsCore
     /**
      * Возвращает название шаблона, назначенного на пункт меню
      * Если используется шаблон по-умолчанию, то возвращает false
+     *
      * @param int $menuid
-     * @return string or false
+     *
+     * @return string|false
      */
     public function menuTemplate()
     {
@@ -1144,6 +1190,7 @@ class cmsCore
 
     /**
      * Возвращает true если URI страницы и ссылка активного пункта меню совпали полностью
+     *
      * @return boolean
      */
     public function isMenuIdStrict()
@@ -1153,6 +1200,7 @@ class cmsCore
 
     /**
      * Возвращает ID текущего пункта меню
+     *
      * @return int
      */
     public function menuId()
@@ -1219,6 +1267,7 @@ class cmsCore
 
     /**
      * Возвращает данные о текущем пункте меню
+     *
      * @return array
      */
     public function getMenuItem($menuid)
@@ -1266,11 +1315,13 @@ class cmsCore
 
     /**
      * Возвращает элементы <option> для списка записей из указанной таблицы БД
+     *
      * @param string $table
      * @param int $selected
      * @param string $order_by
      * @param string $order_to
      * @param string $where
+     *
      * @return html
      */
     public static function getListItems($table, $selected = 0, $order_by = 'id', $order_to = 'ASC', $where = '', $id_field = 'id', $title_field = 'title')
@@ -1305,11 +1356,13 @@ class cmsCore
 
     /**
      * Возвращает элементы <option> для списка записей из указанной таблицы БД c вложенными множествами
+     *
      * @param string $table таблица
      * @param int $selected id выделенного элемента
      * @param string $differ идентификатор множества (NSDiffer)
      * @param string $need_field выводить только элементы содержащие указанное поле
      * @param int $rootid корневой элемент
+     *
      * @return html
      */
     public function getListItemsNS($table, $selected = 0, $differ = '', $need_field = '', $rootid = 0, $no_padding = false)
@@ -1359,7 +1412,11 @@ class cmsCore
 
     /**
      * Возвращает список директорий внутри указанной, начиная от корня
+     *
+     * @todo Перенести в класс \cms\helper\files
+     *
      * @param string $root_dir Например /languages
+     *
      * @return array
      */
     public static function getDirsList($root_dir)
@@ -1390,10 +1447,12 @@ class cmsCore
 
     /**
      * Регистрирует тип цели для рейтингов в базе
+     *
      * @param string $target
      * @param string $component
      * @param boolean $is_user_affect
      * @param int $user_weight
+     *
      * @return boolean
      */
     public static function registerRatingsTarget($target, $component, $target_title, $is_user_affect = true, $user_weight = 1, $target_table = '')
@@ -1410,8 +1469,10 @@ class cmsCore
 
     /**
      * Удаляет все рейтинги для указанной цели
+     *
      * @param string $target
      * @param int $item_id
+     *
      * @return boolean
      */
     public static function deleteRatings($target, $item_id)
@@ -1439,11 +1500,14 @@ class cmsCore
 
     /**
      * Регистрирует тип цели для комментариев в базе
+     *
      * @param string $target - Цель
      * @param string $component - Компонент
      * @param string $title - Название цели во множ.числе (например "Статьи")
      * @param string $target_table - таблица, где хранятся комментируемые записи
      * @param string $subj - название цели в родительном падеже (например "вашей статьи")
+     *
+     * return true
      */
     public static function registerCommentsTarget($target, $component, $title, $target_table, $subj)
     {
@@ -1462,8 +1526,10 @@ class cmsCore
 
     /**
      * Удаляет все комментарии для указанной цели
+     *
      * @param string $target
      * @param int $target_id
+     *
      * @return boolean
      */
     public static function deleteComments($target, $target_id)
@@ -1489,8 +1555,10 @@ class cmsCore
 
     /**
      * Возвращает количество комментариев для указанной цели
+     *
      * @param string $target
      * @param int $target_id
+     *
      * @return int
      */
     public static function getCommentsCount($target, $target_id)
@@ -1505,7 +1573,9 @@ class cmsCore
 
     /**
      * Переводит номер месяца в название
+     *
      * @param int $num
+     *
      * @return string
      */
     public static function intMonthToStr($num)
@@ -1516,78 +1586,77 @@ class cmsCore
 
     /**
      * Форматирует дату из формата Y-m-d H:i:s
+     *
      * @global array $_LANG
+     *
      * @param str $date Исходная дата
      * @param bool $is_full_m Выводить полное название месяца
      * @param bool $is_time Дополнять часом и минутами
      * @param bool $is_now_time Дополнять даты "сегодня" и "вчера" часом и минутами
+     *
      * @return string
      */
-    static function dateFormat($date, $is_full_m = true, $is_time = false, $is_now_time = true)
+    public static function dateFormat($date, $is_full_m = true, $is_time = false, $is_now_time = true)
     {
         if ( (int) $date == 0 ) {
             return '';
         }
 
-        $inConf = cmsConfig::getInstance();
-
         global $_LANG;
 
-        // формируем входную $date с учетом смещения
-        $date = date('Y-m-d H:i:s', strtotime($date) + ($inConf->timediff * 3600));
+        $dt     = new DateTime($date);
+        $dt_now = new DateTime();
+
+        $with_time = $is_now_time;
+
+        // Изменяем дату в соответствии с временной зоной пользователя
+        if ( !empty($_SESSION['timezone']) && $_SESSION['timezone'] != cmsConfig::getConfig('timezone') ) {
+            $dt->setTimezone(new DateTimeZone($_SESSION['timezone']));
+            $dt_now->setTimezone(new DateTimeZone($_SESSION['timezone']));
+        }
 
         // сегодняшняя дата
-        $today     = date('Y-m-d', strtotime(date('Y-m-d H:i:s')) + ($inConf->timediff * 3600));
-        // вчерашняя дата
-        $yesterday = date('Y-m-d', strtotime(date('Y-m-d H:i:s')) - (86400) + ($inConf->timediff * 3600));
+        $today = $dt_now->format('Y-m-d');
 
-        // получаем значение даты и времени
-        list($day, $time) = explode(' ', $date);
+        // вчерашняя дата
+        $yesterday = $dt_now->modify('-1 day')->format('Y-m-d');
+
+        // завтрашняя дата
+        $tomorrow = $dt_now->modify('+2 day')->format('Y-m-d');
+
+        $day  = $dt->format('Y-m-d');
+        $time = $dt->format('H:i:s');
 
         switch ( $day ) {
             // Если дата совпадает с сегодняшней
             case $today:
                 $result = $_LANG['TODAY'];
-
-                if ( $is_now_time && $time ) {
-                    list($h, $m, $s) = explode(':', $time);
-                    $result .= ' ' . $_LANG['IN'] . ' ' . $h . ':' . $m;
-                }
                 break;
-            //Если дата совпадает со вчерашней
+            // Если дата совпадает со вчерашней
             case $yesterday:
                 $result = $_LANG['YESTERDAY'];
-
-                if ( $is_now_time && $time ) {
-                    list($h, $m, $s) = explode(':', $time);
-                    $result .= ' ' . $_LANG['IN'] . ' ' . $h . ':' . $m;
-                }
                 break;
-            default:
-                // Разделяем отображение даты на составляющие
-                list($y, $m, $d) = explode('-', $day);
-
-                // Замена числового обозначения месяца на словесное (склоненное в падеже)
-                if ( $is_full_m ) {
-                    $m = $_LANG['MONTH_' . $m];
-                }
-                else {
-                    $m = $_LANG['MONTH_' . $m . '_SHORT'];
-                }
-
-                // Замена чисел 01 02 на 1 2
-                $d = sprintf("%2d", $d);
-
-                // Формирование окончательного результата
-                $result = $d . ' ' . $m . ' ' . $y;
-
-                if ( $is_time && $time ) {
-                    // Получаем отдельные составляющие времени
-                    // Секунды нас не интересуют
-                    list($h, $m, $s) = explode(':', $time);
-                    $result .= ' ' . $_LANG['IN'] . ' ' . $h . ':' . $m;
-                }
+            // Если дата совпадает с завтрашней
+            case $tomorrow:
+                $result = $_LANG['TOMORROW'];
                 break;
+            default: {
+                    // Замена числового обозначения месяца на словесное (склоненное в падеже)
+                    if ( $is_full_m ) {
+                        $m = $_LANG['MONTH_' . $dt->format('m')];
+                    }
+                    else {
+                        $m = $_LANG['MONTH_' . $dt->format('m') . '_SHORT'];
+                    }
+
+                    $result = $dt->format('j') . ' ' . $m . ' ' . $dt->format('Y');
+
+                    $with_time = $is_time;
+                }
+        }
+
+        if ( $with_time && $time != '00:00:00' ) {
+            $result .= ' ' . $_LANG['IN'] . ' ' . $dt->format('H') . ':' . $dt->format('i');
         }
 
         return $result;
@@ -1595,7 +1664,9 @@ class cmsCore
 
     /**
      * Возвращает день недели по дате
+     *
      * @param string $date
+     *
      * @return string
      */
     public static function dateToWday($date)
@@ -1611,7 +1682,9 @@ class cmsCore
 
     /**
      * Выводит словами разницу между текущей и указанной датой
+     *
      * @param string $date
+     *
      * @return string
      */
     public static function dateDiffNow($date)
@@ -1647,6 +1720,53 @@ class cmsCore
         }
 
         return $_LANG['LESS_MINUTE'];
+    }
+
+    public static function getTimeZones($offsets = false)
+    {
+        $results = DateTimeZone::listIdentifiers();
+
+        if ( $offsets === false ) {
+            return $results;
+        }
+
+        $timezones = array();
+
+        foreach ( $results as $result ) {
+            $now    = new DateTime(null, new DateTimeZone($result));
+            $offset = $now->getOffset();
+
+            $offsetHours   = floor(abs($offset) / 3600);
+            $offsetMinutes = floor((abs($offset) - $offsetHours * 3600) / 60);
+            $offsetString  = ($offset < 0 ? '-' : '+') . ($offsetHours < 10 ? '0' : '') . $offsetHours . ':' . ($offsetMinutes < 10 ? '0' : '') . $offsetMinutes;
+
+            if ( !isset($timezones[$offsetString]) ) {
+                $timezones[$offsetString] = array();
+            }
+
+            $timezones[$offsetString][] = $result;
+        }
+
+        ksort($timezones);
+
+        return $timezones;
+    }
+
+    public static function getTimeZonesOptions($sel = '')
+    {
+        $lang = \cms\lang::getInstance()->load('timezone');
+
+        $timezones = self::getTimeZones(true);
+
+        $options = '';
+
+        foreach ( $timezones as $offset => $tzones ) {
+            foreach ( $tzones as $timezone ) {
+                $options .= '<option value="' . $timezone . '"' . ($timezone == $sel ? ' selected="selected"' : '') . '>' . $offset . ' ' . $lang->e($timezone) . '</option>' . "\n";
+            }
+        }
+
+        return $options;
     }
 
     public static function initAutoGrowText($element_id)
@@ -2233,7 +2353,7 @@ class cmsCore
 
     public static function getComponentDefaultConfig($component_name)
     {
-        $class_name = self::getModelClassName($component_name);
+        $class_name = \cms\controller::getModelClassName($component_name);
 
         if ( class_exists($class_name) ) {
             if ( method_exists($class_name, 'getDefaultConfig') ) {
@@ -2244,53 +2364,14 @@ class cmsCore
         return [];
     }
 
-    public static function getModelClassName($component_name)
+    public static function showDebugInfo()
     {
-        $new_class_name = '\\components\\' . $component_name . '\\model';
-        $old_class_name = 'cms_model_' . $component_name;
-
-        if ( class_exists($new_class_name) ) {
-            return $new_class_name;
+        if ( !defined('VALID_CMS_ADMIN') ) {
+            return \cmsPage::includeTemplateFile('special/debug.php');
         }
-        else if ( class_exists($old_class_name) ) {
-            return $old_class_name;
+        else {
+            return \cms\backend::showDebugInfo();
         }
-
-        return false;
-    }
-
-    /**
-     * Возвращает объект модели компонента
-     *
-     * @param string $component_name Название компонента
-     * @param bool $reinit Флаг указывающий следует ли переинициализировать класс
-     * модели или нет. Имеет смысл при отсутствии методов getInstace() и initModel()
-     * которые всегда возвращают один и тот же объект класса.
-     *
-     * @return \cms\model
-     */
-    public static function getModel($component_name, $reinit = false)
-    {
-        if ( !isset(self::$models[$component_name]) || $reinit === true ) {
-            $class_name = self::getModelClassName($component_name);
-
-            if ( class_exists($class_name) ) {
-                if ( method_exists($class_name, 'getInstance') ) {
-                    self::$models[$component_name] = $class_name::getInstance();
-                }
-                else if ( method_exists($class_name, 'initModel') ) {
-                    self::$models[$component_name] = $class_name::initModel();
-                }
-                else {
-                    self::$models[$component_name] = new $class_name();
-                }
-            }
-            else {
-                return new \cms\model();
-            }
-        }
-
-        return self::$models[$component_name];
     }
 
     // ============================= DEPRECATED ==============================//
@@ -2451,7 +2532,7 @@ class cmsCore
 
     public static function loadModel($component_name)
     {
-        return self::getModelClassName($component_name) === false ? false : true;
+        return \cms\controller::getModelClassName($component_name) === false ? false : true;
     }
 
     public static function loadClass($class)
@@ -2518,3 +2599,4 @@ function dump($var, $halt = true)
 }
 
 require_once __DIR__ . '/classes/autoload.php';
+require_once __DIR__ . '/legacy_classes.php';
