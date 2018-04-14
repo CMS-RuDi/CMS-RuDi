@@ -124,6 +124,13 @@ class lang
         return false;
     }
 
+    /**
+     * Возвращает локализованную строку
+     *
+     * @param string $name
+     *
+     * @return string
+     */
     public function get($name)
     {
         $name = mb_strtolower($name);
@@ -131,6 +138,74 @@ class lang
         return isset(self::$_LANG[$name]) ? self::$_LANG[$name] : '';
     }
 
+    /**
+     * Аналогична get, но в отличии от нее если строка не найдена возвращает $name
+     *
+     * @see self::get()
+     */
+    public function e($name)
+    {
+        $key = mb_strtolower($name);
+
+        return isset(self::$_LANG[$key]) ? self::$_LANG[$key] : $name;
+    }
+
+    /**
+     * Возвращает локализованную строку у которой первая буква переведена в верхний
+     * регистр
+     *
+     * @param string $name
+     *
+     * @return string
+     */
+    public function ucf($name)
+    {
+        return ucfirst($this->e($name));
+    }
+
+    /**
+     * Возвращает локализованную строку у которой первая буква переведена в нижний
+     * регистр
+     *
+     * @param string $name
+     *
+     * @return string
+     */
+    public function lcf($name)
+    {
+        return lcfirst($this->e($name));
+    }
+
+    /**
+     * Возвращает локализованную строку в верхнем регистре
+     *
+     * @param string $name
+     *
+     * @return string
+     */
+    public function uc($name)
+    {
+        return mb_strtoupper($this->e($name));
+    }
+
+    /**
+     * Возвращает локализованную строку в нижнем регистре
+     *
+     * @param string $name
+     *
+     * @return string
+     */
+    public function lc($name)
+    {
+        return mb_strtolower($this->e($name));
+    }
+
+    /**
+     * Устанавливает/изменяет локализованную строку
+     *
+     * @param string $name
+     * @param string $value
+     */
     public function set($name, $value)
     {
         self::$_LANG[mb_strtolower($name)] = $value;
