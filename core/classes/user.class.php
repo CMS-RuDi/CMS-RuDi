@@ -22,17 +22,14 @@ class cmsUser
     const PROFILE_LINK_PREFIX = 'users/';
 
     protected static $_ip;
-    private static $csrf_token           = '';
-    private $friends                     = array();
-    private $new_msg                     = array();
-    private $geo_is_loaded               = false;
-    private static $guest_group_info     = array();
-    private static $cache                = array();
-    private $loads_users                 = array();
-    private static $maximum_tokens_count = 30;
-    private static $csrf_tokens_name     = 'security';
-    public $id                           = 0;
-    public $is_admin                     = 0;
+    private $friends                 = array();
+    private $new_msg                 = array();
+    private $geo_is_loaded           = false;
+    private static $guest_group_info = array();
+    private static $cache            = array();
+    private $loads_users             = array();
+    public $id                       = 0;
+    public $is_admin                 = 0;
     public $online_users;
     public $online_users_ids;
 
@@ -1531,123 +1528,11 @@ class cmsUser
     }
 
     /**
-     * Сохраняет переменную в сессии
-     * @param str $param Название переменной
-     * @param mixed $value Значение
-     * @return bool
-     */
-    public static function sessionPut($param, $value, $box = 'icms')
-    {
-        $_SESSION[$box][$param] = $value;
-        return $value;
-    }
-
-    /**
-     * Извлекает переменную из сессии
-     * @param str $param Название переменной
-     * @return bool
-     */
-    public static function sessionGet($param, $box = 'icms')
-    {
-        if ( isset($_SESSION[$box][$param]) ) {
-            return $_SESSION[$box][$param];
-        }
-        else {
-            return false;
-        }
-    }
-
-    /**
-     * Удаляет переменную из сессии
-     * @param str $param Название переменной
-     */
-    public static function sessionDel($param, $box = 'icms')
-    {
-        unset($_SESSION[$box][$param]);
-    }
-
-    /**
-     * Очищает весь массив icms сессии
-     */
-    public static function sessionClearAll($box = 'icms')
-    {
-        unset($_SESSION[$box]);
-    }
-
-    public static function setMaximumTokensCount($num)
-    {
-        self::$maximum_tokens_count = $num;
-    }
-
-    public static function setCsrfTokensName($name)
-    {
-        self::$csrf_tokens_name = $name;
-    }
-
-    /**
-     * Формирует и возвращает csrf токен
-     */
-    public static function getCsrfToken()
-    {
-        if ( !self::$csrf_token ) {
-            $token = md5(uniqid() . microtime());
-
-            $tokens = self::sessionGet('csrf_tokens', self::$csrf_tokens_name);
-
-            if ( is_array($tokens) ) {
-                $count_tokens = array_push($tokens, $token);
-                while ( $count_tokens > self::$maximum_tokens_count ) {
-                    array_shift($tokens);
-                    $count_tokens = count($tokens);
-                }
-            }
-            else {
-                $tokens = array( $token );
-            }
-
-            self::sessionPut('csrf_tokens', $tokens, self::$csrf_tokens_name);
-
-            self::$csrf_token = $token;
-        }
-
-        return self::$csrf_token;
-    }
-
-    /**
-     * Проверяет csrf токен
-     * Рекомендуется проверять токен в самую последнюю очередь,
-     * после всех проверок входных данных
-     */
-    public static function checkCsrfToken()
-    {
-        $tokens = self::sessionGet('csrf_tokens', self::$csrf_tokens_name);
-
-        if ( !empty($_POST['csrf_token']) && is_array($tokens) ) {
-            $key = array_search((string) $_POST['csrf_token'], $tokens, true);
-
-            if ( $key !== false ) {
-                unset($tokens[$key]);
-                ksort($tokens);
-                self::sessionPut('csrf_tokens', $tokens, self::$csrf_tokens_name);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * ====== DEPRECATED =========
-     */
-    public static function clearCsrfToken()
-    {
-        return true;
-    }
-
-    /**
-     * Находит в строке все выжения вида {user.property} и заменяет property
+     * Находит в строке все выражения вида {user.property} и заменяет property
      * на соответствующее свойство объекта cmsUser
+     *
      * @param string $string
+     *
      * @return string
      */
     public static function stringReplaceUserProperties($string, $is_title = false)
@@ -2129,6 +2014,75 @@ class cmsUser
         }
 
         return self::$_ip;
+    }
+
+    // ============================= DEPRECATED ==============================//
+    // Методы не желательные к использованию в новых компонентах, плагинах и модулях
+    // но оставленные для совместимости со старыми версиями
+
+    public static function setMaximumTokensCount($num)
+    {
+        return;
+    }
+
+    public static function setCsrfTokensName($name)
+    {
+        return;
+    }
+
+    /**
+     * @see \cms\csrf_token::get()
+     */
+    public static function getCsrfToken()
+    {
+        return \cms\csrf_token::get();
+    }
+
+    /**
+     * @see \cms\csrf_token::check()
+     */
+    public static function checkCsrfToken()
+    {
+        return \cms\csrf_token::check(\cms\request::getInstance()->get('csrf_token', 'string', '', 'post'));
+    }
+
+    public static function clearCsrfToken()
+    {
+        return true;
+    }
+
+    /**
+     * @see \cms\session::set()
+     */
+    public static function sessionPut($param, $value, $box = \cms\session::NAME_SPACE)
+    {
+        \cms\session::set($param, $value, $box);
+
+        return $value;
+    }
+
+    /**
+     * @see \cms\session::get()
+     */
+    public static function sessionGet($param, $box = \cms\session::NAME_SPACE)
+    {
+        return \cms\session::get($param, $box);
+    }
+
+    /**
+     * @see \cms\session::delete()
+     */
+    public static function sessionDel($param, $box = \cms\session::NAME_SPACE)
+    {
+        \cms\session::delete($param, $box);
+    }
+
+    /**
+     * @see \cms\session::clear()
+     */
+    public static function sessionClearAll($box = \cms\session::NAME_SPACE)
+    {
+        \cms\session::clear($box);
     }
 
 }
