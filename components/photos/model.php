@@ -13,6 +13,8 @@
 class cms_model_photos
 {
 
+    const PHOTO_FILES_TABLE = 'photo_files';
+
     public function __construct()
     {
         $this->inDB   = cmsDatabase::getInstance();
