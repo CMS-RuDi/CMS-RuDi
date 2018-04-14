@@ -158,7 +158,7 @@ class cmsDatabase
 
         $sql = $replace_prefix ? $this->replacePrefix($sql) : $sql;
 
-        return $this->db->query($sql, false, !$ignore_errors);
+        return $this->db->query($sql, false, !(\cmsConfig::getInstance()->debug && !$ignore_errors));
     }
 
     public function num_rows($result)
