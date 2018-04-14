@@ -74,6 +74,7 @@ class autoload
      * Ищет и подключает файл с указанным классом
      *
      * @param string $class_name Название класса
+     *
      * @return boolean
      */
     public function load($class_name = false)
