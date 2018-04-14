@@ -93,7 +93,7 @@ class p_ckeditor extends cmsPlugin
 
     public function canFileUpload()
     {
-        return ($this->config['upload_file_for_groups'] ? in_array(cmsUser::getInstance()->group_id, $this->config['upload_file_for_groups']) : false);
+        return (!empty($this->config['upload_file_for_groups']) ? in_array(cmsUser::getInstance()->group_id, $this->config['upload_file_for_groups']) : false);
     }
 
 }
