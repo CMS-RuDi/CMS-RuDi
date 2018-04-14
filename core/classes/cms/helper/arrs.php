@@ -56,15 +56,59 @@ class arrs
     {
         $name_parts = !is_array($path) ? explode($delimiter, $path) : $path;
 
-        $_array = &$array;
-
-        foreach ( $name_parts as $name ) {
-            $_array = &$_array[$name];
-        }
-
-        $_array = $value;
+        self::setKeysListValue($name_parts, $array, $value);
 
         return $array;
+    }
+
+    /**
+     * Изменяет переданный по ссылке массив $array добавляя в него значение $value
+     * по переданной вложенности ключей $keys
+     *
+     * @param array $keys Путь до необходимого ключа в виде массива, например array('key', 'subkey', 'subsubkey')
+     * @param array $array Изменяемый массив
+     * @param mixed $value Значение ключа
+     *
+     * @return null
+     */
+    public static function setKeysListValue(&$keys, &$array, $value)
+    {
+        $key = array_shift($keys);
+
+        if ( !isset($array[$key]) && !empty($keys) ) {
+            $array[$key] = [];
+        }
+        else {
+            $array[$key] = $value;
+            return;
+        }
+
+        return self::setKeysListValue($keys, $array[$key], $value);
+    }
+
+    public static function unsetValueRecursive($path, $haystack, $delimiter = ':')
+    {
+        $name_parts = !is_array($path) ? explode($delimiter, $path) : $path;
+
+        self::unsetKeysListValue($name_parts, $haystack);
+
+        return $haystack;
+    }
+
+    public static function unsetKeysListValue(&$keys, &$haystack)
+    {
+        $key = array_shift($keys);
+
+        if ( array_key_exists($key, $haystack) ) {
+            if ( empty($keys) ) {
+                unset($haystack[$key]);
+                return true;
+            }
+
+            return self::unsetKeysListValue($keys, $haystack[$key]);
+        }
+
+        return false;
     }
 
     /**
