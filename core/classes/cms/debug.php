@@ -2,6 +2,9 @@
 
 namespace cms;
 
+/**
+ * @package Classes
+ */
 class debug
 {
 
@@ -9,6 +12,7 @@ class debug
 
     /**
      * Отладочная информация
+     *
      * @var array
      */
     protected static $debug = [
@@ -21,18 +25,21 @@ class debug
 
     /**
      * Общее время работы
+     *
      * @var array
      */
     protected static $total_time = [];
 
     /**
      * Массив с таймерами
+     *
      * @var array
      */
     protected static $timer = [];
 
     /**
      * Запускает таймер события и возвращает его идентификатор
+     *
      * @return string
      */
     public static function startTimer($key = null)
@@ -50,7 +57,10 @@ class debug
 
     /**
      * Возвращает время с момента запуска таймера
-     * @param string $key
+     *
+     * @param string $key Название таймера
+     * @param integer $decimals Количество цифр после запятой
+     *
      * @return float
      */
     public static function getTime($key, $decimals = self::DECIMALS)
@@ -66,9 +76,13 @@ class debug
 
     /**
      * Сохраняет отладочную информацию
-     * @param string $name
-     * @param string $tkey
-     * @param string $text
+     *
+     * @param string $name Название раздела отладки
+     * @param string $text Текстовое сообщение
+     * @param string $tkey Ключ запущенного таймера
+     * @param integer $offset Смещение по которому бедут браться название
+     * метода/функции для указания в отладочной информации
+     *
      */
     public static function setDebugInfo($name, $text = false, $tkey = false, $offset = 2)
     {
@@ -135,7 +149,9 @@ class debug
 
     /**
      * Возвращает всю отладочную информацию по указанному разделу
+     *
      * @param string $name
+     *
      * @return array|false
      */
     public static function getDebugInfo($name = '')
@@ -149,9 +165,14 @@ class debug
         return self::$debug;
     }
 
+    /**
+     * Возвращает список разделов отладки с количеством отладочной информации
+     *
+     * @return array
+     */
     public static function getDebagTargets()
     {
-        global $_LANG;
+        $lang = \cms\lang::getInstance();
 
         $_targets = array_keys(self::$debug);
 
@@ -159,7 +180,7 @@ class debug
 
         foreach ( $_targets as $target ) {
             $targets[$target] = [
-                'title' => isset($_LANG['DEBUG_TAB_' . strtoupper($target)]) ? $_LANG['DEBUG_TAB_' . strtoupper($target)] : 'DEBUG_TAB_' . strtoupper($target),
+                'title' => $lang->e('DEBUG_TAB_' . strtoupper($target)),
                 'count' => count(self::$debug[$target])
             ];
         }
@@ -169,7 +190,9 @@ class debug
 
     /**
      * Возвращает общее время выполнения выполнения для указанных разделов
+     *
      * @param string $name
+     *
      * @return float
      */
     public static function getTotalRunTime($name = '')
@@ -187,6 +210,7 @@ class debug
 
     /**
      * Обработчик ошибок, сохраняет список ошибок для удобного вывода пользователю
+     *
      * @param integer $errno
      * @param string $errstr
      * @param string $errfile
@@ -215,6 +239,10 @@ class debug
         return true;
     }
 
+    /**
+     * Загружает в массив с отладочной информацией, информацию об подключенных
+     * файлах
+     */
     public static function loadIncludedFiles()
     {
         $_files = get_included_files();

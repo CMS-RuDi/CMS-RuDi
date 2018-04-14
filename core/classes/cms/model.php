@@ -6,6 +6,10 @@ class model
 {
 
     protected $name;
+
+    /**
+     * @var \cms\db;
+     */
     public $db;
 
     const LEFT_JOIN                = 'LEFT JOIN';
@@ -1152,7 +1156,12 @@ class model
         }
 
         foreach ( $fields as $field => $alias ) {
-            $this->select($field, $alias);
+            if ( is_int($field) ) {
+                $this->select($alias);
+            }
+            else {
+                $this->select($field, $alias);
+            }
         }
 
         return $this;
@@ -1166,8 +1175,7 @@ class model
 
     public function selectOnly($field, $as = false)
     {
-        $this->select   = [];
-        $this->select[] = $as ? $field . ' as ' . $as : $field;
+        $this->select = [ $as ? $field . ' as ' . $as : $field ];
         return $this;
     }
 
@@ -1651,6 +1659,7 @@ class model
             // то пропускаем строку через него
             if ( is_callable($item_callback) ) {
                 $item = call_user_func_array($item_callback, [ $item, $this ]);
+
                 if ( $item === false ) {
                     continue;
                 }

@@ -2,6 +2,9 @@
 
 namespace cms;
 
+/**
+ * @package Classes
+ */
 class cookie
 {
 
@@ -14,13 +17,14 @@ class cookie
      */
     public static function set($name, $value, $expire = 0, $httponly = true)
     {
-        if (mb_substr(HOST, 0, 8) == 'https://') {
+        if ( mb_substr(HOST, 0, 8) == 'https://' ) {
             $secure = true;
-        } else {
+        }
+        else {
             $secure = false;
         }
-        
-        setcookie(\cmsConfig::getConfig('cookie_key') .'['. $name .']', $value, $expire, '/', null, $secure, $httponly);
+
+        setcookie(\cmsConfig::getConfig('cookie_key') . '[' . $name . ']', $value, $expire, '/', null, $secure, $httponly);
     }
 
     /**
@@ -48,4 +52,5 @@ class cookie
             return false;
         }
     }
+
 }

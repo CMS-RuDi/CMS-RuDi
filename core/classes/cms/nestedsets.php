@@ -504,8 +504,6 @@ class nestedsets
     {
         $sql_select = "SELECT * FROM " . $this->TableName . " WHERE " . $this->FieldID . " = " . $IDNode . " AND " . $this->FieldDiffer . " = '" . $Differ . "'";
 
-        var_dump($sql_select);
-
         $rs_select  = $this->_safe_query($sql_select);
         if ( ($rs_select) && ($row_select = $this->db->fetchAssoc($rs_select)) ) {
             $this->_safe_set($row_select[$this->FieldID], -1);

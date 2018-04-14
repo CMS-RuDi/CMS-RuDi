@@ -75,6 +75,7 @@ class request
 
     /**
      * Устанавливает контекст
+     *
      * @param int $context Контекст (если не указан, определяется автоматически)
      */
     public function setContext($context = self::CTX_AUTO_DETECT)
@@ -89,6 +90,7 @@ class request
 
     /**
      * Определяет контекст текущего запроса (стандартный или ajax)
+     *
      * @return int
      */
     protected function detectContext()
@@ -104,6 +106,7 @@ class request
 
     /**
      * Возвращает текущий контекст
+     *
      * @return int
      */
     public function getContext()
@@ -113,6 +116,7 @@ class request
 
     /**
      * Возвращает true, если запрос вызван через URL
+     *
      * @return bool
      */
     public function isStandard()
@@ -122,6 +126,7 @@ class request
 
     /**
      * Возвращает true, если запрос вызван другим контроллером
+     *
      * @return bool
      */
     public function isInternal()
@@ -131,6 +136,7 @@ class request
 
     /**
      * Возвращает true, если запрос вызван через AJAX
+     *
      * @return bool
      */
     public function isAjax()
@@ -142,7 +148,9 @@ class request
 
     /**
      * Возврает новый экземпляр класса
+     *
      * @param array $request
+     *
      * @return \self
      */
     public static function init()
@@ -172,6 +180,7 @@ class request
 
     /**
      * Добавляет переменную во внутренний список
+     *
      * @param string $name
      * @param mixed $value
      */
@@ -182,6 +191,7 @@ class request
 
     /**
      * Удаляет переменную из внутреннего списка
+     *
      * @param type $name
      */
     public function delete($name)
@@ -193,6 +203,7 @@ class request
 
     /**
      * Добавляет массив переменных во внутренний список
+     *
      * @param string $name
      * @param mixed $value
      */
@@ -209,6 +220,7 @@ class request
 
     /**
      * Устанавливает список переменных
+     *
      * @param array $data
      */
     public function setData($data)
@@ -228,8 +240,10 @@ class request
 
     /**
      * Проверяет присутствует ли указанная переменная в полученных данных
+     *
      * @param string $var
      * @param string $r
+     *
      * @return boolean
      */
     public function has($name, $r = 'request', $only_real_request = true)
@@ -251,11 +265,13 @@ class request
 
     /**
      * Получает в соответствии с заданным типом переменную $value из $_REQUEST или из заданного массива данных если такой задан
+     *
      * @param string $name название переменной
      * @param string $type тип bool (boolean) | int (integer) | float | ip | str (string) | html | email | email_regex | array | array_int | array_str | массив допустимых значений
      * @param string $default значение по умолчанию
      * @param string $r Откуда брать значение get | post | request
      * @param array $options массив опций и флагов для функции filter_var
+     *
      * @return mixed
      */
     public function get($name, $type = 'str', $default = false, $r = 'request', $options = [])
@@ -288,8 +304,10 @@ class request
 
     /**
      * Формирует массив данных из $_REQUEST в соответствии с параметрами
+     *
      * @param array $types массив, ключами которого являются названия полей в базе данных,
      * а значения его - массив параметров входной переменной
+     *
      * @return array
      */
     public function getArrayFromRequest($types)
@@ -321,6 +339,7 @@ class request
 
     /**
      * Возвращает массив с данными переданными методом json post
+     *
      * @return array | bool
      */
     public static function getJsonPostData()
@@ -425,7 +444,9 @@ class request
 
     /**
      * Проверяет наличие загруженного файла
+     *
      * @param string $name
+     *
      * @return boolean
      */
     public function hasFile($name)
@@ -435,9 +456,11 @@ class request
 
     /**
      * Возвращает содержимое загруженного файла или файлов
+     *
      * @param string $name
      * @param boolean $multiple определяет возвращать содержимое всех файлов или только первого если загружено несколько файлов
      * @param function $fn функция которая будет применена к содержимому каждого файла
+     *
      * @return boolean|array|string
      */
     public function getFile($name, $multiple = false, $fn = null)
@@ -484,10 +507,12 @@ class request
 
     /**
      * Перемещает загруженный файл или файлы в указанную папку с указанным названием
+     * 
      * @param string $name
      * @param string $folder
      * @param string $file_name
      * @param boolean $multiple
+     *
      * @return boolean|array|string
      */
     public function moveFile($name, $folder, $file_name = false, $multiple = false)

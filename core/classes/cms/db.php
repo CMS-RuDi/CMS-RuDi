@@ -169,6 +169,7 @@ class db
      * Подготавливает строку перед запросом
      *
      * @param string $string
+     *
      * @return string
      */
     public function escape($string)
@@ -178,9 +179,11 @@ class db
 
     /**
      * Выполняет запрос в базе
+     *
      * @param string $sql Строка запроса
      * @param array|string $params Аргументы запроса, которые будут переданы в vsprintf
      * @param bool $quiet В случае ошибки запроса отдавать false, а не "умирать"
+     *
      * @return boolean|\mysqli_result
      */
     public function query($sql, $params = false, $quiet = false)
@@ -269,6 +272,7 @@ class db
 
     /**
      * Возвращает ID последней вставленной записи из таблицы
+     *
      * @return int
      */
     public function lastId()
@@ -278,7 +282,9 @@ class db
 
     /**
      * Возвращает все названия полей для таблицы
+     *
      * @param string $table
+     *
      * @return array
      */
     public function getTableFields($table)
@@ -304,8 +310,10 @@ class db
 
     /**
      * Подготавливает значение $value поля $field для вставки в запрос
+     *
      * @param string $field
      * @param string $value
+     *
      * @return string
      */
     public function prepareValue($field, $value)
@@ -357,6 +365,7 @@ class db
      * @param string $where Критерии запроса
      * @param array $data Массив[Название поля] = значение поля
      * @param bool $skip_check_fields Не проверять наличие обновляемых полей
+     *
      * @return boolean
      */
     public function update($table, $where, $data, $skip_check_fields = false)
@@ -396,6 +405,7 @@ class db
      * @param string $table Таблица
      * @param array $data Массив[Название поля] = значение поля
      * @param bool $skip_check_fields Не проверять наличие обновляемых полей
+     *
      * @return bool
      */
     public function insert($table, $data, $skip_check_fields = false)
@@ -436,6 +446,7 @@ class db
      * @param string $table Таблица
      * @param array $data Массив данных для вставки в таблицу
      * @param array $update_data Массив данных для обновления при совпадении ключей
+     *
      * @return bool
      */
     public function insertOrUpdate($table, $data, $update_data = false)
@@ -483,8 +494,10 @@ class db
 
     /**
      * Выполняет запрос DELETE
+     *
      * @param string $table_name Таблица
      * @param string $where Критерии запроса
+     *
      * @return type
      */
     public function delete($table_name, $where, $limit = false)
@@ -497,10 +510,12 @@ class db
 
     /**
      * Возвращает массив со всеми строками полученными после запроса
+     *
      * @param string $table_name
      * @param string $where
      * @param string $fields
      * @param string $order
+     *
      * @return boolean|array
      */
     public function getRows($table_name, $where = '1', $fields = '*', $order = 'id ASC', $quiet = false)
@@ -526,10 +541,12 @@ class db
 
     /**
      * Возвращает массив с одной строкой из базы
+     *
      * @param string $table
      * @param string $where
      * @param string $fields
      * @param string $order
+     *
      * @return boolean|array
      */
     public function getRow($table, $where = '1', $fields = '*', $order = '')
@@ -562,27 +579,29 @@ class db
      * @param string $where
      * @param string $field
      * @param string $order
+     *
      * @return mixed
      */
     public function getField($table, $where, $field, $order = '')
     {
         $row = $this->getRow($table, $where, $field, $order);
-        return $row[$field];
+        return isset($row[$field]) ? $row[$field] : false;
     }
 
     public function getFields($table, $where, $fields = '*', $order = '')
     {
-        $row = $this->getRow($table, $where, $fields, $order);
-        return $row;
+        return $this->getRow($table, $where, $fields, $order);
     }
 
 //============================================================================//
 
     /**
      * Возвращает количество строк выведенных запросом
+     *
      * @param string $table
      * @param string $where
      * @param int $limit
+     *
      * @return boolean|int
      */
     public function getRowsCount($table, $where = '1', $limit = false)
@@ -610,6 +629,7 @@ class db
 
     /**
      * Расставляет правильные порядковые номера (ordering) у элементов NS
+     *
      * @param string $table
      */
     public function reorderNS($table)
@@ -865,8 +885,10 @@ class db
     /**
      * Возвращает поля, участвующие в индексе или false, если индекса нет
      * если индекс составной, то поля будут упорядочены в массиве как в индексе
+     *
      * @param string $table Название таблицы без префикса
      * @param string $index_name Название индекса
+     *
      * @return array|boolean
      */
     public function getIndex($table, $index_name)
@@ -889,8 +911,10 @@ class db
 
     /**
      * Возвращает все индексы таблицы
+     *
      * @param string $table Название таблицы без префикса
      * @param string $index_type Тип индекса
+     *
      * @return boolean|array
      */
     public function getTableIndexes($table, $index_type = null)
@@ -918,8 +942,10 @@ class db
 
     /**
      * Проверяет, есть ли указанный индекс в таблице
+     *
      * @param string $table Название таблицы без префикса
      * @param string $index_name Название индекса
+     *
      * @return boolean
      */
     public function isIndexExists($table, $index_name)
@@ -929,8 +955,10 @@ class db
 
     /**
      * Удаляет индекс из таблицы, если он там есть
+     *
      * @param string $table Название таблицы без префикса
      * @param string $index_name Название индекса
+     *
      * @return boolean
      */
     public function dropIndex($table, $index_name)
@@ -945,10 +973,12 @@ class db
 
     /**
      * Добавляет индекс к таблице
+     *
      * @param string $table Название таблицы без префикса
      * @param array|string $fields Поле или поля, участвующие в индексе
      * @param string $index_name Название индекса. Если не передано, название будет по последнему элементу
      * @param string $index_type Тип индекса
+     * 
      * @return boolean FALSE если индекс с таким названием уже есть
      */
     public function addIndex($table, $fields, $index_name = '', $index_type = 'INDEX')

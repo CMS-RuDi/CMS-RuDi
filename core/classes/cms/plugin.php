@@ -385,6 +385,9 @@ class plugin
             return false;
         }
 
+        // Для совместимости со старыми плагинами
+        \cms\lang::loadPluginLang($plugin);
+
         return new $plugin();
     }
 
