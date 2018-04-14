@@ -38,6 +38,7 @@ class cmsPage
         $this->page_desc = $this->site_cfg->metadesc;
 
         $this->setTplInfo();
+
         $this->addPathway($this->lang->path_home, '/');
     }
 
@@ -73,10 +74,12 @@ class cmsPage
 
     /**
      * Производит инициализацию класса шаблонизатора и возвращает его объект
+     *
      * @param string $tpl_folder подпапка в папке шаблона, где лежит файл
      * @param string $tpl_file название файла шаблона
      * @param array $vars массив переменных для передачи в шаблон, может отсутствовать
-     * @return obj $tpl_info['renderer']
+     *
+     * @return tplMainClass
      */
     public static function initTemplate($tpl_folder, $tpl_file, $vars = false)
     {
@@ -135,7 +138,30 @@ class cmsPage
                 $this->page_head[] = $tag;
             }
         }
+
         return $this;
+    }
+
+    public function prependHead($tag)
+    {
+        $key = array_search($tag, $this->page_head);
+
+        if ( $key !== false ) {
+            unset($this->page_head[$key]);
+        }
+
+        array_unshift($this->page_head, $tag);
+
+        return $this;
+    }
+
+    protected function prepareSrc($src)
+    {
+        if ( substr($src, 0, 1) != '/' && substr($src, 0, 7) != 'http://' && substr($src, 0, 8) != 'https://' ) {
+            $src = '/' . $src;
+        }
+
+        return $src;
     }
 
     /**
@@ -145,13 +171,12 @@ class cmsPage
      */
     public function addHeadJS($src)
     {
-        return $this->addHead('<script type="text/javascript" src="/' . $src . '"></script>');
+        return $this->addHead('<script type="text/javascript" src="' . $this->prepareSrc($src) . '"></script>');
     }
 
     public function prependHeadJS($src)
     {
-        array_unshift($this->page_head, '<script type="text/javascript" src="/' . $src . '"></script>');
-        return $this;
+        return $this->prependHead('<script type="text/javascript" src="' . $this->prepareSrc($src) . '"></script>');
     }
 
     /**
@@ -161,7 +186,12 @@ class cmsPage
      */
     public function addHeadCSS($src)
     {
-        return $this->addHead('<link href="/' . $src . '" rel="stylesheet" type="text/css" />');
+        return $this->addHead('<link href="' . $this->prepareSrc($src) . '" rel="stylesheet" type="text/css" />');
+    }
+
+    public function prependHeadCSS($src)
+    {
+        return $this->prependHead('<link href="' . $this->prepareSrc($src) . '" rel="stylesheet" type="text/css" />');
     }
 
     /**
@@ -178,15 +208,20 @@ class cmsPage
      * @param string
      * @return $this
      */
-    public function setTitle($title)
+    public function setTitle($title, $forcibly = false)
     {
-        if ( cmsCore::getInstance()->menuId() == 1 || empty($title) ) {
+        if ( (cmsCore::getInstance()->menuId() == 1 || empty($title)) && $forcibly !== true ) {
             return $this;
         }
 
-        $this->title = strip_tags($title) . ($this->site_cfg->title_and_sitename ? ' — ' . $this->site_cfg->sitename : '');
+        $this->title = strip_tags($title);
 
         return $this;
+    }
+
+    public function getTitle()
+    {
+        return $this->title;
     }
 
     /**
@@ -249,7 +284,7 @@ class cmsPage
         }
 
         // Заголовок страницы
-        echo '<title>', htmlspecialchars($this->title), '</title>', "\n";
+        echo '<title>', htmlspecialchars($this->title . (($this->site_cfg->title_and_sitename && !defined('VALID_CMS_ADMIN')) ? ' — ' . $this->site_cfg->sitename : '')), '</title>', "\n";
 
         // Ключевые слова
         echo '<meta name="keywords" content="', htmlspecialchars($this->page_keys), '" />', "\n";
@@ -329,18 +364,20 @@ class cmsPage
 
     /**
      * Добавляет звено к глубиномеру
+     *
      * @param string $title
      * @param string $link
+     *
      * @return $this
      */
     public function addPathway($title, $link = '')
     {
-        //Если ссылка не указана, берем текущий URI
+        // Если ссылка не указана, берем текущий URI
         if ( empty($link) ) {
             $link = htmlspecialchars($_SERVER['REQUEST_URI']);
         }
 
-        //Проверяем, есть ли уже в глубиномере такое звено
+        // Проверяем, есть ли уже в глубиномере такое звено
         $already = false;
 
         foreach ( $this->pathway as $pathway ) {
@@ -349,14 +386,39 @@ class cmsPage
             }
         }
 
-        //Если такого звена еще нет, добавляем его
+        // Если такого звена еще нет, добавляем его
         if ( !$already ) {
             // проверяем нет ли на ссылку пункта меню, если есть, меняем заголовок
-            $title           = ($menu_title      = cmsCore::getInstance()->getLinkInMenu($link)) ? cmsUser::stringReplaceUserProperties($menu_title, true) : $title;
+            if ( !defined('VALID_CMS_ADMIN') ) {
+                $title      = ($menu_title = cmsCore::getInstance()->getLinkInMenu($link)) ? cmsUser::stringReplaceUserProperties($menu_title, true) : $title;
+            }
+
             $this->pathway[] = [ 'title' => $title, 'link' => $link, 'is_last' => false ];
         }
 
         return $this;
+    }
+
+    /**
+     * Возвращает массив с данными глубиномера
+     *
+     * @return array
+     */
+    public function getPathway()
+    {
+        return $this->pathway;
+    }
+
+    /**
+     * Устанавливает глубиномер
+     *
+     * @param array $pathway
+     */
+    public function setPathway($pathway)
+    {
+        if ( is_array($pathway) ) {
+            $this->pathway = $pathway;
+        }
     }
 
     /**
@@ -399,6 +461,7 @@ class cmsPage
         $inUser = cmsUser::getInstance();
         $inPage = self::getInstance();
         $inDB   = cmsDatabase::getInstance();
+        $inConf = cmsConfig::getInstance();
 
         extract($data);
         global $_LANG;
