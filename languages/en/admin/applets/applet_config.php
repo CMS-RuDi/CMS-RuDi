@@ -49,7 +49,6 @@ $_LANG['AD_TEMPLATE_FOLDER']           = 'The contents of the folder &quot;/temp
 $_LANG['AD_TEMPLATE_INFO']             = 'Template author: "%s";<br>templating - "%s";<br>file extension - "%s"';
 $_LANG['AD_SEARCH_RESULT']             = 'Highlighting search results';
 $_LANG['AD_TIME_ARREA']                = 'Time zone:';
-$_LANG['AD_TIME_SLIP']                 = 'Shift in hours:';
 $_LANG['AD_MYSQL_CONFIG']              = 'All MySQL details are set in file /includes/config.inc.php';
 $_LANG['AD_DB_SIZE']                   = 'Database size (approximately)';
 $_LANG['AD_DB_SIZE_ERROR']             = 'It is impossible to determine';

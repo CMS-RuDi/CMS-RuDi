@@ -1,6 +1,8 @@
-<?php if ( !defined('VALID_CMS_ADMIN') ) {
+<?php
+if ( !defined('VALID_CMS_ADMIN') ) {
     die('ACCESS DENIED');
-} ?>
+}
+?>
 
 <table cellpadding="0" cellspacing="0" border="0" width="100%" height="100%" style="margin-top:2px">
     <tr>
@@ -15,50 +17,60 @@
                 <div>
                     <?php if ( !$only_hidden ) { ?>
                         <a href="<?php echo $base_uri . '&orderby=pubdate&orderto=desc&only_hidden=1'; ?>" style="font-weight:bold"><?php echo $_LANG['ON_MODERATE']; ?></a>
-                    <?php }
+                    <?php
+                    }
                     else {
                         $current_cat = $_LANG['ON_MODERATE'];
                         echo $current_cat;
-                    } ?>
+                    }
+                    ?>
                 </div>
                 <div>
                     <?php if ( $category_id || $only_hidden ) { ?>
                         <a href="<?php echo $base_uri; ?>" style="font-weight:bold"><?php echo $_LANG['AD_PAGE_ALL']; ?></a>
-                    <?php }
+                    <?php
+                    }
                     else {
                         $current_cat = $_LANG['AD_PAGE_ALL'];
                         echo $current_cat;
-                    } ?>
+                    }
+                    ?>
                 </div>
             </div>
             <div class="cat_link">
                 <div>
                     <?php if ( $category_id != 1 ) { ?>
                         <a href="<?php echo $base_uri . '&cat_id=1'; ?>" style="font-weight:bold"><?php echo $_LANG['AD_ROOT_CATEGORY']; ?></a>
-                    <?php }
-                    else {
-                        $current_cat = $_LANG['AD_ROOT_CATEGORY'];
-                        echo $current_cat;
-                    } ?>
+            <?php
+            }
+            else {
+                $current_cat = $_LANG['AD_ROOT_CATEGORY'];
+                echo $current_cat;
+            }
+            ?>
                 </div>
             </div>
-<?php if ( is_array($cats) ) { ?>
-    <?php foreach ( $cats as $num => $cat ) { ?>
+                       <?php if ( is_array($cats) ) { ?>
+                           <?php foreach ( $cats as $num => $cat ) { ?>
                     <div style="padding-left:<?php echo ($cat['NSLevel']) * 20; ?>px" class="cat_link">
                         <div>
-        <?php if ( $category_id != $cat['id'] ) { ?>
-                                <a href="<?php echo $base_uri . '&cat_id=' . $cat['id']; ?>" style="<?php if ( $cat['NSLevel'] == 1 ) {
-                echo 'font-weight:bold';
-            } ?>"><?php echo $cat['title']; ?></a>
+                               <?php if ( $category_id != $cat['id'] ) { ?>
+                                <a href="<?php echo $base_uri . '&cat_id=' . $cat['id']; ?>" style="<?php
+                       if ( $cat['NSLevel'] == 1 ) {
+                           echo 'font-weight:bold';
+                       }
+                                   ?>"><?php echo $cat['title']; ?></a>
         <?php }
-        else { ?>
+        else {
+            ?>
             <?php echo $cat['title'];
-            $current_cat = $cat['title']; ?>
+            $current_cat = $cat['title'];
+            ?>
         <?php } ?>
                         </div>
                     </div>
-                                    <?php } ?>
-                                <?php } ?>
+    <?php } ?>
+<?php } ?>
         </td>
 
         <td valign="top" id="slide_cell" class="<?php if ( $hide_cats ) { ?>unslided<?php } ?>" onclick="$('#cats_cell').toggle();$(this).toggleClass('unslided');$('#filter_form input[name=hide_cats]').val(1 - $('#cats_cell:visible').length)">&nbsp;
@@ -80,7 +92,8 @@
                             </span>
                             <span style="padding-left: 15px;">
                                 <a class="uittip" title="<?php echo $_LANG['ADD_ARTICLE']; ?>" href="?view=content&do=add<?php if ( $category_id ) { ?>&to=<?php echo $category_id;
-} ?>">
+}
+?>">
                                     <img border="0" hspace="2" alt="<?php echo $_LANG['AD_ADD_ARTICLE']; ?>" src="images/actions/add.gif"/>
                                 </a>
 <?php if ( $category_id > 1 ) { ?>
@@ -137,13 +150,13 @@
 <?php if ( $category_id && sizeof($items) > 1 ) { ?>
                                 <th class="lt_header" width="50"><?php echo $_LANG['AD_ORDER']; ?></th>
                                 <th class="lt_header" width="24">&darr;&uarr;</th>
-                                <?php } ?>
+<?php } ?>
                             <th class="lt_header" align="center" width="90"><?php echo $_LANG['AD_ACTIONS']; ?></th>
                         </tr>
                     </thead>
-                                <?php if ( $items ) { ?>
+<?php if ( $items ) { ?>
                         <tbody>
-    <?php foreach ( $items as $num => $item ) { ?>
+                                    <?php foreach ( $items as $num => $item ) { ?>
                                 <tr id="<?php echo $item['id']; ?>" class="item_tr">
                                     <td><input type="checkbox" name="item[]" value="<?php echo $item['id']; ?>" /></td>
                                     <td><?php echo $item['id']; ?></td>
@@ -157,12 +170,13 @@
                                     </td>
                                     <td><?php echo $item['fpubdate']; ?></td>
                                     <td>
-                                    <?php if ( $item['published'] ) { ?>
+                                        <?php if ( $item['published'] ) { ?>
                                             <a class="uittip" id="publink<?php echo $item['id']; ?>" href="javascript:pub(<?php echo $item['id']; ?>, 'view=content&do=hide&id=<?php echo $item['id']; ?>', 'view=content&do=show&id=<?php echo $item['id']; ?>', 'off', 'on');" title="<?php echo $_LANG['HIDE']; ?>">
                                                 <img id="pub<?php echo $item['id']; ?>" border="0" src="images/actions/on.gif"/>
                                             </a>
-        <?php }
-        else { ?>
+                                        <?php }
+                                        else {
+                                            ?>
                                             <a class="uittip" id="publink<?php echo $item['id']; ?>" href="javascript:pub(<?php echo $item['id']; ?>, 'view=content&do=show&id=<?php echo $item['id']; ?>', 'view=content&do=hide&item_=<?php echo $item['id']; ?>', 'on', 'off');" title="<?php echo $_LANG['SHOW']; ?>">
                                                 <img id="pub<?php echo $item['id']; ?>" border="0" src="images/actions/off.gif"/>
                                             </a>
@@ -178,7 +192,7 @@
                                             <a class="move_item_down" href="javascript:void(0)" onclick="moveItem(<?php echo $item['id']; ?>, 1)" title="<?php echo $_LANG['AD_DOWN']; ?>" style="float:left;display:<?php echo $display_move_down; ?>"><img src="images/actions/down.gif" border="0"/></a>
                                             <a class="move_item_up" href="javascript:void(0)" onclick="moveItem(<?php echo $item['id']; ?>, -1)" title="<?php echo $_LANG['AD_UP']; ?>" style="float:right;display:<?php echo $display_move_up; ?>"><img src="images/actions/top.gif" border="0"/></a>
                                         </td>
-                            <?php } ?>
+        <?php } ?>
                                     <td align="right">
                                         <div style="padding-right: 8px;">
                                             <a class="uittip" title="<?php echo $_LANG['AD_VIEW_ONLINE']; ?>" href="/<?php echo $item['seolink']; ?>.html">
@@ -196,14 +210,15 @@
                                         </div>
                                     </td>
                                 </tr>
-                                    <?php } ?>
+    <?php } ?>
                         </tbody>
 <?php }
-else { ?>
+else {
+    ?>
                         <tbody>
                         <td colspan="7" style="padding-left:5px"><div style="padding:15px;padding-left:0px"><?php echo $_LANG['AD_DONT_FIND_ARTICLES']; ?></div></td>
                         </tbody>
-                                    <?php } ?>
+                                <?php } ?>
                 </table>
 <?php if ( $items ) { ?>
 

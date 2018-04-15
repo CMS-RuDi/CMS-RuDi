@@ -729,3 +729,48 @@ div.filter {
 .lang_submit {
     margin: 10px 0; text-align: center;
 }
+
+.debug_info {
+    margin: 10px;
+    color: #000000;
+    overflow: hidden;
+    text-align: left;
+}
+
+.debug_info .query {
+    background: #FFF;
+    border: 1px solid #DDD;
+    border-radius: 3px;
+    margin: 10px;
+    padding: 10px;
+}
+.debug_info .query .src {
+    color: #999;
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+.query_time {
+    color: #999;
+    font-size: 12px;
+    margin: 4px 0 0;
+}
+.red_query {
+    color: #c0392b;
+}
+.green_query {
+    color: #27ae60;
+}
+
+#footer{
+    border-top: 1px solid #95a5a6;
+    height: 60px;
+    font-size: 12px;
+    line-height: 30px;
+    background: #333;
+    padding: 0 20px;
+    text-align: center;
+    clear: both;
+    position: relative;
+    z-index: 9;
+    color: #999;
+}

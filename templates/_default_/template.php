@@ -108,27 +108,27 @@ $this->addHead('<script type="text/javascript">var TEMPLATE = "' . TEMPLATE . '"
                     }
                     else {
                         ?>grid_12<?php } ?>">
-                        <?php $this->printModules('maintop'); ?>
+                         <?php $this->printModules('maintop'); ?>
 
                         <?php $messages = cmsCore::getSessionMessages(); ?>
-                            <?php if ( $messages ) { ?>
+                        <?php if ( $messages ) { ?>
                             <div class="sess_messages" id="sess_messages">
                                 <?php foreach ( $messages as $message ) { ?>
                                     <?php echo $message; ?>
-                            <?php } ?>
+                                <?php } ?>
                             </div>
                         <?php } ?>
 
-                            <?php if ( $this->page_body ) { ?>
+                        <?php if ( $this->page_body ) { ?>
                             <div class="component">
-                            <?php $this->printBody(); ?>
+                                <?php $this->printBody(); ?>
                             </div>
                         <?php } ?>
-                    <?php $this->printModules('mainbottom'); ?>
+                        <?php $this->printModules('mainbottom'); ?>
                     </div>
                     <?php if ( $mod_count['sidebar'] ) { ?>
                         <div class="grid_4" id="sidebar"><?php $this->printModules('sidebar'); ?></div>
-<?php } ?>
+                    <?php } ?>
                 </div>
 
             </div>
@@ -163,10 +163,9 @@ $this->addHead('<script type="text/javascript">var TEMPLATE = "' . TEMPLATE . '"
                 );
             });
         </script>
+
         <?php
-        if ( $inConf->debug && $inUser->is_admin ) {
-            cmsPage::includeTemplateFile('special/debug.php');
-        }
+        cmsCore::showDebugInfo();
         ?>
     </body>
 </html>

@@ -105,16 +105,15 @@ function activateListTable() {
 
 function pub(id, qs, qs2, action, action2) {
     old_img = $('img#pub' + id).attr('src');
-    $('img#pub' + id).attr('src', 'images/actions/loader.gif');
+    $('img#pub' + id).attr('src', '/admin/images/actions/loader.gif');
     $('a#publink' + id).attr('href', '');
 
     $.ajax({
         type: "GET",
-        url: "index.php",
-        data: qs,
+        url: qs,
         success: function (msg) {
             if (msg) {
-                $('img#pub' + id).attr('src', 'images/actions/' + action + '.gif');
+                $('img#pub' + id).attr('src', '/admin/images/actions/' + action + '.gif');
                 $('a#publink' + id).attr('href', 'javascript:pub(' + id + ', "' + qs2 + '", "' + qs + '", "' + action2 + '", "' + action + '");');
             } else {
                 $('img#pub' + id).attr('src', old_img);

@@ -143,7 +143,7 @@
                                                     {if $usr.id != 1}
                                                         <tr>
                                                             <td><img src="/templates/{template}/images/icons/profile/ban.png" border="0"/></td>
-                                                            <td><a href="/admin/index.php?view=userbanlist&do=add&to={$usr.id}" title="{$LANG.TO_BANN}">{$LANG.TO_BANN}</a></td>
+                                                            <td><a href="/cp/users_banlist/add?to={$usr.id}" title="{$LANG.TO_BANN}">{$LANG.TO_BANN}</a></td>
                                                         </tr>
                                                     {/if}
                                                 {/if}

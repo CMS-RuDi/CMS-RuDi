@@ -104,7 +104,7 @@ if ( $opt == 'update_blog' ) {
         cmsCore::error404();
     }
 
-    $blog = $model->getBlog(cmsCore::request('item_id', 'int', 0));
+    $blog = $inBlog->getBlog(cmsCore::request('item_id', 'int', 0));
     if ( !$blog ) {
         cmsCore::error404();
     }

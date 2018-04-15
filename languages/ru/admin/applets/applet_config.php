@@ -50,7 +50,6 @@ $_LANG['AD_TEMPLATE_FOLDER']           = 'Содержимое папки &quot;
 $_LANG['AD_TEMPLATE_INFO']             = 'Автор шаблона: "%s";<br>шаблонизатор - "%s";<br>расширение файлов - "%s"';
 $_LANG['AD_SEARCH_RESULT']             = 'Подсветка результатов поиска';
 $_LANG['AD_TIME_ARREA']                = 'Временная зона:';
-$_LANG['AD_TIME_SLIP']                 = 'Смещение в часах:';
 $_LANG['AD_MYSQL_CONFIG']              = 'Все реквизиты MySQL настраиваются в файле /includes/config.inc.php';
 $_LANG['AD_DB_SIZE']                   = 'Размер базы данных (примерно)';
 $_LANG['AD_DB_SIZE_ERROR']             = 'Невозможно определить';

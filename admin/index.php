@@ -23,6 +23,27 @@ define('VALID_CMS_ADMIN', 1);
 define('PATH', $_SERVER['DOCUMENT_ROOT']);
 
 require(PATH . '/core/classes/autoload.php');
+
+//===================== Переадресуем на новую админку ========================//
+
+$r = \cms\request::getInstance();
+
+$view = $r->get('view', 'str', 'main');
+$do   = $r->get('do', 'str');
+
+if ( $view == 'components' ) {
+    $opt = $r->get('opt', 'str');
+}
+
+if ( $view == 'clearcache' ) {
+    $view = 'cache';
+    $do   = 'clear';
+}
+
+cmsCore::redirect('/cp/' . $view . (!empty($do) ? '/' . $do : '') . (!empty($opt) ? '/' . $opt : '') . '?' . http_build_query($_GET));
+
+//============================================================================//
+
 require(PATH . '/admin/includes/cp.php');
 require(PATH . '/includes/tools.inc.php');
 

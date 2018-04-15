@@ -1,8 +1,8 @@
 function sendContentForm(opt, object_id) {
-    var link = 'index.php?view=content&do=' + opt;
+    var link = '/cp/components/content/' + opt;
 
     if (object_id && object_id.length > 0) {
-        link = link + '&obj_id=' + object_id;
+        link = link + '?obj_id=' + object_id;
     }
 
     var sel = checked();

@@ -18,11 +18,11 @@ $inDB         = cmsDatabase::getInstance();
     <head>
         <?php cpHead(); ?>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link href="css/styles.css?17" rel="stylesheet" type="text/css" />
-        <link href="js/hmenu/hmenu.css" rel="stylesheet" type="text/css" />
+        <link href="/admin/css/styles.css?17" rel="stylesheet" type="text/css" />
+        <link href="/admin/js/hmenu/hmenu.css" rel="stylesheet" type="text/css" />
         <link href="/includes/jquery/tablesorter/style.css" rel="stylesheet" type="text/css" />
         <link href="/includes/jqueryui/css/smoothness/jquery-ui.min.css" rel="stylesheet" type="text/css" />
-        <script type="text/javascript" src="js/admin.js"></script>
+        <script type="text/javascript" src="/admin/js/admin.js"></script>
         <script type="text/javascript" src="/includes/jquery/jquery.columnfilters.js"></script>
         <script type="text/javascript" src="/includes/jquery/tablesorter/jquery.tablesorter.min.js"></script>
         <script type="text/javascript" src="/includes/jquery/jquery.preload.js"></script>
@@ -30,8 +30,8 @@ $inDB         = cmsDatabase::getInstance();
         <script type="text/javascript" src="/includes/jqueryui/init-ui.js"></script>
         <script type="text/javascript" src="/includes/jqueryui/i18n/jquery.ui.datepicker-<?php echo cmsConfig::getConfig('lang'); ?>.min.js"></script>
         <script type="text/javascript" src="/includes/jquery/jquery.form.js"></script>
-        <script type="text/javascript" src="js/hltable.js"></script>
-        <script type="text/javascript" src="js/jquery.jclock.js"></script>
+        <script type="text/javascript" src="/admin/js/hltable.js"></script>
+        <script type="text/javascript" src="/admin/js/jquery.jclock.js"></script>
     </head>
 
     <body>
@@ -44,7 +44,7 @@ $inDB         = cmsDatabase::getInstance();
                                 <tr>
                                     <td width="230" align="left" valign="middle" style="padding-left:20px; padding-top:5px;">
                                         <a href="/admin/">
-                                            <img src="images/toplogo.png" alt="<?php echo $_LANG['AD_ADMIN_PANEL']; ?>" border="0" />
+                                            <img src="/admin/images/toplogo.png" alt="<?php echo $_LANG['AD_ADMIN_PANEL']; ?>" border="0" />
                                         </a>
                                     </td>
                                     <td width="120">
@@ -90,7 +90,7 @@ $inDB         = cmsDatabase::getInstance();
                             </div>
                         <?php } ?>
                         <div id="body" style="padding:5px 10px 10px 10px;">
-                            <?php cpBody(); ?>
+                            <?php \cpBody(); ?>
                         </div>
                     </div>
                 </td>

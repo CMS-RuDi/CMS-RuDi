@@ -1,0 +1,1 @@
+<span id="menutype"><a target="_blank" href="{$link}">{$type}</a></span> - {$title}

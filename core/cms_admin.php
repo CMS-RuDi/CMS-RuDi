@@ -13,6 +13,8 @@
 class cmsAdmin extends cmsCore
 {
 
+    protected static $_instance;
+
     /**
      * Устанавливает плагин и делает его привязку к событиям
      * Возвращает ID установленного плагина
@@ -104,31 +106,6 @@ class cmsAdmin extends cmsCore
         }
 
         //плагин успешно обновлен
-        return true;
-    }
-
-    /**
-     * Удаляет установленный плагин
-     * @param array $plugin
-     * @param array $events
-     * @return bool
-     */
-    public function removePlugin($plugin_id)
-    {
-        $inDB = cmsDatabase::getInstance();
-
-        //если плагин не был установлен, выходим
-        if ( !$plugin_id ) {
-            return false;
-        }
-
-        //удаляем плагин из базы
-        $inDB->delete('cms_plugins', "id = '" . $plugin_id . "'");
-
-        //Удаляем хуки событий плагина
-        $inDB->delete('cms_event_hooks', "plugin_id = '" . $plugin_id . "'");
-
-        //плагин успешно удален
         return true;
     }
 
@@ -297,44 +274,6 @@ class cmsAdmin extends cmsCore
     }
 
     /**
-     * Удаляет установленный компонент
-     * @param int $component_id
-     * @return bool
-     */
-    public function removeComponent($component_id)
-    {
-        //если компонент не был установлен, выходим
-        if ( !$component_id ) {
-            return false;
-        }
-
-        //определяем название компонента по id
-        $component = $this->getComponentById($component_id);
-
-        //удаляем зависимые модули компонента
-        if ( $this->loadComponentInstaller($component) ) {
-            $_component = call_user_func('info_component_' . $component);
-
-            if ( isset($_component['modules']) ) {
-                if ( is_array($_component['modules']) ) {
-                    foreach ( $_component['modules'] as $module => $title ) {
-                        $module_id = $this->getModuleId($module);
-                        if ( $module_id ) {
-                            $this->removeModule($module_id);
-                        }
-                    }
-                }
-            }
-        }
-
-        //удаляем компонент из базы, но только если он не системный
-        cmsDatabase::getInstance()->delete('cms_components', "id = '" . $component_id . "' AND system = 0");
-
-        //компонент успешно удален
-        return true;
-    }
-
-    /**
      * Возвращает список компонентов, имеющихся на диске, но не установленных
      * @return array
      */
@@ -370,9 +309,11 @@ class cmsAdmin extends cmsCore
      */
     public function getUpdatedComponents()
     {
+        $components = \cms\controller::getAllComponents();
+
         $upd_components = array();
 
-        foreach ( $this->components as $component ) {
+        foreach ( $components as $component ) {
             if ( $this->loadComponentInstaller($component['link']) ) {
                 $version    = $component['version'];
                 $_component = call_user_func('info_component_' . $component['link']);
@@ -407,9 +348,11 @@ class cmsAdmin extends cmsCore
      */
     public function getComponentId($component)
     {
+        $components = \cms\controller::getAllComponents();
+
         $component_id = 0;
 
-        foreach ( $this->components as $inst_component ) {
+        foreach ( $components as $inst_component ) {
             if ( $inst_component['link'] == $component ) {
                 $component_id = $inst_component['id'];
                 break;
@@ -426,9 +369,11 @@ class cmsAdmin extends cmsCore
      */
     public function getComponentById($component_id)
     {
+        $components = \cms\controller::getAllComponents();
+
         $link = '';
 
-        foreach ( $this->components as $inst_component ) {
+        foreach ( $components as $inst_component ) {
             if ( $inst_component['id'] == $component_id ) {
                 $link = $inst_component['link'];
                 break;
@@ -445,9 +390,11 @@ class cmsAdmin extends cmsCore
      */
     public function getComponentVersion($component)
     {
+        $components = \cms\controller::getAllComponents();
+
         $version = '';
 
-        foreach ( $this->components as $inst_component ) {
+        foreach ( $components as $inst_component ) {
             if ( $inst_component['link'] == $component ) {
                 $version = $inst_component['version'];
                 break;
