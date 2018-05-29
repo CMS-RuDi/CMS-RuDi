@@ -65,9 +65,16 @@ class repairnested extends \cms\com_action
             'cms_photo_albums' => [ 'name' => 'cms_photo_albums', 'title' => $this->lang->ad_albums_tree, 'differ' => '' ],
             'cms_board_cats'   => [ 'name' => 'cms_board_cats', 'title' => $this->lang->ad_desk_tree, 'differ' => '' ],
             'cms_uc_cats'      => [ 'name' => 'cms_uc_cats', 'title' => $this->lang->ad_catalog_tree, 'differ' => '' ],
-            'cms_menu'         => [ 'name' => 'cms_menu', 'title' => $this->lang->ad_menu_tree, 'differ' => '' ],
-            'cms_forums'       => [ 'name' => 'cms_forums', 'title' => $this->lang->ad_forums_tree, 'differ' => '' ],
+            'cms_menu'         => [ 'name' => 'cms_menu', 'title' => $this->lang->ad_menu_tree, 'differ' => '' ]
         ];
+
+        if ( \cms\controller::installed('forum') ) {
+            $tables['cms_forums'] = [
+                'name'   => 'cms_forums',
+                'title'  => $this->lang->ad_forums_tree,
+                'differ' => ''
+            ];
+        }
 
         if ( \cms\controller::installed('maps') ) {
             $tables['cms_map_cats'] = [

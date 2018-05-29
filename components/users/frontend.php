@@ -23,10 +23,10 @@ function users()
 
     $model = new cms_model_users();
 
-    // id пользователя
+// id пользователя
     $id = cmsCore::request('id', 'int', 0);
 
-    // логин пользователя
+// логин пользователя
     $login = cmsCore::strClear(urldecode(cmsCore::request('login', 'html', '')));
 
     $do   = $inCore->do;
@@ -41,7 +41,7 @@ function users()
     $inPage->setTitle($pagetitle);
     $inPage->setDescription($pagetitle);
 
-    // js только авторизованным
+// js только авторизованным
     if ( $inUser->id ) {
         $inPage->addHeadJS('components/users/js/profile.js');
         $inPage->addHeadJsLang(array( 'CONFIRM_CLEAN_CAT', 'CHOOSE_RECIPIENT', 'SEND_TO_USER', 'FRIENDSHIP_OFFER', 'STOP_FRIENDLY', 'REALY_STOP_FRIENDLY', 'ENTER_STATUS', 'HAVE_JUST' ));
@@ -50,19 +50,19 @@ function users()
 //========================= Список пользователей  ============================//
 
     if ( $do == 'view' ) {
-        // если запрещен просмотр всех пользователей, 404
+// если запрещен просмотр всех пользователей, 404
         if ( $model->config['sw_search'] == 2 ) {
             cmsCore::error404();
         }
 
-        //очищаем поисковые запросы если пришли со другой страницы
+//очищаем поисковые запросы если пришли со другой страницы
         if ( !strstr(cmsCore::getBackURL(), '/users') ) {
             cmsUser::sessionClearAll();
         }
 
         $stext = array();
 
-        // Возможные входные переменные
+// Возможные входные переменные
         $name     = cmsCore::getSearchVar('name');
         $city     = cmsCore::getSearchVar('city');
         $hobby    = cmsCore::getSearchVar('hobby');
@@ -73,7 +73,7 @@ function users()
         $age_fr   = (int) cmsCore::getSearchVar('agefrom', 'all');
         $group_id = cmsCore::request('group_id', 'int', 0);
 
-        // Флаг о показе только онлайн пользователей
+// Флаг о показе только онлайн пользователей
         if ( cmsCore::inRequest('online') ) {
             cmsUser::sessionPut('usr_online', (bool) cmsCore::request('online', 'int'));
             $page = 1;
@@ -85,33 +85,33 @@ function users()
             $stext[] = $_LANG['SHOWING_ONLY_ONLINE'];
         }
 
-        //======================== Условия выборки ===========================//
-        // группа
+//======================== Условия выборки ===========================//
+// группа
         if ( $group_id ) {
             $model->whereUserGroupIs($group_id);
             $link['group']              = '/users/group/' . $group_id;
             $_LANG['GROUP_SEARCH_NAME'] = cmsUser::getGroupTitle($group_id);
         }
 
-        // Добавляем в выборку имя, если оно есть
+// Добавляем в выборку имя, если оно есть
         if ( $name ) {
             $model->whereNameIs($name);
             $stext[] = $_LANG['NAME'] . " &mdash; " . htmlspecialchars(stripslashes($name));
         }
 
-        // Добавляем в выборку город, если он есть
+// Добавляем в выборку город, если он есть
         if ( $city ) {
             $model->whereCityIs($city);
             $stext[] = $_LANG['CITY'] . " &mdash; " . htmlspecialchars(stripslashes($city));
         }
 
-        // Добавляем в выборку хобби, если есть
+// Добавляем в выборку хобби, если есть
         if ( $hobby ) {
             $model->whereHobbyIs($hobby);
             $stext[] = $_LANG['HOBBY'] . " &mdash; " . htmlspecialchars(stripslashes($hobby));
         }
 
-        // Добавляем в выборку пол, если есть
+// Добавляем в выборку пол, если есть
         if ( $gender ) {
             $model->whereGenderIs($gender);
             if ( $gender == 'm' ) {
@@ -122,29 +122,29 @@ function users()
             }
         }
 
-        // Добавляем в выборку возраст, более
+// Добавляем в выборку возраст, более
         if ( $age_fr ) {
             $model->whereAgeFrom($age_fr);
             $stext[] = $_LANG['NOT_YOUNG'] . " $age_fr " . $_LANG['YEARS'];
         }
 
-        // Добавляем в выборку возраст, менее
+// Добавляем в выборку возраст, менее
         if ( $age_to ) {
             $model->whereAgeTo($age_to);
             $stext[] = $_LANG['NOT_OLD'] . " $age_fr " . $_LANG['YEARS'];
         }
 
-        // Считаем общее количество согласно выборки
+// Считаем общее количество согласно выборки
         $total = $model->getUsersCount($only_online);
 
         if ( $total ) {
-            //устанавливаем сортировку
+//устанавливаем сортировку
             $inDB->orderBy($orderby, $orderto);
 
-            //устанавливаем номер текущей страницы и кол-во пользователей на странице
+//устанавливаем номер текущей страницы и кол-во пользователей на странице
             $inDB->limitPage($page, $model->config['users_perpage']);
 
-            // Загружаем пользователей согласно выборки
+// Загружаем пользователей согласно выборки
             $users = $model->getUsers($only_online);
         }
         else {
@@ -196,7 +196,7 @@ function users()
 //======================= Редактирование профиля  ============================//
 
     if ( $do == 'editprofile' ) {
-        // неавторизованным, не владельцам и не админам тут делать нечего
+// неавторизованным, не владельцам и не админам тут делать нечего
         if ( !$inUser->id || ($inUser->id != $id && !$inUser->is_admin) ) {
             cmsCore::error404();
         }
@@ -208,12 +208,12 @@ function users()
 
         $opt = cmsCore::request('opt', 'str', 'edit');
 
-        // главного админа может редактировать только он сам
+// главного админа может редактировать только он сам
         if ( $id == 1 && $inUser->id != $id ) {
             cmsCore::error404();
         }
 
-        // показываем форму
+// показываем форму
         if ( $opt == 'edit' ) {
             $inPage->setTitle($_LANG['CONFIG_PROFILE'] . ' - ' . $usr['nickname']);
             $inPage->addPathway($usr['nickname'], cmsUser::getProfileURL($usr['login']));
@@ -229,14 +229,14 @@ function users()
                 }
             }
 
-            // могут ли администраторы удалять чужой профиль
+// могут ли администраторы удалять чужой профиль
             $is_can_delete_profile = true;
 
             if ( $inUser->is_admin ) {
                 if ( !cmsUser::isAdminCan('admin/users', cmsUser::getAdminAccess()) && $inUser->id != $id ) {
                     $is_can_delete_profile = false;
                 }
-                // администратор сам себя не удалит
+// администратор сам себя не удалит
                 if ( $inUser->id == $usr['id'] ) {
                     $is_can_delete_profile = false;
                 }
@@ -247,13 +247,14 @@ function users()
                     assign('usr', $usr)->
                     assign('is_can_delete_profile', $is_can_delete_profile)->
                     assign('private_forms', $private_forms)->
+                    assign('com_forum_enabled', \cms\controller::enabled('forum'))->
                     assign('cfg_forum', $inCore->loadComponentConfig('forum'))->
                     assign('cfg', $model->config)->
                     display('com_users_edit_profile.tpl');
             return;
         }
 
-        // Если сохраняем профиль
+// Если сохраняем профиль
         if ( $opt == 'save' ) {
             if ( !cmsUser::checkCsrfToken() ) {
                 cmsCore::error404();
@@ -300,16 +301,16 @@ function users()
                     $errors = true;
                 }
                 else {
-                    // формируем токен
+// формируем токен
                     $token          = md5($usr['email'] . uniqid() . microtime());
                     $inDB->insert('cms_users_activate', array( 'user_id' => $inUser->id, 'pubdate' => date("Y-m-d H:i:s"), 'code' => $token ));
                     $codelink       = HOST . '/users/change_email/' . $token . '/' . $users['email'];
-                    // по старому адресу высылаем письмо с подтверждением
+// по старому адресу высылаем письмо с подтверждением
                     $letter         = cmsCore::getLanguageTextFile('change_email');
                     $letter         = str_replace(array( '{nickname}', '{codelink}' ), array( $inUser->nickname, $codelink ), $letter);
                     cmsCore::mailText($usr['email'], '', $letter);
                     cmsCore::addSessionMessage(sprintf($_LANG['YOU_CHANGE_EMAIL'], $usr['email']), 'info');
-                    // email не меняем
+// email не меняем
                     $users['email'] = $usr['email'];
                 }
             }
@@ -338,7 +339,7 @@ function users()
 
             $users['phone'] = cmsCore::request('phone', 'int', 0);
 
-            // получаем данные форм
+// получаем данные форм
             $profiles['formsdata'] = '';
 
             if ( isset($model->config['privforms']) ) {
@@ -347,7 +348,7 @@ function users()
                         $form_input            = cmsForm::getFieldsInputValues($form_id);
                         $profiles['formsdata'] .= $inDB->escape_string(cmsCore::arrayToYaml($form_input['values']));
 
-                        // Проверяем значения формы
+// Проверяем значения формы
                         foreach ( $form_input['errors'] as $field_error ) {
                             if ( $field_error ) {
                                 cmsCore::addSessionMessage($field_error, 'error');
@@ -409,7 +410,7 @@ function users()
     if ( $do == 'profile' ) {
         $inPage->addHeadJsLang(array( 'NEW_POST_ON_WALL', 'CONFIRM_DEL_POST_ON_WALL' ));
 
-        // если просмотр профиля гостям запрещен
+// если просмотр профиля гостям запрещен
         if ( !$inUser->id && !$model->config['sw_guest'] ) {
             cmsUser::goToLogin();
         }
@@ -428,7 +429,7 @@ function users()
         $inPage->setTitle($usr['nickname']);
         $inPage->addPathway($usr['nickname']);
 
-        // просмотр профиля запрещен
+// просмотр профиля запрещен
         if ( !cmsUser::checkUserContentAccess($usr['allow_who'], $usr['id']) ) {
             cmsPage::initTemplate('components', 'com_users_not_allow')->
                     assign('is_auth', $inUser->id)->
@@ -436,7 +437,7 @@ function users()
                     display('com_users_not_allow.tpl');
             return;
         }
-        // Профиль удален
+// Профиль удален
         if ( $usr['is_deleted'] ) {
             cmsPage::initTemplate('components', 'com_users_deleted.tpl')->
                     assign('usr', $usr)->
@@ -446,33 +447,33 @@ function users()
             return;
         }
 
-        // Данные о друзьях
+// Данные о друзьях
         $usr['friends_total'] = cmsUser::getFriendsCount($usr['id']);
         $usr['friends']       = cmsUser::getFriends($usr['id']);
-        // очищать сессию друзей если в своем профиле и количество друзей из базы не совпадает с количеством друзей в сессии
+// очищать сессию друзей если в своем профиле и количество друзей из базы не совпадает с количеством друзей в сессии
         if ( $myprofile && sizeof($usr['friends']) != $usr['friends_total'] ) {
             cmsUser::clearSessionFriends();
         }
 
-        // обрезаем список
+// обрезаем список
         $usr['friends'] = array_slice($usr['friends'], 0, 6);
 
-        // выясняем друзья ли мы с текущим пользователем
+// выясняем друзья ли мы с текущим пользователем
         $usr['isfriend'] = !$myprofile ? cmsUser::isFriend($usr['id']) : false;
 
-        // награды пользователя
+// награды пользователя
         $usr['awards'] = $model->config['sw_awards'] ? $model->getUserAwards($usr['id']) : false;
 
-        // стена
+// стена
         if ( $model->config['sw_wall'] ) {
             $inDB->limitPage(1, $model->config['wall_perpage']);
             $usr['wall_html'] = cmsUser::getUserWall($usr['id'], 'users', $myprofile, $inUser->is_admin);
         }
 
-        // можно ли пользователю изменять карму
+// можно ли пользователю изменять карму
         $usr['can_change_karma'] = $model->isUserCanChangeKarma($usr['id']) && $inUser->id;
 
-        // Фотоальбомы пользователя
+// Фотоальбомы пользователя
         if ( $model->config['sw_photo'] ) {
             $usr['albums']       = $model->getPhotoAlbums($usr['id'], $usr['isfriend'], !$inCore->isComponentEnable('photos'));
             $usr['albums_total'] = sizeof($usr['albums']);
@@ -488,8 +489,12 @@ function users()
         $usr['comments_count'] = $model->config['sw_comm'] ?
                 $inDB->rows_count('cms_comments', "user_id='" . $usr['id'] . "' AND published=1") : 0;
 
-        $usr['forum_count'] = $model->config['sw_forum'] ?
-                $inDB->rows_count('cms_forum_posts', "user_id = '" . $usr['id'] . "'") : 0;
+        if ( \cms\controller::enabled('forum') && $model->config['sw_forum'] ) {
+            $usr['forum_count'] = $inDB->rows_count('cms_forum_posts', "user_id = '" . $usr['id'] . "'");
+        }
+        else {
+            $usr['forum_count'] = 0;
+        }
 
         $usr['files_count'] = $model->config['sw_files'] ?
                 $inDB->rows_count('cms_user_files', "user_id = '" . $usr['id'] . "'") : 0;
@@ -526,6 +531,7 @@ function users()
                 assign('plugins', $plugins)->
                 assign('cfg', $model->config)->
                 assign('myprofile', $myprofile)->
+                assign('com_forum_enabled', \cms\controller::enabled('forum'))->
                 assign('cfg_forum', $inCore->loadComponentConfig('forum'))->
                 assign('is_admin', $inUser->is_admin)->
                 assign('is_auth', $inUser->id)->
@@ -602,7 +608,7 @@ function users()
         }
 
         if ( cmsCore::inRequest('gosend') ) {
-            // Кому отправляем
+// Кому отправляем
             $usr = cmsUser::getShortUserData($id);
 
             if ( !$usr ) {
@@ -627,38 +633,38 @@ function users()
             $send_to_group = cmsCore::request('send_to_group', 'int', 0);
             $group_id      = cmsCore::request('group_id', 'int', 0);
 
-            //
-            // Обычная отправка (1 получатель)
-            //
+//
+// Обычная отправка (1 получатель)
+//
             if ( !cmsCore::inRequest('massmail') && !$send_to_group ) {
-                //отправляем сообщение
+//отправляем сообщение
                 $msg_id = cmsUser::sendMessage($inUser->id, $id, $message);
 
-                // отправляем уведомление на email если нужно
+// отправляем уведомление на email если нужно
                 $model->sendNotificationByEmail($id, $inUser->id, $msg_id);
 
                 cmsCore::jsonOutput(array( 'error' => false, 'text' => $_LANG['SEND_MESS_OK'] ));
             }
 
-            //
-            // далее идут массовые рассылки, доступные только админам
-            //
-		if ( !$inUser->is_admin ) {
+//
+// далее идут массовые рассылки, доступные только админам
+//
+            if ( !$inUser->is_admin ) {
                 cmsCore::halt();
             }
 
-            // отправить всем: получаем список всех пользователей
+// отправить всем: получаем список всех пользователей
             if ( cmsCore::inRequest('massmail') ) {
                 $userlist = cmsUser::getAllUsers();
 
-                // проверяем что есть кому отправлять
+// проверяем что есть кому отправлять
                 if ( !$userlist ) {
                     cmsCore::jsonOutput(array( 'error' => false, 'text' => $_LANG['ERR_SEND_MESS'] ));
                 }
 
                 $count = array();
 
-                // отправляем всем по списку
+// отправляем всем по списку
                 foreach ( $userlist as $usr ) {
                     $count[] = cmsUser::sendMessage(USER_MASSMAIL, $usr['id'], $message);
                 }
@@ -666,7 +672,7 @@ function users()
                 cmsCore::jsonOutput(array( 'error' => false, 'text' => sprintf($_LANG['SEND_MESS_ALL_OK'], sizeof($count)) ));
             }
 
-            // отправить группе: получаем список членов группы
+// отправить группе: получаем список членов группы
             if ( $send_to_group ) {
                 $count       = cmsUser::sendMessageToGroup(USER_MASSMAIL, $group_id, $message);
                 $success_msg = sprintf($_LANG['SEND_MESS_GROUP_OK'], $count, cmsUser::getGroupTitle($group_id));
@@ -703,31 +709,31 @@ function users()
             cmsCore::halt();
         }
 
-        // Сообщения с from_id < 0
+// Сообщения с from_id < 0
         if ( $msg['from_id'] < 0 ) {
             $inDB->query("DELETE FROM cms_user_msg WHERE id = '" . $id . "' LIMIT 1");
             $info_text = $_LANG['MESS_NOTICE_DEL_OK'];
         }
 
-        // мне сообщение от пользователя
+// мне сообщение от пользователя
         if ( $msg['to_id'] == $inUser->id && $msg['from_id'] > 0 ) {
             $inDB->query("UPDATE cms_user_msg SET to_del=1 WHERE id='" . $id . "'");
             $info_text = $_LANG['MESS_DEL_OK'];
         }
 
-        // от меня сообщение
+// от меня сообщение
         if ( $msg['from_id'] == $inUser->id && !$msg['is_new'] ) {
             $inDB->query("UPDATE cms_user_msg SET from_del=1 WHERE id='" . $id . "'");
             $info_text = $_LANG['MESS_DEL_OK'];
         }
 
-        // отзываем сообщение
+// отзываем сообщение
         if ( $msg['from_id'] == $inUser->id && $msg['is_new'] ) {
             $inDB->query("DELETE FROM cms_user_msg WHERE id = '" . $id . "' LIMIT 1");
             $info_text = $_LANG['MESS_BACK_OK'];
         }
 
-        // удаляем сообщения, которые удалены с двух сторон
+// удаляем сообщения, которые удалены с двух сторон
         $inDB->query("DELETE FROM cms_user_msg WHERE to_del=1 AND from_del=1");
 
         cmsCore::jsonOutput(array( 'error' => false, 'text' => $info_text ));
@@ -782,7 +788,7 @@ function users()
         if ( cmsCore::inRequest('upload') ) {
             $inUploadPhoto = cmsUploadPhoto::getInstance();
 
-            // Выставляем конфигурационные параметры
+// Выставляем конфигурационные параметры
             $inUploadPhoto->upload_dir    = PATH . '/images/';
             $inUploadPhoto->dir_medium    = 'users/avatars/';
             $inUploadPhoto->dir_small     = 'users/avatars/small/';
@@ -803,10 +809,10 @@ function users()
 
             $inDB->query($sql);
 
-            // очищаем предыдущую запись о смене аватара
+// очищаем предыдущую запись о смене аватара
             cmsActions::removeObjectLog('add_avatar', $id);
 
-            // выводим сообщение в ленту
+// выводим сообщение в ленту
             cmsActions::log('add_avatar', array(
                 'object'      => '',
                 'object_url'  => '',
@@ -892,10 +898,10 @@ function users()
                 $sql = "UPDATE cms_user_profiles SET imageurl = '" . $filename . "' WHERE user_id = '" . $id . "' LIMIT 1";
                 $inDB->query($sql);
 
-                // очищаем предыдущую запись о смене аватара
+// очищаем предыдущую запись о смене аватара
                 cmsActions::removeObjectLog('add_avatar', $id);
 
-                // выводим сообщение в ленту
+// выводим сообщение в ленту
                 cmsActions::log('add_avatar', array(
                     'object'      => '',
                     'object_url'  => '',
@@ -943,13 +949,13 @@ function users()
         $inPage->addPathway($_LANG['FRIENDS']);
         $inPage->setTitle($_LANG['FRIENDS']);
 
-        // все друзья
+// все друзья
         $friends = cmsUser::getFriends($usr['id']);
 
-        // их общее количество
+// их общее количество
         $total = count($friends);
 
-        // получаем только нужных на странице
+// получаем только нужных на странице
         $friends = array_slice($friends, ($page - 1) * $perpage, $perpage);
 
         cmsPage::initTemplate('components', 'com_users_friends')->
@@ -984,14 +990,14 @@ function users()
             cmsCore::jsonOutput(array( 'error' => true, 'text' => $_LANG['YOU_ARE_BE_FRIENDS'] ));
         }
 
-        // проверяем был ли ранее запрос на дружбу
-        // если был, то делаем accept запросу
+// проверяем был ли ранее запрос на дружбу
+// если был, то делаем accept запросу
         $is_need_accept_id = cmsUser::getFriendFieldId($id, 0, 'to_me');
 
         if ( $is_need_accept_id ) {
             $inDB->query("UPDATE cms_user_friends SET is_accepted = 1 WHERE id = '" . $is_need_accept_id . "'");
 
-            //регистрируем событие
+//регистрируем событие
             cmsActions::log('add_friend', array(
                 'object'      => $inUser->nickname,
                 'user_id'     => $usr['id'],
@@ -1008,13 +1014,13 @@ function users()
             cmsCore::jsonOutput(array( 'error' => false, 'text' => $_LANG['ADD_FRIEND_OK'] . $usr['nickname'] ));
         }
 
-        // Если пользователь пытается добавиться в друзья к
-        // пользователю, к которому уже отправил запрос
+// Если пользователь пытается добавиться в друзья к
+// пользователю, к которому уже отправил запрос
         if ( cmsUser::getFriendFieldId($id, 0, 'from_me') ) {
             cmsCore::jsonOutput(array( 'error' => true, 'text' => $_LANG['ADD_TO_FRIEND_SEND_ERR'] ));
         }
 
-        // Мы вообще не друзья с пользователем, создаем запрос
+// Мы вообще не друзья с пользователем, создаем запрос
         cmsUser::addFriend($id);
 
         cmsUser::sendMessage(USER_UPDATER, $id, sprintf($_LANG['RECEIVED_F_O'], cmsUser::getProfileLink($inUser->login, $inUser->nickname), '<a class="ajaxlink" href="javascript:void(0)" onclick="users.acceptFriend(' . $inUser->id . ', this);return false;">' . $_LANG['ACCEPT'] . '</a>', '<a class="ajaxlink" href="javascript:void(0)" onclick="users.rejectFriend(' . $inUser->id . ', this);return false;">' . $_LANG['REJECT'] . '</a>'));
@@ -1043,7 +1049,7 @@ function users()
             $is_accepted_friend = cmsUser::isFriend($id);
 
             if ( cmsUser::deleteFriend($id) ) {
-                // Если подтвержденный друг
+// Если подтвержденный друг
                 if ( $is_accepted_friend ) {
                     cmsCore::jsonOutput(array( 'error' => false, 'text' => $usr['nickname'] . $_LANG['DEL_FRIEND'] ));
                 }
@@ -1175,7 +1181,7 @@ function users()
         }
 
         foreach ( $awards as $aw ) {
-            //Перебираем все награды и ищем пользователей с текущей наградой
+//Перебираем все награды и ищем пользователей с текущей наградой
             $sql = "SELECT u.id as id, u.nickname as nickname, u.login as login, IFNULL(p.gender, 'm') as gender
                  FROM cms_user_awards aw
                  LEFT JOIN cms_users u ON u.id = aw.user_id
@@ -1208,32 +1214,32 @@ function users()
 //============================= Удаление профиля  ============================//
 
     if ( $do == 'delprofile' ) {
-        // неавторизованным тут делать нечего
+// неавторизованным тут делать нечего
         if ( !$inUser->id ) {
             cmsCore::error404();
         }
 
-        // есть ли удаляемый профиль
+// есть ли удаляемый профиль
         $data = cmsUser::getShortUserData($id);
 
         if ( !$data ) {
             cmsCore::error404();
         }
 
-        // владелец профиля или админ
+// владелец профиля или админ
         if ( $inUser->is_admin ) {
-            // могут ли администраторы удалять профиль
+// могут ли администраторы удалять профиль
             if ( !cmsUser::isAdminCan('admin/users', cmsUser::getAdminAccess()) ) {
                 cmsCore::error404();
             }
 
-            // администратор сам себя не удалит
+// администратор сам себя не удалит
             if ( $inUser->id == $data['id'] ) {
                 cmsCore::error404();
             }
         }
         else {
-            // удаляем только свой профиль
+// удаляем только свой профиль
             if ( $inUser->id != $data['id'] ) {
                 cmsCore::error404();
             }
@@ -1356,14 +1362,14 @@ function users()
         $email = cmsCore::request('email', 'email', '');
         $token = cmsCore::request('token', 'str', '');
 
-        // не занят ли email
+// не занят ли email
         $is_email = $inDB->get_field('cms_users', "email='" . $email . "'", 'id');
 
         if ( $is_email || !$email || !$token ) {
             cmsCore::error404();
         }
 
-        // проверяем токен
+// проверяем токен
         $valid_id = $inDB->get_field('cms_users_activate', "code='" . $token . "' AND user_id = '" . $inUser->id . "'", 'id');
 
         if ( !$valid_id ) {
@@ -1372,7 +1378,7 @@ function users()
 
         $inDB->delete('cms_users_activate', "id = '{$valid_id}'");
 
-        // Сохраняем новый email
+// Сохраняем новый email
         $inDB->update('cms_users', array( 'email' => $email ), $inUser->id);
 
         cmsCore::addSessionMessage($_LANG['NEW_EMAIL_SAVED'], 'success');

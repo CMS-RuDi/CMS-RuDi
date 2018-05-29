@@ -536,17 +536,18 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
 
 function cpForumCatById($id)
 {
-    $inDB = cmsDatabase::getInstance();
+    if ( \cms\controller::enabled('forum') ) {
+        $inDB = cmsDatabase::getInstance();
 
-    $result = $inDB->query("SELECT title FROM cms_forum_cats WHERE id = $id");
+        $result = $inDB->query("SELECT title FROM cms_forum_cats WHERE id = $id");
 
-    if ( $inDB->num_rows($result) ) {
-        $cat = $inDB->fetch_assoc($result);
-        return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a> (' . $id . ')';
+        if ( $inDB->num_rows($result) ) {
+            $cat = $inDB->fetch_assoc($result);
+            return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a> (' . $id . ')';
+        }
     }
-    else {
-        return '--';
-    }
+
+    return '--';
 }
 
 function cpFaqCatById($id)

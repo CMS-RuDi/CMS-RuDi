@@ -303,7 +303,7 @@
                                         <a href="/board/by_user_{$usr.login}">{$LANG.ADVS}</a> <sup>{$usr.board_count}</sup>
                                     </div>
                                 {/if}
-                                {if $cfg.sw_forum && $cfg_forum.component_enabled && $usr.forum_count}
+                                {if $cfg.sw_forum && $com_forum_enabled && $usr.forum_count}
                                     <div id="usr_forum">
                                         <a href="/forum/{$usr.login}_activity.html" title="{$LANG.MY_ACTIVITY_ON_FORUM}">{$LANG.FORUM}</a> <sup title="{$LANG.MESS_IN_FORUM}">{$usr.forum_count}</sup>
                                     </div>

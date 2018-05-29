@@ -46,27 +46,45 @@ class plugin
 
     /**
      * Название класса плагина
+     *
      * @var string
      */
     protected $name;
 
     /**
      * Версия плагина
+     *
      * @var string
      */
     protected $version;
 
     /**
      * Автор плагина
+     *
      * @var string
      */
     protected $author;
 
     /**
      * Email автора плагина
+     *
      * @var string
      */
     protected $author_email;
+
+    /**
+     * Сайт автора
+     *
+     * @var string
+     */
+    protected $author_url;
+
+    /**
+     * Страница плагина
+     *
+     * @var string
+     */
+    protected $url;
 
     /**
      * События на которые будет подписан плагин
@@ -144,13 +162,33 @@ class plugin
     }
 
     /**
-     * Возвращает email адресс авора
+     * Возвращает email адресс автора
      *
      * @return string
      */
     public function getAuthorEmail()
     {
         return $this->author_email;
+    }
+
+    /**
+     * Возвращает ссылку на сайт автора
+     *
+     * @return string
+     */
+    public function getAuthorUrl()
+    {
+        return $this->author_url;
+    }
+
+    /**
+     * Возвращает ссылку на страницу плагина
+     *
+     * @return string
+     */
+    public function getPluginUrl()
+    {
+        return $this->url;
     }
 
     /**
@@ -185,7 +223,9 @@ class plugin
             'title'        => $this->getTitle(),
             'description'  => $this->getDescription(),
             'version'      => $this->getVersion(),
+            'url'          => $this->getPluginUrl(),
             'author'       => $this->getAuthor(),
+            'author_url'   => $this->getAuthorUrl(),
             'author_email' => $this->getAuthorEmail(),
         ];
     }
@@ -213,10 +253,7 @@ class plugin
             return false;
         }
 
-        // добавляем хуки событий для плагина
-        foreach ( $this->events as $event ) {
-            $this->db->insert('event_hooks', array( 'event' => $event, 'plugin_id' => $plugin_id ));
-        }
+        $this->registerEvents($this->events);
 
         // возращаем ID установленного плагина
         return $plugin_id;
@@ -259,16 +296,23 @@ class plugin
         // обновляем плагин в базе
         $this->db->update('plugins', 'id=' . $plugin_id, $info);
 
-        // Удаляем все события плагина
-        $this->db->delete('event_hooks', 'plugin_id=' . $plugin_id);
-
-        // добавляем хуки событий для плагина
-        foreach ( $this->events as $event ) {
-            $this->db->insert('event_hooks', array( 'event' => $event, 'plugin_id' => $plugin_id ));
-        }
+        $this->registerEvents($this->events);
 
         // плагин успешно обновлен
         return true;
+    }
+
+    public function registerEvents()
+    {
+        // Удаляем все события плагина
+        $this->db->delete('events', "type='plugin' AND name='" . $this->db->escape($this->name) . "'");
+
+        $max_order = $this->db->getField('events', 1, 'ordering', 'ordering DESC');
+
+        // добавляем хуки событий для плагина
+        foreach ( $this->events as $event ) {
+            $this->db->insert('events', array( 'type' => 'plugin', 'event' => $event, 'name' => $this->name, 'is_enabled' => 1, 'ordering' => $max_order++ ));
+        }
     }
 
     /**

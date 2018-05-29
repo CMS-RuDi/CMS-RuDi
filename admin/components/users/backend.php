@@ -144,21 +144,23 @@ cpCheckWritable('/images/users/photos/medium', 'folder');
                             ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
-                <tr>
-                    <td><strong><?php echo $_LANG['AD_SHOW_FORUM']; ?>: </strong></td>
-                    <td>
-                        <label><input name="sw_forum" type="radio" value="1" <?php
-                            if ( $model->config['sw_forum'] ) {
-                                echo 'checked="checked"';
-                            }
-                            ?>/> <?php echo $_LANG['YES']; ?></label>
-                        <label><input name="sw_forum" type="radio" value="0" <?php
-                            if ( !$model->config['sw_forum'] ) {
-                                echo 'checked="checked"';
-                            }
-                            ?>/> <?php echo $_LANG['NO']; ?></label>
-                    </td>
-                </tr>
+                <?php if ( \cms\controller::enabled('forum') ) { ?>
+                    <tr>
+                        <td><strong><?php echo $_LANG['AD_SHOW_FORUM']; ?>: </strong></td>
+                        <td>
+                            <label><input name="sw_forum" type="radio" value="1" <?php
+                                if ( $model->config['sw_forum'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/> <?php echo $_LANG['YES']; ?></label>
+                            <label><input name="sw_forum" type="radio" value="0" <?php
+                                if ( !$model->config['sw_forum'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/> <?php echo $_LANG['NO']; ?></label>
+                        </td>
+                    </tr>
+                <?php } ?>
                 <tr>
                     <td><strong><?php echo $_LANG['AD_USERS_WALL']; ?>: </strong></td>
                     <td>

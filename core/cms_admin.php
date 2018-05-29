@@ -16,97 +16,68 @@ class cmsAdmin extends cmsCore
     protected static $_instance;
 
     /**
-     * Устанавливает плагин и делает его привязку к событиям
-     * Возвращает ID установленного плагина
-     * @param array $plugin
-     * @param array $events
-     * @param array $config
-     * @return int
+     * Устаревший метод используйте _installPlugin
      */
     public function installPlugin($plugin, $events, $config)
     {
-        $inDB = cmsDatabase::getInstance();
-
-        if ( !@$plugin['type'] ) {
-            $plugin['type'] = 'plugin';
-        }
-
-        $config_yaml = cmsCore::arrayToYaml($config);
-
-        if ( !$config_yaml ) {
-            $config_yaml = '';
-        }
-
-        $plugin['config'] = $inDB->escape_string($config_yaml);
-
-        //добавляем плагин в базу
-        $plugin_id = $inDB->insert('cms_plugins', $plugin);
-
-        //возвращаем ложь, если плагин не установился
-        if ( !$plugin_id ) {
-            return false;
-        }
-
-        //добавляем хуки событий для плагина
-        foreach ( $events as $event ) {
-            $inDB->insert('cms_event_hooks', array( 'event' => $event, 'plugin_id' => $plugin_id ));
-        }
-
-        //возращаем ID установленного плагина
-        return $plugin_id;
+        return $this->_installPlugin($plugin, $config);
     }
 
     /**
-     * Делает апгрейд установленного плагина
-     * @param array $plugin
-     * @param array $events
-     * @param array $config
-     * @return bool
+     * Устанавливает указанный плагин и возвращает его ID или false при неудачной
+     * установке
+     *
+     * @param string $name
+     * @param false|array $config
+     *
+     * @return false|int
+     */
+    public function _installPlugin($name, $config = false)
+    {
+        $plugin = \cms\plugin::load($plugin);
+
+        if ( !empty($plugin) ) {
+            if ( !empty($config) ) {
+                $plugin->setConfig($config);
+            }
+
+            if ( $id = $plugin->install() ) {
+                return $id;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Устаревший метод используйте _updatePlugin
      */
     public function upgradePlugin($plugin, $events, $config)
     {
-        $inDB = cmsDatabase::getInstance();
+        return $this->_updatePlugin($plugin, $config);
+    }
 
-        //находим ID установленной версии
-        $plugin_id = $this->getPluginId($plugin['plugin']);
+    /**
+     * Обновляет указанный плагин
+     *
+     * @param string $name
+     * @param array $config
+     *
+     * @return boolean
+     */
+    public function _updatePlugin($name, $config = false)
+    {
+        $plugin = \cms\plugin::load($plugin);
 
-        //если плагин еще не был установлен, выходим
-        if ( !$plugin_id ) {
-            return false;
-        }
-
-        //загружаем текущие настройки плагина
-        $old_config = $this->loadPluginConfig($plugin['plugin']);
-
-        //удаляем настройки, которые больше не нужны
-        foreach ( $old_config as $param => $value ) {
-            if ( !isset($config[$param]) ) {
-                unset($old_config[$param]);
+        if ( !empty($plugin) ) {
+            if ( !empty($config) ) {
+                $plugin->setConfig($config);
             }
+
+            return $plugin->upgrade();
         }
 
-        //добавляем настройки, которых раньше не было
-        foreach ( $config as $param => $value ) {
-            if ( !isset($old_config[$param]) ) {
-                $old_config[$param] = $value;
-            }
-        }
-
-        //конвертируем массив настроек в YAML
-        $plugin['config'] = $inDB->escape_string(cmsCore::arrayToYaml($old_config));
-
-        //обновляем плагин в базе
-        $inDB->update('cms_plugins', $plugin, $plugin_id);
-
-        //добавляем новые хуки событий для плагина
-        foreach ( $events as $event ) {
-            if ( !$this->isPluginHook($plugin_id, $event) ) {
-                $inDB->insert('cms_event_hooks', array( 'event' => $event, 'plugin_id' => $plugin_id ));
-            }
-        }
-
-        //плагин успешно обновлен
-        return true;
+        return false;
     }
 
     /**
@@ -642,13 +613,24 @@ class cmsAdmin extends cmsCore
 
     /**
      * Проверяет привязку плагина к событию
+     * 
      * @param int $plugin_id
      * @param string $event
+     *
      * @return bool
      */
     public function isPluginHook($plugin_id, $event)
     {
-        return cmsDatabase::getInstance()->rows_count('cms_event_hooks', "plugin_id='" . $plugin_id . "' AND event='" . $event . "'");
+        $db = \cms\db::getInstance();
+
+        if ( is_numeric($plugin_id) ) {
+            $name = $db->getField('plugins', 'id=' . (int) $plugin_id, 'plugin');
+        }
+        else {
+            $name = $plugin_id;
+        }
+
+        return $db->getRowsCount('events', "type='plugin' AND name='" . $db->escape($name) . "' AND event='" . $db->escape($event) . "'");
     }
 
     /**

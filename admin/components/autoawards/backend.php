@@ -285,11 +285,13 @@ if ( $opt == 'add' || $opt == 'edit' ) {
                             </td>
                             <td width="86%"><?php echo $_LANG['COMMENT10']; ?></td>
                         </tr>
-                        <tr>
-                            <td><img src="/admin/components/autoawards/images/p_forum.gif" width="16" height="16" /></td>
-                            <td><input name="p_forum" type="text" id="p_input" size="5" value="<?php echo @$mod['p_forum']; ?>" /></td>
-                            <td><?php echo $_LANG['AD_FORUM_MESSAGES']; ?></td>
-                        </tr>
+                        <?php if ( \cms\controller::enabled('forum') ) { ?>
+                            <tr>
+                                <td><img src="/admin/components/autoawards/images/p_forum.gif" width="16" height="16" /></td>
+                                <td><input name="p_forum" type="text" id="p_input" size="5" value="<?php echo @$mod['p_forum']; ?>" /></td>
+                                <td><?php echo $_LANG['AD_FORUM_MESSAGES']; ?></td>
+                            </tr>
+                        <?php } ?>
                         <tr>
                             <td><img src="/admin/components/autoawards/images/p_content.gif" width="16" height="16" /></td>
                             <td><input name="p_content" type="text" id="p_input" size="5" value="<?php echo @$mod['p_content']; ?>"></td>

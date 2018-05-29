@@ -310,12 +310,12 @@ class install extends \cms\com_action
         }
 
         // Удаляем плагин из базы
-        $inDB->delete('cms_plugins', "id = '" . $plugin_id . "'");
+        $this->model->db->delete('plugins', "plugin='" . $this->model->db->escape($name) . "'");
 
         // Удаляем хуки событий плагина
-        $inDB->delete('cms_event_hooks', "plugin_id = '" . $plugin_id . "'");
+        $this->model->db->delete('events', "type='plugin' AND name='" . $this->model->db->escape($name) . "'");
 
-        cmsCore::addSessionMessage($_LANG['AD_REMOVE_PLUGIN_OK'], 'success');
+        cmsCore::addSessionMessage($this->lang->ad_remove_plugin_ok, 'success');
         cmsCore::redirect('/admin/index.php?view=plugins');
     }
 

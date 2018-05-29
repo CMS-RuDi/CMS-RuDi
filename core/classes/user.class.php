@@ -1208,7 +1208,7 @@ class cmsUser
         $p_content   = $inDB->rows_count('cms_content', "user_id='" . $user_id . "' AND published = 1");
         $p_comment   = $inDB->rows_count('cms_comments', "user_id='" . $user_id . "' AND published = 1");
         $p_blog      = $inDB->rows_count('cms_blog_posts', "user_id='" . $user_id . "' AND published = 1");
-        $p_forum     = $inDB->rows_count('cms_forum_posts', "user_id='" . $user_id . "'");
+        $p_forum     = \cms\controller::enabled('forum') ? $inDB->rows_count('cms_forum_posts', "user_id='" . $user_id . "'") : 0;
         $p_photo     = $inDB->rows_count('cms_photo_files', "user_id='" . $user_id . "' AND published = 1");
         $p_privphoto = $inDB->rows_count('cms_user_photos', "user_id='" . $user_id . "'");
         $p_karma     = $inDB->get_field('cms_user_profiles', "user_id='" . $user_id . "'", 'karma');

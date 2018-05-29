@@ -13,9 +13,16 @@ class request
     const CTX_AJAX        = 3;
 
     protected $context;
-    protected static $request     = [];
+    protected $request            = [];
     protected static $device_type = null;
     public static $device_types   = [ 'desktop', 'mobile', 'tablet' ];
+
+    public function __construct($request = false)
+    {
+        if ( is_array($request) ) {
+            $this->setData($request);
+        }
+    }
 
     //========================================================================//
 
@@ -153,9 +160,9 @@ class request
      *
      * @return \self
      */
-    public static function init()
+    public static function init($request)
     {
-        return new self();
+        return new self($request);
     }
 
     public function __set($name, $value)
@@ -170,7 +177,7 @@ class request
 
     public function __isset($name)
     {
-        return isset(self::$request[$name]) ? self::$request[$name] : false;
+        return isset($this->request[$name]) ? $this->request[$name] : false;
     }
 
     public function __unset($name)
@@ -186,7 +193,7 @@ class request
      */
     public function set($name, $value)
     {
-        self::$request[$name] = $value;
+        $this->request[$name] = $value;
     }
 
     /**
@@ -196,8 +203,8 @@ class request
      */
     public function delete($name)
     {
-        if ( isset(self::$request[$name]) ) {
-            unset(self::$request[$name]);
+        if ( isset($this->request[$name]) ) {
+            unset($this->request[$name]);
         }
     }
 
@@ -214,7 +221,7 @@ class request
         }
 
         foreach ( $data as $k => $v ) {
-            self::$request[$k] = $v;
+            $this->request[$k] = $v;
         }
     }
 
@@ -225,7 +232,7 @@ class request
      */
     public function setData($data)
     {
-        self::$request = $data;
+        $this->request = $data;
     }
 
     /**
@@ -233,7 +240,7 @@ class request
      */
     public function clear()
     {
-        self::$request = [];
+        $this->request = [];
     }
 
     //==========================================================================
@@ -256,8 +263,8 @@ class request
             default: $result = isset($_REQUEST[$name]);
         }
 
-        if ( $only_real_request !== true && $result !== true && !empty(self::$request) ) {
-            $result = isset(self::$request[$name]);
+        if ( $only_real_request !== true && $result !== true && !empty($this->request) ) {
+            $result = isset($this->request[$name]);
         }
 
         return $result;
@@ -290,8 +297,8 @@ class request
                 break;
         }
 
-        if ( $value === null && !empty(self::$request) ) {
-            $value = isset(self::$request[$name]) ? self::$request[$name] : null;
+        if ( $value === null && !empty($this->request) ) {
+            $value = isset($this->request[$name]) ? $this->request[$name] : null;
         }
 
         if ( $value !== null ) {
@@ -347,7 +354,7 @@ class request
         $data = file_get_contents('php://input');
 
         if ( !empty($data) ) {
-            return json_decode($data);
+            return json_decode($data, true);
         }
 
         return false;
@@ -507,7 +514,7 @@ class request
 
     /**
      * Перемещает загруженный файл или файлы в указанную папку с указанным названием
-     * 
+     *
      * @param string $name
      * @param string $folder
      * @param string $file_name

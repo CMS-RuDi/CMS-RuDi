@@ -181,8 +181,13 @@
                                         </tr>
                                         <tr>
                                         <tr>
-                                            <td width="16"><img src="/images/markers/rssfeed.png" width="16" height="16" /></td>
-                                            <td><a href="/rss/forum/all/feed.rss" id="rss_link">{$lang->ad_rss_forum}</a></td>
+                                            {if $com_enabled.forum}
+                                                <td width="16"><img src="/images/markers/rssfeed.png" width="16" height="16" /></td>
+                                                <td><a href="/rss/forum/all/feed.rss" id="rss_link">{$lang->ad_rss_forum}</a></td>
+                                            {else}
+                                                <td></td>
+                                                <td></td>
+                                            {/if}
                                             <td width="16"><img src="/images/markers/rssfeed.png" width="16" height="16" /></td>
                                             <td><a href="/rss/catalog/all/feed.rss" id="rss_link">{$lang->ad_rss_catalog}</a></td>
                                         </tr>

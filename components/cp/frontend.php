@@ -102,6 +102,7 @@ class frontend extends \cms\backend
                 assign('new_content', $this->model->db->getRowsCount('content', 'published=0 AND is_arhive = 0'))->
                 assign('new_catalog', $this->model->db->getRowsCount('uc_items', 'on_moderate=1'))->
                 assign('rssfeed', \cms\controller::enabled('rssfeed'))->
+                assign('com_enabled', [ 'forum' => \cms\controller::enabled('forum') ])->
                 display();
     }
 

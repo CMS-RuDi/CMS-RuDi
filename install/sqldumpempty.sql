@@ -20,9 +20,7 @@ CREATE TABLE `#__translations_fields` (
 
 INSERT INTO `#__translations_fields` (`id`, `target`, `fields`) VALUES
 (1, 'content_content', '---\ntitle: str\ndescription: html\ncontent: html\npagetitle: str\nmeta_desc: str\nmeta_keys: str\n'),
-(2, 'content_category', '---\ntitle: str\ndescription: html\npagetitle: str\nmeta_desc: str\nmeta_keys: str\n'),
-(3, 'forum_forums', '---\ntitle: str\ndescription: str\npagetitle: str\nmeta_keys: str\nmeta_desc: str\n'),
-(4, 'forum_forum_cats', '---\ntitle: str\npagetitle: str\nmeta_keys: str\nmeta_desc: str\n');
+(2, 'content_category', '---\ntitle: str\ndescription: html\npagetitle: str\nmeta_desc: str\nmeta_keys: str\n'));
 
 DROP TABLE IF EXISTS `#__actions`;
 CREATE TABLE `#__actions` (
@@ -49,8 +47,6 @@ INSERT INTO `#__actions` (`id`, `component`, `name`, `title`, `message`, `is_tra
 (14, 'clubs', 'add_club', 'Создание клуба', 'создает клуб %s|', 1, 1),
 (15, 'clubs', 'add_club_user', 'Вступление в клуб', 'вступает в клуб %s|', 1, 1),
 (16, 'faq', 'add_quest', 'Вопрос', 'задает %s| в категории %s', 1, 1),
-(17, 'forum', 'add_fpost', 'Добавление поста в форуме', 'добавляет %s| в теме %s', 1, 1),
-(18, 'forum', 'add_thread', 'Добавление темы на форуме', 'создает тему %s| на форуме %s', 1, 1),
 (19, 'users', 'add_avatar', 'Загрузка или смена аватара пользователем', 'изменяет аватар|', 1, 1),
 (20, 'users', 'add_friend', 'Добавление друга', 'и %s стали друзьями|', 1, 1),
 (21, 'users', 'add_award', 'Получение награды пользователем', 'получает награду %s|', 1, 1),
@@ -450,7 +446,6 @@ INSERT INTO `#__components` (`id`, `title`, `link`, `config`, `internal`, `autho
 (8, 'Архив статей', 'arhive', '---\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (9, 'Универсальный каталог', 'catalog', '---\nemail: shop@site.ru\ndelivery: |\n  Сведения о доставке.\n  Этот текст можно изменить в настройках компонента &quot;Универсальный каталог&quot;.\nnotice: 1\npremod: 1\npremod_msg: 1\nis_comments: 1\nis_rss: 1\nwatermark: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (10, 'Профили пользователей', 'users', '---\nshowgroup: 1\nsw_stats: \nsw_comm: 1\nsw_search: 1\nsw_forum: 1\nsw_photo: 1\nsw_wall: 1\nsw_friends: 1\nsw_blogs: 1\nsw_clubs: 1\nsw_feed: 1\nsw_content: 1\nsw_awards: 1\nsw_board: 1\nsw_msg: 1\nsw_guest: 1\nkarmatime: 1\nkarmaint: DAY\nphotosize: 0\nwatermark: 1\nsmallw: 64\nmedw: 200\nmedh: 500\nsw_files: 1\nfilessize: 100\nfilestype: jpeg,gif,png,jpg,bmp,zip,rar,tar\nprivforms: \n  - 3\nj_code: 1\ndeltime: 6\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(12, 'Форум', 'forum', '---\nis_on: 1\nkarma: 1\nis_rss: 1\npp_thread: 15\npp_forum: 15\nshowimg: 1\nimg_on: 1\nimg_max: 5\nfast_on: 1\nfast_bb: 1\nfa_on: 1\ngroup_access: \nfa_max: 25\nfa_ext: txt doc zip rar arj png gif jpg jpeg bmp\nfa_size: 1024\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (15, 'Блоги', 'blogs', '---\nperpage: 10\nperpage_blog: 15\nupdate_date: 0\nupdate_seo_link: 0\nmin_karma_private: 0\nmin_karma_public: 5\nmin_karma: 1\nwatermark: 1\nimg_on: 1\nrss_all: 1\nrss_one: 1\nj_code: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (16, 'Вопросы и ответы', 'faq', '---\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (17, 'Баннеры', 'banners', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
@@ -551,40 +546,45 @@ CREATE TABLE `#__downloads` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `#__event_hooks`;
-CREATE TABLE `#__event_hooks` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `event` varchar(50) NOT NULL,
-  `plugin_id` varchar(30) NOT NULL,
+DROP TABLE IF EXISTS `#__events`;
+CREATE TABLE IF NOT EXISTS `#__events` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `type` enum('plugin','component') DEFAULT 'plugin' COMMENT 'Кто подписан на событие плагин или компонент',
+  `name` varchar(64) DEFAULT NULL COMMENT 'Название плагина или компонента',
+  `event` varchar(128) DEFAULT NULL COMMENT 'Событие',
+  `is_enabled` tinyint(1) DEFAULT NULL COMMENT 'Активность',
+  `ordering` int(5) DEFAULT NULL COMMENT 'Порядковый номер',
   PRIMARY KEY (`id`),
-  KEY `plugin_id` (`plugin_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+  KEY `name` (`type`,`name`),
+  KEY `event` (`event`),
+  KEY `is_enabled` (`is_enabled`,`ordering`)
+) ENGINE=MyISAM AUTO_INCREMENT=25 DEFAULT CHARSET=utf8 COMMENT='Подписка плагинов и компонентов на события';
 
-INSERT INTO `#__event_hooks` (`id`, `event`, `plugin_id`) VALUES
-(6, 'GET_ARTICLE', '5'),
-(3, 'INSERT_WYSIWYG', '3'),
-(7, 'USER_PROFILE', '6'),
-(11, 'ADD_ARTICLE_DONE', '8'),
-(10, 'ADD_POST_DONE', '8'),
-(12, 'ADD_BOARD_DONE', '8'),
-(34, 'GET_FORUM_POSTS', '14'),
-(33, 'GET_COMMENTS', '14'),
-(31, 'GET_COMMENTS_MODULE', '14'),
-(32, 'GET_COMMENT', '14'),
-(30, 'GET_POST', '14'),
-(29, 'GET_POSTS', '14'),
-(35, 'GET_WALL_POSTS', '14'),
-(36, 'GET_ARTICLE', '15'),
-(37, 'LOGINZA_BUTTON', '16'),
-(38, 'LOGINZA_AUTH', '16'),
-(39, 'DELETE_ARTICLE', '17'),
-(40, 'GET_ARTICLE', '17'),
-(41, 'ADD_ARTICLE_DONE', '17'),
-(42, 'UPDATE_ARTICLE', '17'),
-(43, 'PRINT_PAGE_HEAD', '21'),
-(44, 'GET_CAPTCHA', '33'),
-(45, 'CHECK_CAPTCHA', '33'),
-(47, 'GET_POST', '35');
+INSERT INTO `#__events` (`id`, `type`, `name`, `event`, `is_enabled`, `ordering`) VALUES
+(1, 'plugin', 'p_demo', 'GET_ARTICLE', 1, 1),
+(2, 'plugin', 'p_ckeditor', 'INSERT_WYSIWYG', 1, 2),
+(3, 'plugin', 'p_usertab', 'USER_PROFILE', 1, 3),
+(4, 'plugin', 'p_ping', 'ADD_ARTICLE_DONE', 1, 4),
+(5, 'plugin', 'p_ping', 'ADD_POST_DONE', 1, 5),
+(6, 'plugin', 'p_ping', 'ADD_BOARD_DONE', 1, 6),
+(7, 'plugin', 'p_hidetext', 'GET_FORUM_POSTS', 1, 7),
+(8, 'plugin', 'p_hidetext', 'GET_COMMENTS', 1, 8),
+(9, 'plugin', 'p_hidetext', 'GET_COMMENTS_MODULE', 1, 9),
+(10, 'plugin', 'p_hidetext', 'GET_COMMENT', 1, 10),
+(11, 'plugin', 'p_hidetext', 'GET_POST', 1, 11),
+(12, 'plugin', 'p_hidetext', 'GET_POSTS', 1, 12),
+(13, 'plugin', 'p_hidetext', 'GET_WALL_POSTS', 1, 13),
+(14, 'plugin', 'p_morecontent', 'GET_ARTICLE', 1, 14),
+(15, 'plugin', 'p_loginza', 'LOGINZA_BUTTON', 1, 15),
+(16, 'plugin', 'p_loginza', 'LOGINZA_AUTH', 1, 16),
+(17, 'plugin', 'p_auto_forum', 'DELETE_ARTICLE', 1, 17),
+(18, 'plugin', 'p_auto_forum', 'GET_ARTICLE', 1, 18),
+(19, 'plugin', 'p_auto_forum', 'ADD_ARTICLE_DONE', 1, 19),
+(20, 'plugin', 'p_auto_forum', 'UPDATE_ARTICLE', 1, 20),
+(21, 'plugin', 'p_new_msg', 'PRINT_PAGE_HEAD', 1, 21),
+(22, 'plugin', 'p_kcaptcha', 'GET_CAPTCHA', 1, 22),
+(23, 'plugin', 'p_kcaptcha', 'CHECK_CAPTCHA', 1, 23),
+(24, 'plugin', 'p_related_posts', 'GET_POST', 1, 24);
 
 DROP TABLE IF EXISTS `#__faq_cats`;
 CREATE TABLE `#__faq_cats` (
@@ -662,134 +662,6 @@ CREATE TABLE `#__form_fields` (
   `show_for_group` tinytext DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `form_id` (`form_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `#__forums`;
-CREATE TABLE `#__forums` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `category_id` int(11) NOT NULL,
-  `title` varchar(250) NOT NULL,
-  `description` varchar(300) NOT NULL,
-  `access_list` tinytext NOT NULL,
-  `moder_list` tinytext DEFAULT NULL,
-  `ordering` int(11) NOT NULL,
-  `published` tinyint(1) NOT NULL DEFAULT '1',
-  `parent_id` int(11) NOT NULL,
-  `NSLeft` int(11) NOT NULL,
-  `NSRight` int(11) NOT NULL,
-  `NSDiffer` varchar(15) NOT NULL,
-  `NSIgnore` int(11) NOT NULL,
-  `NSLevel` int(11) NOT NULL,
-  `icon` varchar(200) NOT NULL,
-  `topic_cost` float NOT NULL DEFAULT '0',
-  `thread_count` int(11) NOT NULL DEFAULT '0',
-  `post_count` int(11) NOT NULL DEFAULT '0',
-  `last_msg` text NOT NULL,
-  `pagetitle` varchar(200) NOT NULL DEFAULT '',
-  `meta_keys` varchar(250) NOT NULL DEFAULT '',
-  `meta_desc` varchar(250) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  KEY `category_id` (`category_id`),
-  KEY `parent_id` (`parent_id`),
-  KEY `NSLeft` (`NSLeft`,`NSRight`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
-INSERT INTO `#__forums` (`id`, `category_id`, `title`, `description`, `access_list`, `ordering`, `published`, `parent_id`, `NSLeft`, `NSRight`, `NSDiffer`, `NSIgnore`, `NSLevel`, `icon`, `topic_cost`) VALUES
-(1000, 0, '-- Корневой форум --', '', '', 1, 0, 0, 1, 2, '', 0, 0, '', 0);
-
-DROP TABLE IF EXISTS `#__forum_cats`;
-CREATE TABLE `#__forum_cats` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `title` varchar(250) NOT NULL,
-  `published` tinyint(1) NOT NULL DEFAULT '1',
-  `ordering` int(11) NOT NULL,
-  `seolink` varchar(200) NOT NULL,
-  `pagetitle` varchar(200) NOT NULL DEFAULT '',
-  `meta_keys` varchar(250) NOT NULL DEFAULT '',
-  `meta_desc` varchar(250) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  KEY `seolink` (`seolink`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `#__forum_files`;
-CREATE TABLE `#__forum_files` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `post_id` int(11) NOT NULL,
-  `filename` varchar(200) NOT NULL,
-  `filesize` int(11) NOT NULL,
-  `hits` int(11) NOT NULL,
-  `pubdate` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `post_id` (`post_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `#__forum_polls`;
-CREATE TABLE `#__forum_polls` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `thread_id` int(11) NOT NULL,
-  `title` varchar(200) NOT NULL,
-  `description` text NOT NULL,
-  `answers` text NOT NULL,
-  `options` varchar(250) NOT NULL,
-  `enddate` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `thread_id` (`thread_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `#__forum_posts`;
-CREATE TABLE `#__forum_posts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `thread_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `pinned` tinyint(1) NOT NULL DEFAULT '0',
-  `pubdate` datetime NOT NULL,
-  `editdate` datetime NOT NULL,
-  `edittimes` int(11) NOT NULL,
-  `rating` int(11) NOT NULL DEFAULT '0',
-  `attach_count` int(11) NOT NULL DEFAULT '0',
-  `content` text NOT NULL,
-  `content_html` text NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `thread_id` (`thread_id`,`pubdate`),
-  KEY `user_id` (`user_id`),
-  FULLTEXT KEY `content_html` (`content_html`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `#__forum_threads`;
-CREATE TABLE `#__forum_threads` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `forum_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `title` varchar(250) NOT NULL,
-  `description` varchar(250) NOT NULL,
-  `icon` varchar(100) NOT NULL,
-  `pubdate` datetime NOT NULL,
-  `hits` int(11) NOT NULL,
-  `closed` tinyint(1) NOT NULL,
-  `pinned` tinyint(1) NOT NULL,
-  `is_hidden` tinyint(1) NOT NULL DEFAULT '0',
-  `rel_to` varchar(15) NOT NULL,
-  `rel_id` int(11) NOT NULL,
-  `post_count` int(11) NOT NULL DEFAULT '0',
-  `last_msg` text NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
-  KEY `forum_id` (`forum_id`),
-  KEY `rel_id` (`rel_id`),
-  FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `#__forum_votes`;
-CREATE TABLE `#__forum_votes` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `poll_id` int(11) NOT NULL,
-  `answer` varchar(300) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `pubdate` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
-  KEY `poll_id` (`poll_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `#__menu`;
@@ -881,7 +753,6 @@ INSERT INTO `#__modules` (`id`, `position`, `name`, `title`, `is_external`, `con
 (39, 'sidebar', 'Выбор шаблона', 'Выбор шаблона', 1, 'mod_template', 12, 1, 0, 0, '---\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (47, 'mainbottom', 'Записи в каталоге', 'Записи в каталоге', 1, 'mod_uc', 23, 1, 0, 0, '---\nnum: 10\ncat_id: 0\nmenuid: 23\nshowf: 2\nshowtype: thumb\nfulllink: 1\nsort: rating\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (49, 'sidebar', 'Кто онлайн?', 'Кто онлайн?', 1, 'mod_whoonline', 24, 1, 1, 0, '---\nshow_today: 1\nadmin_editor: 1\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
-(50, 'topmenu', 'Темы на форуме', 'Новости форума', 1, 'mod_forum', 31, 1, 1, 0, '---\nshownum: 2\nshowtype: web2\nshowforum: 0\nshowlink: 0\nshowtext: 0\nmenuid: 18\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (51, 'sidebar', 'Случайное фото', 'Случайное фото', 1, 'mod_user_image', 25, 1, 0, 0, '---\nshowtitle: 1\nmenuid: 15\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (52, 'sidebar', 'Внешний файл', 'Внешний файл', 0, '<p>{ФАЙЛ=test.php}</p>', 11, 1, 0, 1, '---\n', 0, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (56, 'sidebar', 'Архив статей', 'Архив новостей', 1, 'mod_arhive', 27, 1, 0, 0, '---\nsource: both\ncat_id: 6\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
@@ -945,7 +816,6 @@ INSERT INTO `#__modules_bind` (`id`, `module_id`, `menu_id`, `position`) VALUES
 (458, 44, 1, 'sidebar'),
 (491, 47, 1, 'mainbottom'),
 (350, 48, 37, ''),
-(595, 50, 1, 'maintop'),
 (434, 51, 1, 'sidebar'),
 (358, 52, 1, 'sidebar'),
 (359, 52, 42, 'sidebar'),
@@ -1083,32 +953,35 @@ CREATE TABLE `#__photo_files` (
 
 
 DROP TABLE IF EXISTS `#__plugins`;
-CREATE TABLE `#__plugins` (
+CREATE TABLE IF NOT EXISTS `cms_plugins` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `plugin` varchar(30) NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `description` text NOT NULL,
-  `author` varchar(255) NOT NULL,
-  `version` varchar(15) NOT NULL,
-  `plugin_type` varchar(10) NOT NULL,
-  `published` tinyint(1) NOT NULL DEFAULT '0',
-  `config` text NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+  `plugin` varchar(30) NOT NULL COMMENT 'Идентификатор',
+  `title` varchar(255) NOT NULL COMMENT 'Название',
+  `description` text NOT NULL COMMENT 'Описание',
+  `version` varchar(15) NOT NULL COMMENT 'Версия',
+  `url` varchar(255) NOT NULL COMMENT 'Ссылка на страницу плагина',
+  `author` varchar(255) NOT NULL COMMENT 'Автор',
+  `author_url` varchar(255) NOT NULL COMMENT 'Сайта автора',
+  `author_email` varchar(255) NOT NULL COMMENT 'Email автора',
+  `plugin_type` varchar(10) NOT NULL COMMENT 'Устарел, не используйте',
+  `published` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Включен?',
+  `config` text NOT NULL COMMENT 'Опции',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `plugin` (`plugin`)
+) ENGINE=MyISAM AUTO_INCREMENT=37 DEFAULT CHARSET=utf8;
 
-INSERT INTO `#__plugins` (`id`, `plugin`, `title`, `description`, `author`, `version`, `plugin_type`, `published`, `config`) VALUES
-(6, 'p_usertab', 'Demo Profile Plugin', 'Пример плагина - Добавляет вкладку "Статьи" в профили всех пользователей', 'InstantCMS Team', '1.10.3', 'plugin', 0, '---\nPU_LIMIT: 10\n'),
-(3, 'p_ckeditor', 'CKEditor', 'Визуальный редактор', 'InstantCMS Team', '4.4.6', 'wysiwyg', 1, '---\niswatermark: 0\nphoto_width: 600\nphoto_height: 600\nis_compatible: 1\nentermode: CKEDITOR.ENTER_P\nskin: moono\nupload_for_groups:\n  - 2\n'),
-(5, 'p_demo', 'Demo Plugin', 'Пример плагина - Добавляет текст в конец каждой статьи на сайте', 'InstantCMS Team', '1.0', 'plugin', 0, '---\ntext: Added By Plugin From Parameter\ncolor: blue\ncounter: 1\n'),
-(8, 'p_ping', 'Пинг поисковых систем', 'Пингует Яндекс и Гугл при добавлении статей, объявлений и постов в блоги', 'InstantCMS Team', '1.10', 'plugin', 1, '---\nYandex HOST: ping.blogs.yandex.ru\nYandex PATH: /RPC2\nGoogle HOST: blogsearch.google.com\nGoogle PATH: /ping/RPC2\n'),
-(15, 'p_morecontent', 'Похожие статьи', 'Добавляет в конец каждой статьи список похожих статей.', 'Maximov & InstantCMS Team', '1.10.4', 'plugin', 0, '---\nP_LIMIT: 5\nP_UNSORT: 1\n'),
-(14, 'p_hidetext', 'Скрытый текст', 'Скрывает содержимое тега [hide] от незарегистрированных', 'InstantCMS Team', '1.12', 'plugin', 1, '---\n'),
-(16, 'p_loginza', 'Авторизация Loginza', 'Позволяет посетителям авторизоваться на сайте, используя аккаунты популярных социальных сетей', 'InstantCMS Team', '1.10.4', 'plugin', 1, '---\nPL_PROVIDERS: >\n  vkontakte,facebook,mailruapi,google,yandex,openid,twitter,webmoney,rambler,flickr,mailru,loginza,myopenid,lastfm,verisign,aol,steam\nPL_LANG: ru\n'),
-(17, 'p_auto_forum', 'Автофорум', 'Создает тему на форуме для обсуждения статьи', 'InstantCMS Team', '1.10.4', '', 1, '---\nAF_DELETE_THREAD: 1\nAF_LINK_TREAD: 1\nAF_ADDTREADFORUM_ID: 1\nAF_NOCREATETREAD: 0\n'),
-(21, 'p_new_msg', 'Анимация при новом сообщении', 'Анимация при новом сообщении', 'InstantCMS Team', '1.0', '', 1, '---\n'),
-(33, 'p_kcaptcha', 'Капча kCaptcha', 'Выводит капчу в форме', 'InstantCMS Team', '1.0', '', 1, '---\n'),
-(35, 'p_related_posts', 'Похожие записи в блогах', 'Добавляет в конец каждого поста список похожих записей', 'Pasha && InstantCMS Team', '1.0', '', 1, '---\ntags_mode: 1\nadd_mode: 1\nsearch_mode: 1\nlimit: 4\ntruncate: 200\ncash_time: 1\nblank_photo: no_image.png\n'),
-(36, 'p_recaptcha', 'Капча Recaptcha', 'Современная защита от спама. <a href="https://www.google.com/recaptcha/admin" target="_blank">Получить ключ</a>', 'InstantCMS Team', '1.0', 'captcha', 0, '---\npublic_key: 0\nprivate_key:\ntheme: light\nsize: normal\nlang: ru\n');
+INSERT INTO `#__plugins` (`id`, `plugin`, `title`, `description`, `version`, `url`, `author`, `author_url`, `author_email`, `plugin_type`, `published`, `config`) VALUES
+(6, 'p_usertab', 'Demo Profile Plugin', 'Пример плагина - Добавляет вкладку "Статьи" в профили всех пользователей', '1.10.3', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 0, '---\nPU_LIMIT: 10\n'),
+(3, 'p_ckeditor', 'CKEditor', 'Визуальный редактор', '4.4.5', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'wysiwyg', 1, '---\niswatermark: 0\nphoto_width: 600\nphoto_height: 600\nis_compatible: 1\nentermode: CKEDITOR.ENTER_P\nskin: moono\nupload_for_groups:\n  - 2\n'),
+(5, 'p_demo', 'Demo Plugin', 'Пример плагина - Добавляет текст в конец каждой статьи на сайте', '1.0', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 0, '---\ntext: Added By Plugin From Parameter\ncolor: blue\ncounter: 1\n'),
+(8, 'p_ping', 'Пинг поисковых систем', 'Пингует Яндекс и Гугл при добавлении статей, объявлений и постов в блоги', '1.10', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 1, '---\nYandex HOST: ping.blogs.yandex.ru\nYandex PATH: /RPC2\nGoogle HOST: blogsearch.google.com\nGoogle PATH: /ping/RPC2\n'),
+(15, 'p_morecontent', 'Похожие статьи', 'Добавляет в конец каждой статьи список похожих статей.', '1.10.4', '', 'Maximov & InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 0, '---\nP_LIMIT: 5\nP_UNSORT: 1\n'),
+(14, 'p_hidetext', 'Скрытый текст', 'Скрывает содержимое тега [hide] от незарегистрированных', '1.12', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 1, '---\n'),
+(16, 'p_loginza', 'Авторизация Loginza', 'Позволяет посетителям авторизоваться на сайте, используя аккаунты популярных социальных сетей', '1.10.4', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 1, '---\nPL_PROVIDERS: >\n  vkontakte,facebook,mailruapi,google,yandex,openid,twitter,webmoney,rambler,flickr,mailru,loginza,myopenid,lastfm,verisign,aol,steam\nPL_LANG: ru\n'),
+(21, 'p_new_msg', 'Анимация при новом сообщении', 'Анимация при новом сообщении', '1.0', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', '', 1, '---\n'),
+(33, 'p_kcaptcha', 'Капча kCaptcha', 'Выводит капчу в форме', '1.0', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', '', 1, '---\n'),
+(35, 'p_related_posts', 'Похожие записи в блогах', 'Добавляет в конец каждого поста список похожих записей', '1.0', '', 'Pasha && InstantCMS Team', 'http://www.instantcms.ru/', '', '', 1, '---\ntags_mode: 1\nadd_mode: 1\nsearch_mode: 1\nlimit: 4\ntruncate: 200\ncash_time: 1\nblank_photo: no_image.png\n'),
+(36, 'p_recaptcha', 'Капча Recaptcha', 'Современная защита от спама. <a href="https://www.google.com/recaptcha/admin" target="_blank">Получить ключ</a>', '1.0', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'captcha', 0, '---\npublic_key: 0\nprivate_key:\ntheme: light\nsize: normal\nlang: ru\n');
 
 DROP TABLE IF EXISTS `#__polls`;
 CREATE TABLE `#__polls` (
@@ -1179,8 +1052,7 @@ INSERT INTO `#__rating_targets` (`id`, `target`, `component`, `is_user_affect`, 
 (3, 'blogpost', 'blogs', 1, 5, 'cms_blog_posts', 'Пост в блоге'),
 (4, 'comment', 'comments', 1, 2, 'cms_comments', 'Комментарий'),
 (5, 'club_photo', 'clubs', 1, 5, 'cms_photo_files', 'Фото в клубе'),
-(6, 'club_post', 'clubs', 1, 5, 'cms_blog_posts', 'Пост блога клуба'),
-(7, 'forum_post', 'forum', 1, 2, 'cms_forum_posts', 'Сообщение в теме форума');
+(6, 'club_post', 'clubs', 1, 5, 'cms_blog_posts', 'Пост блога клуба');
 
 DROP TABLE IF EXISTS `#__search`;
 CREATE TABLE `#__search` (
@@ -1538,7 +1410,6 @@ INSERT INTO `#__user_groups_access` (`id`, `access_type`, `access_name`, `hide_f
 (3, 'comments/delete', 'Удаление своих комментариев', 0),
 (4, 'comments/moderate', 'Модерация комментариев', 1),
 (5, 'comments/iscomments', 'Возможность отключать комментарии в своем блоге', 1),
-(6, 'forum/moderate', 'Модерация форума', 1),
 (7, 'content/add', 'Добавление статей на сайт', 0),
 (8, 'content/autoadd', 'Принимать статьи без модерации', 0),
 (9, 'content/delete', 'Удаление своих статей', 1),
@@ -1546,8 +1417,6 @@ INSERT INTO `#__user_groups_access` (`id`, `access_type`, `access_name`, `hide_f
 (11, 'board/autoadd', 'Принимать объявления без модерации', 0),
 (12, 'board/moderate', 'Модерация доски объявлений', 1),
 (13, 'comments/add_published', 'Добавлять комментарии без модерации', 0),
-(14, 'forum/add_post', 'Отвечать в темах на форуме', 1),
-(15, 'forum/add_thread', 'Создавать новые темы на форуме', 1),
 (16, 'comments/target_author_delete', 'Удаление неугодных комментариев к своим публикациям', 1);
 
 DROP TABLE IF EXISTS `#__user_invites`;
