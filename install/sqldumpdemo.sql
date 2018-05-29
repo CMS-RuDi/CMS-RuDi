@@ -450,18 +450,19 @@ INSERT INTO `#__comment_targets` (`id`, `target`, `component`, `title`, `target_
 (10, 'club_post', 'clubs', 'Пост блога клуба', 'cms_blog_posts', 'вашей записи в клубном блоге');
 
 DROP TABLE IF EXISTS `#__components`;
-CREATE TABLE `#__components` (
+CREATE TABLE IF NOT EXISTS `#__components` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `title` varchar(200) NOT NULL,
-  `link` varchar(200) NOT NULL,
-  `config` text NOT NULL,
+  `title` varchar(200) NOT NULL COMMENT 'Название',
+  `link` varchar(200) NOT NULL COMMENT 'Идентификатор',
+  `config` text NOT NULL COMMENT 'Опции',
   `internal` int(11) NOT NULL,
-  `author` varchar(200) NOT NULL DEFAULT 'InstantCMS team',
-  `published` tinyint(1) NOT NULL DEFAULT '1',
-  `version` varchar(6) NOT NULL DEFAULT '1.10.3',
-  `system` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+  `author` varchar(200) NOT NULL DEFAULT 'InstantCMS team' COMMENT 'Автор',
+  `published` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Включен?',
+  `version` varchar(6) NOT NULL DEFAULT '1.10.3' COMMENT 'Версия',
+  `system` int(11) NOT NULL DEFAULT '0' COMMENT 'Системный?',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `link` (`link`)
+) ENGINE=MyISAM AUTO_INCREMENT=30 DEFAULT CHARSET=utf8 COMMENT='Установленные в системе компоненты';
 
 INSERT INTO `#__components` (`id`, `title`, `link`, `config`, `internal`, `author`, `published`, `version`, `system`) VALUES
 (1, 'Каталог статей', 'content', '---\nreaddesc: 0\nrating: 1\nperpage: 15\npt_show: 1\npt_disp: 1\npt_hide: 1\nautokeys: 1\nimg_small_w: 100\nimg_big_w: 200\nimg_sqr: 1\nimg_users: 1\nwatermark: 1\nwatermark_only_big: 1\naf_on: 0\naf_delete: 1\naf_showlink: 1\naf_forum_id: 1\naf_hidecat_id: 2\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
@@ -484,7 +485,8 @@ INSERT INTO `#__components` (`id`, `title`, `link`, `config`, `internal`, `autho
 (24, 'Скачивание и редирект', 'files', '', 1, 'InstantCMS team', 1, '1.10.3', 1),
 (25, 'Голосования', 'polls', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
 (26, 'Подписки', 'subscribes', '', 1, 'InstantCMS team', 1, '1.10.3', 1),
-(27, 'Геолокация', 'geo', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1);
+(27, 'Геолокация', 'geo', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
+(28, 'Панель управления', 'cp', '', 0, 'InstantCMS team', 1, '1.0.0', 1);
 
 DROP TABLE IF EXISTS `#__content`;
 CREATE TABLE `#__content` (
@@ -1042,7 +1044,7 @@ CREATE TABLE IF NOT EXISTS `cms_plugins` (
   `version` varchar(15) NOT NULL COMMENT 'Версия',
   `url` varchar(255) NOT NULL COMMENT 'Ссылка на страницу плагина',
   `author` varchar(255) NOT NULL COMMENT 'Автор',
-  `author_url` varchar(255) NOT NULL COMMENT 'Сайта автора',
+  `author_url` varchar(255) NOT NULL COMMENT 'Сайт автора',
   `author_email` varchar(255) NOT NULL COMMENT 'Email автора',
   `plugin_type` varchar(10) NOT NULL COMMENT 'Устарел, не используйте',
   `published` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Включен?',

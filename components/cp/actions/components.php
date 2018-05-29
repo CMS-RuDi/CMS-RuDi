@@ -144,8 +144,8 @@ class components extends \cms\com_action
         $this->lang->load('components/' . $component['link']);
         $this->lang->load('admin/components/' . $component['link']);
 
-        $inCore = $this->core;
-        $inUser = $this->user;
+        $inCore = $this->core();
+        $inUser = $this->user();
         $inDB   = \cmsDatabase::getInstance();
 
         $do   = $this->request('do', 'str', 'list');

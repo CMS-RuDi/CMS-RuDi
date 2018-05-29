@@ -423,41 +423,43 @@ INSERT INTO `#__comment_targets` (`id`, `target`, `component`, `title`, `target_
 (10, 'club_post', 'clubs', 'Club blog posts', 'cms_blog_posts', 'your club blog post');
 
 DROP TABLE IF EXISTS `#__components`;
-CREATE TABLE `#__components` (
+CREATE TABLE IF NOT EXISTS `#__components` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `title` varchar(200) NOT NULL,
-  `link` varchar(200) NOT NULL,
-  `config` text NOT NULL,
+  `title` varchar(200) NOT NULL COMMENT 'Name',
+  `link` varchar(200) NOT NULL COMMENT 'Identifier',
+  `config` text NOT NULL COMMENT 'Options',
   `internal` int(11) NOT NULL,
-  `author` varchar(200) NOT NULL DEFAULT 'InstantCMS team',
-  `published` tinyint(1) NOT NULL DEFAULT '1',
-  `version` varchar(6) NOT NULL DEFAULT '1.10.4',
-  `system` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+  `author` varchar(200) NOT NULL DEFAULT 'InstantCMS team' COMMENT 'Author',
+  `published` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Enabled?',
+  `version` varchar(6) NOT NULL DEFAULT '1.10.3' COMMENT 'Version',
+  `system` int(11) NOT NULL DEFAULT '0' COMMENT 'System?',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `link` (`link`)
+) ENGINE=MyISAM AUTO_INCREMENT=30 DEFAULT CHARSET=utf8 COMMENT='Components installed on the system';
 
 INSERT INTO `#__components` (`id`, `title`, `link`, `config`, `internal`, `author`, `published`, `version`, `system`) VALUES
-(1, 'Articles catalog', 'content', '---\nreaddesc: 0\nrating: 1\nperpage: 15\npt_show: 1\npt_disp: 1\npt_hide: 1\nautokeys: 1\nimg_small_w: 100\nimg_big_w: 200\nimg_sqr: 1\nimg_users: 1\nwatermark: 1\nwatermark_only_big: 1\naf_on: 0\naf_delete: 1\naf_showlink: 1\naf_forum_id: 1\naf_hidecat_id: 2\n', 0, 'InstantCMS team', 1, '1.10.4', 1),
-(2, 'Registration', 'registration', '---\nreg_type: open\ninv_count: 3\ninv_karma: 1\ninv_period: WEEK\nis_on: 1\nact: 0\nsend: false\noffmsg: >\n  Registration suspended for technical reasons.\nfirst_auth_redirect: profile\nauth_redirect: profile\nname_mode: nickname\nbadnickname: |\n  qwert\n  qwerty\n  123\n  admin\nask_icq: 1\nask_birthdate: 1\nsend_greetmsg: 1\ngreetmsg: |\n  <h2>Hi!</h2>\n  <p><span style="font-size: medium;">We are very happy that you have registered!</span></p>\n', 0, 'InstantCMS team', 1, '1.10.4', 1),
-(3, 'Photo Gallery', 'photos', '---\nlink: 0\nsaveorig: 0\nmaxcols: 2\norderby: title\norderto: desc\nshowlat: 1\nwatermark: 1\ntumb_view: 2\ntumb_from: 1\ntumb_club: \nis_today: 1\n', 0, 'InstantCMS team', 1, '1.10.4', 1),
-(5, 'Search', 'search', '---\nperpage: 10\ncomp:\n  - content\n  - photos\n  - catalog\n  - forum\n  - blogs\n  - faq\n  - board\n  - clubs\nsearch_engine:\n', 0, 'InstantCMS team', 1, '1.10.4', 1),
-(6, 'Form designer', 'forms', '---\n', 0, 'InstantCMS team', 1, '1.10.4', 1),
-(7, 'Comments', 'comments', '---\nemail: \ncanguests: 1\nregcap: 0\npublish: 1\nsmiles: 1\nbbcode: 1\nselfdel: 0\nsubscribe: 1\nanchors: 0\nrecode: 0\nmin_karma: 0\nmin_karma_show: 0\nmin_karma_add: 0\nperpage: 20\nj_code: 1\ncmm_ajax: 0\ncmm_ip: 1\n', 0, 'InstantCMS team', 1, '1.10.4', 1),
-(8, 'Articles archive', 'arhive', '---\n', 0, 'InstantCMS team', 1, '1.10.4', 1),
-(9, 'Universal catalog', 'catalog', '---\nemail: shop@site.com\ndelivery: |\n  Delivery information.\n  This text can be changed in the component settings.\nnotice: 1\npremod: 1\npremod_msg: 1\nis_comments: 1\nis_rss: 1\nwatermark: 1\n', 0, 'InstantCMS team', 1, '1.10.4', 1),
-(10, 'User profiles', 'users', '---\nshowgroup: 1\nsw_stats: \nsw_comm: 1\nsw_search: 1\nsw_forum: 1\nsw_photo: 1\nsw_wall: 1\nsw_friends: 1\nsw_blogs: 1\nsw_clubs: 1\nsw_feed: 1\nsw_content: 1\nsw_awards: 1\nsw_board: 1\nsw_msg: 1\nsw_guest: 1\nkarmatime: 1\nkarmaint: DAY\nphotosize: 0\nwatermark: 1\nsmallw: 64\nmedw: 200\nmedh: 500\nsw_files: 1\nfilessize: 100\nfilestype: jpeg,gif,png,jpg,bmp,zip,rar,tar\nprivforms: \n  - 3\nj_code: 1\ndeltime: 6\n', 0, 'InstantCMS team', 1, '1.10.4', 1),
-(15, 'Blogs', 'blogs', '---\nperpage: 10\nperpage_blog: 15\nupdate_date: 0\nupdate_seo_link: 0\nmin_karma_private: 0\nmin_karma_public: 5\nmin_karma: 1\nwatermark: 1\nimg_on: 1\nrss_all: 1\nrss_one: 1\nj_code: 1\n', 0, 'InstantCMS team', 1, '1.10.4', 1),
-(16, 'FAQ', 'faq', '---\n', 0, 'InstantCMS team', 1, '1.10.4', 1),
-(17, 'Banners', 'banners', '---\n', 1, 'InstantCMS team', 1, '1.10.4', 1),
-(18, 'Activity feed', 'actions', '---\r\nshow_target: 1\r\nperpage: 10\r\nperpage_tab: 15\r\nis_all: 1\r\nact_type: \r\n  add_quest: 16\r\n  add_club_user: 15\r\n  vote_movie: 31\r\n  add_movie: 30\r\n  add_friend: 20\r\n  add_post: 10\r\n  add_post_club: 25\r\n  add_catalog: 13\r\n  add_wall_my: 29\r\n  add_wall: 23\r\n  add_wall_club: 24\r\n  add_comment: 2\r\n  add_user_photo_multi: 27\r\n  add_board: 12\r\n  add_fpost: 17\r\n  add_article: 8\r\n  add_thread: 18\r\n  add_photo: 7\r\n  add_user_photo: 26\r\n  add_avatar: 19\r\n  add_file: 22\r\n  set_status: 11\r\n  add_award: 21\r\n  add_user: 28\r\n  add_blog: 9\r\n  add_club: 14\r\n', 0, 'InstantCMS Team', 1, '1.10.4', 1),
-(19, 'RSS feed', 'rssfeed', '---\n', 1, 'InstantCMS team', 1, '1.10.4', 1),
-(21, 'Users awarding', 'autoawards', '---\n', 1, 'InstantCMS team', 1, '1.10.4', 1),
-(22, 'Bulletin board', 'board', '---\nmaxcols: 3\nobtypes: |\n  Sell\n  Buy\n  Exchange\n  Accept a gift\nshowlat: \npublic: 2\nphotos: 1\nsrok: 1\npubdays: 10\nwatermark: 0\naftertime: \ncomments: 1\n', 0, 'InstantCMS team', 1, '1.10.4', 1),
-(23, 'Users clubs', 'clubs', '---\nseo_club: title\nenabled_blogs: 1\nenabled_photos: 1\nthumb1: 48\nthumb2: 200\nthumbsqr: 1\ncancreate: 1\nperpage: 10\ncreate_min_karma: 0\ncreate_min_rating: 0\n', 0, 'InstantCMS team', 1, '1.10.4', 1),
-(24, 'Download and redirect', 'files', '', 1, 'InstantCMS team', 1, '1.10.4', 1),
-(25, 'Polls', 'polls', '---\n', 1, 'InstantCMS team', 1, '1.10.4', 1),
-(26, 'Subscription', 'subscribes', '', 1, 'InstantCMS team', 1, '1.10.4', 1),
-(27, 'Geolocation', 'geo', '---\n', 1, 'InstantCMS team', 1, '1.10.4', 1);
+(1, 'Articles catalog', 'content', '---\nreaddesc: 0\nrating: 1\nperpage: 15\npt_show: 1\npt_disp: 1\npt_hide: 1\nautokeys: 1\nimg_small_w: 100\nimg_big_w: 200\nimg_sqr: 1\nimg_users: 1\nwatermark: 1\nwatermark_only_big: 1\naf_on: 0\naf_delete: 1\naf_showlink: 1\naf_forum_id: 1\naf_hidecat_id: 2\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
+(2, 'Registration', 'registration', '---\nreg_type: open\ninv_count: 3\ninv_karma: 1\ninv_period: WEEK\nis_on: 1\nact: 0\nsend: false\noffmsg: >\n  Registration suspended for technical reasons.\nfirst_auth_redirect: profile\nauth_redirect: profile\nname_mode: nickname\nbadnickname: |\n  qwert\n  qwerty\n  123\n  admin\nask_icq: 1\nask_birthdate: 1\nsend_greetmsg: 1\ngreetmsg: |\n  <h2>Hi!</h2>\n  <p><span style="font-size: medium;">We are very happy that you have registered!</span></p>\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
+(3, 'Photo Gallery', 'photos', '---\nlink: 0\nsaveorig: 0\nmaxcols: 2\norderby: title\norderto: desc\nshowlat: 1\nwatermark: 1\ntumb_view: 2\ntumb_from: 1\ntumb_club: \nis_today: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
+(5, 'Search', 'search', '---\nperpage: 10\ncomp:\n  - content\n  - photos\n  - catalog\n  - forum\n  - blogs\n  - faq\n  - board\n  - clubs\nsearch_engine:\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
+(6, 'Form designer', 'forms', '---\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
+(7, 'Comments', 'comments', '---\nemail: \ncanguests: 1\nregcap: 0\npublish: 1\nsmiles: 1\nbbcode: 1\nselfdel: 0\nsubscribe: 1\nanchors: 0\nrecode: 0\nmin_karma: 0\nmin_karma_show: 0\nmin_karma_add: 0\nperpage: 20\nj_code: 1\ncmm_ajax: 0\ncmm_ip: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
+(8, 'Articles archive', 'arhive', '---\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
+(9, 'Universal catalog', 'catalog', '---\nemail: shop@site.com\ndelivery: |\n  Delivery information.\n  This text can be changed in the component settings.\nnotice: 1\npremod: 1\npremod_msg: 1\nis_comments: 1\nis_rss: 1\nwatermark: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
+(10, 'User profiles', 'users', '---\nshowgroup: 1\nsw_stats: \nsw_comm: 1\nsw_search: 1\nsw_forum: 1\nsw_photo: 1\nsw_wall: 1\nsw_friends: 1\nsw_blogs: 1\nsw_clubs: 1\nsw_feed: 1\nsw_content: 1\nsw_awards: 1\nsw_board: 1\nsw_msg: 1\nsw_guest: 1\nkarmatime: 1\nkarmaint: DAY\nphotosize: 0\nwatermark: 1\nsmallw: 64\nmedw: 200\nmedh: 500\nsw_files: 1\nfilessize: 100\nfilestype: jpeg,gif,png,jpg,bmp,zip,rar,tar\nprivforms: \n  - 3\nj_code: 1\ndeltime: 6\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
+(15, 'Blogs', 'blogs', '---\nperpage: 10\nperpage_blog: 15\nupdate_date: 0\nupdate_seo_link: 0\nmin_karma_private: 0\nmin_karma_public: 5\nmin_karma: 1\nwatermark: 1\nimg_on: 1\nrss_all: 1\nrss_one: 1\nj_code: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
+(16, 'FAQ', 'faq', '---\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
+(17, 'Banners', 'banners', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
+(18, 'Activity feed', 'actions', '---\r\nshow_target: 1\r\nperpage: 10\r\nperpage_tab: 15\r\nis_all: 1\r\nact_type: \r\n  add_quest: 16\r\n  add_club_user: 15\r\n  vote_movie: 31\r\n  add_movie: 30\r\n  add_friend: 20\r\n  add_post: 10\r\n  add_post_club: 25\r\n  add_catalog: 13\r\n  add_wall_my: 29\r\n  add_wall: 23\r\n  add_wall_club: 24\r\n  add_comment: 2\r\n  add_user_photo_multi: 27\r\n  add_board: 12\r\n  add_fpost: 17\r\n  add_article: 8\r\n  add_thread: 18\r\n  add_photo: 7\r\n  add_user_photo: 26\r\n  add_avatar: 19\r\n  add_file: 22\r\n  set_status: 11\r\n  add_award: 21\r\n  add_user: 28\r\n  add_blog: 9\r\n  add_club: 14\r\n', 0, 'InstantCMS Team', 1, '1.10.3', 1),
+(19, 'RSS feed', 'rssfeed', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
+(21, 'Users awarding', 'autoawards', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
+(22, 'Bulletin board', 'board', '---\nmaxcols: 3\nobtypes: |\n  |\n  Sell\n  Buy\n  Exchange\n  Accept a gift\nshowlat: \npublic: 2\nphotos: 1\nsrok: 1\npubdays: 10\nwatermark: 0\naftertime: \ncomments: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
+(23, 'Users clubs', 'clubs', '---\nseo_club: title\nenabled_blogs: 1\nenabled_photos: 1\nthumb1: 48\nthumb2: 200\nthumbsqr: 1\ncancreate: 1\nperpage: 10\ncreate_min_karma: 0\ncreate_min_rating: 0\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
+(24, 'Download and redirect', 'files', '', 1, 'InstantCMS team', 1, '1.10.3', 1),
+(25, 'Polls', 'polls', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
+(26, 'Subscription', 'subscribes', '', 1, 'InstantCMS team', 1, '1.10.3', 1),
+(27, 'Geolocation', 'geo', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
+(28, 'Control panel', 'cp', '', 0, 'CMS RuDi team', 1, '1.0.0', 1);
 
 DROP TABLE IF EXISTS `#__content`;
 CREATE TABLE `#__content` (
@@ -953,17 +955,17 @@ CREATE TABLE `#__photo_files` (
 DROP TABLE IF EXISTS `#__plugins`;
 CREATE TABLE IF NOT EXISTS `cms_plugins` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `plugin` varchar(30) NOT NULL COMMENT 'Идентификатор',
-  `title` varchar(255) NOT NULL COMMENT 'Название',
-  `description` text NOT NULL COMMENT 'Описание',
-  `version` varchar(15) NOT NULL COMMENT 'Версия',
-  `url` varchar(255) NOT NULL COMMENT 'Ссылка на страницу плагина',
-  `author` varchar(255) NOT NULL COMMENT 'Автор',
-  `author_url` varchar(255) NOT NULL COMMENT 'Сайта автора',
-  `author_email` varchar(255) NOT NULL COMMENT 'Email автора',
-  `plugin_type` varchar(10) NOT NULL COMMENT 'Устарел, не используйте',
-  `published` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Включен?',
-  `config` text NOT NULL COMMENT 'Опции',
+  `plugin` varchar(30) NOT NULL COMMENT 'Identifier',
+  `title` varchar(255) NOT NULL COMMENT 'Name',
+  `description` text NOT NULL COMMENT 'Description',
+  `version` varchar(15) NOT NULL COMMENT 'Version',
+  `url` varchar(255) NOT NULL COMMENT 'Link to plugin page',
+  `author` varchar(255) NOT NULL COMMENT 'Author',
+  `author_url` varchar(255) NOT NULL COMMENT 'Author website',
+  `author_email` varchar(255) NOT NULL COMMENT 'Email the author',
+  `plugin_type` varchar(10) NOT NULL COMMENT 'Obsolete, do not use',
+  `published` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Enabled?',
+  `config` text NOT NULL COMMENT 'Options',
   PRIMARY KEY (`id`),
   UNIQUE KEY `plugin` (`plugin`)
 ) ENGINE=MyISAM AUTO_INCREMENT=37 DEFAULT CHARSET=utf8;

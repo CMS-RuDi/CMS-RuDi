@@ -97,7 +97,7 @@ class model extends \cms\model
         return true;
     }
 
-    public function getCategory($id_or_link)
+    public function getCategory($id_or_link, $id = null, $by_field = 'id')
     {
         if ( !$id_or_link ) {
             return false;

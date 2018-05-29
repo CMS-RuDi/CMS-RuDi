@@ -24,7 +24,7 @@
             </div>
         {/foreach}
     </div>
-    {if $pagebar} {$pagebar} {/if}
+    {if !empty($pagebar)} {$pagebar} {/if}
 {else}
     {$lang->objects_not_found}
 {/if}
