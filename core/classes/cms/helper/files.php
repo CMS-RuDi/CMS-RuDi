@@ -11,8 +11,10 @@ class files
 
     /**
      * Рекурсивно удаляет директорию
+     *
      * @param string $directory
      * @param bool $is_clear Если TRUE, то директория будет очищена, но не удалена
+     *
      * @return bool
      */
     public static function removeDirectory($directory, $is_clear = false)
@@ -57,7 +59,9 @@ class files
 
     /**
      * Очищает директорию
+     *
      * @param string $directory
+     *
      * @return bool
      */
     public static function clearDirectory($directory)
@@ -67,8 +71,10 @@ class files
 
     /**
      * Удаляет файл и его родительские директории
+     *
      * @param string $file_path Отностительный или полный путь к файлу
      * @param integer $delete_parent_dir Количество родительских директорий, которые нужно также удалить, если они пустые
+     *
      * @return boolean
      */
     public static function deleteFile($file_path, $delete_parent_dir = 0)
@@ -96,7 +102,9 @@ class files
 
     /**
      * Возвращает дерево каталогов и файлов по указанному пути в виде рекурсивного массива
+     *
      * @param string $path
+     *
      * @return array
      */
     public static function treeToArray($path)
@@ -118,10 +126,33 @@ class files
     }
 
     /**
+     * Возвращает список директорий внутри указанной
+     *
+     * @param string $path
+     *
+     * @return array
+     */
+    public static function getDirsList($path)
+    {
+        $data = [];
+
+        $dir = new \DirectoryIterator($path);
+
+        foreach ( $dir as $node ) {
+            if ( $node->isDir() && !$node->isDot() ) {
+                $data[] = $node->getFilename();
+            }
+        }
+
+        return $data;
+    }
+
+    /**
      * Возвращает 32-х символьный хэш, привязанный к ip адресу
      * используется для защиты от хотлинка
      *
      * @param string $file_path Путь к файлу
+     *
      * @return string
      */
     public static function userFileHash($file_path = '')
@@ -133,6 +164,7 @@ class files
      * Очищает имя файла от специальных символов
      *
      * @param string $filename
+     *
      * @return string
      */
     public static function sanitizeName($filename)

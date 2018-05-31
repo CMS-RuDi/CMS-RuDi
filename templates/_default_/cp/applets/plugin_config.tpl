@@ -1,13 +1,13 @@
-{if empty($config) && empty()}
+{if empty($config) && empty($form_html)}
     <p>{$lang->ad_plugin_disable}</p>
     <p><a href="javascript:window.history.go(-1);">{$lang->back}</a></p>
 {else}
     <form name="addform" action="{$submit_uri}" method="POST">
+        <input type="hidden" name="csrf_token" value="{csrf_token}" />
+        
         {if !empty($form_html)}
             {$form_html}
         {else}
-            <input type="hidden" name="csrf_token" value="{csrf_token}" />
-
             <table class="proptable" width="605" cellpadding="8" cellspacing="0" border="0">
             {foreach from=$config key=field item=value}
                 <tr>

@@ -30,7 +30,6 @@ class cmsCore
     public $component;
     public $do;
     public $components;
-    protected static $filters;
     protected $url_without_com_name = false;
     protected $module_configs;
     protected $template;
@@ -969,36 +968,6 @@ class cmsCore
     }
 
     /**
-     * Возвращает массив с установленными в системе фильтрами
-     *
-     * @return array or false
-     */
-    public static function getFilters()
-    {
-        if ( isset(self::$filters) ) {
-            return self::$filters;
-        }
-
-        $inDB = cmsDatabase::getInstance();
-
-        $sql = "SELECT * FROM cms_filters WHERE published = 1 ORDER BY id ASC";
-
-        $result = $inDB->query($sql);
-
-        $filters = array();
-
-        if ( $inDB->num_rows($result) ) {
-            while ( $f = $inDB->fetch_assoc($result) ) {
-                $filters[$f['id']] = $f;
-            }
-        }
-
-        self::$filters = $filters;
-
-        return $filters;
-    }
-
-    /**
      * Применяет фильтры к тексту
      *
      * @param str $content
@@ -1007,17 +976,7 @@ class cmsCore
      */
     public static function processFilters($content)
     {
-        $filters = self::getFilters();
-
-        if ( $filters ) {
-            foreach ( $filters as $id => $_filter ) {
-                if ( self::includeFile('filters/' . $_filter['link'] . '/filter.php') ) {
-                    $_filter['link']($content);
-                }
-            }
-        }
-
-        return $content;
+        return \cms\events::call('run_filter', $content);
     }
 
     /**
@@ -1413,36 +1372,13 @@ class cmsCore
     /**
      * Возвращает список директорий внутри указанной, начиная от корня
      *
-     * @todo Перенести в класс \cms\helper\files
-     *
      * @param string $root_dir Например /languages
      *
      * @return array
      */
     public static function getDirsList($root_dir)
     {
-        $dir         = PATH . $root_dir;
-        $dir_context = opendir($dir);
-
-        $list = array();
-
-        while ( $next = readdir($dir_context) ) {
-            if ( in_array($next, array( '.', '..' )) ) {
-                continue;
-            }
-
-            if ( strpos($next, '.') === 0 ) {
-                continue;
-            }
-
-            if ( !is_dir($dir . '/' . $next) ) {
-                continue;
-            }
-
-            $list[] = $next;
-        }
-
-        return $list;
+        return \cms\helper\files::getDirsList(PATH . $root_dir);
     }
 
     /**
@@ -2549,6 +2485,11 @@ class cmsCore
     public static function validateForm()
     {
         return cmsUser::checkCsrfToken();
+    }
+
+    public static function getFilters()
+    {
+        return false;
     }
 
 }

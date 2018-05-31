@@ -256,7 +256,7 @@ function content()
         }
 
         // Выполняем фильтры
-        $article['content'] = cmsCore::processFilters($article['content']);
+        $article['content'] = \cms\events::call('run_filter', $article['content']);
 
         // Разбивка статей на страницы
         $pt_pages = array();

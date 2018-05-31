@@ -220,7 +220,7 @@ class install extends \cms\com_action
 
         if ( !empty($new_plugs) ) {
             foreach ( $new_plugs as $plug ) {
-                $new_plugs[] = \cms\plugin::load($plug)->getInfo();
+                $new_plugins[] = \cms\plugin::load($plug)->getInfo();
             }
         }
 

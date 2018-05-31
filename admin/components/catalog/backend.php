@@ -651,7 +651,7 @@ if ( $opt == 'add_cat' || $opt == 'edit_cat' ) {
                         <?php } ?>
                     </table>
 
-                    <div style="margin-top:10px"><strong><?php echo $_LANG['AD_MAKING_HTML_FIELDS']; ?> <a href="index.php?view=filters" target="_blank"><?php echo $_LANG['AD_FILTERS']; ?></a>?</strong></div>
+                    <div style="margin-top:10px"><strong><?php echo $_LANG['AD_MAKING_HTML_FIELDS']; ?> <?php echo $_LANG['AD_FILTERS']; ?>?</strong></div>
                     <div>
                         <select name="filters" id="filters" style="width:100%">
                             <option value="0" <?php

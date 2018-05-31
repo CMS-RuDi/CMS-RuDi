@@ -856,14 +856,9 @@ function catalog()
                             else {
                                 //PROCESS FILTERS, if neccessary
                                 if ( $cat['filters'] ) {
-                                    $filters = $inCore->getFilters();
-                                    if ( $filters ) {
-                                        foreach ( $filters as $id => $_data ) {
-                                            require_once PATH . '/filters/' . $_data['link'] . '/filter.php';
-                                            $_data['link']($field);
-                                        }
-                                    }
+                                    $field = \cms\events::call('run_filter', $field);
                                 }
+
                                 $field = stripslashes($field);
                             }
                         }

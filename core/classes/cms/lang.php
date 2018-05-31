@@ -20,6 +20,7 @@ class lang
 
     /**
      * Загружает языковой файл указанного компонента
+     *
      * @param string $name
      */
     public static function loadComponentLang($name)
@@ -29,6 +30,7 @@ class lang
 
     /**
      * Загружает языковой файл указанного модуля
+     *
      * @param string $name
      */
     public static function loadModuleLang($name)
@@ -38,6 +40,7 @@ class lang
 
     /**
      * Загружает языковой файл указанного модуля
+     *
      * @param string $name
      */
     public static function loadPluginLang($name)
@@ -213,8 +216,10 @@ class lang
 
     /**
      * Добавляет указанные языковые переменные
+     *
      * @global array $_LANG
      * @param array $lang
+     *
      * @return boolean
      */
     public function setLangs($lang)
@@ -236,7 +241,9 @@ class lang
 
     /**
      * Возвращает содержимое указанного файла из папки letters
+     *
      * @param string $file название файла письма
+     *
      * @return boolean|string
      */
     public function getLetter($file)
@@ -256,9 +263,11 @@ class lang
 
     /**
      * Транслитирует строку и обрезает в соответствии с настройками для использования в качестве seolink
+     *
      * @param string $string строка для транслитерации
      * @param string $translit заменить буквы национального алфавита указанного языка на транслит или нет
      * @param string $lang язык для транслитерации, если не указан берется из настроек системы
+     *
      * @return string
      */
     public static function slug($string, $translit = true, $lang = false)
@@ -289,8 +298,10 @@ class lang
 
     /**
      * Возвращает транслитированную строку
+     * 
      * @param string $string строка для транслитерации
      * @param string $lang язык для транслитерации, если не указан берется из настроек системы
+     *
      * @return string
      */
     public static function translit($string, $lang = false)

@@ -201,7 +201,6 @@ class frontend extends \cms\backend
                 assign('content_access', \cmsUser::isAdminCan('admin/content', self::$admin_access))->
                 assign('components_access', \cmsUser::isAdminCan('admin/components', self::$admin_access))->
                 assign('plugins_access', \cmsUser::isAdminCan('admin/plugins', self::$admin_access))->
-                assign('filter_access', \cmsUser::isAdminCan('admin/filters', self::$admin_access))->
                 assign('users_access', \cmsUser::isAdminCan('admin/users', self::$admin_access))->
                 assign('config_access', \cmsUser::isAdminCan('admin/config', self::$admin_access))->
                 assign('components', $this->model->getMenuComponents())->

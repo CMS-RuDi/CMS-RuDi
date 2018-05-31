@@ -196,7 +196,7 @@ class cms_model_catalog
         $ns     = $inCore->nestedSetsInit('cms_uc_cats');
 
         // Данные категории для копирования
-        $item = $this->inDB->get_fields('cms_uc_cats', "id = '$id'", 'parent_id, title, description, published, fieldsstruct, view_type, fields_show, showmore, perpage, showtags, showsort,	is_ratings,	orderby, orderto, showabc, shownew, newint,	filters, is_shop, is_public, can_edit, cost');
+        $item = $this->inDB->get_fields('cms_uc_cats', "id = '$id'", 'parent_id, title, description, published, fieldsstruct, view_type, fields_show, showmore, perpage, showtags, showsort, is_ratings, orderby, orderto, showabc, shownew, newint, filters, is_shop, is_public, can_edit, cost');
         if ( !$item ) {
             return false;
         }

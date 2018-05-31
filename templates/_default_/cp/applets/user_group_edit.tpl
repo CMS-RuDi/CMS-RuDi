@@ -63,12 +63,6 @@
                     </tr>
                     <tr>
                         <td width="16">
-                            <input type="checkbox" name="access[]" id="admin_filters" value="admin/filters"{if in_array('admin/filters', $item.access)} checked="checked"{/if} />
-                        </td>
-                        <td><label for="admin_filters">{$lang->ad_filters_control}</label></td>
-                    </tr>
-                    <tr>
-                        <td width="16">
                             <input type="checkbox" name="access[]" id="admin_components" value="admin/components"{if in_array('admin/components', $item.access)} checked="checked"{/if} />
                         </td>
                         <td><label for="admin_components">{$lang->ad_components_control}</label></td>

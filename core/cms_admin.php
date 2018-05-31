@@ -82,11 +82,12 @@ class cmsAdmin extends cmsCore
 
     /**
      * Возвращает список плагинов, имеющихся на диске, но не установленных
+     *
      * @return array
      */
     public function getNewPlugins()
     {
-        $new_plugins = array();
+        $new_plugins = [];
         $all_plugins = $this->getPluginsDirs();
 
         if ( !$all_plugins ) {
@@ -139,11 +140,12 @@ class cmsAdmin extends cmsCore
 
     /**
      * Возвращает список папок с плагинами
+     * 
      * @return array
      */
     public static function getPluginsDirs()
     {
-        return cmsCore::getDirsList('/plugins');
+        return \cms\helper\files::getDirsList(PATH . '/plugins');
     }
 
     /**
@@ -613,7 +615,7 @@ class cmsAdmin extends cmsCore
 
     /**
      * Проверяет привязку плагина к событию
-     * 
+     *
      * @param int $plugin_id
      * @param string $event
      *

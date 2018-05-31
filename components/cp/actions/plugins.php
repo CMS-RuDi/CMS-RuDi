@@ -42,7 +42,7 @@ class plugins extends \cms\com_action
             }
         }
 
-        parent::run($params);
+        parent::run(...$params);
     }
 
     public function actView()
@@ -81,20 +81,30 @@ class plugins extends \cms\com_action
         $this->page()->addPathway($plugin->getTitle());
 
         $xml_file = file_exists(PATH . '/plugins/' . $plugin_name . '/backend.xml');
+        //$json_file = file_exists(PATH . '/plugins/' . $plugin_name . '/backend.json');
 
-        if ( !empty($config) || !empty($xml_file) ) {
+        $formGenHtml = $plugin->getConfigFormHtml();
+
+        if ( !empty($config) || !empty($xml_file) || !empty($json_file) || !empty($formGenHtml) ) {
             self::addToolMenuItem($this->lang->save, 'javascript:document.addform.submit();', 'save.gif');
             self::addToolMenuItem($this->lang->cancel, $this->genActionUrl('plugins'), 'cancel.gif');
         }
 
-        if ( !empty($xml_file) ) {
-            $formGen     = new cmsFormGen(PATH . '/plugins/' . $plugin_name . '/backend.xml', $config);
-            $fromGenHtml = $formGen->getHTML();
+        if ( empty($formGenHtml) ) {
+            //$fields = $plugin->getConfigFormFields();
+
+            if ( !empty($fields) || !empty($json_file) ) {
+
+            }
+            else if ( $xml_file ) {
+                $formGen     = new \cmsFormGen(PATH . '/plugins/' . $plugin_name . '/backend.xml', $config);
+                $formGenHtml = $formGen->getHTML();
+            }
         }
 
         $this->page()->initTemplate('cp/applets', 'plugin_config')->
                 assign('submit_uri', $this->genActionUrl('plugins', [ 'save_config', $plugin_name ]))->
-                assign('form_html', !empty($fromGenHtml) ? $fromGenHtml : '')->
+                assign('form_html', !empty($formGenHtml) ? $formGenHtml : '')->
                 assign('config', $config)->
                 display();
     }
@@ -160,7 +170,7 @@ class plugins extends \cms\com_action
 
         $plugin->setConfig($config)->saveConfig();
 
-        \cmsCore::addSessionMessage($lang->ad_config_save_success, 'success');
+        \cmsCore::addSessionMessage($this->lang->ad_config_save_success, 'success');
 
         $this->redirectToAction('plugins');
     }

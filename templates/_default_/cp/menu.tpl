@@ -58,9 +58,6 @@
                 <ul>
                     <li><a href="/cp/install/plugin" class="install">{$lang->ad_install_plugins}</a></li>
                     <li><a href="/cp/plugins" class="plugins">{$lang->ad_plugins}</a></li>
-                    {if $filter_access}
-                        <li><a href="/cp/filters" class="filters">{$lang->ad_filters}</a></li>
-                    {/if}
                 </ul>
             </li>
         {/if}

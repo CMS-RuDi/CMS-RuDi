@@ -40,11 +40,6 @@ class plugin
     protected $lang;
 
     /**
-     * @var string
-     */
-    public $lang_prefix;
-
-    /**
      * Название класса плагина
      *
      * @var string
@@ -88,18 +83,21 @@ class plugin
 
     /**
      * События на которые будет подписан плагин
+     *
      * @var array
      */
     protected $events = [];
 
     /**
      * Настройки плагина
+     *
      * @var array
      */
     protected $config = [];
 
     /**
      * Настройки плагина по умолчанию
+     *
      * @var array
      */
     protected $default_config = [];
@@ -113,22 +111,7 @@ class plugin
         $this->name   = get_called_class();
         $this->config = array_merge($this->default_config, self::loadConfig($this->name));
 
-        $this->setLangPrefix();
-
         $this->lang = \cms\lang::loadPluginLang(get_called_class());
-    }
-
-    private function setLangPrefix()
-    {
-        $parts = explode('_', $this->name);
-
-        foreach ( $parts as $part ) {
-            $this->lang_prefix .= $part{0};
-        }
-
-        if ( mb_strlen($this->lang_prefix) == 1 ) {
-            $this->lang_prefix .= $part{1} . $part{2};
-        }
     }
 
     /**
@@ -198,7 +181,7 @@ class plugin
      */
     public function getTitle()
     {
-        return $this->lang->get($this->lang_prefix . '_title');
+        return $this->lang->get($this->name . '_title');
     }
 
     /**
@@ -208,7 +191,7 @@ class plugin
      */
     public function getDescription()
     {
-        return $this->lang->get($this->lang_prefix . '_description');
+        return $this->lang->get($this->name . '_description');
     }
 
     /**
@@ -267,7 +250,7 @@ class plugin
     public function upgrade()
     {
         // находим ID установленной версии
-        $plugin_id = $this->db->getField('plugins', "plugin='" . $this->name . "'");
+        $plugin_id = $this->db->getField('plugins', "plugin='" . $this->name . "'", 'id');
 
         // если плагин еще не был установлен, выходим
         if ( !$plugin_id ) {
@@ -334,7 +317,7 @@ class plugin
      */
     public function setConfig($config)
     {
-        $this->config = array_merge($this->config, $config);
+        $this->config = $config;
 
         return $this;
     }
@@ -458,6 +441,33 @@ class plugin
                 return $item;
             }, 'plugin');
         }
+    }
+
+    //==========================================================================
+
+    /**
+     * Возвращает HTML код формы настроек плагина.
+     * Не желательно использовать, по возможности используйте метод getConfigFields
+     * или xml, json файлы описание полей формы настроек.
+     *
+     * @return boolean|string
+     */
+    public function getConfigFormHtml()
+    {
+        return false;
+    }
+
+    /**
+     * ФУНКЦИЯ ПОКА НЕ ИСПОЛЬЗУЕТСЯ КЛАСС \cms\form НЕ ГОТОВ
+     *
+     * Должна возвращать массив с полями в формате \cms\form для формирования
+     * страницы настроек плагина
+     *
+     * @return boolean|array
+     */
+    public function getConfigFormFields()
+    {
+        return false;
     }
 
 }

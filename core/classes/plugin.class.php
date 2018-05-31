@@ -27,13 +27,13 @@ class cmsPlugin extends \cms\plugin
         $title = $this->getTitle();
 
         if ( empty($title) ) {
-            $this->lang->set($this->lang_prefix . '_title', $this->info['title']);
+            $this->lang->set($this->name . '_title', $this->info['title']);
         }
 
         $description = $this->getDescription();
 
         if ( empty($description) ) {
-            $this->lang->set($this->lang_prefix . '_description', $this->info['description']);
+            $this->lang->set($this->name . '_description', $this->info['description']);
         }
 
         $this->version = $this->info['version'];

@@ -626,7 +626,7 @@ class cmsPage
 
         // Собственный модуль, созданный в админке
         if ( !$mod['is_external'] ) {
-            $mod['body'] = cmsCore::processFilters($mod['content']);
+            $mod['body'] = \cms\events::call('run_filter', $mod['content']);
         }
         else { // Отдельный модуль
             if ( cmsCore::includeFile('modules/' . $mod['content'] . '/module.php') ) {

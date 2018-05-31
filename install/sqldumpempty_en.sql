@@ -616,25 +616,6 @@ CREATE TABLE `#__faq_quests` (
   FULLTEXT KEY `quest` (`quest`,`answer`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-
-DROP TABLE IF EXISTS `#__filters`;
-CREATE TABLE `#__filters` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `title` varchar(100) NOT NULL,
-  `description` text NOT NULL,
-  `link` varchar(100) NOT NULL,
-  `published` tinyint(1) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
-INSERT INTO `#__filters` (`id`, `title`, `description`, `link`, `published`) VALUES
-(1, 'AutoCorrection', 'This filter performs the replacement expression by the rules.<br/><br/>{ФОТО=Photo title}, <br/>{АЛЬБОМ=Album title}, <br/>{МАТЕРИАЛ=Article title}<br/>{ФОРМА=Form title} - form with title<br/>\r\n{БЛАНК=Form title} - form without title', 'f_replace', 1),
-(4, 'Pagination', 'Article splits into several pages in those places where is found tag {pagebreak}.', 'f_pages', 1),
-(2, 'Article contents', 'In articles filter searches for tags {СТРАНИЦА=Article title} and fills their article content.', 'f_contents', 1),
-(5, 'External scripts', 'Filter finds in articles and modules expression: "{ФАЙЛ=script.php}" and replaces them with the results of scripts execution from folder "/includes/myphp/".', 'f_includes', 1),
-(6, 'Download counter', 'Filter finds in articles and modules expression: "{СКАЧАТЬ=/path/file.zip}" and replaces them with a download file link provided with a counter.', 'f_filelink', 1),
-(7, 'Banner inserting', 'The filter replaces the expression like {БАННЕР=Position_name} on banners assigned to the specified position. Works in articles and modules.', 'f_banners', 1);
-
 DROP TABLE IF EXISTS `#__forms`;
 CREATE TABLE `#__forms` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -972,7 +953,7 @@ CREATE TABLE IF NOT EXISTS `cms_plugins` (
 
 INSERT INTO `#__plugins` (`id`, `plugin`, `title`, `description`, `version`, `url`, `author`, `author_url`, `author_email`, `plugin_type`, `published`, `config`) VALUES
 (6, 'p_usertab', 'Demo Profile Plugin', 'Example plugin - Adds a tab "Articles" in the user profiles', '1.10.3', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 0, '---\nPU_LIMIT: 10\n'),
-(3, 'p_ckeditor', 'CKEditor', 'WYSIWYG editor', '4.4.5', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'wysiwyg', 1, '---\niswatermark: 0\nphoto_width: 600\nphoto_height: 600\nis_compatible: 1\nentermode: CKEDITOR.ENTER_P\nskin: moono\nupload_for_groups:\n  - 2\n'),
+(3, 'p_ckeditor', 'CKEditor', 'WYSIWYG editor', '4.4.6', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'wysiwyg', 1, '---\niswatermark: 0\nphoto_width: 600\nphoto_height: 600\nis_compatible: 1\nentermode: CKEDITOR.ENTER_P\nskin: moono\nupload_for_groups:\n  - 2\n'),
 (5, 'p_demo', 'Demo Plugin', 'Pings Yandex and Google when adding articles, announcements and blog posts', '1.0', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 0, '---\ntext: Added By Plugin From Parameter\ncolor: blue\ncounter: 1\n'),
 (8, 'p_ping', 'Web search engine ping', 'Пингует Яндекс и Гугл при добавлении статей, объявлений и постов в блоги', '1.10', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 1, '---\nYandex HOST: ping.blogs.yandex.ru\nYandex PATH: /RPC2\nGoogle HOST: blogsearch.google.com\nGoogle PATH: /ping/RPC2\n'),
 (15, 'p_morecontent', 'Related articles', 'Appends each article a list of related articles.', '1.10.4', '', 'Maximov & InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 0, '---\nP_LIMIT: 5\nP_UNSORT: 1\n'),
@@ -981,7 +962,8 @@ INSERT INTO `#__plugins` (`id`, `plugin`, `title`, `description`, `version`, `ur
 (21, 'p_new_msg', 'New message animation', 'New message animation', '1.0', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', '', 1, '---\n'),
 (33, 'p_kcaptcha', 'kCaptcha', 'Display captcha in the form', '1.0', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', '', 1, '---\n'),
 (35, 'p_related_posts', 'Related blog posts', 'Adds to the end of each post list of similar blog entries', '1.0', '', 'Pasha && InstantCMS Team', 'http://www.instantcms.ru/', '', '', 1, '---\ntags_mode: 1\nadd_mode: 1\nsearch_mode: 1\nlimit: 4\ntruncate: 200\ncash_time: 1\nblank_photo: no_image.png\n'),
-(36, 'p_recaptcha', 'Капча Recaptcha', 'Display captcha in the form. <a href="https://www.google.com/recaptcha/admin" target="_blank">Get the key</a>', '1.0', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'captcha', 0, '---\npublic_key: 0\nprivate_key:\ntheme: light\nsize: normal\nlang: ru\n');
+(36, 'p_recaptcha', 'Капча Recaptcha', 'Display captcha in the form. <a href="https://www.google.com/recaptcha/admin" target="_blank">Get the key</a>', '1.0', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'captcha', 0, '---\npublic_key: 0\nprivate_key:\ntheme: light\nsize: normal\nlang: ru\n'),
+(37, 'p_filters', 'Processes text with filters', 'Processes text filters inherited from Instant CMS. In the future, it is not recommended to use filters, use shortcodes instead.', '1.0.0', NULL, 'DS Soft', 'https://ds-soft.ru', 'admin@ds-soft.ru', '', 1, '---\nf_contents: 1\nf_filelink: 1\nf_includes: 1\nf_pages: 1\nf_replace: 1\n');
 
 DROP TABLE IF EXISTS `#__polls`;
 CREATE TABLE `#__polls` (
