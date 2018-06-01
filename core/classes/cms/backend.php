@@ -174,10 +174,10 @@ class backend extends controller
         }
 
         $tpl = \cmsPage::initTemplate('cp/special', 'panel')->
-                assign('banners_installed', \cms\controller::installed('banners'))->
+                assign('banners_enabled', \cms\controller::enabled('banners'))->
                 assign('forms_list', \cmsCore::getInstance()->getListItems('cms_forms'));
 
-        if ( \cms\controller::installed('banners') ) {
+        if ( \cms\controller::enabled('banners') ) {
             $tpl->assign('banners_list', \cms_model_banners::getBannersListHTML());
         }
 

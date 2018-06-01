@@ -11,7 +11,7 @@
                             <option value="frm" selected="selected">{$lang->ad_form}</option>
                             <option value="include">{$lang->file}</option>
                             <option value="filelink">{$lang->ad_link_download_file}</option>
-                            {if $banners_installed}
+                            {if $banners_enabled}
                                 <option value="banpos">{$lang->ad_banner_position}</option>
                             {/if}
                             <option value="pagebreak">-- {$lang->ad_pagebreak} --</option>
@@ -53,7 +53,7 @@
                         <input type="button" value="{$lang->ad_insert}" style="width:100px" onClick="insertTag(document.addform.ins.options[document.addform.ins.selectedIndex].value);" />
                     </td>
                 </tr>
-                {if $banners_installed}
+                {if $banners_enabled}
                     <tr id="banpos">
                         <td width="120">
                             <strong>{$lang->ad_position}:</strong>

@@ -106,38 +106,6 @@ CREATE TABLE `#__banlist` (
   KEY `user_id` (`user_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `#__banners`;
-CREATE TABLE `#__banners` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `position` varchar(100) NOT NULL DEFAULT 'banner_top',
-  `typeimg` varchar(10) NOT NULL DEFAULT 'image',
-  `fileurl` varchar(250) DEFAULT NULL,
-  `hits` int(11) NOT NULL,
-  `clicks` int(11) NOT NULL,
-  `maxhits` int(11) NOT NULL,
-  `maxuser` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL DEFAULT '1',
-  `pubdate` datetime DEFAULT NULL,
-  `title` varchar(250) DEFAULT NULL,
-  `link` varchar(250) DEFAULT NULL,
-  `published` tinyint(1) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
-INSERT INTO `#__banners` (`id`, `position`, `typeimg`, `fileurl`, `hits`, `clicks`, `maxhits`, `maxuser`, `user_id`, `pubdate`, `title`, `link`, `published`) VALUES
-(4, 'banner1', 'image', 'banner468x60v1.gif', 0, 0, 0, 0, 1, '2016-06-04 19:43:53', 'InstantCMS - Бесплатная система управления сайтом', 'http://www.instantcms.ru/', 1);
-
-DROP TABLE IF EXISTS `#__banner_hits`;
-CREATE TABLE `#__banner_hits` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `banner_id` int(11) NOT NULL,
-  `ip` varchar(15) NOT NULL,
-  `pubdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `ip` (`ip`,`banner_id`),
-  KEY `banner_id` (`banner_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
 DROP TABLE IF EXISTS `#__blogs`;
 CREATE TABLE `#__blogs` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -476,7 +444,6 @@ INSERT INTO `#__components` (`id`, `title`, `link`, `config`, `internal`, `autho
 (10, 'Профили пользователей', 'users', '---\nshowgroup: 1\nsw_stats: \nsw_comm: 1\nsw_search: 1\nsw_forum: 1\nsw_photo: 1\nsw_wall: 1\nsw_friends: 1\nsw_blogs: 1\nsw_clubs: 1\nsw_feed: 1\nsw_content: 1\nsw_awards: 1\nsw_board: 1\nsw_msg: 1\nsw_guest: 1\nkarmatime: 1\nkarmaint: DAY\nphotosize: 0\nwatermark: 1\nsmallw: 64\nmedw: 200\nmedh: 500\nsw_files: 1\nfilessize: 100\nfilestype: jpeg,gif,png,jpg,bmp,zip,rar,tar\nprivforms: \n  - 3\nj_code: 1\ndeltime: 6\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (15, 'Блоги', 'blogs', '---\nperpage: 10\nperpage_blog: 15\nupdate_date: 0\nupdate_seo_link: 0\nmin_karma_private: 0\nmin_karma_public: 5\nmin_karma: 1\nwatermark: 1\nimg_on: 1\nrss_all: 1\nrss_one: 1\nj_code: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (16, 'Вопросы и ответы', 'faq', '---\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(17, 'Баннеры', 'banners', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
 (18, 'Лента активности', 'actions', '---\r\nshow_target: 1\r\nperpage: 10\r\nperpage_tab: 15\r\nis_all: 1\r\nact_type: \r\n  add_quest: 16\r\n  add_club_user: 15\r\n  vote_movie: 31\r\n  add_movie: 30\r\n  add_friend: 20\r\n  add_post: 10\r\n  add_post_club: 25\r\n  add_catalog: 13\r\n  add_wall_my: 29\r\n  add_wall: 23\r\n  add_wall_club: 24\r\n  add_comment: 2\r\n  add_user_photo_multi: 27\r\n  add_board: 12\r\n  add_fpost: 17\r\n  add_article: 8\r\n  add_thread: 18\r\n  add_photo: 7\r\n  add_user_photo: 26\r\n  add_avatar: 19\r\n  add_file: 22\r\n  set_status: 11\r\n  add_award: 21\r\n  add_user: 28\r\n  add_blog: 9\r\n  add_club: 14\r\n', 0, 'InstantCMS Team', 1, '1.10.3', 1),
 (19, 'RSS генератор', 'rssfeed', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
 (21, 'Награждение пользователей', 'autoawards', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
@@ -615,10 +582,6 @@ INSERT INTO `#__events` (`id`, `type`, `name`, `event`, `is_enabled`, `ordering`
 (14, 'plugin', 'p_morecontent', 'GET_ARTICLE', 1, 14),
 (15, 'plugin', 'p_loginza', 'LOGINZA_BUTTON', 1, 15),
 (16, 'plugin', 'p_loginza', 'LOGINZA_AUTH', 1, 16),
-(17, 'plugin', 'p_auto_forum', 'DELETE_ARTICLE', 1, 17),
-(18, 'plugin', 'p_auto_forum', 'GET_ARTICLE', 1, 18),
-(19, 'plugin', 'p_auto_forum', 'ADD_ARTICLE_DONE', 1, 19),
-(20, 'plugin', 'p_auto_forum', 'UPDATE_ARTICLE', 1, 20),
 (21, 'plugin', 'p_new_msg', 'PRINT_PAGE_HEAD', 1, 21),
 (22, 'plugin', 'p_kcaptcha', 'GET_CAPTCHA', 1, 22),
 (23, 'plugin', 'p_kcaptcha', 'CHECK_CAPTCHA', 1, 23),
@@ -1512,7 +1475,7 @@ CREATE TABLE `#__user_groups` (
 
 INSERT INTO `#__user_groups` (`id`, `title`, `alias`, `is_admin`, `access`) VALUES
 (1, 'Пользователи', 'registered', 0, 'comments/add, comments/bbcode, comments/add_published, comments/delete, content/add, board/add, board/autoadd'),
-(2, 'Администраторы', 'admin', 1, 'admin/content, admin/com_rssfeed, admin/com_arhive, admin/com_banners, admin/com_blog, admin/com_faq, admin/com_board, admin/com_content, admin/com_clubs, admin/com_comments, admin/com_forms, admin/com_photos'),
+(2, 'Администраторы', 'admin', 1, 'admin/content, admin/com_rssfeed, admin/com_arhive, admin/com_blog, admin/com_faq, admin/com_board, admin/com_content, admin/com_clubs, admin/com_comments, admin/com_forms, admin/com_photos'),
 (8, 'Гости', 'guest', 0, 'comments/add'),
 (7, 'Редакторы', 'editors', 0, 'comments/add, comments/delete, content/add, content/autoadd, content/delete'),
 (9, 'Модераторы', 'moderators', 0, 'comments/add, comments/delete, comments/moderate, forum/moderate, content/add');
