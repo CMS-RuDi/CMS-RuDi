@@ -191,21 +191,23 @@ cpCheckWritable('/images/users/photos/medium', 'folder');
                             ?>/> <?php echo $_LANG['NO']; ?></label>
                     </td>
                 </tr>
-                <tr>
-                    <td><strong><?php echo $_LANG['AD_SHOW_ADS']; ?>:</strong></td>
-                    <td>
-                        <label><input name="sw_board" type="radio" value="1" <?php
-                            if ( $model->config['sw_board'] ) {
-                                echo 'checked="checked"';
-                            }
-                            ?>/> <?php echo $_LANG['YES']; ?></label>
-                        <label><input name="sw_board" type="radio" value="0" <?php
-                            if ( !$model->config['sw_board'] ) {
-                                echo 'checked="checked"';
-                            }
-                            ?>/> <?php echo $_LANG['NO']; ?></label>
-                    </td>
-                </tr>
+                <?php if ( \cms\controller::enabled('board') ) { ?>
+                    <tr>
+                        <td><strong><?php echo $_LANG['AD_SHOW_ADS']; ?>:</strong></td>
+                        <td>
+                            <label><input name="sw_board" type="radio" value="1" <?php
+                                if ( $model->config['sw_board'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/> <?php echo $_LANG['YES']; ?></label>
+                            <label><input name="sw_board" type="radio" value="0" <?php
+                                if ( !$model->config['sw_board'] ) {
+                                    echo 'checked="checked"';
+                                }
+                                ?>/> <?php echo $_LANG['NO']; ?></label>
+                        </td>
+                    </tr>
+                <?php } ?>
                 <tr>
                     <td><strong><?php echo $_LANG['AD_PRIVATE_MESS']; ?>:</strong> </td>
                     <td>

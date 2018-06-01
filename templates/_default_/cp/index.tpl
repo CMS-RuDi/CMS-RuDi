@@ -194,8 +194,13 @@
                                         <tr>
                                             <td><img src="/images/markers/rssfeed.png" width="16" height="16" /></td>
                                             <td><a href="/rss/content/all/feed.rss" id="rss_link">{$lang->ad_rss_content}</a> </td>
-                                            <td><img src="/images/markers/rssfeed.png" width="16" height="16" /></td>
-                                            <td><a href="/rss/board/all/feed.rss" id="rss_link">{$lang->ad_rss_adverts}</a> </td>
+                                            {if $com_enabled.board}
+                                                <td><img src="/images/markers/rssfeed.png" width="16" height="16" /></td>
+                                                <td><a href="/rss/board/all/feed.rss" id="rss_link">{$lang->ad_rss_adverts}</a> </td>
+                                            {else}
+                                                <td></td>
+                                                <td></td>
+                                            {/if}
                                         </tr>
                                         <tr>
                                             {if $content_counts.video !== false}

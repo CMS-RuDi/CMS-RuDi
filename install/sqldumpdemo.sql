@@ -42,7 +42,6 @@ INSERT INTO `#__actions` (`id`, `component`, `name`, `title`, `message`, `is_tra
 (9, 'blogs', 'add_blog', 'Создание блога пользователем', 'создает блог %s|', 1, 1),
 (10, 'blogs', 'add_post', 'Добавление записи в блог', 'пишет пост %s| в блоге %s', 1, 1),
 (11, 'users', 'set_status', 'Изменение статуса пользователя', '', 1, 1),
-(12, 'board', 'add_board', 'Добавление объявления', 'добавляет объявление %s| в рубрику %s', 1, 1),
 (13, 'catalog', 'add_catalog', 'Добавление записи в каталог', 'добавляет запись %s| в рубрику каталога %s', 1, 1),
 (14, 'clubs', 'add_club', 'Создание клуба', 'создает клуб %s|', 1, 1),
 (15, 'clubs', 'add_club_user', 'Вступление в клуб', 'вступает в клуб %s|', 1, 1),
@@ -191,86 +190,6 @@ CREATE TABLE `#__blog_posts` (
 INSERT INTO `#__blog_posts` (`id`, `user_id`, `cat_id`, `blog_id`, `pubdate`, `title`, `feel`, `music`, `content`, `content_html`, `allow_who`, `edit_times`, `edit_date`, `published`, `seolink`, `comments`) VALUES
 (5, 1, 5, 1, '2016-06-07 11:50:16', 'Пример записи в блоге', '', '', '[b]Блоги InstantCMS - это мощный и надежный инструмент для ваших публикаций:[/b]\r\n\r\n- Редактор BB-кода (скрытый текст, ссылки, цитаты, картинки);\r\n- Вставка изображений "на лету";\r\n- Неограниченное число рубрик;\r\n- Комментарии к записям;\r\n- Возможность ведения коллективных блогов;\r\n- Смайлы и теги;', '<b>Блоги InstantCMS - это мощный и надежный инструмент для ваших публикаций:</b><br />\r\n<br />\r\n- Редактор BB-кода (скрытый текст, ссылки, цитаты, картинки);<br />\r\n- Вставка изображений "на лету";<br />\r\n- Неограниченное число рубрик;<br />\r\n- Комментарии к записям;<br />\r\n- Возможность ведения коллективных блогов;<br />\r\n- Смайлы и теги;', 'all', 3, '2016-06-07 11:50:16', 1, 'primer-zapisi-v-bloge', 1);
 
-DROP TABLE IF EXISTS `#__board_cats`;
-CREATE TABLE `#__board_cats` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `parent_id` int(11) NOT NULL,
-  `ordering` int(11) NOT NULL DEFAULT '1',
-  `NSLeft` int(11) NOT NULL,
-  `NSRight` int(11) NOT NULL,
-  `NSDiffer` varchar(15) NOT NULL,
-  `NSIgnore` int(11) NOT NULL,
-  `NSLevel` int(11) NOT NULL,
-  `title` varchar(100) NOT NULL,
-  `description` varchar(300) NOT NULL,
-  `published` tinyint(1) NOT NULL,
-  `orderform` tinyint(1) DEFAULT '1',
-  `showdate` tinyint(1) NOT NULL DEFAULT '1',
-  `pubdate` datetime NOT NULL,
-  `orderby` varchar(20) NOT NULL DEFAULT 'title',
-  `orderto` varchar(4) NOT NULL DEFAULT 'asc',
-  `public` tinyint(1) NOT NULL,
-  `perpage` int(11) NOT NULL DEFAULT '15',
-  `maxcols` int(11) NOT NULL DEFAULT '1',
-  `thumb1` int(11) NOT NULL DEFAULT '64',
-  `thumb2` int(11) NOT NULL DEFAULT '400',
-  `thumbsqr` int(11) NOT NULL,
-  `uplimit` int(11) NOT NULL DEFAULT '10',
-  `is_photos` tinyint(1) NOT NULL DEFAULT '1',
-  `icon` varchar(200) DEFAULT 'folder_grey.png',
-  `obtypes` text NOT NULL,
-  `form_id` int(11) DEFAULT NULL,
-  `pagetitle` varchar(200) NOT NULL DEFAULT '',
-  `meta_keys` varchar(250) NOT NULL DEFAULT '',
-  `meta_desc` varchar(250) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  KEY `parent_id` (`parent_id`),
-  KEY `NSLeft` (`NSLeft`,`NSRight`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
-INSERT INTO `#__board_cats` (`id`, `parent_id`, `ordering`, `NSLeft`, `NSRight`, `NSDiffer`, `NSIgnore`, `NSLevel`, `title`, `description`, `published`, `orderform`, `showdate`, `pubdate`, `orderby`, `orderto`, `public`, `perpage`, `maxcols`, `thumb1`, `thumb2`, `thumbsqr`, `uplimit`, `is_photos`, `icon`, `obtypes`) VALUES
-(1, 0, 1, 1, 8, '', 0, 0, '-- Корневая рубрика --', '', 1, 1, 1, '2016-06-22 13:39:32', 'pubdate', 'desc', 0, 15, 1, 64, 400, 0, 10, 1, 'folder_grey.png', ''),
-(10, 1, 21, 2, 3, '', 0, 1, 'Услуги', '', 1, 1, 1, '2016-06-22 14:30:29', 'pubdate', 'desc', -1, 20, 1, 64, 400, 0, 10, 1, 'folder_grey.png', 'Предлагаю\r\nТребуется'),
-(9, 1, 23, 6, 7, '', 0, 1, 'Автомобили', '', 1, 1, 1, '2016-06-22 14:30:23', 'pubdate', 'desc', -1, 20, 1, 64, 400, 0, 10, 1, 'folder_grey.png', 'Куплю\r\nПродам\r\nОбменяю'),
-(8, 1, 22, 4, 5, '', 0, 1, 'Недвижимость', '', 1, 1, 1, '2016-06-22 14:30:00', 'pubdate', 'desc', -1, 20, 1, 64, 400, 0, 10, 1, 'folder_grey.png', 'Продам\r\nКуплю\r\nОбменяю\r\nСдам\r\nСниму');
-
-DROP TABLE IF EXISTS `#__board_items`;
-CREATE TABLE `#__board_items` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `category_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `obtype` varchar(50) NOT NULL,
-  `title` varchar(250) NOT NULL,
-  `content` text NOT NULL,
-  `formsdata` text DEFAULT NULL,
-  `city` varchar(100) NOT NULL,
-  `pubdate` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `pubdays` int(11) NOT NULL,
-  `published` tinyint(1) NOT NULL,
-  `file` varchar(250) NOT NULL,
-  `more_images` text DEFAULT NULL,
-  `hits` int(11) unsigned NOT NULL DEFAULT '0',
-  `is_vip` tinyint(1) NOT NULL DEFAULT '0',
-  `vipdate` datetime DEFAULT NULL,
-  `ip` int(10) unsigned NOT NULL,
-  `pagetitle` varchar(200) NOT NULL DEFAULT '',
-  `meta_keys` varchar(250) NOT NULL DEFAULT '',
-  `meta_desc` varchar(250) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  KEY `category_id` (`category_id`),
-  KEY `user_id` (`user_id`),
-  KEY `obtype` (`obtype`),
-  KEY `city` (`city`),
-  KEY `ip` (`ip`),
-  FULLTEXT KEY `title` (`title`),
-  FULLTEXT KEY `content` (`content`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
-INSERT INTO `#__board_items` (`id`, `category_id`, `user_id`, `obtype`, `title`, `content`, `city`, `pubdate`, `pubdays`, `published`, `file`, `hits`, `is_vip`, `vipdate`, `ip`) VALUES
-(4, 10, 1, 'Предлагаю', 'свои услуги', 'Могу выносить мусор и мыть пол.', 'Москва', '2016-06-11 14:11:18', 10, 1, '550de8a5de9b5301133a815de31be00d.jpg', 7, 0, NULL, 2130706433),
-(5, 9, 1, 'Обменяю', 'ВАЗ-2107 на Nissan Skyline GTR', 'Желательно новый и без доплаты.', 'Москва', '2016-06-12 14:14:24', 10, 1, '931f90c50adcea1ff18177bc22d4ceac.jpg', 34, 0, NULL, 2130706433),
-(6, 8, 2, 'Сдам', '2-х комнатную квартиру', 'Семье из 2-3 человек', 'Москва', '2016-06-13 15:57:22', 10, 1, '80204e6bad519060bca9d456949158dc.jpg', 2, 0, NULL, 2130706433);
-
 DROP TABLE IF EXISTS `#__cache`;
 CREATE TABLE `#__cache` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -411,7 +330,6 @@ INSERT INTO `#__comment_targets` (`id`, `target`, `component`, `title`, `target_
 (4, 'photo', 'photos', 'Фотографии галереи', 'cms_photo_files', 'вашей фотографии'),
 (5, 'userphoto', 'users', 'Фотографии пользователей', 'cms_user_photos', 'вашей фотографии'),
 (6, 'catalog', 'catalog', 'Записи каталога', 'cms_uc_items', 'вашей записи'),
-(7, 'boarditem', 'board', 'Объявления', 'cms_board_items', 'вашего объявления'),
 (9, 'club_photo', 'clubs', 'Фото в клубах', 'cms_photo_files', 'вашей фотографии'),
 (10, 'club_post', 'clubs', 'Пост блога клуба', 'cms_blog_posts', 'вашей записи в клубном блоге');
 
@@ -444,7 +362,6 @@ INSERT INTO `#__components` (`id`, `title`, `link`, `config`, `internal`, `autho
 (18, 'Лента активности', 'actions', '---\r\nshow_target: 1\r\nperpage: 10\r\nperpage_tab: 15\r\nis_all: 1\r\nact_type: \r\n  add_quest: 16\r\n  add_club_user: 15\r\n  vote_movie: 31\r\n  add_movie: 30\r\n  add_friend: 20\r\n  add_post: 10\r\n  add_post_club: 25\r\n  add_catalog: 13\r\n  add_wall_my: 29\r\n  add_wall: 23\r\n  add_wall_club: 24\r\n  add_comment: 2\r\n  add_user_photo_multi: 27\r\n  add_board: 12\r\n  add_fpost: 17\r\n  add_article: 8\r\n  add_thread: 18\r\n  add_photo: 7\r\n  add_user_photo: 26\r\n  add_avatar: 19\r\n  add_file: 22\r\n  set_status: 11\r\n  add_award: 21\r\n  add_user: 28\r\n  add_blog: 9\r\n  add_club: 14\r\n', 0, 'InstantCMS Team', 1, '1.10.3', 1),
 (19, 'RSS генератор', 'rssfeed', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
 (21, 'Награждение пользователей', 'autoawards', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
-(22, 'Доска объявлений', 'board', '---\nmaxcols: 3\nobtypes: |\n  Продам\n  Куплю\n  Обменяю\n  Подарю\nshowlat: \npublic: 2\nphotos: 1\nsrok: 1\npubdays: 10\nwatermark: 0\naftertime: \ncomments: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (23, 'Клубы пользователей', 'clubs', '---\nseo_club: title\nenabled_blogs: 1\nenabled_photos: 1\nthumb1: 48\nthumb2: 200\nthumbsqr: 1\ncancreate: 1\nperpage: 10\ncreate_min_karma: 0\ncreate_min_rating: 0\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (24, 'Скачивание и редирект', 'files', '', 1, 'InstantCMS team', 1, '1.10.3', 1),
 (26, 'Подписки', 'subscribes', '', 1, 'InstantCMS team', 1, '1.10.3', 1),
@@ -742,7 +659,6 @@ INSERT INTO `#__modules` (`id`, `position`, `name`, `title`, `is_external`, `con
 (66, 'header', 'Меню', 'Меню пользователя', 1, 'mod_menu', 34, 0, 1, 0, '---\nmenu: usermenu\nshow_home: 0\ntpl: mod_menu.tpl\nis_sub_menu: 0\n', 1, 'user_menu_', '---\n- 1\n- 7\n- 9\n- 2\n', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (69, 'maintop', 'Популярные статьи', 'Популярные статьи', 1, 'mod_bestcontent', 3, 1, 0, 0, '---\nshownum: 4\nmenuid: 21\nshowlink: 1\nshowdesc: 1\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (70, 'sidebar', 'Поиск пользователей', 'Поиск пользователей', 1, 'mod_usersearch', 4, 1, 0, 0, '---\ncat_id: \nsource: \nmenuid: 15\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
-(71, 'maintop', 'Новые объявления', 'Новые объявления', 1, 'mod_latestboard', 1, 1, 1, 0, '---\nshownum: 10\nshowcity: 1\ncat_id: -1\nsubs: 1\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (72, 'maintop', 'Рейтинг пользователей', 'Рейтинг пользователей', 1, 'mod_user_rating', 1, 1, 0, 0, '---\ncount: 20\nmenuid: 15\nview_type: rating\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (73, 'maintop', 'Клубы', 'Клубы', 1, 'mod_clubs', 3, 1, 0, 0, '---\ncount: 2\nmenuid: 38\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (75, 'sidebar', 'Доска почета', 'Доска почета', 1, 'mod_respect', 1, 1, 1, 0, '---\nview: all\nshow_awards: 1\norder: desc\nlimit: 5\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
@@ -814,7 +730,6 @@ INSERT INTO `#__modules_bind` (`id`, `module_id`, `menu_id`, `position`) VALUES
 (617, 22, 1, 'sidebar'),
 (493, 26, 23, 'sidebar'),
 (604, 70, 15, 'sidebar'),
-(591, 71, 1, 'mainbottom'),
 (515, 72, 1, 'maintop'),
 (516, 73, 1, 'maintop'),
 (520, 74, 1, 'maintop'),
@@ -1404,8 +1319,8 @@ CREATE TABLE `#__user_groups` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 INSERT INTO `#__user_groups` (`id`, `title`, `alias`, `is_admin`, `access`) VALUES
-(1, 'Пользователи', 'registered', 0, 'comments/add, comments/bbcode, comments/add_published, comments/delete, content/add, board/add, board/autoadd'),
-(2, 'Администраторы', 'admin', 1, 'admin/content, admin/com_rssfeed, admin/com_arhive, admin/com_blog, admin/com_board, admin/com_content, admin/com_clubs, admin/com_comments, admin/com_forms, admin/com_photos'),
+(1, 'Пользователи', 'registered', 0, 'comments/add, comments/bbcode, comments/add_published, comments/delete, content/add'),
+(2, 'Администраторы', 'admin', 1, 'admin/content, admin/com_rssfeed, admin/com_arhive, admin/com_blog, admin/com_content, admin/com_clubs, admin/com_comments, admin/com_forms, admin/com_photos'),
 (8, 'Гости', 'guest', 0, 'comments/add'),
 (7, 'Редакторы', 'editors', 0, 'comments/add, comments/delete, content/add, content/autoadd, content/delete'),
 (9, 'Модераторы', 'moderators', 0, 'comments/add, comments/delete, comments/moderate, forum/moderate, content/add');
@@ -1429,9 +1344,6 @@ INSERT INTO `#__user_groups_access` (`id`, `access_type`, `access_name`, `hide_f
 (7, 'content/add', 'Добавление статей на сайт', 0),
 (8, 'content/autoadd', 'Принимать статьи без модерации', 0),
 (9, 'content/delete', 'Удаление своих статей', 1),
-(10, 'board/add', 'Добавление объявлений', 0),
-(11, 'board/autoadd', 'Принимать объявления без модерации', 0),
-(12, 'board/moderate', 'Модерация доски объявлений', 1),
 (13, 'comments/add_published', 'Добавлять комментарии без модерации', 0),
 (16, 'comments/target_author_delete', 'Удаление неугодных комментариев к своим публикациям', 1);
 

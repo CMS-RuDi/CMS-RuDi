@@ -588,17 +588,18 @@ function cpCatalogCatById($id)
 
 function cpBoardCatById($id)
 {
-    $inDB = cmsDatabase::getInstance();
+    if ( \cms\controller::installed('board') ) {
+        $inDB = cmsDatabase::getInstance();
 
-    $result = $inDB->query("SELECT title FROM cms_board_cats WHERE id = $id");
+        $result = $inDB->query("SELECT title FROM cms_board_cats WHERE id = $id");
 
-    if ( $inDB->num_rows($result) ) {
-        $cat = $inDB->fetch_assoc($result);
-        return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a> (' . $id . ')';
+        if ( $inDB->num_rows($result) ) {
+            $cat = $inDB->fetch_assoc($result);
+            return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a> (' . $id . ')';
+        }
     }
-    else {
-        return '--';
-    }
+
+    return '--';
 }
 
 function cpGroupById($id)

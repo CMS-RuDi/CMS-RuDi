@@ -483,8 +483,12 @@ function users()
             }
         }
 
-        $usr['board_count'] = $model->config['sw_board'] ?
-                $inDB->rows_count('cms_board_items', "user_id='" . $usr['id'] . "' AND published=1") : 0;
+        if ( \cms\controller::enabled('board') && $model->config['sw_board'] ) {
+            $usr['board_count'] = $inDB->rows_count('cms_board_items', "user_id = '" . $usr['id'] . "' AND published=1");
+        }
+        else {
+            $usr['board_count'] = 0;
+        }
 
         $usr['comments_count'] = $model->config['sw_comm'] ?
                 $inDB->rows_count('cms_comments', "user_id='" . $usr['id'] . "' AND published=1") : 0;
