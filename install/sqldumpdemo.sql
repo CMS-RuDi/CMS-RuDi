@@ -46,7 +46,6 @@ INSERT INTO `#__actions` (`id`, `component`, `name`, `title`, `message`, `is_tra
 (13, 'catalog', 'add_catalog', 'Добавление записи в каталог', 'добавляет запись %s| в рубрику каталога %s', 1, 1),
 (14, 'clubs', 'add_club', 'Создание клуба', 'создает клуб %s|', 1, 1),
 (15, 'clubs', 'add_club_user', 'Вступление в клуб', 'вступает в клуб %s|', 1, 1),
-(16, 'faq', 'add_quest', 'Вопрос', 'задает %s| в категории %s', 1, 1),
 (19, 'users', 'add_avatar', 'Загрузка или смена аватара пользователем', 'изменяет аватар|', 1, 1),
 (20, 'users', 'add_friend', 'Добавление друга', 'и %s стали друзьями|', 1, 1),
 (21, 'users', 'add_award', 'Получение награды пользователем', 'получает награду %s|', 1, 1),
@@ -413,7 +412,6 @@ INSERT INTO `#__comment_targets` (`id`, `target`, `component`, `title`, `target_
 (5, 'userphoto', 'users', 'Фотографии пользователей', 'cms_user_photos', 'вашей фотографии'),
 (6, 'catalog', 'catalog', 'Записи каталога', 'cms_uc_items', 'вашей записи'),
 (7, 'boarditem', 'board', 'Объявления', 'cms_board_items', 'вашего объявления'),
-(8, 'faq', 'faq', 'Вопросы FAQ', 'cms_faq_quests', 'вашего вопроса'),
 (9, 'club_photo', 'clubs', 'Фото в клубах', 'cms_photo_files', 'вашей фотографии'),
 (10, 'club_post', 'clubs', 'Пост блога клуба', 'cms_blog_posts', 'вашей записи в клубном блоге');
 
@@ -443,7 +441,6 @@ INSERT INTO `#__components` (`id`, `title`, `link`, `config`, `internal`, `autho
 (9, 'Универсальный каталог', 'catalog', '---\nemail: shop@site.ru\ndelivery: |\n  Сведения о доставке.\n  Этот текст можно изменить в настройках компонента &quot;Универсальный каталог&quot;.\nnotice: 1\npremod: 1\npremod_msg: 1\nis_comments: 1\nis_rss: 1\nwatermark: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (10, 'Профили пользователей', 'users', '---\nshowgroup: 1\nsw_stats: \nsw_comm: 1\nsw_search: 1\nsw_forum: 1\nsw_photo: 1\nsw_wall: 1\nsw_friends: 1\nsw_blogs: 1\nsw_clubs: 1\nsw_feed: 1\nsw_content: 1\nsw_awards: 1\nsw_board: 1\nsw_msg: 1\nsw_guest: 1\nkarmatime: 1\nkarmaint: DAY\nphotosize: 0\nwatermark: 1\nsmallw: 64\nmedw: 200\nmedh: 500\nsw_files: 1\nfilessize: 100\nfilestype: jpeg,gif,png,jpg,bmp,zip,rar,tar\nprivforms: \n  - 3\nj_code: 1\ndeltime: 6\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (15, 'Блоги', 'blogs', '---\nperpage: 10\nperpage_blog: 15\nupdate_date: 0\nupdate_seo_link: 0\nmin_karma_private: 0\nmin_karma_public: 5\nmin_karma: 1\nwatermark: 1\nimg_on: 1\nrss_all: 1\nrss_one: 1\nj_code: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(16, 'Вопросы и ответы', 'faq', '---\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (18, 'Лента активности', 'actions', '---\r\nshow_target: 1\r\nperpage: 10\r\nperpage_tab: 15\r\nis_all: 1\r\nact_type: \r\n  add_quest: 16\r\n  add_club_user: 15\r\n  vote_movie: 31\r\n  add_movie: 30\r\n  add_friend: 20\r\n  add_post: 10\r\n  add_post_club: 25\r\n  add_catalog: 13\r\n  add_wall_my: 29\r\n  add_wall: 23\r\n  add_wall_club: 24\r\n  add_comment: 2\r\n  add_user_photo_multi: 27\r\n  add_board: 12\r\n  add_fpost: 17\r\n  add_article: 8\r\n  add_thread: 18\r\n  add_photo: 7\r\n  add_user_photo: 26\r\n  add_avatar: 19\r\n  add_file: 22\r\n  set_status: 11\r\n  add_award: 21\r\n  add_user: 28\r\n  add_blog: 9\r\n  add_club: 14\r\n', 0, 'InstantCMS Team', 1, '1.10.3', 1),
 (19, 'RSS генератор', 'rssfeed', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
 (21, 'Награждение пользователей', 'autoawards', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
@@ -586,43 +583,6 @@ INSERT INTO `#__events` (`id`, `type`, `name`, `event`, `is_enabled`, `ordering`
 (22, 'plugin', 'p_kcaptcha', 'GET_CAPTCHA', 1, 22),
 (23, 'plugin', 'p_kcaptcha', 'CHECK_CAPTCHA', 1, 23),
 (24, 'plugin', 'p_related_posts', 'GET_POST', 1, 24);
-
-DROP TABLE IF EXISTS `#__faq_cats`;
-CREATE TABLE `#__faq_cats` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `parent_id` int(11) NOT NULL,
-  `title` varchar(250) NOT NULL,
-  `description` text NOT NULL,
-  `published` tinyint(1) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
-INSERT INTO `#__faq_cats` (`id`, `parent_id`, `title`, `description`, `published`) VALUES
-(3, 0, 'Технические вопросы', '<p>Обсуждение неисправностей и поломок</p>', 1),
-(4, 0, 'Юридические вопросы', '<p>Связанные с законодательным правом</p>', 1),
-(5, 3, 'Вопросы сервисному отделу', '<p>По поводу гарантийного ремонта</p>', 1);
-
-DROP TABLE IF EXISTS `#__faq_quests`;
-CREATE TABLE `#__faq_quests` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `category_id` int(11) NOT NULL,
-  `pubdate` datetime NOT NULL,
-  `published` tinyint(1) NOT NULL,
-  `quest` text NOT NULL,
-  `answer` text NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `answeruser_id` int(11) NOT NULL,
-  `answerdate` datetime NOT NULL,
-  `hits` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `category_id` (`category_id`),
-  FULLTEXT KEY `quest` (`quest`,`answer`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
-INSERT INTO `#__faq_quests` (`id`, `category_id`, `pubdate`, `published`, `quest`, `answer`, `user_id`, `answeruser_id`, `answerdate`, `hits`) VALUES
-(3, 3, '2016-06-14 20:09:54', 1, 'У меня не работает чайник. Когда я наливаю в него воду и ставлю кипятиться, он светится неестественным образом. Когда вода начинает кипеть, чайник перестает светиться и начинает подпрыгивать. Один раз он упрыгал в ванну.\r\n\r\nПодскажите, как мне его починить?', '<p>Василий, ваша проблема встречается очень часто. И, к сожалению, вряд ли вам чем-то можно помочь. Единственное, что мы можем - это заявить на вас в милицию. Так что решайте, что вам дороже.</p>', 2, 1, '2016-06-14 20:09:54', 32),
-(4, 4, '2016-06-14 00:00:00', 1, 'Я продал свою собаку. Потом я передумал. И потребовал ее назад. Деньги конечно вернул. Но случилась небольшая беда. Я не помню кому продал собаку и кому вернул деньги. Как мне быть?', '<p>Скорее всего вы сможете найти покупателя там, где он живет.</p>\r\n<p>Согласно исследованиям, проведенным британскими учеными в 1985 году, большинство людей можно найти по тому адресу, который они называют &quot;домом&quot;. Независимые эксперты также подтверждают эти выводы. Многие из них даже проверили данную теорию на себе.</p>\r\n<p>Успехов вам в поисках, пишите еще.</p>', 2, 1, '2016-06-14 00:00:00', 36),
-(5, 5, '2016-06-14 00:00:00', 1, 'Скажите пожалуйста когда мне вернут экскаватор который я сдал на ремонт в июне 1937 года?', '<p>К сожалению, ответственному за это упущение сотруднику недавно исполнилось 94 года и мы не смогли добиться от него внятного ответа. Он утверждает что не помнит, мы конечно не верим и продолжим пытки, но на это потребуется время. Просим отнестись с пониманием.</p>', 2, 1, '2016-06-16 00:00:00', 36);
 
 DROP TABLE IF EXISTS `#__forms`;
 CREATE TABLE `#__forms` (
@@ -782,7 +742,6 @@ INSERT INTO `#__modules` (`id`, `position`, `name`, `title`, `is_external`, `con
 (62, 'maintop', 'Фотографии', 'Фотографии', 1, 'mod_photo', 32, 1, 1, 0, '---\nshownum: 6\nmaxcols: 2\nshowclubs: 1\nalbum_id: 100\nshowtype: short\nshowmore: 0\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
 (64, 'maintop', 'Записи в блогах', 'Записи в блогах', 1, 'mod_blogs', 2, 1, 1, 0, '---\nshownum: 10\nminrate: 0\nshowrss: 1\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (66, 'header', 'Меню', 'Меню пользователя', 1, 'mod_menu', 34, 0, 1, 0, '---\nmenu: usermenu\nshow_home: 0\ntpl: mod_menu.tpl\nis_sub_menu: 0\n', 1, 'user_menu_', '---\n- 1\n- 7\n- 9\n- 2\n', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
-(67, 'mainbottom', 'Последние вопросы FAQ', 'Последние вопросы FAQ', 1, 'mod_latest_faq', 33, 1, 0, 0, '---\nnewscount: 5\nmaxlen: 140\ncat_id: \n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (69, 'maintop', 'Популярные статьи', 'Популярные статьи', 1, 'mod_bestcontent', 3, 1, 0, 0, '---\nshownum: 4\nmenuid: 21\nshowlink: 1\nshowdesc: 1\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (70, 'sidebar', 'Поиск пользователей', 'Поиск пользователей', 1, 'mod_usersearch', 4, 1, 0, 0, '---\ncat_id: \nsource: \nmenuid: 15\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
 (71, 'maintop', 'Новые объявления', 'Новые объявления', 1, 'mod_latestboard', 1, 1, 1, 0, '---\nshownum: 10\nshowcity: 1\ncat_id: -1\nsubs: 1\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
@@ -852,7 +811,6 @@ INSERT INTO `#__modules_bind` (`id`, `module_id`, `menu_id`, `position`) VALUES
 (435, 23, 1, 'sidebar'),
 (572, 61, 1, 'sidebar'),
 (587, 64, 1, 'maintop'),
-(482, 67, 1, 'mainbottom'),
 (496, 68, 0, 'maintop'),
 (486, 69, 1, 'maintop'),
 (617, 22, 1, 'sidebar'),
@@ -1475,7 +1433,7 @@ CREATE TABLE `#__user_groups` (
 
 INSERT INTO `#__user_groups` (`id`, `title`, `alias`, `is_admin`, `access`) VALUES
 (1, 'Пользователи', 'registered', 0, 'comments/add, comments/bbcode, comments/add_published, comments/delete, content/add, board/add, board/autoadd'),
-(2, 'Администраторы', 'admin', 1, 'admin/content, admin/com_rssfeed, admin/com_arhive, admin/com_blog, admin/com_faq, admin/com_board, admin/com_content, admin/com_clubs, admin/com_comments, admin/com_forms, admin/com_photos'),
+(2, 'Администраторы', 'admin', 1, 'admin/content, admin/com_rssfeed, admin/com_arhive, admin/com_blog, admin/com_board, admin/com_content, admin/com_clubs, admin/com_comments, admin/com_forms, admin/com_photos'),
 (8, 'Гости', 'guest', 0, 'comments/add'),
 (7, 'Редакторы', 'editors', 0, 'comments/add, comments/delete, content/add, content/autoadd, content/delete'),
 (9, 'Модераторы', 'moderators', 0, 'comments/add, comments/delete, comments/moderate, forum/moderate, content/add');

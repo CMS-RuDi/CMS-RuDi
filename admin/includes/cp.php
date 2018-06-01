@@ -536,7 +536,7 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
 
 function cpForumCatById($id)
 {
-    if ( \cms\controller::enabled('forum') ) {
+    if ( \cms\controller::installed('forum') ) {
         $inDB = cmsDatabase::getInstance();
 
         $result = $inDB->query("SELECT title FROM cms_forum_cats WHERE id = $id");
@@ -552,17 +552,18 @@ function cpForumCatById($id)
 
 function cpFaqCatById($id)
 {
-    $inDB = cmsDatabase::getInstance();
+    if ( \cms\controller::installed('faq') ) {
+        $inDB = cmsDatabase::getInstance();
 
-    $result = $inDB->query("SELECT title FROM cms_faq_cats WHERE id = $id");
+        $result = $inDB->query("SELECT title FROM cms_faq_cats WHERE id = $id");
 
-    if ( $inDB->num_rows($result) ) {
-        $cat = $inDB->fetch_assoc($result);
-        return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a>';
+        if ( $inDB->num_rows($result) ) {
+            $cat = $inDB->fetch_assoc($result);
+            return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a>';
+        }
     }
-    else {
-        return '--';
-    }
+
+    return '--';
 }
 
 function cpCatalogCatById($id)
