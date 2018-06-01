@@ -447,7 +447,6 @@ INSERT INTO `#__components` (`id`, `title`, `link`, `config`, `internal`, `autho
 (22, 'Доска объявлений', 'board', '---\nmaxcols: 3\nobtypes: |\n  Продам\n  Куплю\n  Обменяю\n  Подарю\nshowlat: \npublic: 2\nphotos: 1\nsrok: 1\npubdays: 10\nwatermark: 0\naftertime: \ncomments: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (23, 'Клубы пользователей', 'clubs', '---\nseo_club: title\nenabled_blogs: 1\nenabled_photos: 1\nthumb1: 48\nthumb2: 200\nthumbsqr: 1\ncancreate: 1\nperpage: 10\ncreate_min_karma: 0\ncreate_min_rating: 0\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (24, 'Скачивание и редирект', 'files', '', 1, 'InstantCMS team', 1, '1.10.3', 1),
-(25, 'Голосования', 'polls', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
 (26, 'Подписки', 'subscribes', '', 1, 'InstantCMS team', 1, '1.10.3', 1),
 (27, 'Геолокация', 'geo', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
 (28, 'Панель управления', 'cp', '', 0, 'InstantCMS team', 1, '1.0.0', 1);
@@ -723,7 +722,6 @@ INSERT INTO `#__modules` (`id`, `position`, `name`, `title`, `is_external`, `con
 (17, 'top', 'Главная страница', 'Добро пожаловать!', 0, '<table cellspacing="0" cellpadding="0" border="0" width="100%">\r\n    <tbody>\r\n        <tr>\r\n            <td width="100" valign="top"><a target="_blank" href="http://www.instantcms.ru"><img border="0" alt="" src="/images/content/community.png" /></a></td>\r\n            <td>\r\n            <p class="moduletitle">Добро пожаловать!</p>\r\n            <p>Мы рады приветствовать Вас в нашей социальной сети. После регистрации Вам станут доступны все функции сайта.</p>\r\n            <p>Вы сможете завести блог, загружать фотографии и общаться с друзьями.</p>\r\n            <div>\r\n            <div>Чтобы изменить этот текст, <a href="/admin/index.php?view=modules&amp;do=edit&amp;id=17">отредактируйте модуль &quot;Главная страница&quot;</a>.</div>\r\n            </div>\r\n            </td>\r\n        </tr>\r\n    </tbody>\r\n</table>', 0, 0, 1, 1, '---\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (44, 'sidebar', 'Облако тегов', 'Облако тегов', 1, 'mod_tags', 18, 0, 0, 0, '---\ncat_id: \nsortby: tag\nmenuid: \nminfreq: 0\nminlen: 3\ntargets: \n  content: content\n  photo: photo\n  blogpost: blog\n  catalog: catalog\n  userphoto: userphoto\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (26, 'sidebar', 'Корзина покупателя', 'Корзина', 1, 'mod_cart', 19, 1, 0, 0, '---\nshowtype: list\nshowqty: 1\nmenuid: 23\nsource: catalog\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
-(25, 'sidebar', 'Голосования', 'Голосования', 1, 'mod_polls', 2, 1, 1, 0, '---\nshownum: 0\npoll_id: 2\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (27, 'sidebar', 'Поиск', 'Поиск', 1, 'mod_search', 1, 0, 0, 0, '---\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (19, 'maintop', 'Последние материалы', 'Новые статьи', 1, 'mod_latest', 2, 1, 1, 0, '---\nnewscount: 4\nshowdesc: 0\nshowdate: 1\nshowcom: 1\nshowrss: 1\ncat_id: 6\nsubs: 1\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
 (20, 'topmenu', 'Авторизация', 'Авторизация', 1, 'mod_auth', 0, 1, 1, 0, '---\nautolog: 1\npassrem: 1\n', 1, '', '', 0, 1, 'MINUTE', 'module.tpl', 0, '1.0'),
@@ -820,7 +818,6 @@ INSERT INTO `#__modules_bind` (`id`, `module_id`, `menu_id`, `position`) VALUES
 (515, 72, 1, 'maintop'),
 (516, 73, 1, 'maintop'),
 (520, 74, 1, 'maintop'),
-(575, 25, 1, 'sidebar'),
 (531, 76, 1, 'sidebar'),
 (541, 77, 1, ''),
 (598, 19, 21, 'sidebar'),
@@ -969,31 +966,6 @@ INSERT INTO `#__plugins` (`id`, `plugin`, `title`, `description`, `version`, `ur
 (35, 'p_related_posts', 'Похожие записи в блогах', 'Добавляет в конец каждого поста список похожих записей', '1.0', '', 'Pasha && InstantCMS Team', 'http://www.instantcms.ru/', '', '', 1, '---\ntags_mode: 1\nadd_mode: 1\nsearch_mode: 1\nlimit: 4\ntruncate: 200\ncash_time: 1\nblank_photo: no_image.png\n'),
 (36, 'p_recaptcha', 'Капча Recaptcha', 'Современная защита от спама. <a href="https://www.google.com/recaptcha/admin" target="_blank">Получить ключ</a>', '1.0', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'captcha', 0, '---\npublic_key: 0\nprivate_key:\ntheme: light\nsize: normal\nlang: ru\n'),
 (37, 'p_filters', 'Обрабатывает текст фильтрами', 'Обрабатывает текст фильтрами, унаследованными от Instant CMS. В будущем использовать фильтры не рекомендуется, вместо них используйте шорткоды.', '1.0.0', NULL, 'DS Soft', 'https://ds-soft.ru', 'admin@ds-soft.ru', '', 1, '---\nf_contents: 1\nf_filelink: 1\nf_includes: 1\nf_pages: 1\nf_replace: 1\n');
-
-DROP TABLE IF EXISTS `#__polls`;
-CREATE TABLE `#__polls` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `title` varchar(200) NOT NULL,
-  `pubdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `answers` text NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
-INSERT INTO `#__polls` (`id`, `title`, `pubdate`, `answers`) VALUES
-(2, 'Какой у вас хостинг?', CURRENT_TIMESTAMP, '---\nПлатный: 2\nБесплатный: 1\nСобственный: 0\n');
-
-DROP TABLE IF EXISTS `#__polls_log`;
-CREATE TABLE `#__polls_log` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `poll_id` int(11) NOT NULL,
-  `answer` varchar(300) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `ip` varchar(15) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
-  KEY `poll_id` (`poll_id`),
-  KEY `ip` (`ip`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `#__ratings`;
 CREATE TABLE `#__ratings` (
