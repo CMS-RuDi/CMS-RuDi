@@ -77,7 +77,7 @@ $version_next = '1.10.7';
             echo "<h2>Миграция базы данных InstantCMS {$version_prev} &rarr; {$version_next}</h2>";
 
             if ( !cmsCore::inRequest('go') ) {
-                echo '<h3><a href="/migrate/index.php?go=1">начать миграцию...</a></h3>';
+                echo '<h3><a href="/install/migrate/index.php?go=1">начать миграцию...</a></h3>';
                 exit;
             }
 
@@ -94,7 +94,7 @@ $version_next = '1.10.7';
 
                 $inDB->query("ALTER TABLE `cms_blog_posts` CHANGE `edit_date` `edit_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
 
-                echo '<div style="margin:15px 0px;font-weight:bold">Миграция завершена. Удалите папку /migrate/ прежде чем продолжить!</div>';
+                echo '<div style="margin:15px 0px;font-weight:bold">Миграция завершена. Удалите папку /install/ прежде чем продолжить!</div>';
                 echo '<div class="nextlink"><a href="/">Перейти на сайт</a></div>';
             }
 

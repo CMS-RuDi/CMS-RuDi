@@ -39,7 +39,7 @@ session_start();
 $inCore = cmsCore::getInstance();
 
 // Проверяем что директории установки и миграции удалены
-if ( is_dir(PATH . '/install') || is_dir(PATH . '/migrate') ) {
+if ( is_dir(PATH . '/install') ) {
     cmsPage::includeTemplateFile('special/installation.php');
     cmsCore::halt();
 }
