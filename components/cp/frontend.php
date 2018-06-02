@@ -98,11 +98,11 @@ class frontend extends \cms\backend
                 assign('month_reg_users', (int) $this->model->db->getRowsCount('users', "regdate >= DATE_SUB(NOW(), INTERVAL 1 MONTH)"))->
                 assign('people', \cmsUser::getOnlineCount())->
                 assign('actions', $inActions->getActionsLog())->
-                assign('new_quests', $this->model->db->getRowsCount('faq_quests', 'published=0'))->
+                assign('new_quests', \cms\controller::installed('faq') ? $this->model->db->getRowsCount('faq_quests', 'published=0') : 0)->
                 assign('new_content', $this->model->db->getRowsCount('content', 'published=0 AND is_arhive = 0'))->
-                assign('new_catalog', $this->model->db->getRowsCount('uc_items', 'on_moderate=1'))->
+                assign('new_catalog', \cms\controller::installed('catalog') ? $this->model->db->getRowsCount('uc_items', 'on_moderate=1') : 0)->
                 assign('rssfeed', \cms\controller::enabled('rssfeed'))->
-                assign('com_enabled', [ 'forum' => \cms\controller::enabled('forum'), 'board' => \cms\controller::enabled('board') ])->
+                assign('com_enabled', [ 'forum' => \cms\controller::enabled('forum'), 'board' => \cms\controller::enabled('board'), 'faq' => \cms\controller::enabled('faq'), 'catalog' => \cms\controller::enabled('catalog'), 'banners' => \cms\controller::enabled('banners'), 'polls' => \cms\controller::enabled('polls') ])->
                 display();
     }
 

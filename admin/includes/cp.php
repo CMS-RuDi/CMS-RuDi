@@ -568,22 +568,23 @@ function cpFaqCatById($id)
 
 function cpCatalogCatById($id)
 {
-    $inDB = cmsDatabase::getInstance();
+    if ( \cms\controller::installed('catalog') ) {
+        $inDB = cmsDatabase::getInstance();
 
-    $result = $inDB->query("SELECT title, parent_id FROM cms_uc_cats WHERE id = $id");
+        $result = $inDB->query("SELECT title, parent_id FROM cms_uc_cats WHERE id = $id");
 
-    if ( $inDB->num_rows($result) ) {
-        $cat = $inDB->fetch_assoc($result);
-        if ( $cat['parent_id'] ) {
-            return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a> (' . $id . ')';
-        }
-        else {
-            return $cat['title'];
+        if ( $inDB->num_rows($result) ) {
+            $cat = $inDB->fetch_assoc($result);
+            if ( $cat['parent_id'] ) {
+                return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a> (' . $id . ')';
+            }
+            else {
+                return $cat['title'];
+            }
         }
     }
-    else {
-        return '--';
-    }
+
+    return '--';
 }
 
 function cpBoardCatById($id)

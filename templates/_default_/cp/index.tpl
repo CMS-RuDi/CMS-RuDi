@@ -188,8 +188,13 @@
                                                 <td></td>
                                                 <td></td>
                                             {/if}
-                                            <td width="16"><img src="/images/markers/rssfeed.png" width="16" height="16" /></td>
-                                            <td><a href="/rss/catalog/all/feed.rss" id="rss_link">{$lang->ad_rss_catalog}</a></td>
+                                            {if $com_enabled.catalog}
+                                                <td width="16"><img src="/images/markers/rssfeed.png" width="16" height="16" /></td>
+                                                <td><a href="/rss/catalog/all/feed.rss" id="rss_link">{$lang->ad_rss_catalog}</a></td>
+                                            {else}
+                                                <td></td>
+                                                <td></td>
+                                            {/if}
                                         </tr>
                                         <tr>
                                             <td><img src="/images/markers/rssfeed.png" width="16" height="16" /></td>

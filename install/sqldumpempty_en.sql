@@ -42,7 +42,6 @@ INSERT INTO `#__actions` (`id`, `component`, `name`, `title`, `message`, `is_tra
 (9, 'blogs', 'add_blog', 'Creating a blog', 'created blog %s|', 1, 1),
 (10, 'blogs', 'add_post', 'Adding blog post', 'added new post %s| in blog %s', 1, 1),
 (11, 'users', 'set_status', 'Status changing', '', 1, 1),
-(13, 'catalog', 'add_catalog', 'Adding an entry to the catalog', 'adds an entry %s| to catalog rubric %s', 1, 1),
 (14, 'clubs', 'add_club', 'Club creation', 'create new club %s|', 1, 1),
 (15, 'clubs', 'add_club_user', 'Joining a club', 'joins the club %s|', 1, 1),
 (19, 'users', 'add_avatar', 'Change avatar', 'changed avatar|', 1, 1),
@@ -304,7 +303,6 @@ INSERT INTO `#__comment_targets` (`id`, `target`, `component`, `title`, `target_
 (3, 'palbum', 'photos', 'Photo albums', 'cms_photo_albums', 'your photo album'),
 (4, 'photo', 'photos', 'Gallery photos', 'cms_photo_files', 'your photo'),
 (5, 'userphoto', 'users', 'User photos', 'cms_user_photos', 'your photo'),
-(6, 'catalog', 'catalog', 'Catalog entries', 'cms_uc_items', 'your entry'),
 (9, 'club_photo', 'clubs', 'Club photos', 'cms_photo_files', 'your photo'),
 (10, 'club_post', 'clubs', 'Club blog posts', 'cms_blog_posts', 'your club blog post');
 
@@ -331,7 +329,6 @@ INSERT INTO `#__components` (`id`, `title`, `link`, `config`, `internal`, `autho
 (6, 'Form designer', 'forms', '---\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (7, 'Comments', 'comments', '---\nemail: \ncanguests: 1\nregcap: 0\npublish: 1\nsmiles: 1\nbbcode: 1\nselfdel: 0\nsubscribe: 1\nanchors: 0\nrecode: 0\nmin_karma: 0\nmin_karma_show: 0\nmin_karma_add: 0\nperpage: 20\nj_code: 1\ncmm_ajax: 0\ncmm_ip: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (8, 'Articles archive', 'arhive', '---\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(9, 'Universal catalog', 'catalog', '---\nemail: shop@site.com\ndelivery: |\n  Delivery information.\n  This text can be changed in the component settings.\nnotice: 1\npremod: 1\npremod_msg: 1\nis_comments: 1\nis_rss: 1\nwatermark: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (10, 'User profiles', 'users', '---\nshowgroup: 1\nsw_stats: \nsw_comm: 1\nsw_search: 1\nsw_forum: 1\nsw_photo: 1\nsw_wall: 1\nsw_friends: 1\nsw_blogs: 1\nsw_clubs: 1\nsw_feed: 1\nsw_content: 1\nsw_awards: 1\nsw_board: 1\nsw_msg: 1\nsw_guest: 1\nkarmatime: 1\nkarmaint: DAY\nphotosize: 0\nwatermark: 1\nsmallw: 64\nmedw: 200\nmedh: 500\nsw_files: 1\nfilessize: 100\nfilestype: jpeg,gif,png,jpg,bmp,zip,rar,tar\nprivforms: \n  - 3\nj_code: 1\ndeltime: 6\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (15, 'Blogs', 'blogs', '---\nperpage: 10\nperpage_blog: 15\nupdate_date: 0\nupdate_seo_link: 0\nmin_karma_private: 0\nmin_karma_public: 5\nmin_karma: 1\nwatermark: 1\nimg_on: 1\nrss_all: 1\nrss_one: 1\nj_code: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (18, 'Activity feed', 'actions', '---\r\nshow_target: 1\r\nperpage: 10\r\nperpage_tab: 15\r\nis_all: 1\r\nact_type: \r\n  add_quest: 16\r\n  add_club_user: 15\r\n  vote_movie: 31\r\n  add_movie: 30\r\n  add_friend: 20\r\n  add_post: 10\r\n  add_post_club: 25\r\n  add_catalog: 13\r\n  add_wall_my: 29\r\n  add_wall: 23\r\n  add_wall_club: 24\r\n  add_comment: 2\r\n  add_user_photo_multi: 27\r\n  add_board: 12\r\n  add_fpost: 17\r\n  add_article: 8\r\n  add_thread: 18\r\n  add_photo: 7\r\n  add_user_photo: 26\r\n  add_avatar: 19\r\n  add_file: 22\r\n  set_status: 11\r\n  add_award: 21\r\n  add_user: 28\r\n  add_blog: 9\r\n  add_club: 14\r\n', 0, 'InstantCMS Team', 1, '1.10.3', 1),
@@ -575,7 +572,6 @@ INSERT INTO `#__modules` (`id`, `position`, `name`, `title`, `is_external`, `con
 (1, 'topmenu', 'Menu', 'Menu', 1, 'mod_menu', 6, 0, 1, 0, '---\nmenu: mainmenu\nshow_home: 1\ntpl: mod_menu.tpl\nis_sub_menu: 0\n', 1, '', '', 0, 1, 'HOUR', 'module_simple.tpl', 0, '1.0'),
 (17, 'top', 'Main page', 'Welcome!', 0, '<table cellspacing="0" cellpadding="0" border="0" width="100%">\r\n    <tbody>\r\n        <tr>\r\n            <td width="100" valign="top"><a target="_blank" href="http://www.instantcms.ru"><img border="0" alt="" src="/images/content/community.png" /></a></td>\r\n            <td>\r\n            <p class="moduletitle">Welcome!</p>\r\n            <p>We welcome you to our social network. After registering, you will have access to all features of the site.</p>\r\n            <p>You can start a blog, upload pictures and communicate with friends.</p>\r\n            <div>\r\n            <div>To change this text, please <a href="/admin/index.php?view=modules&amp;do=edit&amp;id=17">edit the module &quot;Main page&quot;</a>.</div>\r\n            </div>\r\n            </td>\r\n        </tr>\r\n    </tbody>\r\n</table>', 0, 0, 1, 1, '---\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (44, 'sidebar', 'Tags', 'Tags', 1, 'mod_tags', 18, 0, 0, 0, '---\ncat_id: \nsortby: tag\nmenuid: \nminfreq: 0\nminlen: 3\ntargets: \n  content: content\n  photo: photo\n  blogpost: blog\n  catalog: catalog\n  userphoto: userphoto\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
-(26, 'sidebar', 'Cart', 'Cart', 1, 'mod_cart', 19, 1, 0, 0, '---\nshowtype: list\nshowqty: 1\nmenuid: 23\nsource: catalog\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (27, 'sidebar', 'Search', 'Search', 1, 'mod_search', 1, 0, 0, 0, '---\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (19, 'maintop', 'New articles', 'New articles', 1, 'mod_latest', 2, 1, 1, 0, '---\nnewscount: 4\nshowdesc: 0\nshowdate: 1\nshowcom: 1\nshowrss: 1\ncat_id: 6\nsubs: 1\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
 (20, 'topmenu', 'Authorization', 'Authorization', 1, 'mod_auth', 0, 1, 1, 0, '---\nautolog: 1\npassrem: 1\n', 1, '', '', 0, 1, 'MINUTE', 'module.tpl', 0, '1.0'),
@@ -583,12 +579,10 @@ INSERT INTO `#__modules` (`id`, `position`, `name`, `title`, `is_external`, `con
 (23, 'sidebar', 'Random picture', 'Random picture', 1, 'mod_random_image', 21, 1, 0, 0, '---\nshowtitle: 1\nalbum_id: 0\nmenuid: 20\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (36, 'sidebar', 'Articles categories', 'Articles categories', 1, 'mod_category', 13, 1, 0, 0, '---\nshowdesc: 0\ncategory_id: 6\nicon: /images/markers/folder.png\nmenuid: 21\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (39, 'sidebar', 'Template chooser', 'Template chooser', 1, 'mod_template', 12, 1, 0, 0, '---\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
-(47, 'mainbottom', 'Catalog entries', 'Catalog entries', 1, 'mod_uc', 23, 1, 0, 0, '---\nnum: 10\ncat_id: 0\nmenuid: 23\nshowf: 2\nshowtype: thumb\nfulllink: 1\nsort: rating\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (49, 'sidebar', 'Who is online', 'Who is online', 1, 'mod_whoonline', 24, 1, 1, 0, '---\nshow_today: 1\nadmin_editor: 1\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
 (51, 'sidebar', 'Random user picture', 'Random user picture', 1, 'mod_user_image', 25, 1, 0, 0, '---\nshowtitle: 1\nmenuid: 15\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (52, 'sidebar', 'External file', 'External file', 0, '<p>{ФАЙЛ=test.php}</p>', 11, 1, 0, 1, '---\n', 0, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (56, 'sidebar', 'Articles archive', 'Articles archive', 1, 'mod_arhive', 27, 1, 0, 0, '---\nsource: both\ncat_id: 6\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
-(54, 'sidebar', 'Random in catalog', 'Random in catalog', 1, 'mod_uc_random', 26, 1, 0, 0, '---\ncat_id: 1\ncount: 2\nshowtitle: 1\nshowcat: 0\nmenuid: 23\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (60, 'maintop', 'RSS-reader', 'RSS-reader', 1, 'mod_rss', 9, 1, 0, 0, '---\nshowdesc: 0\nshowicon: 1\nitemslimit: 6\nrssurl: http://www.lenta.ru/rss\ncols: 2\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (61, 'sidebar', 'Latest comments', 'Latest comments', 1, 'mod_comments', 4, 1, 1, 0, '---\nshownum: 10\nminrate: 0\nshowdesc: 1\nshowrss: 1\nshowtarg: 0\ntargets: \n  faq: faq\n  catalog: catalog\n  boarditem: boarditem\n  blog: blog\n  article: article\n  palbum: palbum\n  photo: photo\n  userphoto: userphoto\n', 1, '', '', 0, 1, 'MINUTE', 'module.tpl', 0, '1.0'),
 (62, 'maintop', 'Photos', 'Photos', 1, 'mod_photo', 32, 1, 1, 0, '---\nshownum: 6\nmaxcols: 2\nalbum_id: 100\nshowtype: short\nshowmore: 0\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
@@ -624,8 +618,6 @@ INSERT INTO `#__modules_bind` (`id`, `module_id`, `menu_id`, `position`) VALUES
 (568, 17, 1, 'top'),
 (347, 41, 18, ''),
 (498, 39, 1, 'sidebar'),
-(417, 54, 24, 'sidebar'),
-(416, 54, 21, 'sidebar'),
 (264, 32, 5, ''),
 (328, 2, 0, ''),
 (263, 32, 8, ''),
@@ -636,14 +628,12 @@ INSERT INTO `#__modules_bind` (`id`, `module_id`, `menu_id`, `position`) VALUES
 (412, 37, 22, 'sidebar'),
 (433, 36, 19, 'sidebar'),
 (381, 24, 1, 'sidebar'),
-(492, 26, 22, 'sidebar'),
 (314, 38, 8, ''),
 (556, 1, 0, 'topmenu'),
 (497, 27, 1, 'sidebar'),
 (332, 43, 0, ''),
 (413, 45, 1, ''),
 (458, 44, 1, 'sidebar'),
-(491, 47, 1, 'mainbottom'),
 (350, 48, 37, ''),
 (595, 50, 1, 'maintop'),
 (434, 51, 1, 'sidebar'),
@@ -652,7 +642,6 @@ INSERT INTO `#__modules_bind` (`id`, `module_id`, `menu_id`, `position`) VALUES
 (360, 52, 41, 'sidebar'),
 (361, 52, 43, 'sidebar'),
 (364, 53, 1, ''),
-(415, 54, 19, 'sidebar'),
 (422, 60, 1, 'maintop'),
 (401, 55, 0, ''),
 (609, 56, 0, 'sidebar'),
@@ -664,7 +653,6 @@ INSERT INTO `#__modules_bind` (`id`, `module_id`, `menu_id`, `position`) VALUES
 (496, 68, 0, 'maintop'),
 (486, 69, 1, 'maintop'),
 (617, 22, 1, 'sidebar'),
-(493, 26, 23, 'sidebar'),
 (604, 70, 15, 'sidebar'),
 (515, 72, 1, 'maintop'),
 (516, 73, 1, 'maintop'),
@@ -913,127 +901,7 @@ INSERT INTO `#__tag_targets` (`id`, `target`, `component`, `title`) VALUES
 (1, 'content', 'content', 'Articles'),
 (2, 'blogpost', 'blogs', 'Blog posts'),
 (3, 'photo', 'photos', 'Gallery photos'),
-(4, 'userphoto', 'users', 'User photos'),
-(5, 'catalog', 'catalog', 'Catalog entries');
-
-DROP TABLE IF EXISTS `#__uc_cart`;
-CREATE TABLE `#__uc_cart` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `session_id` varchar(50) NOT NULL,
-  `item_id` int(11) NOT NULL,
-  `pubdate` datetime NOT NULL,
-  `itemscount` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `#__uc_cats`;
-CREATE TABLE `#__uc_cats` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `parent_id` int(11) NOT NULL,
-  `title` varchar(200) NOT NULL,
-  `description` text NOT NULL,
-  `published` tinyint(1) NOT NULL DEFAULT '1',
-  `fieldsstruct` text,
-  `view_type` varchar(20) NOT NULL DEFAULT 'list',
-  `fields_show` int(11) NOT NULL DEFAULT '10',
-  `showmore` tinyint(1) NOT NULL DEFAULT '1',
-  `perpage` int(11) NOT NULL DEFAULT '20',
-  `showtags` tinyint(1) NOT NULL DEFAULT '1',
-  `showsort` tinyint(1) NOT NULL DEFAULT '1',
-  `is_ratings` tinyint(1) NOT NULL,
-  `orderby` varchar(12) NOT NULL DEFAULT 'pubdate',
-  `orderto` varchar(10) DEFAULT 'desc',
-  `showabc` tinyint(1) NOT NULL DEFAULT '1',
-  `shownew` tinyint(1) NOT NULL,
-  `newint` varchar(100) NOT NULL,
-  `filters` int(11) NOT NULL,
-  `is_shop` tinyint(1) NOT NULL,
-  `NSLeft` int(11) NOT NULL,
-  `NSRight` int(11) NOT NULL,
-  `NSLevel` int(11) NOT NULL,
-  `NSDiffer` int(11) NOT NULL,
-  `NSIgnore` int(11) NOT NULL,
-  `ordering` int(11) NOT NULL,
-  `is_public` tinyint(1) NOT NULL,
-  `can_edit` int(11) NOT NULL DEFAULT '0',
-  `cost` varchar(5) NOT NULL,
-  `pagetitle` varchar(200) NOT NULL DEFAULT '',
-  `meta_keys` varchar(250) NOT NULL DEFAULT '',
-  `meta_desc` varchar(250) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  KEY `NSLeft` (`NSLeft`,`NSRight`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
-INSERT INTO `#__uc_cats` (`id`, `parent_id`, `title`, `description`, `published`, `fieldsstruct`, `view_type`, `fields_show`, `showmore`, `perpage`, `showtags`, `showsort`, `is_ratings`, `orderby`, `orderto`, `showabc`, `shownew`, `newint`, `filters`, `is_shop`, `NSLeft`, `NSRight`, `NSLevel`, `NSDiffer`, `NSIgnore`, `ordering`, `is_public`, `can_edit`, `cost`) VALUES
-(1000, 0, '-- root --', '', 1, '', 'list', 10, 1, 20, 1, 1, 0, 'pubdate', 'desc', 1, 0, '', 0, 0, 1, 2, 0, 0, 0, 1, 0, 0, '');
-
-DROP TABLE IF EXISTS `#__uc_cats_access`;
-CREATE TABLE `#__uc_cats_access` (
-  `cat_id` int(11) NOT NULL,
-  `group_id` int(11) NOT NULL,
-  KEY `cat_id` (`cat_id`,`group_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `#__uc_discount`;
-CREATE TABLE `#__uc_discount` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `title` varchar(150) NOT NULL,
-  `cat_id` int(11) NOT NULL,
-  `sign` tinyint(4) NOT NULL,
-  `value` float NOT NULL,
-  `unit` varchar(10) NOT NULL,
-  `if_limit` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `cat_id` (`cat_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `#__uc_items`;
-CREATE TABLE `#__uc_items` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `category_id` int(11) NOT NULL,
-  `title` varchar(200) NOT NULL,
-  `pubdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `published` tinyint(1) NOT NULL DEFAULT '1',
-  `imageurl` varchar(200) NOT NULL,
-  `fieldsdata` text NOT NULL,
-  `hits` int(11) NOT NULL,
-  `is_comments` tinyint(1) NOT NULL,
-  `tags` varchar(200) NOT NULL,
-  `rating` float NOT NULL,
-  `meta_desc` varchar(250) NOT NULL,
-  `meta_keys` varchar(250) NOT NULL,
-  `price` float NOT NULL,
-  `canmany` int(11) NOT NULL DEFAULT '1',
-  `user_id` int(11) NOT NULL,
-  `on_moderate` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `category_id` (`category_id`),
-  FULLTEXT KEY `title` (`title`,`fieldsdata`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `#__uc_ratings`;
-CREATE TABLE `#__uc_ratings` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `item_id` int(11) NOT NULL,
-  `points` int(11) NOT NULL,
-  `ip` varchar(16) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `#__uc_tags`;
-CREATE TABLE `#__uc_tags` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `tag` varchar(200) NOT NULL,
-  `item_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
+(4, 'userphoto', 'users', 'User photos');
 
 DROP TABLE IF EXISTS `#__upload_images`;
 CREATE TABLE `#__upload_images` (

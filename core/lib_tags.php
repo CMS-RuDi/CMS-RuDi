@@ -164,17 +164,19 @@ function cmsTagItemLink($target, $item_id)
             }
             break;
         case 'catalog':
-            $sql = "SELECT i.title as title, i.id as item_id, c.title as cat, c.id as cat_id
+            if ( \cms\controller::installed('catalog') ) {
+                $sql = "SELECT i.title as title, i.id as item_id, c.title as cat, c.id as cat_id
                         FROM cms_uc_items i
                         LEFT JOIN cms_uc_cats c ON c.id = i.category_id
                         WHERE i.id = '" . $item_id . "' AND i.published = 1";
 
-            $rs = $inDB->query($sql);
+                $rs = $inDB->query($sql);
 
-            if ( $inDB->num_rows($rs) ) {
-                $item = $inDB->fetch_assoc($rs);
-                $link = '<a href="/catalog/' . $item['cat_id'] . '" class="tag_searchcat">' . $item['cat'] . '</a> &rarr; ';
-                $link .= '<a href="/catalog/item' . $item['item_id'] . '.html" class="tag_searchitem">' . $item['title'] . '</a>';
+                if ( $inDB->num_rows($rs) ) {
+                    $item = $inDB->fetch_assoc($rs);
+                    $link = '<a href="/catalog/' . $item['cat_id'] . '" class="tag_searchcat">' . $item['cat'] . '</a> &rarr; ';
+                    $link .= '<a href="/catalog/item' . $item['item_id'] . '.html" class="tag_searchitem">' . $item['title'] . '</a>';
+                }
             }
             break;
         case 'video':

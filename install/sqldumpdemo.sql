@@ -42,7 +42,6 @@ INSERT INTO `#__actions` (`id`, `component`, `name`, `title`, `message`, `is_tra
 (9, 'blogs', 'add_blog', 'Создание блога пользователем', 'создает блог %s|', 1, 1),
 (10, 'blogs', 'add_post', 'Добавление записи в блог', 'пишет пост %s| в блоге %s', 1, 1),
 (11, 'users', 'set_status', 'Изменение статуса пользователя', '', 1, 1),
-(13, 'catalog', 'add_catalog', 'Добавление записи в каталог', 'добавляет запись %s| в рубрику каталога %s', 1, 1),
 (14, 'clubs', 'add_club', 'Создание клуба', 'создает клуб %s|', 1, 1),
 (15, 'clubs', 'add_club_user', 'Вступление в клуб', 'вступает в клуб %s|', 1, 1),
 (19, 'users', 'add_avatar', 'Загрузка или смена аватара пользователем', 'изменяет аватар|', 1, 1),
@@ -329,7 +328,6 @@ INSERT INTO `#__comment_targets` (`id`, `target`, `component`, `title`, `target_
 (3, 'palbum', 'photos', 'Фотоальбомы', 'cms_photo_albums', 'вашего фотоальбома'),
 (4, 'photo', 'photos', 'Фотографии галереи', 'cms_photo_files', 'вашей фотографии'),
 (5, 'userphoto', 'users', 'Фотографии пользователей', 'cms_user_photos', 'вашей фотографии'),
-(6, 'catalog', 'catalog', 'Записи каталога', 'cms_uc_items', 'вашей записи'),
 (9, 'club_photo', 'clubs', 'Фото в клубах', 'cms_photo_files', 'вашей фотографии'),
 (10, 'club_post', 'clubs', 'Пост блога клуба', 'cms_blog_posts', 'вашей записи в клубном блоге');
 
@@ -356,7 +354,6 @@ INSERT INTO `#__components` (`id`, `title`, `link`, `config`, `internal`, `autho
 (6, 'Конструктор форм', 'forms', '---\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (7, 'Комментарии пользователей', 'comments', '---\nemail: \ncanguests: 1\nregcap: 0\npublish: 1\nsmiles: 1\nbbcode: 1\nselfdel: 0\nsubscribe: 1\nanchors: 0\nrecode: 0\nmin_karma: 0\nmin_karma_show: 0\nmin_karma_add: 0\nperpage: 20\nj_code: 1\ncmm_ajax: 0\ncmm_ip: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (8, 'Архив статей', 'arhive', '---\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(9, 'Универсальный каталог', 'catalog', '---\nemail: shop@site.ru\ndelivery: |\n  Сведения о доставке.\n  Этот текст можно изменить в настройках компонента &quot;Универсальный каталог&quot;.\nnotice: 1\npremod: 1\npremod_msg: 1\nis_comments: 1\nis_rss: 1\nwatermark: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (10, 'Профили пользователей', 'users', '---\nshowgroup: 1\nsw_stats: \nsw_comm: 1\nsw_search: 1\nsw_forum: 1\nsw_photo: 1\nsw_wall: 1\nsw_friends: 1\nsw_blogs: 1\nsw_clubs: 1\nsw_feed: 1\nsw_content: 1\nsw_awards: 1\nsw_board: 1\nsw_msg: 1\nsw_guest: 1\nkarmatime: 1\nkarmaint: DAY\nphotosize: 0\nwatermark: 1\nsmallw: 64\nmedw: 200\nmedh: 500\nsw_files: 1\nfilessize: 100\nfilestype: jpeg,gif,png,jpg,bmp,zip,rar,tar\nprivforms: \n  - 3\nj_code: 1\ndeltime: 6\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (15, 'Блоги', 'blogs', '---\nperpage: 10\nperpage_blog: 15\nupdate_date: 0\nupdate_seo_link: 0\nmin_karma_private: 0\nmin_karma_public: 5\nmin_karma: 1\nwatermark: 1\nimg_on: 1\nrss_all: 1\nrss_one: 1\nj_code: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
 (18, 'Лента активности', 'actions', '---\r\nshow_target: 1\r\nperpage: 10\r\nperpage_tab: 15\r\nis_all: 1\r\nact_type: \r\n  add_quest: 16\r\n  add_club_user: 15\r\n  vote_movie: 31\r\n  add_movie: 30\r\n  add_friend: 20\r\n  add_post: 10\r\n  add_post_club: 25\r\n  add_catalog: 13\r\n  add_wall_my: 29\r\n  add_wall: 23\r\n  add_wall_club: 24\r\n  add_comment: 2\r\n  add_user_photo_multi: 27\r\n  add_board: 12\r\n  add_fpost: 17\r\n  add_article: 8\r\n  add_thread: 18\r\n  add_photo: 7\r\n  add_user_photo: 26\r\n  add_avatar: 19\r\n  add_file: 22\r\n  set_status: 11\r\n  add_award: 21\r\n  add_user: 28\r\n  add_blog: 9\r\n  add_club: 14\r\n', 0, 'InstantCMS Team', 1, '1.10.3', 1),
@@ -638,7 +635,6 @@ INSERT INTO `#__modules` (`id`, `position`, `name`, `title`, `is_external`, `con
 (1, 'topmenu', 'Меню', 'Меню', 1, 'mod_menu', 6, 0, 1, 0, '---\nmenu: mainmenu\nshow_home: 1\ntpl: mod_menu.tpl\nis_sub_menu: 0\n', 1, '', '', 0, 1, 'HOUR', 'module_simple.tpl', 0, '1.0'),
 (17, 'top', 'Главная страница', 'Добро пожаловать!', 0, '<table cellspacing="0" cellpadding="0" border="0" width="100%">\r\n    <tbody>\r\n        <tr>\r\n            <td width="100" valign="top"><a target="_blank" href="http://www.instantcms.ru"><img border="0" alt="" src="/images/content/community.png" /></a></td>\r\n            <td>\r\n            <p class="moduletitle">Добро пожаловать!</p>\r\n            <p>Мы рады приветствовать Вас в нашей социальной сети. После регистрации Вам станут доступны все функции сайта.</p>\r\n            <p>Вы сможете завести блог, загружать фотографии и общаться с друзьями.</p>\r\n            <div>\r\n            <div>Чтобы изменить этот текст, <a href="/admin/index.php?view=modules&amp;do=edit&amp;id=17">отредактируйте модуль &quot;Главная страница&quot;</a>.</div>\r\n            </div>\r\n            </td>\r\n        </tr>\r\n    </tbody>\r\n</table>', 0, 0, 1, 1, '---\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (44, 'sidebar', 'Облако тегов', 'Облако тегов', 1, 'mod_tags', 18, 0, 0, 0, '---\ncat_id: \nsortby: tag\nmenuid: \nminfreq: 0\nminlen: 3\ntargets: \n  content: content\n  photo: photo\n  blogpost: blog\n  catalog: catalog\n  userphoto: userphoto\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
-(26, 'sidebar', 'Корзина покупателя', 'Корзина', 1, 'mod_cart', 19, 1, 0, 0, '---\nshowtype: list\nshowqty: 1\nmenuid: 23\nsource: catalog\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (27, 'sidebar', 'Поиск', 'Поиск', 1, 'mod_search', 1, 0, 0, 0, '---\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (19, 'maintop', 'Последние материалы', 'Новые статьи', 1, 'mod_latest', 2, 1, 1, 0, '---\nnewscount: 4\nshowdesc: 0\nshowdate: 1\nshowcom: 1\nshowrss: 1\ncat_id: 6\nsubs: 1\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
 (20, 'topmenu', 'Авторизация', 'Авторизация', 1, 'mod_auth', 0, 1, 1, 0, '---\nautolog: 1\npassrem: 1\n', 1, '', '', 0, 1, 'MINUTE', 'module.tpl', 0, '1.0'),
@@ -646,12 +642,10 @@ INSERT INTO `#__modules` (`id`, `position`, `name`, `title`, `is_external`, `con
 (23, 'sidebar', 'Случайное изображение', 'Случайная картинка', 1, 'mod_random_image', 21, 1, 0, 0, '---\nshowtitle: 1\nalbum_id: 0\nmenuid: 20\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (36, 'sidebar', 'Разделы статей', 'Разделы статей', 1, 'mod_category', 13, 1, 0, 0, '---\nshowdesc: 0\ncategory_id: 6\nicon: /images/markers/folder.png\nmenuid: 21\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (39, 'sidebar', 'Выбор шаблона', 'Выбор шаблона', 1, 'mod_template', 12, 1, 0, 0, '---\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
-(47, 'mainbottom', 'Записи в каталоге', 'Записи в каталоге', 1, 'mod_uc', 23, 1, 0, 0, '---\nnum: 10\ncat_id: 0\nmenuid: 23\nshowf: 2\nshowtype: thumb\nfulllink: 1\nsort: rating\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (49, 'sidebar', 'Кто онлайн?', 'Кто онлайн?', 1, 'mod_whoonline', 24, 1, 1, 0, '---\nshow_today: 1\nadmin_editor: 1\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
 (51, 'sidebar', 'Случайное фото', 'Случайное фото', 1, 'mod_user_image', 25, 1, 0, 0, '---\nshowtitle: 1\nmenuid: 15\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (52, 'sidebar', 'Внешний файл', 'Внешний файл', 0, '<p>{ФАЙЛ=test.php}</p>', 11, 1, 0, 1, '---\n', 0, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (56, 'sidebar', 'Архив статей', 'Архив новостей', 1, 'mod_arhive', 27, 1, 0, 0, '---\nsource: both\ncat_id: 6\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
-(54, 'sidebar', 'Случайное в каталоге', 'Случайное в каталоге', 1, 'mod_uc_random', 26, 1, 0, 0, '---\ncat_id: 1\ncount: 2\nshowtitle: 1\nshowcat: 0\nmenuid: 23\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (60, 'maintop', 'RSS-ридер', 'RSS-ридер', 1, 'mod_rss', 9, 1, 0, 0, '---\nshowdesc: 0\nshowicon: 1\nitemslimit: 6\nrssurl: http://www.lenta.ru/rss\ncols: 2\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (61, 'sidebar', 'Последние комментарии', 'Последние комментарии', 1, 'mod_comments', 4, 1, 1, 0, '---\nshownum: 10\nminrate: 0\nshowdesc: 1\nshowrss: 1\nshowtarg: 0\ntargets: \n  faq: faq\n  catalog: catalog\n  boarditem: boarditem\n  blog: blog\n  article: article\n  palbum: palbum\n  photo: photo\n  userphoto: userphoto\n', 1, '', '', 0, 1, 'MINUTE', 'module.tpl', 0, '1.0'),
 (62, 'maintop', 'Фотографии', 'Фотографии', 1, 'mod_photo', 32, 1, 1, 0, '---\nshownum: 6\nmaxcols: 2\nshowclubs: 1\nalbum_id: 100\nshowtype: short\nshowmore: 0\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
@@ -664,7 +658,6 @@ INSERT INTO `#__modules` (`id`, `position`, `name`, `title`, `is_external`, `con
 (75, 'sidebar', 'Доска почета', 'Доска почета', 1, 'mod_respect', 1, 1, 1, 0, '---\nview: all\nshow_awards: 1\norder: desc\nlimit: 5\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
 (76, 'sidebar', 'Файлы пользователей', 'Файлы пользователей', 1, 'mod_userfiles', 1, 1, 0, 0, '---\nmenuid: 0\nsw_stats: 1\nsw_latest: 1\nsw_popular: 1\nnum_latest: 5\nnum_popular: 5\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (87, 'maintop', 'Лента активности', 'Лента активности', 1, 'mod_actions', 1, 1, 1, 0, '---\nlimit: 15\nshow_target: 0\naction_types: \n  16: 16\n  15: 15\n  20: 20\n  13: 13\n  29: 29\n  24: 24\n  23: 23\n  2: 2\n  27: 27\n  12: 12\n  10: 10\n  25: 25\n  17: 17\n  8: 8\n  18: 18\n  7: 7\n  26: 26\n  19: 19\n  22: 22\n  11: 11\n  21: 21\n  28: 28\n  9: 9\n  14: 14\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.7'),
-(82, 'sidebar', 'Приветствие', 'Универсальный каталог', 0, '<p>С помощью компонента &laquo;Универсальный каталог&raquo;, в котором Вы сейчас находитесь, можно организовать хранение любых данных. От карандашей до автомобилей.</p>\r\n<p>Каждая рубрика каталога имеет собственный набор характеристик, который можно изменить в панели управления. Пользователи могут фильтровать записи каталога по характеристикам одним щелчком мыши.&nbsp;</p>\r\n<p>Любой пользователь может добавлять собственные записи в те рубрики каталога, для которых это разрешено в настройках.</p>', 14, 1, 1, 1, '', 1, '', '', 0, 24, 'HOUR', 'module.tpl', 1, '1.0'),
 (83, 'sidebar', 'Статистика пользователей', 'Статистика пользователей', 1, 'mod_user_stats', 1, 1, 1, 0, '---\nshow_total: 1\nshow_online: 1\nshow_gender: 1\nshow_city: 1\nshow_bday: 1\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
 (84, 'sidebar', 'Друзья онлайн', 'Друзья онлайн', 1, 'mod_user_friend', 5, 1, 0, 0, '---\r\nlimit: 5\r\nview_type: table', 1, '', '', 0, 1, 'HOUR', 'module_simple.tpl', 0, '1.0'),
 (85, 'sidebar', 'Пригласить друга', 'Пригласить друга', 1, 'mod_invite', 1, 1, 0, 0, '', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
@@ -688,8 +681,6 @@ INSERT INTO `#__modules_bind` (`id`, `module_id`, `menu_id`, `position`) VALUES
 (568, 17, 1, 'top'),
 (347, 41, 18, ''),
 (498, 39, 1, 'sidebar'),
-(417, 54, 24, 'sidebar'),
-(416, 54, 21, 'sidebar'),
 (264, 32, 5, ''),
 (328, 2, 0, ''),
 (263, 32, 8, ''),
@@ -700,14 +691,12 @@ INSERT INTO `#__modules_bind` (`id`, `module_id`, `menu_id`, `position`) VALUES
 (412, 37, 22, 'sidebar'),
 (433, 36, 19, 'sidebar'),
 (381, 24, 1, 'sidebar'),
-(492, 26, 22, 'sidebar'),
 (314, 38, 8, ''),
 (556, 1, 0, 'topmenu'),
 (497, 27, 1, 'sidebar'),
 (332, 43, 0, ''),
 (413, 45, 1, ''),
 (458, 44, 1, 'sidebar'),
-(491, 47, 1, 'mainbottom'),
 (350, 48, 37, ''),
 (595, 50, 1, 'maintop'),
 (434, 51, 1, 'sidebar'),
@@ -716,7 +705,6 @@ INSERT INTO `#__modules_bind` (`id`, `module_id`, `menu_id`, `position`) VALUES
 (360, 52, 41, 'sidebar'),
 (361, 52, 43, 'sidebar'),
 (364, 53, 1, ''),
-(415, 54, 19, 'sidebar'),
 (422, 60, 1, 'maintop'),
 (401, 55, 0, ''),
 (609, 56, 0, 'sidebar'),
@@ -728,7 +716,6 @@ INSERT INTO `#__modules_bind` (`id`, `module_id`, `menu_id`, `position`) VALUES
 (496, 68, 0, 'maintop'),
 (486, 69, 1, 'maintop'),
 (617, 22, 1, 'sidebar'),
-(493, 26, 23, 'sidebar'),
 (604, 70, 15, 'sidebar'),
 (515, 72, 1, 'maintop'),
 (516, 73, 1, 'maintop'),
@@ -739,7 +726,6 @@ INSERT INTO `#__modules_bind` (`id`, `module_id`, `menu_id`, `position`) VALUES
 (597, 19, 1, 'maintop'),
 (592, 79, 1, 'maintop'),
 (586, 62, 20, 'sidebar'),
-(599, 82, 23, 'sidebar'),
 (608, 49, 1, 'sidebar'),
 (607, 83, 15, 'sidebar'),
 (616, 75, 1, 'sidebar'),
@@ -984,23 +970,13 @@ INSERT INTO `#__tag_targets` (`id`, `target`, `component`, `title`) VALUES
 (1, 'content', 'content', 'Статьи'),
 (2, 'blogpost', 'blogs', 'Записи блогов'),
 (3, 'photo', 'photos', 'Фотографии галереи'),
-(4, 'userphoto', 'users', 'Фотографии пользователей'),
-(5, 'catalog', 'catalog', 'Записи каталога');
+(4, 'userphoto', 'users', 'Фотографии пользователей');
 
 INSERT INTO `#__tags` (`id`, `tag`, `target`, `item_id`) VALUES
 (255, 'пример', 'photo', 11),
 (257, 'пример', 'photo', 10),
 (256, 'фото', 'photo', 10),
 (254, 'фото', 'photo', 11),
-(78, 'карандаши', 'catalog', 1),
-(77, 'пастель', 'catalog', 1),
-(85, 'краски', 'catalog', 2),
-(84, 'набор', 'catalog', 2),
-(26, 'авто', 'catalog', 5),
-(27, 'минивэн', 'catalog', 5),
-(28, 'тойота', 'catalog', 5),
-(31, 'авто', 'catalog', 7),
-(32, 'минивэн', 'catalog', 7),
 (241, 'блог', 'blogpost', 5),
 (240, 'пример', 'blogpost', 5),
 (273, 'геология', 'content', 31),
@@ -1021,132 +997,6 @@ INSERT INTO `#__tags` (`id`, `tag`, `target`, `item_id`) VALUES
 (252, 'психология', 'content', 36),
 (172, 'пример', 'content', 35),
 (251, 'статья', 'content', 36);
-
-DROP TABLE IF EXISTS `#__uc_cart`;
-CREATE TABLE `#__uc_cart` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `session_id` varchar(50) NOT NULL,
-  `item_id` int(11) NOT NULL,
-  `pubdate` datetime NOT NULL,
-  `itemscount` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `#__uc_cats`;
-CREATE TABLE `#__uc_cats` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `parent_id` int(11) NOT NULL,
-  `title` varchar(200) NOT NULL,
-  `description` text NOT NULL,
-  `published` tinyint(1) NOT NULL DEFAULT '1',
-  `fieldsstruct` text,
-  `view_type` varchar(20) NOT NULL DEFAULT 'list',
-  `fields_show` int(11) NOT NULL DEFAULT '10',
-  `showmore` tinyint(1) NOT NULL DEFAULT '1',
-  `perpage` int(11) NOT NULL DEFAULT '20',
-  `showtags` tinyint(1) NOT NULL DEFAULT '1',
-  `showsort` tinyint(1) NOT NULL DEFAULT '1',
-  `is_ratings` tinyint(1) NOT NULL,
-  `orderby` varchar(12) NOT NULL DEFAULT 'pubdate',
-  `orderto` varchar(10) DEFAULT 'desc',
-  `showabc` tinyint(1) NOT NULL DEFAULT '1',
-  `shownew` tinyint(1) NOT NULL,
-  `newint` varchar(100) NOT NULL,
-  `filters` int(11) NOT NULL,
-  `is_shop` tinyint(1) NOT NULL,
-  `NSLeft` int(11) NOT NULL,
-  `NSRight` int(11) NOT NULL,
-  `NSLevel` int(11) NOT NULL,
-  `NSDiffer` int(11) NOT NULL,
-  `NSIgnore` int(11) NOT NULL,
-  `ordering` int(11) NOT NULL,
-  `is_public` tinyint(1) NOT NULL,
-  `can_edit` int(11) NOT NULL DEFAULT '0',
-  `cost` varchar(5) NOT NULL,
-  `pagetitle` varchar(200) NOT NULL DEFAULT '',
-  `meta_keys` varchar(250) NOT NULL DEFAULT '',
-  `meta_desc` varchar(250) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  KEY `NSLeft` (`NSLeft`,`NSRight`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
-INSERT INTO `#__uc_cats` (`id`, `parent_id`, `title`, `description`, `published`, `fieldsstruct`, `view_type`, `fields_show`, `showmore`, `perpage`, `showtags`, `showsort`, `is_ratings`, `orderby`, `orderto`, `showabc`, `shownew`, `newint`, `filters`, `is_shop`, `NSLeft`, `NSRight`, `NSLevel`, `NSDiffer`, `NSIgnore`, `ordering`, `is_public`, `can_edit`, `cost`) VALUES
-(1000, 0, '-- Корневая рубрика --', '', 1, '---\n', 'list', 10, 1, 20, 1, 1, 0, 'pubdate', 'desc', 1, 0, '', 0, 0, 1, 6, 0, 0, 0, 1, 0, 0, ''),
-(2, 1000, 'Автомобили', '', 1, '---\n- Тип кузова/~m~/\n- Объем двигателя\n- Год выпуска/~m~/\n- Описание/~h~/\n', 'list', 2, 1, 20, 1, 1, 0, 'pubdate', 'desc', 1, 1, '2 DAY', 0, 0, 2, 3, 1, 0, 0, 22, 0, 0, ''),
-(1, 1000, 'Канцелярские принадлежности', '', 1, '---\n- Артикул/~m~/\n- Цвета/~m~/\n- Минимальная партия\n- Описание/~h~/\n- Размер/~m~/\n- Скачать/~l~/\n', 'shop', 4, 0, 11, 0, 0, 0, 'hits', 'desc', 0, 0, '123 HOUR', 0, 0, 4, 5, 1, 0, 0, 23, 1, 0, '');
-
-DROP TABLE IF EXISTS `#__uc_cats_access`;
-CREATE TABLE `#__uc_cats_access` (
-  `cat_id` int(11) NOT NULL,
-  `group_id` int(11) NOT NULL,
-  KEY `cat_id` (`cat_id`,`group_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `#__uc_discount`;
-CREATE TABLE `#__uc_discount` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `title` varchar(150) NOT NULL,
-  `cat_id` int(11) NOT NULL,
-  `sign` tinyint(4) NOT NULL,
-  `value` float NOT NULL,
-  `unit` varchar(10) NOT NULL,
-  `if_limit` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `cat_id` (`cat_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
-INSERT INTO `#__uc_discount` (`id`, `title`, `cat_id`, `sign`, `value`, `unit`, `if_limit`) VALUES
-(2, 'Почтовые расходы', 0, 2, 200, 'руб.', 0),
-(3, 'Скидка на канц.товары', 1, -1, 15, '%', 0);
-
-DROP TABLE IF EXISTS `#__uc_items`;
-CREATE TABLE `#__uc_items` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `category_id` int(11) NOT NULL,
-  `title` varchar(200) NOT NULL,
-  `pubdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `published` tinyint(1) NOT NULL DEFAULT '1',
-  `imageurl` varchar(200) NOT NULL,
-  `fieldsdata` text NOT NULL,
-  `hits` int(11) NOT NULL,
-  `is_comments` tinyint(1) NOT NULL,
-  `tags` varchar(200) NOT NULL,
-  `rating` float NOT NULL,
-  `meta_desc` varchar(250) NOT NULL,
-  `meta_keys` varchar(250) NOT NULL,
-  `price` float NOT NULL,
-  `canmany` int(11) NOT NULL DEFAULT '1',
-  `user_id` int(11) NOT NULL,
-  `on_moderate` int(11) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `category_id` (`category_id`),
-  FULLTEXT KEY `title` (`title`,`fieldsdata`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
-
-INSERT INTO `#__uc_items` (`id`, `category_id`, `title`, `pubdate`, `published`, `imageurl`, `fieldsdata`, `hits`, `is_comments`, `tags`, `rating`, `meta_desc`, `meta_keys`, `price`, `canmany`, `user_id`, `on_moderate`) VALUES
-(1, 1, 'Карандаши', '2016-06-03 13:38:55', 1, 'b00117f6bca1efaaef37b44da87c1100.jpg', '---\n- 3130070\n- бежевый\n- 191 шт.\n- ''Набор для рисования: 12 цветных карандашей в картонной коробочке''\n', 37, 1, 'пастель, карандаши', 0, '', '', 14.6, 1, 1, 0),
-(2, 1, 'Набор для рисования', '2016-06-03 13:40:37', 1, 'b21ddffd1e9fe4716f5d1496c4e74400.jpg', '---\n- 3170050PK2\n- >\n  бежевый, красный,\n  синий, оранжевый\n- 84 шт.\n- >\n  8 восковых карандашей,\n  8 красок и кисточка, в\n  пластиковом футляре\n- 11.00, 12.55, 13.02\n', 43, 1, 'набор, краски', 0, '', '', 24, 1, 1, 0),
-(5, 2, 'Toyota Estima', '2016-06-03 13:47:00', 1, '96bd390df9222bdc684ceec8afc94ec3.jpg', '---\n- минивэн\n- 2,4 литра\n- 2000\n- |\n  <p>Второе поколение Toyota Estima, появившееся на рынке в 2000 году, лидирует среди минивэнов. Предшествующее поколение модели отличалось от нынешнего традиционным передним приводом. В комплектацию Estima входят две вариации двигателей: новый 4-цилиндровый рядный двигатель объемом 2.4 литра с системой газораспределения DOHC и 3-литровый 6-цилиндровый V-образный двигатель с той же системой газораспределения. Estima оснащается полным приводом с функцией активного контроля.</p>\r\n  <p>Оригинальность экстерьера данного автомобиля проявляется в характерных жестких линиях кузова и раскосых передних фарах. Ширина и высота автомобиля стали меньше по сравнению с предыдущим поколением, но зато колесная база увеличилась до 40 мм.</p>\r\n  <p>Две двери Estima снабжены механизмом &laquo;easy closer&raquo;, задние двери отрываются, скользя вдоль корпуса. В передней пассажирской двери установлении механизм автоматического открытия и закрытия. Второе поколение Estima с первым роднит возможность разместить восемь человек в салоне по модели &laquo;2-3-3&raquo;.</p>\n', 8, 1, 'авто, минивэн, тойота', 0, '', '', 0, 1, 1, 0),
-(6, 2, 'Mitsubishi Eterna!', '2016-06-03 10:54:00', 1, '7afbfacf9a4c4a9d64e0da2b31b880e5.jpg', '---\n- седан\n- 1.8 литра\n- 1992\n- \n', 12, 1, '', 0, 'Описание', 'Ключевые слова', 0, 1, 1, 0),
-(7, 2, 'Subaru Domingo', '2016-06-03 13:51:24', 1, 'db0297daef1de808feed34a75b5ea49b.jpg', '---\n- минивэн\n- 1.2 литра\n- 1991\n- \n', 34, 1, 'авто, минивэн', 0, '', '', 0, 1, 1, 0);
-
-DROP TABLE IF EXISTS `#__uc_ratings`;
-CREATE TABLE `#__uc_ratings` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `item_id` int(11) NOT NULL,
-  `points` int(11) NOT NULL,
-  `ip` varchar(16) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-DROP TABLE IF EXISTS `#__uc_tags`;
-CREATE TABLE `#__uc_tags` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `tag` varchar(200) NOT NULL,
-  `item_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `#__upload_images`;
 CREATE TABLE `#__upload_images` (
