@@ -169,7 +169,7 @@ class menu extends \cms\com_action
 
         \cmsPage::initTemplate('cp/applets/menu', 'addmenumod')->
                 assign('menu_list', cpGetList('menu'))->
-                assign('pos', cpModulePositions($this->config->template))->
+                assign('pos', cpModulePositions(\cmsConfig::getConfig('template')))->
                 assign('groups', \cmsUser::getGroups())->
                 display();
     }

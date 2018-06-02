@@ -307,7 +307,7 @@ class modules extends \cms\com_action
                 assign('do', $do)->
                 assign('langs', $langs)->
                 assign('langs_count', count($langs))->
-                assign('pos', cpModulePositions($this->config->template))->
+                assign('pos', cpModulePositions(\cmsConfig::getConfig('template')))->
                 assign('tpls', $this->core->getModuleTemplates())->
                 assign('panel', \cms\backend::getPanelHtml())->
                 assign('modules_list', $this->core->getListItems('cms_modules'))->
@@ -341,7 +341,7 @@ class modules extends \cms\com_action
         echo jwTabs($tpl->fetch());
     }
 
-    public function submit()
+    public function actSubmit()
     {
         if ( !\cmsUser::checkCsrfToken() ) {
             \cmsCore::error404();
@@ -362,7 +362,7 @@ class modules extends \cms\com_action
         $is_strict_bind_hidden = $this->request()->get('is_strict_bind_hidden', 'int', 0);
 
         $is_public   = $this->request()->get('is_public', 'int', 0);
-        $access_list = [];
+        $access_list = '';
 
         if ( !$is_public ) {
             $access_list = $this->request()->get('allow_group', 'array_int', []);

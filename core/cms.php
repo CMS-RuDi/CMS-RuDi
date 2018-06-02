@@ -2089,15 +2089,17 @@ class cmsCore
 
     /**
      * Проверяет наличие кэша для указанного контента
+     *
      * @param string $target
      * @param int $target_id
      * @param int $cachetime
      * @param string $cacheint
+     *
      * @return bool
      */
-    public static function isCached($target, $target_id, $cachetime = 1, $cacheint = 'MINUTES')
+    public static function isCached($target, $target_id, $cachetime = 1, $cacheint = 'MINUTE')
     {
-        $where = "target='" . $target . "' AND target_id='" . $target_id . "' AND cachedate >= DATE_SUB(NOW(), INTERVAL " . $cachetime . " " . $cacheint . ")";
+        $where = "target='" . $target . "' AND target_id='" . $target_id . "' AND cachedate >= DATE_SUB(NOW(), INTERVAL " . $cachetime . " " . (empty($cacheint) ? 'MINUTE' : $cacheint) . ")";
 
         $cachefile = cmsDatabase::getInstance()->get_field('cms_cache', $where, 'cachefile');
 
