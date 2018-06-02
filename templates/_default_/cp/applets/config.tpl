@@ -50,7 +50,7 @@
                         </td>
                         <td width="350" valign="top">
                             <select name="lang" id="lang" style="width:364px">
-                                {foreach from=$langs as item=lng}
+                                {foreach from=$langs item=lng}
                                     <option value="{$lng}"{if $config.lang == $lng} selected="selected"{/if}>{$lng}</option>
                                 {/foreach}
                             </select>

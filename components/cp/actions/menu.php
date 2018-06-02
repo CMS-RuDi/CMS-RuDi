@@ -248,11 +248,15 @@ class menu extends \cms\com_action
             $tpl->assign('video_cat_list', $this->core->getListItemsNS('cms_video_category', isset($mod['linktype']) && $mod['linktype'] == 'video_cat') ? $mod['linkid'] : 0);
         }
 
+        if ( \cms\controller::installed('catalog') ) {
+            $tpl->assign('uccat_list', $this->core->getListItems('cms_uc_cats', (isset($mod['linktype']) && $mod['linktype'] == 'uccat') ? $mod['linkid'] : 0));
+        }
+
         $tpl->assign('com_video_installed', \cms\controller::installed('video'))->
+                assign('com_catalog_installed', \cms\controller::installed('catalog'))->
                 assign('content_list', $this->core->getListItems('cms_content', (isset($mod['linktype']) && $mod['linktype'] == 'content') ? $mod['linkid'] : 0))->
                 assign('content_cat_list', $this->core->getListItemsNS('cms_category', (isset($mod['linktype']) && $mod['linktype'] == 'category') ? $mod['linkid'] : 0))->
                 assign('blogs_list', $this->core->getListItems('cms_blogs', (isset($mod['linktype']) && $mod['linktype'] == 'blog') ? $mod['linkid'] : 0, 'title', 'asc', "owner='user'"))->
-                assign('uccat_list', $this->core->getListItems('cms_uc_cats', (isset($mod['linktype']) && $mod['linktype'] == 'uccat') ? $mod['linkid'] : 0))->
                 assign('photoalbums_list', $this->core->getListItems('cms_photo_albums', (isset($mod['linktype']) && $mod['linktype'] == 'photoalbum') ? $mod['linkid'] : 0, 'id', 'ASC', 'NSDiffer = ""'))->
                 assign('components_list', $this->core->getListItems('cms_components', (isset($mod['linktype']) && $mod['linktype'] == 'component') ? $mod['linkid'] : 0, 'title', 'asc', 'internal=0', 'link'));
 

@@ -1,5 +1,5 @@
 {strip}
-    {if $show_title}
+    {if !empty($show_title)}
         {if $is_admin || $is_moder || $is_karma_enabled}
             <div class="float_bar">
                 <a class="service ajaxlink" href="javascript:void(0)" onclick="clubs.addAlbum({$club.id});">{$LANG.ADD_PHOTOALBUM}</a>

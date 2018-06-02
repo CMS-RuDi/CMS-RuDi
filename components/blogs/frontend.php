@@ -831,11 +831,13 @@ function blogs()
 
     if ( $do == 'post' ) {
         $post = $model->getPost($seolink);
+
         if ( !$post ) {
             cmsCore::error404();
         }
 
         $blog = $model->getBlog($post['blog_id']);
+
         // Совместимость со старыми ссылками на клубные посты блога
         if ( !$blog ) {
             $blog_user_id = $inDB->get_field('cms_blogs', "id = '{$post['blog_id']}' AND owner = 'club'", 'user_id');
@@ -868,6 +870,7 @@ function blogs()
         if ( $inUser->id ) {
             $inPage->addHeadJS('components/blogs/js/blog.js');
         }
+
         $inPage->addPathway($blog['title'], $model->getBlogURL($blog['seolink']));
         $inPage->addPathway($post['title']);
 

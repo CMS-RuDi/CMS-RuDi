@@ -20,7 +20,7 @@ class config extends \cms\com_action
         cpCheckWritable('/includes/config.inc.php');
 
         $config   = \cmsConfig::getConfig();
-        $tpl_info = $this->page->getCurrentTplInfo();
+        $tpl_info = $this->page()->getCurrentTplInfo();
 
         $result = $this->model->db->query("SELECT (sum(data_length)+sum(index_length))/1024/1024 as size FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '" . $config['db_base'] . "'", false, true);
 
@@ -32,8 +32,8 @@ class config extends \cms\com_action
             $db_size = round($s['size'], 2) . ' ' . $this->lang->size_mb;
         }
 
-        $tpl = $this->page->initTemplate('cp/applets', 'config')->
-                assign('submit_uri', $this->genActionUri('config', 'save'))->
+        $tpl = $this->page()->initTemplate('cp/applets', 'config')->
+                assign('submit_uri', $this->genActionUrl('config', 'save'))->
                 assign('config', $config)->
                 assign('langs', \cmsCore::getDirsList('/languages'))->
                 assign('templates', \cmsCore::getDirsList('/templates'))->

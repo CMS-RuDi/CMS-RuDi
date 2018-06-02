@@ -126,11 +126,10 @@
                 <div class="small_title"><strong>{$lang->ad_latest_events}</strong></div>
                 <div id="actions_box">
                     <div id="actions">
-                        {include file='actions.tpl'}
+                        {include file='cp/actions.tpl'}
                     </div>
                 </div>
             </div>
-
         </td>
         <td width="325" valign="top" style="">
             <table width="100%" border="0" cellspacing="0" cellpadding="0">

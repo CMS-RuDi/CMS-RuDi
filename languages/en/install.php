@@ -56,7 +56,7 @@ $_LANG['INS_CRON_TODO']        = 'Create a task scheduler';
 $_LANG['INS_CRON_NOTES']       = 'Add file <strong>/cron.php</strong> in task schedule in the panel of your hosting.<br/> The interval is &mdash; 24 hours. This will allow the system to perform periodic service tasks. Possible command added to the CRON, looks like: ';
 $_LANG['INS_FEEDBACK_SUPPORT'] = 'In case of difficulty, please contact Hosting technical support';
 $_LANG['INS_ATTENTION']        = 'Attention!';
-$_LANG['INS_DELETE_TODO']      = 'Before proceeding you want to remove directories "install" and "migrate" from server with all files inside them!';
+$_LANG['INS_DELETE_TODO']      = 'Before proceeding you want to remove directories "install" from server with all files inside them!';
 $_LANG['INS_GO_SITE']          = 'Go to site';
 $_LANG['INS_GO_CP']            = 'Control Panel';
 $_LANG['INS_GO_HANDBOOK']      = 'Handbook for beginners';
@@ -65,7 +65,7 @@ $_LANG['INS_NEXT']             = 'Next →';
 $_LANG['INS_BACK']             = '← Back';
 
 $_LANG['INS_INCOMPLETE']          = 'Installation is not completed';
-$_LANG['INS_DELETE_INST_MIGRATE'] = 'If the installation process has been completed,<br/> delete folders "install" and "migrate" on the server and reload page.';
+$_LANG['INS_DELETE_INST_MIGRATE'] = 'If the installation process has been completed,<br/> delete folder "install" on the server and reload page.';
 $_LANG['INS_RELOAD_PAGE']         = 'Reload page';
 $_LANG['CFG_SITENAME']            = 'My Social Network';
 $_LANG['CFG_OFFTEXT']             = 'The site is under construction';

@@ -542,11 +542,11 @@ INSERT INTO `#__form_fields` (`id`, `form_id`, `title`, `description`, `ordering
 (24, 3, 'Образование', '', 2, 'list', 1, '---\r\nsize: 300\r\nitems: >\r\n  Высшее/Среднее/Начальное\r\n');
 
 DROP TABLE IF EXISTS `#__menu`;
-CREATE TABLE `#__menu` (
+CREATE TABLE IF NOT EXISTS `#__menu` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `menu` tinytext NOT NULL,
   `title` varchar(200) NOT NULL,
-  `titles` tinytext DEFAULT NULL,
+  `titles` tinytext,
   `css_class` varchar(15) NOT NULL DEFAULT '',
   `link` varchar(200) NOT NULL,
   `linktype` varchar(12) NOT NULL DEFAULT 'link',
@@ -568,37 +568,33 @@ CREATE TABLE `#__menu` (
   PRIMARY KEY (`id`),
   KEY `parent_id` (`parent_id`),
   KEY `NSLeft` (`NSLeft`,`NSRight`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=56 DEFAULT CHARSET=utf8;
 
-INSERT INTO `#__menu` (`id`, `menu`, `title`, `css_class`, `link`, `linktype`, `linkid`, `target`, `component`, `ordering`, `published`, `template`, `access_list`, `iconurl`, `NSLeft`, `NSRight`, `NSLevel`, `NSDiffer`, `NSIgnore`, `parent_id`, `is_lax`) VALUES
-(1, '---\n- root\n', '-- Корневая страница --', '', '-1', 'link', '-1', '_self', '', 1, 0, '0', '', '', 1, 56, 0, '', 0, 0, 0),
-(10, '---\n- mainmenu\n', 'Новости', '', '/novosti', 'category', '2', '_self', '', 1, 1, '0', '', '', 2, 3, 1, '', 0, 1, 0),
-(13, '---\n- mainmenu\n', 'Q&A', '', '/faq', 'component', 'faq', '_self', '', 6, 1, '0', '', '', 24, 25, 1, '', 0, 1, 0),
-(15, '---\n- mainmenu\n', 'Люди', '', '/users', 'component', 'users', '_self', '', 9, 1, '0', '', '', 30, 31, 1, '', 0, 1, 0),
-(17, '---\n- mainmenu\n', 'Блоги', '', '/blogs', 'component', 'blogs', '_self', '', 4, 1, '0', '', '', 20, 21, 1, '', 0, 1, 0),
-(18, '---\n- mainmenu\n', 'Форум', '', '/forum', 'component', 'forum', '_self', '', 10, 1, '0', '', '', 32, 33, 1, '', 0, 1, 0),
-(20, '---\n- mainmenu\n', 'Фото', '', '/photos', 'component', 'photos', '_self', '', 3, 1, '0', '', '', 14, 19, 1, '', 0, 1, 0),
-(21, '---\n- mainmenu\n', 'Статьи', '', '/stati', 'category', '6', '_self', '', 2, 1, '0', '', '', 4, 13, 1, '', 0, 1, 0),
-(23, '---\n- mainmenu\n', 'Каталог', '', '/catalog', 'component', 'catalog', '_self', '', 7, 1, '0', '', '', 26, 27, 1, '', 0, 1, 0),
-(42, '---\n- mainmenu\n', 'Новые фото', '', '/photos/latest.html', 'link', '/photos/latest.html', '_self', '', 1, 1, '0', '', 'starcons20.gif', 15, 16, 2, '', 0, 20, 0),
-(41, '---\n- mainmenu\n', 'Психология', '', '/stati/psihologija', 'category', '14', '_self', '', 3, 1, '0', '', '07.gif', 9, 10, 2, '', 0, 21, 0),
-(40, '---\n- mainmenu\n', 'Геология', '', '/stati/geologija', 'category', '12', '_self', '', 2, 1, '0', '', 'objects035.gif', 7, 8, 2, '', 0, 21, 0),
-(39, '---\n- mainmenu\n', 'Астрономия', '', '/stati/astronomija', 'category', '11', '_self', '', 1, 1, '0', '', 'objects049.gif', 5, 6, 2, '', 0, 21, 0),
-(38, '---\n- mainmenu\n', 'Клубы', '', '/clubs', 'component', 'clubs', '_self', '', 5, 1, '0', '', '', 22, 23, 1, '', 0, 1, 0),
-(37, '---\n- mainmenu\n', 'Объявления', '', '/board', 'component', 'board', '_self', '', 8, 1, '0', '', '', 28, 29, 1, '', 0, 1, 0),
-(44, '---\n- mainmenu\n', 'Маркетинг', '', '/stati/marketing', 'category', '13', '_self', '', 4, 1, '0', '', 'objects067.gif', 11, 12, 2, '', 0, 21, 0),
-(43, '---\n- mainmenu\n', 'Лучшие фото', '', '/photos/top.html', 'link', '/photos/top.html', '_self', '', 2, 1, '0', '', 'voteyes.gif', 17, 18, 2, '', 0, 20, 0),
-(45, '---\n- authmenu\n', 'Войти', 'login', '/login', 'link', '/login', '_self', '', 11, 1, '', '', '', 34, 35, 1, '', 0, 1, 0),
-(46, '---\n- authmenu\n', 'Регистрация', 'register', '/registration', 'link', '/registration', '_self', '', 12, 1, '', '', '', 36, 37, 1, '', 0, 1, 0),
-(47, '---\n- usermenu\n', '{user.nickname}', 'my_profile', '/users/{user.login}', 'link', '/users/{user.login}', '_self', '', 13, 1, '', '', '', 38, 39, 1, '', 0, 1, 0),
-(48, '---\n- usermenu\n', 'Сообщения {user.new_msg_count}', 'my_messages', '/users/{user.id}/messages.html', 'link', '/users/{user.id}/messages', '_self', '', 14, 1, '', '', '', 40, 41, 1, '', 0, 1, 0),
-(49, '---\n- usermenu\n', 'Мой блог', 'my_blog', '/blogs/my_blog.html', 'link', '/blogs/my_blog.html', '_self', '', 15, 1, '', '', '', 42, 43, 1, '', 0, 1, 0),
-(50, '---\n- usermenu\n', 'Фото', 'my_photos', '/users/{user.id}/photoalbum.html', 'link', '/users/{user.id}/photoalb', '_self', '', 16, 1, '', '', '', 44, 47, 1, '', 0, 1, 0),
-(51, '---\n- usermenu\n', 'Добавить фото', 'add_photos', '/users/addphoto.html', 'link', '/users/addphoto.html', '_self', '', 1, 1, '', '', '', 45, 46, 2, '', 0, 50, 0),
-(52, '---\n- usermenu\n', 'Статьи', 'my_content', '/content/my.html', 'link', '/content/my.html', '_self', '', 17, 1, '', '', '', 48, 51, 1, '', 0, 1, 0),
-(53, '---\n- usermenu\n', 'Написать', 'add_content', '/content/add.html', 'link', '/content/add.html', '_self', '', 1, 1, '', '', '', 49, 50, 2, '', 0, 52, 0),
-(54, '---\n- usermenu\n', 'Админка', 'admin', '/admin/', 'link', '/admin/', '_self', '', 18, 1, '', '---\n- 2\n', '', 52, 53, 1, '', 0, 1, 0),
-(55, '---\n- usermenu\n', 'Выход', 'logout', '/logout', 'link', '/logout', '_self', '', 19, 1, '', '', '', 54, 55, 1, '', 0, 1, 0);
+INSERT INTO `#__menu` (`id`, `menu`, `title`, `titles`, `css_class`, `link`, `linktype`, `linkid`, `target`, `component`, `ordering`, `published`, `template`, `access_list`, `iconurl`, `NSLeft`, `NSRight`, `NSLevel`, `NSDiffer`, `NSIgnore`, `parent_id`, `is_lax`) VALUES
+(1, '---\n- root\n', '-- Корневая страница --', NULL, '', '-1', 'link', '-1', '_self', '', 1, 0, '0', '', '', 1, 48, 0, '', 0, 0, 0),
+(10, '---\n- mainmenu\n', 'Новости', NULL, '', '/novosti', 'category', '2', '_self', '', 1, 1, '0', '', '', 2, 3, 1, '', 0, 1, 0),
+(15, '---\n- mainmenu\n', 'Люди', NULL, '', '/users', 'component', 'users', '_self', '', 6, 1, '0', '', '', 24, 25, 1, '', 0, 1, 0),
+(17, '---\n- mainmenu\n', 'Блоги', NULL, '', '/blogs', 'component', 'blogs', '_self', '', 4, 1, '0', '', '', 20, 21, 1, '', 0, 1, 0),
+(20, '---\n- mainmenu\n', 'Фото', NULL, '', '/photos', 'component', 'photos', '_self', '', 3, 1, '0', '', '', 14, 19, 1, '', 0, 1, 0),
+(21, '---\n- mainmenu\n', 'Статьи', NULL, '', '/stati', 'category', '6', '_self', '', 2, 1, '0', '', '', 4, 13, 1, '', 0, 1, 0),
+(42, '---\n- mainmenu\n', 'Новые фото', NULL, '', '/photos/latest.html', 'link', '/photos/latest.html', '_self', '', 1, 1, '0', '', 'starcons20.gif', 15, 16, 2, '', 0, 20, 0),
+(41, '---\n- mainmenu\n', 'Психология', NULL, '', '/stati/psihologija', 'category', '14', '_self', '', 3, 1, '0', '', '07.gif', 9, 10, 2, '', 0, 21, 0),
+(40, '---\n- mainmenu\n', 'Геология', NULL, '', '/stati/geologija', 'category', '12', '_self', '', 2, 1, '0', '', 'objects035.gif', 7, 8, 2, '', 0, 21, 0),
+(39, '---\n- mainmenu\n', 'Астрономия', NULL, '', '/stati/astronomija', 'category', '11', '_self', '', 1, 1, '0', '', 'objects049.gif', 5, 6, 2, '', 0, 21, 0),
+(38, '---\n- mainmenu\n', 'Клубы', NULL, '', '/clubs', 'component', 'clubs', '_self', '', 5, 1, '0', '', '', 22, 23, 1, '', 0, 1, 0),
+(44, '---\n- mainmenu\n', 'Маркетинг', NULL, '', '/stati/marketing', 'category', '13', '_self', '', 4, 1, '0', '', 'objects067.gif', 11, 12, 2, '', 0, 21, 0),
+(43, '---\n- mainmenu\n', 'Лучшие фото', NULL, '', '/photos/top.html', 'link', '/photos/top.html', '_self', '', 2, 1, '0', '', 'voteyes.gif', 17, 18, 2, '', 0, 20, 0),
+(45, '---\n- authmenu\n', 'Войти', NULL, 'login', '/login', 'link', '/login', '_self', '', 7, 1, '', '', '', 26, 27, 1, '', 0, 1, 0),
+(46, '---\n- authmenu\n', 'Регистрация', NULL, 'register', '/registration', 'link', '/registration', '_self', '', 8, 1, '', '', '', 28, 29, 1, '', 0, 1, 0),
+(47, '---\n- usermenu\n', '{user.nickname}', NULL, 'my_profile', '/users/{user.login}', 'link', '/users/{user.login}', '_self', '', 9, 1, '', '', '', 30, 31, 1, '', 0, 1, 0),
+(48, '---\n- usermenu\n', 'Сообщения {user.new_msg_count}', NULL, 'my_messages', '/users/{user.id}/messages.html', 'link', '/users/{user.id}/messages', '_self', '', 10, 1, '', '', '', 32, 33, 1, '', 0, 1, 0),
+(49, '---\n- usermenu\n', 'Мой блог', NULL, 'my_blog', '/blogs/my_blog.html', 'link', '/blogs/my_blog.html', '_self', '', 11, 1, '', '', '', 34, 35, 1, '', 0, 1, 0),
+(50, '---\n- usermenu\n', 'Фото', NULL, 'my_photos', '/users/{user.id}/photoalbum.html', 'link', '/users/{user.id}/photoalb', '_self', '', 12, 1, '', '', '', 36, 39, 1, '', 0, 1, 0),
+(51, '---\n- usermenu\n', 'Добавить фото', NULL, 'add_photos', '/users/addphoto.html', 'link', '/users/addphoto.html', '_self', '', 1, 1, '', '', '', 37, 38, 2, '', 0, 50, 0),
+(52, '---\n- usermenu\n', 'Статьи', NULL, 'my_content', '/content/my.html', 'link', '/content/my.html', '_self', '', 13, 1, '', '', '', 40, 43, 1, '', 0, 1, 0),
+(53, '---\n- usermenu\n', 'Написать', NULL, 'add_content', '/content/add.html', 'link', '/content/add.html', '_self', '', 1, 1, '', '', '', 41, 42, 2, '', 0, 52, 0),
+(54, '---\n- usermenu', 'Админка', '---\nen:\nru:', 'admin', '/cp/', 'link', '/cp/', '_self', '', 14, 1, '', '---\n- 2', '', 44, 45, 1, '', 0, 1, 0),
+(55, '---\n- usermenu\n', 'Выход', NULL, 'logout', '/logout', 'link', '/logout', '_self', '', 15, 1, '', '', '', 46, 47, 1, '', 0, 1, 0);
 
 DROP TABLE IF EXISTS `#__modules`;
 CREATE TABLE `#__modules` (

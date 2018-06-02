@@ -276,7 +276,7 @@ class cmsCore
         }
 
         // игнорируемые для детекта url
-        if ( preg_match('/^(admin|install|migrate|index)(\/|\?|\.)(.*)/ui', $uri) ) {
+        if ( preg_match('/^(admin|install|index)(\/|\?|\.)(.*)/ui', $uri) ) {
             return '';
         }
 

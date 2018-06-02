@@ -121,6 +121,7 @@
                     </div>
                 </div>
 
+                {if $com_catalog_installed}
                 <div id="t_uccat" class="menu_target" style="display:{if isset($mod.linktype) && $mod.linktype == 'uccat'}block{else}none{/if}">
                     <div>
                         <strong>{$lang->ad_check_category}</strong>
@@ -131,6 +132,7 @@
                         </select>
                     </div>
                 </div>
+                {/if}
 
                 <div id="t_photoalbum" class="menu_target" style="display:{if isset($mod.linktype) && $mod.linktype == 'photoalbum'}block{else}none{/if}">
                     <div>

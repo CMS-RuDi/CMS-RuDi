@@ -516,9 +516,7 @@ class str
     {
         $stat = array();
 
-        $text = str_replace(array( "\n", '<br>', '<br/>' ), ' ', $text);
-        $text = strip_tags($text);
-        $text = mb_strtolower($text);
+        $text = mb_strtolower(self::strip_tags($text));
 
         $stopwords = self::getStopwords(\cmsConfig::getConfig('lang'));
 
@@ -598,7 +596,7 @@ class str
     {
         $text = str_replace(array( "\n", "\r", '<br>', '<br/>', '</p>', '</div>' ), ' ', $text);
 
-        $text = strip_tags($text);
+        $text = \strip_tags($text);
 
         $text = trim($text);
 
@@ -663,7 +661,7 @@ class str
 
         $pos_max = mb_strpos($text, ' ', $length) ?: $text_length;
 
-        $offset = 0;
+        $offset  = $pos_min = 0;
 
         while ( $offset < $pos_max ) {
             $min = mb_strpos($text, ' ', $offset) ?: $text_length;
@@ -672,7 +670,7 @@ class str
                 $pos_min = $min;
             }
 
-            $offset = $min;
+            $offset = $min + 1;
         }
 
         if ( ($mode == 'auto' && ($pos_max - $length) < ($length - $pos_min)) || ($mode == 'right') ) {

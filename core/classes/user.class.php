@@ -725,8 +725,8 @@ class cmsUser
 
         $is_me = (@$_SESSION['user']['id'] == $user_id);
 
-        //Если список уже в сессии, возвращаем
-        if ( $is_me && self::sessionGet('friends') !== false ) {
+        // Если список уже в сессии, возвращаем
+        if ( $is_me && !empty(self::sessionGet('friends')) ) {
             foreach ( self::sessionGet('friends') as $key => $friend ) {
                 $friend['flogdate'] = self::getOnlineStatus($friend['id'], $friend['logdate']);
                 $friends[$key]      = $friend;

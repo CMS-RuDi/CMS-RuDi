@@ -103,7 +103,7 @@
                         <div class="album">
                             <div class="title">{$LANG.PHOTOALBUMS}</div>
                             <div class="content">
-                                <div id="album_list">{include file='com_clubs_albums.tpl'}</div>
+                                <div id="album_list">{include file='components/com_clubs_albums.tpl'}</div>
                                 <p>
                                     {if $club.all_albums > $cfg.club_album_perpage}
                                         <span><a href="/clubs/{$club.id}/photoalbums">{$LANG.ALL_ALBUMS} (<strong id="count_photo">{$club.all_albums}</strong>)</a></span>

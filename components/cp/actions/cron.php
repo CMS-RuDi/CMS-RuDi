@@ -20,7 +20,7 @@ class cron extends \cms\com_action
     {
         self::addToolMenuItem($this->lang->ad_create_cron_mission, $this->genActionUrl('cron', 'add'), 'new.gif');
 
-        $this->page->initTemplate('cp/applets', 'cron_tasks')->
+        $this->page()->initTemplate('cp/applets', 'cron_tasks')->
                 assign('edit_uri', $this->genActionUrl('cron', 'edit'))->
                 assign('hide_uri', $this->genActionUrl('cron', 'hide'))->
                 assign('show_uri', $this->genActionUrl('cron', 'show'))->
@@ -54,7 +54,7 @@ class cron extends \cms\com_action
             \cms\backend::setTitle($this->lang->ad_edit_mission);
         }
 
-        $this->page->initTemplate('cp/applets', 'cron_task_edit')->
+        $this->page()->initTemplate('cp/applets', 'cron_task_edit')->
                 assign('submit_uri', $this->genActionUrl('cron', 'submit'))->
                 assign('item', !empty($item) ? $item : false)->
                 display();
