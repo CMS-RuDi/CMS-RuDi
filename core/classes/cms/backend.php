@@ -61,6 +61,8 @@ class backend extends controller
         $part = explode('\\', get_called_class());
 
         if ( $part[count($part) - 1] == 'backend' ) {
+            $this->root_path .= 'backend/';
+
             $this->root_url = 'cp/components/' . $this->root_url;
 
             $this->lang->load('admin/components/' . $this->name);

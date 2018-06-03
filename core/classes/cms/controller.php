@@ -434,7 +434,7 @@ class controller
     {
         $action_file = $this->root_path . 'actions/' . $action_name . '.php';
 
-        $class_name = '\\components\\' . $this->name . '\\actions\\' . $action_name;
+        $class_name = str_replace([ PATH, '/' ], [ '', '\\' ], $this->root_path . 'actions/' . $action_name);
 
         if ( !is_readable($action_file) ) {
             if ( $exit_if_error ) {
