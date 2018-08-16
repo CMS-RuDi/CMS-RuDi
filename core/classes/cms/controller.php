@@ -1095,4 +1095,26 @@ class controller
         return $this->request;
     }
 
+    public function options($key)
+    {
+        return isset($this->options[$key]) ? $this->options[$key] : null;
+    }
+
+    /**
+     * Инициализирует и возвращает объект шаблонизатора
+     *
+     * @param string $file
+     * @return \cmsPage
+     */
+    public function tpl($file)
+    {
+        $parts = explode('/', $file);
+
+        $file = $parts[count($parts) - 1];
+
+        unset($parts[count($parts) - 1]);
+
+        return $this->page->initTemplate('components/' . $this->name . (count($parts) > 0 ? '/' . implode('/', $parts) : ''), $file);
+    }
+
 }
