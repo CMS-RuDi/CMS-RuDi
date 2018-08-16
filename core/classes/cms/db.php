@@ -359,6 +359,39 @@ class db
 //============================================================================//
 
     /**
+     * Возвращает строку в формате '`' . $field . '` = ' . $value для SET запроса mysql
+     *
+     * @param string $table Таблица
+     * @param array $data Массив[Название поля] = значение поля
+     * @param bool $skip_check_fields Не проверять наличие обновляемых полей
+     *
+     * @return boolean|string
+     */
+    public function getSetString($table, $data, $skip_check_fields = false)
+    {
+        if ( empty($data) || !is_array($data) ) {
+            return false;
+        }
+
+        if ( !$skip_check_fields ) {
+            $table_fields = $this->getTableFields($table);
+        }
+
+        $set = [];
+
+        foreach ( $data as $field => $value ) {
+            if ( !$skip_check_fields && !in_array($field, $table_fields) ) {
+                continue;
+            }
+
+            $value = $this->prepareValue($field, $value);
+            $set[] = '`' . $field . '` = ' . $value;
+        }
+
+        return !empty($set) ? implode(', ', $set) : false;
+    }
+
+    /**
      * Выполняет запрос UPDATE
      *
      * @param string $table Таблица
@@ -370,33 +403,17 @@ class db
      */
     public function update($table, $where, $data, $skip_check_fields = false)
     {
-        if ( empty($data) ) {
-            return false;
-        }
+        $set = $this->getSetString($table, $data, $skip_check_fields);
 
-        if ( !$skip_check_fields ) {
-            $table_fields = $this->getTableFields($table);
-        }
+        if ( !empty($set) ) {
+            $sql = 'UPDATE {#}' . $table . ' i SET ' . $set . ' WHERE ' . $where;
 
-        foreach ( $data as $field => $value ) {
-            if ( !$skip_check_fields && !in_array($field, $table_fields) ) {
-                continue;
+            if ( $this->query($sql) ) {
+                return true;
             }
-
-            $value = $this->prepareValue($field, $value);
-            $set[] = '`' . $field . '` = ' . $value;
         }
 
-        $set = implode(', ', $set);
-
-        $sql = 'UPDATE {#}' . $table . ' i SET ' . $set . ' WHERE ' . $where;
-
-        if ( $this->query($sql) ) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return false;
     }
 
     /**
@@ -410,30 +427,14 @@ class db
      */
     public function insert($table, $data, $skip_check_fields = false)
     {
-        if ( empty($data) || !is_array($data) ) {
-            return false;
-        }
+        $set = $this->getSetString($table, $data, $skip_check_fields);
 
-        if ( !$skip_check_fields ) {
-            $table_fields = $this->getTableFields($table);
-        }
+        if ( !empty($set) ) {
+            $sql = 'INSERT INTO {#}' . $table . ' SET ' . $set;
 
-        foreach ( $data as $field => $value ) {
-            if ( !$skip_check_fields && !in_array($field, $table_fields) ) {
-                continue;
+            if ( $this->query($sql) ) {
+                return $this->lastId();
             }
-
-            $fields[] = '`' . $field . '`';
-            $values[] = $this->prepareValue($field, $value);
-        }
-
-        $fields = implode(', ', $fields);
-        $values = implode(', ', $values);
-
-        $sql = 'INSERT INTO {#}' . $table . ' (' . $fields . ')' . PHP_EOL . 'VALUES (' . $values . ')';
-
-        if ( $this->query($sql) ) {
-            return $this->lastId();
         }
 
         return false;
@@ -449,40 +450,13 @@ class db
      *
      * @return bool
      */
-    public function insertOrUpdate($table, $data, $update_data = false)
+    public function insertOrUpdate($table, $data, $update_data = false, $skip_check_fields = false)
     {
-        $fields = [];
-        $values = [];
-        $set    = [];
+        $set     = $this->getSetString($table, $data, $skip_check_fields);
+        $upd_set = $this->getSetString($table, $update_data, $skip_check_fields);
 
-        if ( is_array($data) ) {
-            foreach ( $data as $field => $value ) {
-                $value = $this->prepareValue($field, $value);
-
-                $fields[] = '`' . $field . '`';
-                $values[] = $value;
-
-                if ( $update_data === false ) {
-                    $set[] = '`' . $field . '` = ' . $value;
-                }
-            }
-
-            $fields = implode(', ', $fields);
-            $values = implode(', ', $values);
-
-            $sql = 'INSERT INTO {#}' . $table . ' (' . $fields . ')' . PHP_EOL . 'VALUES (' . $values . ')';
-
-            if ( is_array($update_data) ) {
-                foreach ( $update_data as $field => $value ) {
-                    $value = $this->prepareValue($field, $value);
-
-                    $set[] = '`' . $field . '` = ' . $value;
-                }
-            }
-
-            $set = implode(', ', $set);
-
-            $sql .= ' ON DUPLICATE KEY UPDATE ' . $set;
+        if ( !empty($set) ) {
+            $sql = 'INSERT INTO {#}' . $table . ' SET ' . $set . ' ON DUPLICATE KEY UPDATE ' . !empty($upd_set) ? $upd_set : $set;
 
             if ( $this->query($sql) ) {
                 return $this->lastId();
@@ -978,7 +952,7 @@ class db
      * @param array|string $fields Поле или поля, участвующие в индексе
      * @param string $index_name Название индекса. Если не передано, название будет по последнему элементу
      * @param string $index_type Тип индекса
-     * 
+     *
      * @return boolean FALSE если индекс с таким названием уже есть
      */
     public function addIndex($table, $fields, $index_name = '', $index_type = 'INDEX')
