@@ -7,7 +7,7 @@ class lang
 
     use \Singeltone;
 
-    protected $lang         = 'ru';
+    private $lang           = 'ru';
     protected static $_LANG = [];
 
     protected function __construct()
@@ -127,6 +127,11 @@ class lang
         return false;
     }
 
+    public function getLang()
+    {
+        return $this->lang;
+    }
+
     /**
      * Возвращает локализованную строку
      *
@@ -134,9 +139,9 @@ class lang
      *
      * @return string
      */
-    public function get($name)
+    public function get(...$params)
     {
-        $name = mb_strtolower($name);
+        $name = mb_strtolower(implode('', $params));
 
         return isset(self::$_LANG[$name]) ? self::$_LANG[$name] : '';
     }
@@ -146,9 +151,9 @@ class lang
      *
      * @see self::get()
      */
-    public function e($name)
+    public function e(...$params)
     {
-        $key = mb_strtolower($name);
+        $key = mb_strtolower(implode('', $params));
 
         return isset(self::$_LANG[$key]) ? self::$_LANG[$key] : $name;
     }
@@ -161,9 +166,9 @@ class lang
      *
      * @return string
      */
-    public function ucf($name)
+    public function ucf(...$params)
     {
-        return ucfirst($this->e($name));
+        return ucfirst($this->e(...$params));
     }
 
     /**
@@ -174,9 +179,9 @@ class lang
      *
      * @return string
      */
-    public function lcf($name)
+    public function lcf(...$params)
     {
-        return lcfirst($this->e($name));
+        return lcfirst($this->e(...$params));
     }
 
     /**
@@ -186,9 +191,9 @@ class lang
      *
      * @return string
      */
-    public function uc($name)
+    public function uc(...$params)
     {
-        return mb_strtoupper($this->e($name));
+        return mb_strtoupper($this->e(...$params));
     }
 
     /**
@@ -198,9 +203,9 @@ class lang
      *
      * @return string
      */
-    public function lc($name)
+    public function lc(...$params)
     {
-        return mb_strtolower($this->e($name));
+        return mb_strtolower($this->e(...$params));
     }
 
     /**
@@ -298,7 +303,7 @@ class lang
 
     /**
      * Возвращает транслитированную строку
-     * 
+     *
      * @param string $string строка для транслитерации
      * @param string $lang язык для транслитерации, если не указан берется из настроек системы
      *

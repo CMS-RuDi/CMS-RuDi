@@ -63,6 +63,11 @@ $_LANG['NO']                        = 'Нет';
 $_LANG['YES']                       = 'Да';
 $_LANG['PHONE']                     = 'Телефон';
 
+$_LANG['ROOT_NODE']             = 'Корень';
+$_LANG['ROOT_CATEGORY']         = 'Корневая категория';
+$_LANG['PARENT_CATEGORY']       = 'Родительская категория';
+$_LANG['ADDITIONAL_CATEGORIES'] = 'Дополнительные категории';
+
 $_LANG['NEW_MESSAGES'] = 'новых сообщений';
 $_LANG['NEW_NOTICES']  = 'новых уведомлений';
 

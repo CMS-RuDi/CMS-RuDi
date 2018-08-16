@@ -63,6 +63,11 @@ $_LANG['NO']                        = 'No';
 $_LANG['YES']                       = 'Yes';
 $_LANG['PHONE']                     = 'Phone';
 
+$_LANG['ROOT_NODE']             = 'Root node';
+$_LANG['ROOT_CATEGORY']         = 'Root category';
+$_LANG['PARENT_CATEGORY']       = 'Parent category';
+$_LANG['ADDITIONAL_CATEGORIES'] = 'Additional categories';
+
 $_LANG['NEW_MESSAGES'] = 'new messages';
 $_LANG['NEW_NOTICES']  = 'new notices';
 
