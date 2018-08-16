@@ -50,6 +50,9 @@ class model
     protected static $cached            = [];
     private $cache_key                  = false;
 
+    //
+    const CATEGORY_TABLE = '';
+
     public function __construct()
     {
         // components\Название_Компонента\model;
@@ -178,16 +181,32 @@ class model
 
     public function getRootCategory($ctype_name)
     {
-        $table_name = $this->table_prefix . $ctype_name . '_cats';
+        if ( empty($this::CATEGORY_TABLE) ) {
+            $table_name = $this->table_prefix . $ctype_name . '_cats';
+
+            $this->useCache($this->name . '.' . $ctype_name . '_categories');
+        }
+        else {
+            $table_name = $this::CATEGORY_TABLE;
+
+            $this->useCache($this->name . '.' . $table_name);
+        }
 
         return $this->db->getFields($table_name, 'parent_id=0');
     }
 
     public function getCategory($ctype_name, $id, $by_field = 'id')
     {
-        $table_name = $this->table_prefix . $ctype_name . '_cats';
+        if ( empty($this::CATEGORY_TABLE) ) {
+            $table_name = $this->table_prefix . $ctype_name . '_cats';
 
-        $this->useCache('content.categories');
+            $this->useCache($this->name . '.' . $ctype_name . '_categories');
+        }
+        else {
+            $table_name = $this::CATEGORY_TABLE;
+
+            $this->useCache($this->name . '.' . $table_name);
+        }
 
         $category = $this->getItemByField($table_name, $by_field, $id);
 
@@ -232,7 +251,16 @@ class model
 
     public function getCategoriesTree($ctype_name, $is_show_root = true)
     {
-        $table_name = $this->table_prefix . $ctype_name . '_cats';
+        if ( empty($this::CATEGORY_TABLE) ) {
+            $table_name = $this->table_prefix . $ctype_name . '_cats';
+
+            $this->useCache($this->name . '.' . $ctype_name . '_categories');
+        }
+        else {
+            $table_name = $this::CATEGORY_TABLE;
+
+            $this->useCache($this->name . '.' . $table_name);
+        }
 
         if ( !$is_show_root ) {
             $this->filterGt('parent_id', 0);
@@ -240,11 +268,9 @@ class model
 
         $this->orderBy('ns_left');
 
-        $this->useCache('content.categories');
-
         return $this->get($table_name, function($node, $model) {
                     if ( $node['ns_level'] == 0 ) {
-                        $node['title'] = LANG_ROOT_CATEGORY;
+                        $node['title'] = \cms\lang::getInstance()->root_category;
                     }
 
                     if ( !empty($node['allow_add']) ) {
@@ -259,19 +285,35 @@ class model
 
     public function getSubCategories($ctype_name, $parent_id = 1)
     {
-        $table_name = $this->table_prefix . $ctype_name . '_cats';
+        if ( empty($this::CATEGORY_TABLE) ) {
+            $table_name = $this->table_prefix . $ctype_name . '_cats';
+
+            $this->useCache($this->name . '.' . $ctype_name . '_categories');
+        }
+        else {
+            $table_name = $this::CATEGORY_TABLE;
+
+            $this->useCache($this->name . '.' . $table_name);
+        }
 
         $this->filterEqual('parent_id', $parent_id);
         $this->orderBy('ns_left');
-
-        $this->useCache('content.categories');
 
         return $this->get($table_name);
     }
 
     public function getSubCategoriesTree($ctype_name, $parent_id = 1, $level = 1)
     {
-        $table_name = $this->table_prefix . $ctype_name . '_cats';
+        if ( empty($this::CATEGORY_TABLE) ) {
+            $table_name = $this->table_prefix . $ctype_name . '_cats';
+
+            $this->useCache($this->name . '.' . $ctype_name . '_categories');
+        }
+        else {
+            $table_name = $this::CATEGORY_TABLE;
+
+            $this->useCache($this->name . '.' . $table_name);
+        }
 
         $parent = $this->getCategory($ctype_name, $parent_id);
 
@@ -284,8 +326,6 @@ class model
 
         $this->orderBy('ns_left');
 
-        $this->useCache('content.categories');
-
         return $this->get($table_name);
     }
 
@@ -293,7 +333,16 @@ class model
 
     public function getCategoryPath($ctype_name, $category)
     {
-        $table_name = $this->table_prefix . $ctype_name . '_cats';
+        if ( empty($this::CATEGORY_TABLE) ) {
+            $table_name = $this->table_prefix . $ctype_name . '_cats';
+
+            $this->useCache($this->name . '.' . $ctype_name . '_categories');
+        }
+        else {
+            $table_name = $this::CATEGORY_TABLE;
+
+            $this->useCache($this->name . '.' . $table_name);
+        }
 
         if ( !isset($category['ns_left']) ) {
             $category = $this->getCategory($ctype_name, $category['id']);
@@ -305,8 +354,6 @@ class model
                 filterGt('ns_level', 0)->
                 orderBy('ns_left');
 
-        $this->useCache('content.categories');
-
         return $this->get($table_name);
     }
 
@@ -314,7 +361,12 @@ class model
 
     public function addCategory($ctype_name, $category)
     {
-        $table_name = $this->table_prefix . $ctype_name . '_cats';
+        if ( empty($this::CATEGORY_TABLE) ) {
+            $table_name = $this->table_prefix . $ctype_name . '_cats';
+        }
+        else {
+            $table_name = $this::CATEGORY_TABLE;
+        }
 
         $this->db->nestedSets->setTable($table_name);
 
@@ -336,7 +388,12 @@ class model
             'slug' => $category['slug']
         ]);
 
-        cache::getInstance()->clean('content.categories');
+        if ( empty($this::CATEGORY_TABLE) ) {
+            cache::getInstance()->clean($this->name . '.' . $ctype_name . '_categories');
+        }
+        else {
+            cache::getInstance()->clean($this->name . '.' . $table_name);
+        }
 
         return $category;
     }
@@ -345,9 +402,16 @@ class model
 
     public function updateCategory($ctype_name, $id, $category)
     {
-        cache::getInstance()->clean('content.categories');
+        if ( empty($this::CATEGORY_TABLE) ) {
+            $table_name = $this->table_prefix . $ctype_name . '_cats';
 
-        $table_name = $this->table_prefix . $ctype_name . '_cats';
+            cache::getInstance()->clean($this->name . '.' . $ctype_name . '_categories');
+        }
+        else {
+            $table_name = $this::CATEGORY_TABLE;
+
+            cache::getInstance()->clean($this->name . '.' . $table_name);
+        }
 
         $category_old = $this->getCategory($ctype_name, $id);
 
@@ -383,9 +447,16 @@ class model
 
     public function updateCategoryTree($ctype_name, $tree, $categories_count)
     {
-        cache::getInstance()->clean('content.categories');
+        if ( empty($this::CATEGORY_TABLE) ) {
+            $table_name = $this->table_prefix . $ctype_name . '_cats';
 
-        $table_name = $this->table_prefix . $ctype_name . '_cats';
+            cache::getInstance()->clean($this->name . '.' . $ctype_name . '_categories');
+        }
+        else {
+            $table_name = $this::CATEGORY_TABLE;
+
+            cache::getInstance()->clean($this->name . '.' . $table_name);
+        }
 
         $this->updateCategoryTreeNode($ctype_name, $tree);
         $this->updateCategoryTreeNodeSlugs($ctype_name, $tree);
@@ -402,7 +473,12 @@ class model
 
     public function updateCategoryTreeNode($ctype_name, $tree)
     {
-        $table_name = $this->table_prefix . $ctype_name . '_cats';
+        if ( empty($this::CATEGORY_TABLE) ) {
+            $table_name = $this->table_prefix . $ctype_name . '_cats';
+        }
+        else {
+            $table_name = $this::CATEGORY_TABLE;
+        }
 
         foreach ( $tree as $node ) {
             $this->update($table_name, $node['key'], [
@@ -422,7 +498,12 @@ class model
 
     public function updateCategoryTreeNodeSlugs($ctype_name, $tree)
     {
-        $table_name = $this->table_prefix . $ctype_name . '_cats';
+        if ( empty($this::CATEGORY_TABLE) ) {
+            $table_name = $this->table_prefix . $ctype_name . '_cats';
+        }
+        else {
+            $table_name = $this::CATEGORY_TABLE;
+        }
 
         foreach ( $tree as $node ) {
             $path = $this->getCategoryPath($ctype_name, [
@@ -460,13 +541,20 @@ class model
         // из категории
         //
 
-        $table_name = $this->table_prefix . $ctype_name . '_cats';
+        if ( empty($this::CATEGORY_TABLE) ) {
+            $table_name = $this->table_prefix . $ctype_name . '_cats';
+
+            cache::getInstance()->clean($this->name . '.' . $ctype_name . '_categories');
+        }
+        else {
+            $table_name = $this::CATEGORY_TABLE;
+
+            cache::getInstance()->clean($this->name . '.' . $table_name);
+        }
 
         $this->db->nestedSets->setTable($table_name);
 
         $this->db->nestedSets->deleteNode($id);
-
-        cache::getInstance()->clean('content.categories');
 
         return true;
     }
@@ -931,7 +1019,13 @@ class model
 
     public function filterCategory($ctype_name, $category, $is_recursive = false)
     {
-        $table_name      = $this->table_prefix . $ctype_name . '_cats';
+        if ( empty($this::CATEGORY_TABLE) ) {
+            $table_name = $this->table_prefix . $ctype_name . '_cats';
+        }
+        else {
+            $table_name = $this::CATEGORY_TABLE;
+        }
+
         $bind_table_name = $table_name . '_bind';
 
         if ( !$is_recursive ) {
