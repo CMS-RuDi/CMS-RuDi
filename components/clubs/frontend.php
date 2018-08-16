@@ -23,7 +23,7 @@ function clubs()
 
     $inPhoto = $model->initPhoto();
 
-    define('IS_BILLING', $inCore->isComponentInstalled('billing'));
+    define('IS_BILLING', \cms\controller::enabled('billing'));
 
     // js только авторизованным
     if ( $inUser->id ) {

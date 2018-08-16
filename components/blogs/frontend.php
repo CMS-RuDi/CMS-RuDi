@@ -24,7 +24,7 @@ function blogs()
 
     $model = new cms_model_blogs();
 
-    define('IS_BILLING', $inCore->isComponentInstalled('billing'));
+    define('IS_BILLING', \cms\controller::enabled('billing'));
 
     //Получаем параметры
     $id          = cmsCore::request('id', 'int', 0);

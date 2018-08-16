@@ -19,7 +19,7 @@ function content()
 
     $model = new cms_model_content();
 
-    define('IS_BILLING', $inCore->isComponentInstalled('billing'));
+    define('IS_BILLING', \cms\controller::enabled('billing'));
 
     global $_LANG;
 
