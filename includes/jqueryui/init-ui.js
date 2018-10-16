@@ -43,7 +43,11 @@ jQuery(function () {
 //Автоподстановка значений
 
     jQuery('.uiautocomplete').each(function (i, e) {
-        jQuery(e).autocomplete({source: jQuery(e).data('source')});
+        jQuery(e).autocomplete({source: jQuery(e).data('source'), select: function (event, ui) {
+                if (jQuery(event.target).data('select-fn')) {
+                    return window[jQuery(event.target).data('select-fn')](jQuery(event.target), ui.item.value);
+                }
+            }});
     });
 //умолчания см. http://api.jqueryui.com/autocomplete/
 

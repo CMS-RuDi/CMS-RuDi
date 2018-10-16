@@ -197,4 +197,15 @@ class files
         return \Requests::get($url, [], [ 'filename' => realpath($destination) ])->status_code == 200 ? true : false;
     }
 
+    public static function mkdirs(...$params)
+    {
+        $path = implode('/', $params);
+
+        if ( !is_dir($path) ) {
+            mkdir($path, 0755, true);
+        }
+
+        return $path;
+    }
+
 }

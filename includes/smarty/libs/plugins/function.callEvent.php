@@ -12,5 +12,11 @@
 
 function smarty_function_callEvent($params, &$smarty)
 {
-    \cms\events::call($params['event'], (empty($params['item']) ? array() : $params['item']));
+    if ( !empty($params['event']) ) {
+        if ( !empty($params['mode']) && $params['mode'] == 'filter' ) {
+            return \cms\events::filter($params['event'], (empty($params['item']) ? '' : $params['item']), (empty($params['data']) ? false : $params['data']));
+        }
+
+        return \cms\events::call($params['event'], (empty($params['item']) ? array() : $params['item']), (empty($params['mode']) ? 'normal' : $params['mode']));
+    }
 }

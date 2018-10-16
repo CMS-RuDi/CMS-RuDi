@@ -247,15 +247,40 @@ class events
     }
 
     /**
-     * Производит событие, вызывая все назначенные на него плагины и компоненты
+     * Выполняет событие сразу в режиме filter
+     *
+     * @param string $event
+     * @param mixed $filter Данные для обработки
+     * @param mixed $data Дополнительные данные
+     *
+     * @return mixed
+     */
+    public static function filter($event, $filter, $data = false)
+    {
+        $params['filter'] = $filter;
+
+        if ( !empty($data) ) {
+            $params['data'] = $data;
+        }
+
+        return self::call($event, $params, 'filter');
+    }
+
+    /**
+     * Выполняет событие, вызывая все назначенные на него плагины и компоненты
      * в цикле перебирая все плагины и компоненты и накладывая результат на исходный массив
      *
-     * @param string $event Название эвента
+     * @param string $event Название события
      * @param mixed $data Исходные данные
      * @param string $mode
-     *  normal - нормальная последовательная обработка данных плагинами,
-     *  single - обработка только первым плагином,
-     *  multi  - обработка всеми плагинами исходных данных и возврат массива с этими данными
+     *  normal - последовательная обработка, каждый следующий плагин получает результат обработки данных предыдущими плагинами
+     *  single - возвращается результат обработки данных первым плагином,
+     *  multi  - каждый плагин получает исходные данные и возвращает обработанный результат, массив этих данных возвращается как результат выполнения события,
+     *  filter - каждый плагин получает в качестве данных массив с ключами:
+     *            filter   - данные для обработки, содержит данные обработанные последовательно всеми плагинами;
+     *            original - изначальные данные для обработки, без изменений внесенных плагинами
+     *            data     - дополнительные данные которые могут понадобиться для обратки данных, может отсутствовать
+     *           каждый плагин должен вернуть обработанные данные filter, он же в конце возвращается как результат выполнения события
      *
      * @return mixed Данные, после их обработки всеми плагинами или массив всех результатов выполнения плагинов
      */
@@ -265,15 +290,32 @@ class events
 
         $results = [];
 
-        self::callComponents($event, $data, $results, $mode, $called);
+        if ( $mode == 'filter' ) {
+            if ( !isset($data['filter']) ) {
+                $data = [ 'filter' => $data ];
+            }
 
-        if ( $called && $mode == 'single' ) {
-            return $data;
+            if ( !isset($data['original']) ) {
+                $data['original'] = $data['filter'];
+            }
         }
 
-        self::callPlugins($event, $data, $results, $mode, $called);
+        // Сперва обрабатываем данные компонентами
+        self::callComponents($event, $data, $results, $mode, $called);
 
-        return $mode == 'multi' ? $results : $data;
+        if ( !$called || $mode != 'single' ) {
+            // Обрабатываем данные плагинами
+            self::callPlugins($event, $data, $results, $mode, $called);
+        }
+
+        if ( $mode == 'filter' ) {
+            return $data['filter'];
+        }
+        else if ( $mode == 'multi' ) {
+            return $results;
+        }
+
+        return $data;
     }
 
     private static function callComponents($event, &$data, &$results, $mode, &$called)
@@ -350,6 +392,9 @@ class events
                             $results[] = $result;
                         }
                     }
+                }
+                else if ( $mode == 'filter' ) {
+                    $data['filter'] = $result;
                 }
                 else {
                     $data = $result;

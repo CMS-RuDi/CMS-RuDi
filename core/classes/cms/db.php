@@ -456,7 +456,7 @@ class db
         $upd_set = $this->getSetString($table, $update_data, $skip_check_fields);
 
         if ( !empty($set) ) {
-            $sql = 'INSERT INTO {#}' . $table . ' SET ' . $set . ' ON DUPLICATE KEY UPDATE ' . !empty($upd_set) ? $upd_set : $set;
+            $sql = 'INSERT INTO {#}' . $table . ' SET ' . $set . ' ON DUPLICATE KEY UPDATE ' . (!empty($upd_set) ? $upd_set : $set);
 
             if ( $this->query($sql) ) {
                 return $this->lastId();
