@@ -862,6 +862,17 @@ class cmsPage
     }
 
     /**
+     * Подключает JS и CSS для автокомплита с использованием скрипта Select2
+     */
+    public function initNewAutocomplete()
+    {
+        $this->addHeadJS('includes/jquery/select2/select2.full.min.js');
+        $this->addHeadJS('includes/jquery/select2/i18n/' . $this->lang->getLang() . '.js');
+        $this->addHeadCSS('includes/jquery/select2/select2.min.css');
+        return $this;
+    }
+
+    /**
      * Подключает JS и CSS для автокомплита
      */
     public function initAutocomplete()
@@ -873,9 +884,10 @@ class cmsPage
 
     /**
      * Возвращает JS-код инициализации автокомплита для указанного поля ввода и скрипта
+     *
      * @param string $script
      * @param string $field_id
-     * @param bool $multiple параметр больше не используется, строка убрана  $multiple = $multiple ? 'true' : 'false';
+     *
      * @return js
      */
     public function getAutocompleteJS($script, $field_id = 'tags')
