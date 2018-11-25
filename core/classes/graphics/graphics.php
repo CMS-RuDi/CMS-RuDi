@@ -9,7 +9,7 @@ namespace graphics;
  * об изображении нанесение водяного знака и других операций с изображениями
  *
  * @author DS Soft <support@ds-soft.ru>
- * @version 0.3.0
+ * @version 0.3.1
  */
 class graphics
 {
@@ -18,24 +18,42 @@ class graphics
     protected $dir                  = false;
 
     /**
-     * filename - название файла
-     * prefix - префикс перед названием файла используется только если не указан filename
-     * postfix - постфикс после названия файла используется только если не указан filename
-     * width - ширина изображения
-     * height - высота изображения
-     * folder - папка сохранения, либо абсолютный путь либо относительный от $dir
+     * Список правил изменения размеров изображений, используется для последующего редактирования конкретного правила
+     *
+     * name        - идентификатор правила
+     * filename    - название файла
+     * prefix      - префикс перед названием файла используется только если не указан filename
+     * postfix     - постфикс после названия файла используется только если не указан filename
+     * width       - ширина изображения
+     * height      - высота изображения
+     * folder      - папка сохранения, либо абсолютный путь либо относительный от $dir
      * resize_type - режим изменения размера (auto, crop, exact, landscape, portrait)
-     * watermark - ссылка на водяной знак
-     * watermark_pos - положение водяного знака lt(left-top,top-left) - левый верхний угол, tc(top) - сверху в центре, rt(top-right,right-top) - правый верхний угол, lc(left) - в центре слева, cc(center) - в центре, rc(right) - в центре справа, lb(bottom-left,left-bottom) - левый нижний угол, bc(bottom) - снизу в середине, rb(bottom-right,right-bottom) - правый нижний угол
-     * watermark_offset - смещение водяного знака от края основного изображения
-     * quality - качество изображения
+     * quality     - качество изображения
+     * watermark   - array(
+     *      enable   - включено или отключено в данный момент нанесение водяного знака,
+     *      file     - ссылка на водяной знак,
+     *      position - положение водяного знака lt(left-top,top-left) - левый верхний угол, tc(top) - сверху в центре, rt(top-right,right-top) - правый верхний угол, lc(left) - в центре слева, cc(center) - в центре, rc(right) - в центре справа, lb(bottom-left,left-bottom) - левый нижний угол, bc(bottom) - снизу в середине, rb(bottom-right,right-bottom) - правый нижний угол
+     *      offset   - смещение водяного знака от края основного изображения
+     *      width    - ширина
+     *      height   - высота
+     * )
      *
      * @var array
      */
-    protected $sizes   = [];
+    protected $rules   = [];
     protected $quality = 90;
     protected static $wmhash;
     protected static $wm;
+
+    /**
+     * Инициализирует класс
+     *
+     * @param array $rules
+     */
+    public function __construct($rules = [])
+    {
+        $this->setRules($rules);
+    }
 
     /**
      * Возвращает информацию о размере изображения, ориентации, размере и типе файла, его mime и exif нформацию;
@@ -73,52 +91,174 @@ class graphics
     //========================================================================//
 
     /**
-     * Выставляет массив опций для изменения размеров изображения
-     * @param array $sizes
+     * Выставляет массив правил для обработки изображений
+     *
+     * @param array $rules
+     *
      * @return $this
      */
-    public function setSizes($sizes)
+    public function setRules($rules)
     {
-        $this->sizes = $sizes;
+        $this->clearRules();
+
+        foreach ( $rules as $rule ) {
+            $this->addRule($rule);
+        }
+
         return $this;
+    }
+
+    /**
+     * @see \graphics\graphics::setRules
+     * @deprecated 0.3.9
+     */
+    public function setSizes($rules)
+    {
+        return $this->setRules($rules);
     }
 
     /**
      * Добавляет опции для обрезки размера изображения
-     * @param array $size
+     *
+     * @param array $rule
+     *
      * @return $this
      */
-    public function addSize($size)
+    public function addRule($rule)
     {
-        $this->sizes[] = $size;
+        $this->checkRule($rule);
+
+        $this->rules[$rule['name']] = $rule;
+
         return $this;
+    }
+
+    /**
+     * @see \graphics\graphics::addSize
+     * @deprecated 0.3.9
+     */
+    public function addSize($rule)
+    {
+        return $this->addRule($rule);
     }
 
     /**
      * Очищает список опций для изменения размера изображения
+     *
      * @return $this
      */
-    public function clearSizes()
+    public function clearRules()
     {
-        $this->sizes = array();
+        $this->rules = [];
+
         return $this;
     }
 
     /**
+     * Удаляет указанное правило
+     *
+     * @param string $name
+     *
+     * @return $this
+     */
+    public function deleteRule($name)
+    {
+        unset($this->rules[$name]);
+
+        return $this;
+    }
+
+    /**
+     * @see \graphics\graphics::clearRules
+     * @deprecated 0.3.9
+     */
+    public function clearSizes()
+    {
+        return $this->clearRules();
+    }
+
+    /**
+     * Позволяет отредактировать правило
+     *
+     * @param string $name
+     * @param string $key
+     * @param mixed $value
+     *
+     * @return $this
+     */
+    public function editRule($name, $key, $value)
+    {
+        if ( is_array($value) ) {
+            foreach ( $value as $k => $v ) {
+                $this->rules[$name][$k] = $v;
+            }
+        }
+        else {
+            $this->rules[$name] = $value;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Приводит старый формат опций в новый
+     *
+     * @param array $rule
+     * @param bool $multiple
+     *
+     * @return array
+     */
+    protected function checkRules(&$rule)
+    {
+        if ( isset($rule['watermark']) && !is_array($rule['watermark']) ) {
+            $wm = [
+                'enable'   => true,
+                'file'     => $rule['watermark'],
+                'position' => isset($rule['watermark_pos']) ? $rule['watermark_pos'] : 'rb',
+                'offset'   => isset($rule['watermark_offset']) ? $rule['watermark_offset'] : 0,
+                'width'    => null,
+                'height'   => null
+            ];
+
+            unset($rule['watermark_pos'], $rule['watermark_offset']);
+
+            $rule['watermark'] = $wm;
+        }
+        else {
+            $rule['watermark'] = array_merge([ 'enable' => true, 'position' => 'rb', 'offset' => 0, 'width' => null, 'height' => null ], $rule['watermark']);
+        }
+
+        $rule['width']       = !empty($rule['width']) ? (int) $rule['width'] : 0;
+        $rule['height']      = !empty($rule['height']) ? (int) $rule['height'] : 0;
+        $rule['resize_type'] = !empty($rule['resize_type']) ? $rule['resize_type'] : 'auto';
+
+        if ( !isset($rule['name']) ) {
+            $rule['name'] = $rule['width'] . 'x' . $rule['height'] . ':' . $rule['resize_type'];
+        }
+
+        if ( !isset($rule['enable']) ) {
+            $rule['enable'] = true;
+        }
+    }
+
+    /**
      * Выставляет директорию сохранения изображений
+     *
      * @param string $dir
+     *
      * @return $this
      */
     public function setDir($dir)
     {
         $this->dir = rtrim($dir, '/ \\');
+
         return $this;
     }
 
     //========================================================================//
 
     /**
-     * Изменяет размер изображения в соответствии с опцияи обработки добавленными методами setSizes и addSize
+     * Изменяет размер изображения в соответствии с правилами обработки добавленными методами setRules и addRule
      *
      * @param string|array $file_path Ссылка на файл изображения или массив таких изображений
      * @param string $driver Класс обработки изображения
@@ -127,7 +267,7 @@ class graphics
      */
     public function startResize($file_path, $idriver = 'imagick')
     {
-        if ( empty($this->sizes) ) {
+        if ( empty($this->rules) ) {
             return false;
         }
 
@@ -136,7 +276,7 @@ class graphics
                 $result = [];
 
                 foreach ( $file_path as $file ) {
-                    $r               = $this->startResize($file, $driver);
+                    $r               = $this->startResize($file, $idriver);
                     $r['image_file'] = $file;
                     $result[]        = $r;
                 }
@@ -155,31 +295,35 @@ class graphics
 
         $filename = substr(md5(uniqid() . '|' . mt_rand(111111111, 999999999)), mt_rand(1, 16) - 1, 16);
 
-        $sizes = [];
+        $rules = [];
 
-        foreach ( $this->sizes as $k => $size ) {
+        foreach ( $this->rules as $k => $rule ) {
+            if ( !$rule['enable'] ) {
+                continue;
+            }
+
             $image = clone $driver;
 
             $format = $info['type'];
 
-            if ( !isset($size['folder']) ) {
-                $size['folder'] = $this->dir;
+            if ( !isset($rule['folder']) ) {
+                $rule['folder'] = $this->dir;
             }
-            else if ( !file_exists($size['folder']) ) {
-                if ( file_exists($this->dir . '/' . trim($size['folder'], '\\/ ')) ) {
-                    $size['folder'] = $this->dir . '/' . trim($size['folder'], '\\/ ');
+            else if ( !file_exists($rule['folder']) ) {
+                if ( file_exists($this->dir . '/' . trim($rule['folder'], '\\/ ')) ) {
+                    $rule['folder'] = $this->dir . '/' . trim($rule['folder'], '\\/ ');
                 }
                 else {
-                    $size['folder'] = $this->dir;
+                    $rule['folder'] = $this->dir;
                 }
             }
 
-            if ( isset($size['filename']) ) {
-                if ( !mb_strstr($size['filename'], '.') ) {
-                    $size['filename'] .= '.' . $format;
+            if ( isset($rule['filename']) ) {
+                if ( !mb_strstr($rule['filename'], '.') ) {
+                    $rule['filename'] .= '.' . $format;
                 }
                 else {
-                    $temp = explode('.', $size['filename']);
+                    $temp = explode('.', $rule['filename']);
 
                     if ( in_array($temp[count($temp) - 1], self::$support_types) ) {
                         $format = $temp[count($temp) - 1];
@@ -189,32 +333,28 @@ class graphics
                 }
             }
             else {
-                $size['filename'] = (isset($size['prefix']) ? $size['prefix'] : '') . $filename . (isset($size['postfix']) ? $size['postfix'] : '') . '.' . $format;
+                $rule['filename'] = (isset($rule['prefix']) ? $rule['prefix'] : '') . $filename . (isset($rule['postfix']) ? $rule['postfix'] : '') . '.' . $format;
             }
 
-            $size['width']       = !empty($size['width']) ? (int) $size['width'] : 0;
-            $size['height']      = !empty($size['height']) ? (int) $size['height'] : 0;
-            $size['resize_type'] = !empty($size['resize_type']) ? $size['resize_type'] : 'auto';
-
             // Изменяем размер изображения
-            $image->resize($size['width'], $size['height'], $size['resize_type']);
+            $image->resize($rule['width'], $rule['height'], $rule['resize_type']);
 
-            if ( !empty($size['watermark']) ) {
+            if ( $rule['watermark']['enable'] ) {
                 // Накладываем водяной знак
                 self::addWatermark(
-                        $image, $size['watermark'], (isset($size['watermark_pos']) ? $size['watermark_pos'] : 'rb'), (isset($size['watermark_offset']) ? (int) $size['watermark_offset'] : 0), $idriver
+                        $image, $rule['watermark']['file'], $rule['watermark']['position'], $rule['watermark']['offset'], $idriver, $rule['watermark']['width'], $rule['watermark']['height']
                 );
             }
 
             // Сохраняем отредактированное изображение
-            $size['result'] = $image->save($size['folder'] . '/' . $size['filename'], $format, (isset($size['quality']) ? $size['quality'] : $this->quality));
+            $rule['result'] = $image->save($rule['folder'] . '/' . $rule['filename'], $format, (isset($rule['quality']) ? $rule['quality'] : $this->quality));
 
             unset($image);
 
-            $sizes[$k] = $size;
+            $rules[$k] = $rule;
         }
 
-        return $sizes;
+        return $rules;
     }
 
     /**
@@ -225,10 +365,12 @@ class graphics
      * @param string $position Позиция водяного занака
      * @param string $offset Отступ от границ изображения
      * @param string $idriver Название драйвера обработчика изображения
+     * @param int|null $wm_width Ширина водяного знака на изображении
+     * @param int|null $wm_height Высота водяного знака на изображении
      *
      * @return object Возвращает объект драйвера с загруженным изображением и нанесенным водяным знаком
      */
-    public static function addWatermark($image, $wmfile, $position = 'rb', $offset = 0, $idriver = 'imagick')
+    public static function addWatermark($image, $wmfile, $position = 'rb', $offset = 0, $idriver = 'imagick', $wm_width = null, $wm_height = null)
     {
         $wmhash = md5(isset($wmfile['data']) ? $wmfile['data'] : $wmfile);
 
@@ -246,8 +388,12 @@ class graphics
 
         $wm = clone self::$wm;
 
-        $ws = ($image->width() - $offset) / $wm->width();
-        $hs = ($image->height() - $offset) / $wm->height();
+        if ( !empty($wm_width) || !empty($wm_height) ) {
+            $wm->resize($wm_width, $wm_height);
+        }
+
+        $ws = ($image->width() - 2 * $offset) / $wm->width();
+        $hs = ($image->height() - 2 * $offset) / $wm->height();
 
         $min = min($ws, $hs);
 
@@ -396,10 +542,10 @@ class graphics
         $ws = $new_width / $width;
         $hs = $new_height / $height;
 
+        self::checkS($ws, $hs);
+
         $min = min($ws, $hs);
         $max = max($ws, $hs);
-
-        self::checkS($ws, $hs);
 
         switch ( $mode ) {
             case 'exact':

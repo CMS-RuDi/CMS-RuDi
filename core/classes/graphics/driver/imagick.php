@@ -7,18 +7,21 @@ class imagick extends \graphics\abstracts\driver
 
     /**
      * Класс обрабоки изображения
+     *
      * @var string
      */
     protected static $imageClass = '\\Imagick';
 
     /**
      * Класс рисования
+     *
      * @var string
      */
     protected $drawClass = '\\ImagickDraw';
 
     /**
      * Режим наложения
+     *
      * @var int
      */
     protected $compositionMode = \Imagick::COMPOSITE_OVER;
