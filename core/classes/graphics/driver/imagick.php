@@ -24,7 +24,7 @@ class imagick extends \graphics\abstracts\driver
      *
      * @var int
      */
-    protected $compositionMode = \Imagick::COMPOSITE_OVER;
+    protected $compositionMode;
 
     public function __construct($image = null, $width = null, $height = null)
     {
@@ -33,6 +33,8 @@ class imagick extends \graphics\abstracts\driver
             $this->width  = $width ? $width : $this->image->getImageWidth();
             $this->height = $height ? $height : $this->image->getImageHeight();
         }
+
+        $this->compositionMode = \Imagick::COMPOSITE_OVER;
     }
 
     public static function checkAvailability()
@@ -329,7 +331,7 @@ class imagick extends \graphics\abstracts\driver
         return $ext;
     }
 
-    protected function destroy()
+    public function destroy()
     {
         if ( $this->image instanceof self::$imageClass ) {
             $this->image->destroy();

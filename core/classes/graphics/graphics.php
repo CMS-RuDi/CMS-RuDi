@@ -208,7 +208,7 @@ class graphics
      *
      * @return array
      */
-    protected function checkRules(&$rule)
+    protected function checkRule(&$rule)
     {
         if ( isset($rule['watermark']) && !is_array($rule['watermark']) ) {
             $wm = [

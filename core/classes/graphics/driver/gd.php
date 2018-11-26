@@ -401,7 +401,7 @@ class gd extends \graphics\abstracts\driver
         return $ext;
     }
 
-    protected function destroy()
+    public function destroy()
     {
         if ( is_resource($this->image) ) {
             imagedestroy($this->image);
