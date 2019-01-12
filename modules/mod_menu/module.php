@@ -88,6 +88,18 @@ function mod_menu($mod, $cfg)
     // сортируем массив
     array_multisort($nsl, SORT_ASC, $ord, SORT_ASC, $items);
 
+    $child_items = [];
+    $root_items  = [];
+
+    foreach ( $items as $item ) {
+        if ( $item['parent_id'] == 1 ) {
+            $root_items[] = $item;
+        }
+        else {
+            $child_items[$item['parent_id']][] = $item;
+        }
+    }
+
     cmsPage::initTemplate('modules', $cfg['tpl'])->
             assign('menuid', $menuid)->
             assign('currentmenu', $currentmenu)->
@@ -98,6 +110,8 @@ function mod_menu($mod, $cfg)
             assign('user_id', $inUser->id)->
             assign('is_admin', $inUser->is_admin)->
             assign('cfg', $cfg)->
+            assign('root_items', $root_items)->
+            assign('child_items', $child_items)->
             display($cfg['tpl']);
 
     return true;

@@ -155,7 +155,7 @@ class lang
     {
         $key = mb_strtolower(implode('', $params));
 
-        return isset(self::$_LANG[$key]) ? self::$_LANG[$key] : $name;
+        return isset(self::$_LANG[$key]) ? self::$_LANG[$key] : implode('', $params);
     }
 
     /**

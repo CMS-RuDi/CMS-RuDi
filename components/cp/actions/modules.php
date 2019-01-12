@@ -545,8 +545,8 @@ class modules extends \cms\com_action
         self::addToolMenuItem($this->lang->cancel, $this->genActionUrl('modules'), 'cancel.gif');
         self::addToolMenuItem($this->lang->ad_edit_module_view, $this->genActionUrl('modules', [ 'edit', $item_id ]), 'edit.gif');
 
-        $this->page()->initTemplate('cp/modules', 'configxml')->
-                assign('formgen', new \cmsFormGen($xml_file, $cfg))->
+        $this->page()->initTemplate('cp/applets/modules', 'configxml')->
+                assign('formGen', new \cmsFormGen($xml_file, $cfg))->
                 assign('submit_url', $this->genActionUrl('modules', [ 'save_auto_config', $item_id ]))->
                 display();
     }
