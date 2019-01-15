@@ -34,7 +34,7 @@ class files
                 $path = $directory . '/' . $node;
 
                 if ( is_dir($path) ) {
-                    if ( !files_remove_directory($path) ) {
+                    if ( !removeDirectory($path) ) {
                         return false;
                     }
                 }
