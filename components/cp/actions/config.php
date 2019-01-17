@@ -78,7 +78,7 @@ class config extends \cms\com_action
             'splash'             => $this->request()->get('splash', 'int', 0),
             'slight'             => $this->request()->get('slight', 'int', 0),
             'db_host'            => $cfg['db_host'],
-            'db_base'            => $cfg['db_host'],
+            'db_base'            => $cfg['db_base'],
             'db_user'            => $cfg['db_user'],
             'db_pass'            => $cfg['db_pass'],
             'db_prefix'          => $cfg['db_prefix'],
