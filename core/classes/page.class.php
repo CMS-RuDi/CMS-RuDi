@@ -561,15 +561,8 @@ class cmsPage
                 }
             }
 
-            // формируем html модуля
-            $m = $this->renderModule($mod);
-
-            if ( !$m ) {
-                continue;
-            }
-
             // список модулей на позицию
-            $modules[$mod['mb_position']][] = $m;
+            $modules[$mod['mb_position']][] = $mod;
         }
 
         $this->modules = $modules;
@@ -694,8 +687,24 @@ class cmsPage
             return;
         }
 
-        foreach ( $this->modules[$position] as $html ) {
-            echo $html;
+        foreach ( $this->modules[$position] as $key => $mod ) {
+            if ( is_array($mod) ) {
+                // формируем html модуля
+                $html = $this->renderModule($mod);
+
+                if ( !$html ) {
+                    unset($this->modules[$position][$key]);
+                    continue;
+                }
+
+                $this->modules[$position][$key] = $html;
+            }
+            else {
+                $html = $mod;
+            }
+
+
+            echo (string) $html;
         }
 
         return;
