@@ -45,7 +45,7 @@
                             </div>
                         </div>
                         <div id="pathway" style="margin-top:4px;">
-                            {printPathway sep='&rarr;'}
+                            {printPathway sep='&rarr;' cp='cp'}
                         </div>
                         {if $messages}
                             <div class="sess_messages">

@@ -335,7 +335,7 @@ class cmsPage
      * Печатает глубиномер
      * @param string $separator
      */
-    public function printPathway($separator = '&rarr;')
+    public function printPathway($separator = '&rarr;', $cp = false)
     {
         $inCore = cmsCore::getInstance();
 
@@ -355,7 +355,7 @@ class cmsPage
         }
 
         if ( $this->pathway ) {
-            $this->initTemplate('special', 'pathway.tpl')->
+            $this->initTemplate(($cp ? 'cp/' : '') . 'special', 'pathway.tpl')->
                     assign('pathway', $this->pathway)->
                     assign('separator', $separator)->
                     display('pathway.tpl');
