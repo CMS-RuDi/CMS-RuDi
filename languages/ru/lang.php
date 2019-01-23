@@ -10,6 +10,8 @@
  *                        LICENSED BY GNU/GPL v2
  */
 
+$_LANG['LANG_RU_TITLE']             = 'Русский';
+$_LANG['LANG_EN_TITLE']             = 'Английский';
 $_LANG['PATH_HOME']                 = 'Главная';
 $_LANG['TRACE_STACK']               = 'Последние вызовы';
 $_LANG['DEBUG_MEMORY']              = 'Потребление памяти:';

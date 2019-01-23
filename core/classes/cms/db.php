@@ -480,6 +480,23 @@ class db
         return $this->query('DELETE FROM {#}' . $table_name . ' WHERE ' . $where . ($limit ? ' LIMIT ' . $limit : ''));
     }
 
+    /**
+     * Позволяет быстро изменить значения одного столбца таблицы
+     *
+     * @param string $table_name Таблица
+     * @param string $field_name Название столбца
+     * @param string $field_value Новое значение
+     * @param string $where Условие
+     * @param int|bool $limit Лимит
+     * 
+     * @return $this
+     */
+    public function changeValue($table_name, $field_name, $field_value, $where, $limit = 1)
+    {
+        $this->query('UPDATE {#}' . $table_name . ' SET `' . $field_name . "` = '" . $this->escape($field_value) . "' WHERE " . $where . ($limit ? ' LIMIT ' . $limit : ''));
+        return $this;
+    }
+
 //============================================================================//
 
     /**

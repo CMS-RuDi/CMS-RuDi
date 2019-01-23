@@ -428,7 +428,7 @@ class backend extends \cms\backend
         $this->page->addPathway($this->lang->ad_create_section);
         self::setTitle($this->lang->ad_create_section);
 
-        return $this->actionEdit(false, 'add');
+        return $this->actionEditCategory(false, 'add');
     }
 
     public function actionEditCategory($item_id = false, $do = 'edit')

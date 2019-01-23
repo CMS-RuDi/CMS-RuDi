@@ -20,7 +20,8 @@
                         <div style="color:gray"><strong>{$lang->ad_folder}:</strong> /modules/{$module.link}</div>
                     </td>
                 </tr>
-        {/foreach}
+            {/foreach}
+        </table>
     {/if}
     
     {if !empty($upd_modules)}
@@ -40,7 +41,8 @@
                         <div style="color:gray"><strong>{$lang->ad_folder}:</strong> /modules/{$module.link}</div>
                     </td>
                 </tr>
-        {/foreach}
+            {/foreach}
+        </table>
     {/if}
     
     <p>{$lang->ad_click_to_continue_module}</p>

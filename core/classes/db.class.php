@@ -424,7 +424,7 @@ class cmsDatabase
 
     public function setFlag($table, $id, $flag, $value)
     {
-        $this->query('UPDATE ' . $table . ' SET ' . $flag . " = '" . $value . "' WHERE id='" . $id . "'");
+        $this->db->changeValue(self::replacePrefixTable($table), $flag, $value, 'id=' . $id);
         return $this;
     }
 
@@ -440,7 +440,7 @@ class cmsDatabase
             }
         }
 
-        $this->query('UPDATE ' . $table . ' SET ' . $flag . " = '" . $value . "' WHERE `id` IN (" . implode(',', $ids) . ') LIMIT ' . count($ids));
+        $this->db->changeValue(self::replacePrefixTable($table), $flag, $value, 'id IN (' . implode(',', $ids) . ')', count($ids));
 
         return $this;
     }
