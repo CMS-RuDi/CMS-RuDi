@@ -106,14 +106,11 @@ class autoload
      * Добавляет связь названия класса и его местоположения
      *
      * @param string $class Название класса
-     * @param string $path Путь к файлу класса, может быть абсолютным или относительным
-     * относительно корня сайта, относительно папки /core/classes или относительно
-     * папки /includes/libs или любой другой директори предварительно добавленной
-     * методом addDir($path)
+     * @param string $path Абсолютный путь к файлу класса
      */
     public static function add($class, $path)
     {
-        self::$classes[$class] = $path;
+        self::$classes_map[$class] = $path;
     }
 
     /**

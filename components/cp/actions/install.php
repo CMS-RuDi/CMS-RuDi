@@ -38,7 +38,7 @@ class install extends \cms\com_action
 
         if ( !empty($new_coms) ) {
             foreach ( $new_coms as $component ) {
-                if ( $inCore->loadComponentInstaller($component) ) {
+                if ( $this->core->loadComponentInstaller($component) ) {
                     $new_components[] = call_user_func('info_component_' . $component);
                 }
             }
@@ -49,7 +49,7 @@ class install extends \cms\com_action
 
         if ( !empty($upd_coms) ) {
             foreach ( $upd_coms as $component ) {
-                if ( $inCore->loadComponentInstaller($component) ) {
+                if ( $this->core->loadComponentInstaller($component) ) {
                     $_component            = call_user_func('info_component_' . $component);
                     $_component['version'] = $this->core->getComponentVersion($component) . ' &rarr; ' . $_component['version'];
                     $upd_components[]      = $_component;

@@ -1157,6 +1157,11 @@ class cmsCore
         return $this->is_menu_id_strict;
     }
 
+    public function isMainPage()
+    {
+        return $this->menuId() == 1;
+    }
+
     /**
      * Возвращает ID текущего пункта меню
      *
