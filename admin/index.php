@@ -32,6 +32,7 @@ $view = $r->get('view', 'str', 'main');
 $do   = $r->get('do', 'str');
 
 if ( $view == 'components' ) {
+    $do  = $r->get('link', 'str');
     $opt = $r->get('opt', 'str');
 }
 

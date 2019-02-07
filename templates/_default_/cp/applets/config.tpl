@@ -72,8 +72,8 @@
                             <span class="hinttext">{$lang->ad_only_admins}</span>
                         </td>
                         <td valign="top">
-                            <label><input name="siteoff" type="radio" value="0"{if !empty($config.siteoff)} checked="checked"{/if} /> {$lang->yes} </label>
-                            <label><input name="siteoff" type="radio" value="1"{if empty($config.siteoff)} checked="checked"{/if} /> {$lang->no}</label>
+                            <label><input name="siteoff" type="radio" value="0"{if empty($config.siteoff)} checked="checked"{/if} /> {$lang->yes} </label>
+                            <label><input name="siteoff" type="radio" value="1"{if !empty($config.siteoff)} checked="checked"{/if} /> {$lang->no}</label>
                         </td>
                     </tr>
                     <tr>

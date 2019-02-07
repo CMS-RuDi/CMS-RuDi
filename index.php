@@ -64,7 +64,7 @@ if ( $inConf->siteoff &&
         $_SERVER['REQUEST_URI'] != '/login' &&
         $_SERVER['REQUEST_URI'] != '/logout'
  ) {
-    cmsPage::includeTemplateFile('special/siteoff.php');
+    cmsPage::showSiteOffPage();
     cmsCore::halt();
 }
 

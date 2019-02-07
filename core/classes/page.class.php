@@ -479,6 +479,16 @@ class cmsPage
         return false;
     }
 
+    public static function showSiteOffPage()
+    {
+        if ( file_exists(TEMPLATE_DIR . '/special/siteoff.php') ) {
+            self::includeTemplateFile('special/siteoff.php');
+        }
+        else {
+            self::initTemplate('special', 'siteoff.tpl')->display();
+        }
+    }
+
     /**
      * Показывает Splash страницу
      * @return bool

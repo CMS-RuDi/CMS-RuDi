@@ -14,6 +14,7 @@ define('CORE_VERSION', '1.10.7');
 define('CORE_BUILD', '1');
 define('CORE_VERSION_DATE', '2016-07-26');
 define('CORE_BUILD_DATE', '2016-07-26');
+define('CMS_RUDI', 1);
 
 class cmsCore
 {
