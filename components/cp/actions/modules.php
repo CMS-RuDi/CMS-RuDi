@@ -312,6 +312,7 @@ class modules extends \cms\com_action
                 assign('panel', \cms\backend::getPanelHtml())->
                 assign('modules_list', $this->core->getListItems('cms_modules'))->
                 assign('menu_items', $menu_items)->
+                assign('show_all', $show_all)->
                 assign('groups', \cmsUser::getGroups());
 
         if ( file_exists(PATH . '/templates/' . TEMPLATE . '/positions.jpg') ) {

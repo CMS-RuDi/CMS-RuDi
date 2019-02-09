@@ -488,7 +488,7 @@ class db
      * @param string $field_value Новое значение
      * @param string $where Условие
      * @param int|bool $limit Лимит
-     * 
+     *
      * @return $this
      */
     public function changeValue($table_name, $field_name, $field_value, $where, $limit = 1)
@@ -827,7 +827,7 @@ class db
 
     public function dropTable($table_name)
     {
-        $sql = 'DROP TABLE IF EXISTS {#}s' . $table_name;
+        $sql = 'DROP TABLE IF EXISTS `{#}' . $table_name . '`';
 
         $this->query($sql);
     }

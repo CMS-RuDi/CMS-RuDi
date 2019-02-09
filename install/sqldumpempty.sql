@@ -20,7 +20,7 @@ CREATE TABLE `#__translations_fields` (
 
 INSERT INTO `#__translations_fields` (`id`, `target`, `fields`) VALUES
 (1, 'content_content', '---\ntitle: str\ndescription: html\ncontent: html\npagetitle: str\nmeta_desc: str\nmeta_keys: str\n'),
-(2, 'content_category', '---\ntitle: str\ndescription: html\npagetitle: str\nmeta_desc: str\nmeta_keys: str\n'));
+(2, 'content_category', '---\ntitle: str\ndescription: html\npagetitle: str\nmeta_desc: str\nmeta_keys: str\n');
 
 DROP TABLE IF EXISTS `#__actions`;
 CREATE TABLE `#__actions` (
