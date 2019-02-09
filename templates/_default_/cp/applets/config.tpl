@@ -92,7 +92,9 @@
                             <span class="hinttext">{$lang->ad_view_why_stop}</span>
 
                         </td>
-                        <td valign="top"><input name="offtext" type="text" id="offtext" value="{$config.offtext|escape:'html'}" style="width:358px" /></td>
+                        <td valign="top">
+                            <textarea id="offtext" name="offtext" style="width:358px">{$config.offtext|escape:'html'}</textarea>
+                        </td>
                     </tr>
                     <tr>
                         <td>
