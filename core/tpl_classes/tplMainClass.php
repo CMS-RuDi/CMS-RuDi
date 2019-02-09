@@ -24,6 +24,8 @@ abstract class tplMainClass
         $this->template = $template;
 
         $this->initTemplateEngine();
+
+        \cms\lang::loadTemplateLang($this->template);
     }
 
     /**

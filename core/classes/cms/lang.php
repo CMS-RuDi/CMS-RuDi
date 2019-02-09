@@ -22,6 +22,8 @@ class lang
      * Загружает языковой файл указанного компонента
      *
      * @param string $name
+     *
+     * @return $this
      */
     public static function loadComponentLang($name)
     {
@@ -32,6 +34,8 @@ class lang
      * Загружает языковой файл указанного модуля
      *
      * @param string $name
+     *
+     * @return $this
      */
     public static function loadModuleLang($name)
     {
@@ -42,20 +46,47 @@ class lang
      * Загружает языковой файл указанного модуля
      *
      * @param string $name
+     *
+     * @return $this
      */
     public static function loadPluginLang($name)
     {
         return self::getInstance()->load('plugins/' . $name);
     }
 
+    /**
+     * Зайгружает языковой файл указанного шаблона
+     *
+     * @param string $name
+     *
+     * @return $this
+     */
+    public static function loadTemplateLang($name)
+    {
+        return self::getInstance()->load('templates/' . $name);
+    }
+
     //========================================================================//
 
+    /**
+     * Зайгружает указанный языковой файл
+     *
+     * @param string $file
+     *
+     * @return $this
+     */
     public function load($file)
     {
         $this->loadFromPath(PATH . '/languages/%lang%/' . $file . '.php');
+
         return $this;
     }
 
+    /**
+     * Загружает языковой файл по указанному пути
+     *
+     * @param string $file_path
+     */
     public function loadFromPath($file_path)
     {
         $lang  = $_LANG = [];
@@ -68,8 +99,17 @@ class lang
         }
 
         $this->setLangs(!empty($lang) ? $lang : $_LANG);
+
+        return $this;
     }
 
+    /**
+     * Загружает удаленный языковой файл в формате json по указанному url
+     *
+     * @param type $lang_file_url
+     *
+     * @return boolean true если удалось загрузить файл и false в случае ошибки
+     */
     public function remoteLoad($lang_file_url)
     {
         if ( !empty($this->lang_uri) && !empty($lang_file_url) ) {
@@ -89,6 +129,15 @@ class lang
         return false;
     }
 
+    /**
+     * Возвращает указанную языковую строку, в которой произведена процедура
+     * поиска и замены $params где для поиска используется %ключ% а для замены значение
+     *
+     * @param string $name
+     * @param array $params
+     *
+     * @return false|string
+     */
     public function replace($name, $params = [])
     {
         if ( isset(self::$_LANG[$name]) ) {
@@ -97,13 +146,12 @@ class lang
             if ( !empty($params) && is_array($params) ) {
                 $find    = $replace = [];
 
-                foreach ( $vars as $k => $v ) {
+                foreach ( $params as $k => $v ) {
                     $find[]    = '%' . $k . '%';
                     $replace[] = $v;
                 }
 
                 $string = str_replace($find, $replace, $string);
-                $string = vsprintf($lang_var, $params);
             }
 
             return $string;
@@ -112,6 +160,15 @@ class lang
         return false;
     }
 
+    /**
+     * Возвращает отформатированную строку
+     * подробнее http://php.net/manual/ru/function.sprintf.php
+     *
+     * @param string $name
+     * @param mixed ...$params
+     *
+     * @return false|string
+     */
     public function vsprintf($name, ...$params)
     {
         $string = $this->get($name);
@@ -127,6 +184,11 @@ class lang
         return false;
     }
 
+    /**
+     * Возвращает идентификатор текущего языка
+     *
+     * @return string
+     */
     public function getLang()
     {
         return $this->lang;
