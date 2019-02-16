@@ -112,7 +112,7 @@ class lang
      */
     public function remoteLoad($lang_file_url)
     {
-        if ( !empty($this->lang_uri) && !empty($lang_file_url) ) {
+        if ( !empty($lang_file_url) ) {
             $data = \cms\helper\files::getContent($lang_file_url);
 
             if ( !empty($data) ) {

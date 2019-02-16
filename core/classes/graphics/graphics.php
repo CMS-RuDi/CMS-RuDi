@@ -441,15 +441,13 @@ class graphics
         }
 
         if ( (mb_substr($src, 0, 7) == 'http://') || (mb_substr($src, 0, 8) == 'https://') ) {
-            $curl = \dssoft\curl::init();
+            $file = \Requests::get($src);
 
-            $curl->request('get', $src);
-
-            if ( $curl->code == 200 ) {
-                return [ 'data' => $curl->response ];
+            if ( $file->success === true && !empty($file->body) ) {
+                return [ 'data' => $file->body ];
             }
 
-            trigger_error('download error ' . $src . ' - ' . $curl->error, \E_USER_NOTICE);
+            trigger_error('download error ' . $src, \E_USER_NOTICE);
         }
 
         return false;
