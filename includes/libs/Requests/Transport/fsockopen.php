@@ -101,7 +101,9 @@ class fsockopen implements \Requests\Transport
 
             if ( isset($options['verify']) ) {
                 if ( $options['verify'] === false ) {
-                    $context_options['verify_peer'] = false;
+                    $context_options['verify_peer']      = false;
+                    $context_options['verify_peer_name'] = false;
+                    $verifyname                          = false;
                 }
                 elseif ( is_string($options['verify']) ) {
                     $context_options['cafile'] = $options['verify'];
@@ -164,14 +166,24 @@ class fsockopen implements \Requests\Transport
         $out          = sprintf("%s %s HTTP/%.1f\r\n", $options['type'], $path, $options['protocol_version']);
 
         if ( $options['type'] !== Requests::TRACE ) {
+            $files = array();
+
             if ( is_array($data) ) {
+                foreach ( $data as $key => $value ) {
+                    if ( $value instanceof Requests_File ) {
+                        $files[$key] = $value;
+                    }
+                }
+            }
+
+            if ( is_array($data) && empty($files) ) {
                 $request_body = http_build_query($data, '', '&');
             }
             else {
                 $request_body = $data;
             }
 
-            if ( !empty($data) ) {
+            if ( !empty($data) && empty($files) ) {
                 if ( !isset($case_insensitive_headers['Content-Length']) ) {
                     $headers['Content-Length'] = strlen($request_body);
                 }
@@ -179,6 +191,37 @@ class fsockopen implements \Requests\Transport
                 if ( !isset($case_insensitive_headers['Content-Type']) ) {
                     $headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
                 }
+            }
+            elseif ( $options['type'] === Requests::POST && empty($files) ) {
+                if ( !isset($case_insensitive_headers['Content-Length']) ) {
+                    // Prevent 411 errors from some servers
+                    $headers['Content-Length'] = 0;
+                }
+            }
+
+            if ( !empty($files) ) {
+                $boundary                = sha1(time());
+                $headers['Content-Type'] = "multipart/form-data; boundary=$boundary";
+                $request_body            = '';
+
+                if ( !empty($data) ) {
+                    foreach ( $data as $key => $value ) {
+                        $request_body .= "--$boundary\r\n";
+
+                        if ( $value instanceof \Requests\File ) {
+                            $request_body .= "Content-Disposition: form-data; name=\"$key\"; filename=\"$value->name\"\r\n";
+                            $request_body .= "Content-Type: $value->type";
+                            $request_body .= "\r\n\r\n" . $value->get_contents() . "\r\n";
+                        }
+                        else {
+                            $request_body .= "Content-Disposition: form-data; name=\"$key\"";
+                            $request_body .= "\r\n\r\n" . $value . "\r\n";
+                        }
+                    }
+                }
+
+                $request_body              .= "--$boundary--\r\n\r\n";
+                $headers['Content-Length'] = strlen($request_body);
             }
         }
 

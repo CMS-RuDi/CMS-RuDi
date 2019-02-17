@@ -157,20 +157,6 @@ class cURL implements \Requests\Transport
             $this->response_byte_limit = $options['max_bytes'];
         }
 
-        if ( isset($options['verify']) ) {
-            if ( $options['verify'] === false ) {
-                curl_setopt($this->handle, CURLOPT_SSL_VERIFYHOST, 0);
-                curl_setopt($this->handle, CURLOPT_SSL_VERIFYPEER, 0);
-            }
-            elseif ( is_string($options['verify']) ) {
-                curl_setopt($this->handle, CURLOPT_CAINFO, $options['verify']);
-            }
-        }
-
-        if ( isset($options['verifyname']) && $options['verifyname'] === false ) {
-            curl_setopt($this->handle, CURLOPT_SSL_VERIFYHOST, 0);
-        }
-
         curl_exec($this->handle);
         $response = $this->response_data;
 
@@ -186,12 +172,14 @@ class cURL implements \Requests\Transport
             $response             = $this->response_data;
         }
 
-        $this->process_response($response, $options);
+        if ( true === $options['blocking'] ) {
+            // Need to remove the $this reference from the curl handle.
+            // Otherwise Requests_Transport_cURL wont be garbage collected and the curl_close() will never be called.
+            curl_setopt($this->handle, CURLOPT_HEADERFUNCTION, null);
+            curl_setopt($this->handle, CURLOPT_WRITEFUNCTION, null);
+        }
 
-        // Need to remove the $this reference from the curl handle.
-        // Otherwise \Requests\Transport\cURL wont be garbage collected and the curl_close() will never be called.
-        curl_setopt($this->handle, CURLOPT_HEADERFUNCTION, null);
-        curl_setopt($this->handle, CURLOPT_WRITEFUNCTION, null);
+        $this->process_response($response, $options);
 
         return $this->headers;
     }
@@ -336,15 +324,35 @@ class cURL implements \Requests\Transport
 
         $headers = Requests::flatten($headers);
 
+        $files = array();
+
         if ( !empty($data) ) {
             $data_format = $options['data_format'];
 
+            if ( is_array($data) ) {
+                foreach ( $data as $key => $value ) {
+                    if ( $value instanceof \Requests\File ) {
+                        $files[$key] = $value;
+                    }
+                }
+            }
+
             if ( $data_format === 'query' ) {
                 $url  = self::format_get($url, $data);
-                $data = '';
+                $data = array();
             }
-            elseif ( !is_string($data) ) {
-                $data = http_build_query($data, null, '&');
+        }
+
+        if ( !empty($files) ) {
+            if ( function_exists('curl_file_create') ) {
+                foreach ( $files as $key => $file ) {
+                    $data[$key] = curl_file_create($file->path, $file->type, $file->name);
+                }
+            }
+            else {
+                foreach ( $files as $key => $file ) {
+                    $data[$key] = "@{$file->path}";
+                }
             }
         }
 
@@ -376,7 +384,7 @@ class cURL implements \Requests\Transport
         // There's no way to detect which DNS resolver is being used from our
         // end, so we need to round up regardless of the supplied timeout.
         //
-		// https://github.com/curl/curl/blob/4f45240bc84a9aa648c8f7243be7b79e9f9323a5/lib/hostip.c#L606-L609
+        // https://github.com/curl/curl/blob/4f45240bc84a9aa648c8f7243be7b79e9f9323a5/lib/hostip.c#L606-L609
         $timeout = max($options['timeout'], 1);
 
         if ( is_int($timeout) || $this->version < self::CURL_7_16_2 ) {
@@ -412,6 +420,19 @@ class cURL implements \Requests\Transport
             curl_setopt($this->handle, CURLOPT_HEADERFUNCTION, array( &$this, 'stream_headers' ));
             curl_setopt($this->handle, CURLOPT_WRITEFUNCTION, array( &$this, 'stream_body' ));
             curl_setopt($this->handle, CURLOPT_BUFFERSIZE, Requests::BUFFER_SIZE);
+        }
+
+        if ( isset($options['verify']) ) {
+            if ( $options['verify'] === false ) {
+                curl_setopt($this->handle, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($this->handle, CURLOPT_SSL_VERIFYPEER, 0);
+            }
+            elseif ( is_string($options['verify']) ) {
+                curl_setopt($this->handle, CURLOPT_CAINFO, $options['verify']);
+            }
+        }
+        if ( isset($options['verifyname']) && $options['verifyname'] === false ) {
+            curl_setopt($this->handle, CURLOPT_SSL_VERIFYHOST, 0);
         }
     }
 
