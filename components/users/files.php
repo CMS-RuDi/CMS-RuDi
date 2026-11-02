@@ -10,34 +10,34 @@
  *                        LICENSED BY GNU/GPL v2
  */
 
-if ( $fdo == 'view' ) {
+if ($fdo == 'view') {
     $usr = cmsUser::getShortUserData($id);
 
-    if ( !$usr ) {
+    if (!$usr) {
         cmsCore::error404();
     }
 
-    if ( $inUser->id ) {
+    if ($inUser->id) {
         $inPage->addHeadJS('components/users/js/pageselfiles.js');
     }
 
     $inPage->setTitle($usr['nickname'] . ' - ' . $_LANG['FILES']);
     $inPage->addPathway($usr['nickname'], cmsUser::getProfileURL($usr['login']));
     $inPage->addPathway($_LANG['FILES_ARCHIVE'], '/users/' . $id . '/files.html');
-    $inPage->addHeadJsLang(array( 'NO_SELECT_FILE' ));
+    $inPage->addHeadJsLang(array('NO_SELECT_FILE'));
 
     $orderby = cmsCore::getSearchVar('orderby', 'pubdate');
     $orderto = cmsCore::getSearchVar('orderto', 'desc');
 
-    if ( !in_array($orderby, array( 'pubdate', 'filename', 'filesize', 'hits' )) ) {
+    if (!in_array($orderby, array('pubdate', 'filename', 'filesize', 'hits'))) {
         $orderby = 'pubdate';
     }
 
-    if ( !in_array($orderto, array( 'asc', 'desc' )) ) {
+    if (!in_array($orderto, array('asc', 'desc'))) {
         $orderto = 'desc';
     }
 
-    $perpage   = 20;
+    $perpage = 20;
     $myprofile = ($inUser->id == $usr['id']);
 
     $inDB->where("user_id = '{$usr['id']}'");
@@ -68,25 +68,25 @@ if ( $fdo == 'view' ) {
             display('com_users_file_view.tpl');
 }
 
-if ( $fdo == 'download' ) {
+if ($fdo == 'download') {
     $file_id = cmsCore::request('fileid', 'int', 0);
 
     $allowsql = $inUser->id ? '' : "AND allow_who='all'";
 
     $file = $inDB->get_fields('cms_user_files', "id = '$file_id' {$allowsql}", 'user_id, filename, allow_who');
 
-    if ( !$file ) {
+    if (!$file) {
         cmsCore::error404();
     }
 
-    $name    = preg_replace('/\.+\//', '', $file['filename']);
+    $name = preg_replace('/\.+\//', '', $file['filename']);
     $fileurl = '/upload/userfiles/' . $file['user_id'] . '/' . $name;
 
-    if ( !file_exists(PATH . $fileurl) ) {
+    if (!file_exists(PATH . $fileurl)) {
         cmsCore::error404();
     }
 
-    if ( $file['user_id'] != $inUser->id && $file['allow_who'] != 'all' && !$inUser->is_admin ) {
+    if ($file['user_id'] != $inUser->id && $file['allow_who'] != 'all' && !$inUser->is_admin) {
         $inCore->halt($_LANG['FILE_HIDEN']);
     }
 
@@ -98,14 +98,14 @@ if ( $fdo == 'download' ) {
     cmsCore::halt();
 }
 
-if ( $fdo == 'addfile' ) {
-    if ( !$inUser->id ) {
+if ($fdo == 'addfile') {
+    if (!$inUser->id) {
         cmsUser::goToLogin();
     }
 
     $usr = cmsUser::getShortUserData($inUser->id);
 
-    if ( !$usr ) {
+    if (!$usr) {
         cmsCore::error404();
     }
 
@@ -113,49 +113,49 @@ if ( $fdo == 'addfile' ) {
             round($model->config['filessize'] - round(($model->getUserFilesSize($usr['id']) / 1024) / 1024, 2), 2) :
             '';
 
-    if ( cmsCore::inRequest('upload') ) {
-        $size_mb      = 0;
+    if (cmsCore::inRequest('upload')) {
+        $size_mb = 0;
         $loaded_files = array();
 
         $list_files = array();
 
-        foreach ( $_FILES['upfile'] as $key => $value ) {
-            foreach ( $value as $k => $v ) {
+        foreach ($_FILES['upfile'] as $key => $value) {
+            foreach ($value as $k => $v) {
                 $list_files['upfile' . $k][$key] = $v;
             }
         }
 
-        foreach ( $list_files as $key => $data_array ) {
-            if ( $data_array['error'] != UPLOAD_ERR_OK ) {
+        foreach ($list_files as $key => $data_array) {
+            if ($data_array['error'] != UPLOAD_ERR_OK) {
                 continue;
             }
 
             $upload_dir = PATH . '/upload/userfiles/' . $usr['id'];
 
-            if ( !is_dir($upload_dir) ) {
-                if ( !@mkdir($upload_dir) ) {
+            if (!is_dir($upload_dir)) {
+                if (!@mkdir($upload_dir)) {
                     continue;
                 }
             }
 
-            $name    = $data_array["name"];
-            $size    = cmsCore::strClear($data_array["size"]);
+            $name = $data_array["name"];
+            $size = cmsCore::strClear($data_array["size"]);
             $size_mb += round(($size / 1024) / 1024, 2);
 
             // проверяем тип файла
             $maytypes = explode(',', str_replace(' ', '', strtolower($model->config['filestype'])));
-            $ext      = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
 
-            if ( !$ext ) {
+            if (!$ext) {
                 continue;
             }
 
-            if ( in_array($ext, array( 'php', 'htm', 'html', 'htaccess' ), true) ) {
+            if (in_array($ext, array('php', 'htm', 'html', 'htaccess'), true)) {
                 cmsCore::addSessionMessage($_LANG['ERROR_TYPE_FILE'] . ': ' . $model->config['filestype'], 'error');
                 cmsCore::redirectBack();
             }
 
-            if ( !in_array($ext, $maytypes, true) ) {
+            if (!in_array($ext, $maytypes, true)) {
                 cmsCore::addSessionMessage($_LANG['ERROR_TYPE_FILE'] . ': ' . $model->config['filestype'], 'error');
                 cmsCore::redirectBack();
             }
@@ -171,18 +171,18 @@ if ( $fdo == 'addfile' ) {
             $name = cmsCore::strClear($name);
 
             // Проверяем свободное место
-            if ( $size_mb > $free_mb && $model->config['filessize'] ) {
+            if ($size_mb > $free_mb && $model->config['filessize']) {
                 cmsCore::addSessionMessage($_LANG['YOUR_FILE_LIMIT'] . ' (' . $max_mb . ' ' . $_LANG['MBITE'] . ') ' . $_LANG['IS_OVER_LIMIT'] . '<br>' . $_LANG['FOR_NEW_FILE_DEL_OLD'], 'error');
                 cmsCore::redirectBack();
             }
 
             // Загружаем файл
-            if ( $inCore->moveUploadedFile($data_array['tmp_name'], PATH . '/upload/userfiles/' . $usr['id'] . '/' . $name, $data_array['error']) ) {
+            if ($inCore->moveUploadedFile($data_array['tmp_name'], PATH . '/upload/userfiles/' . $usr['id'] . '/' . $name, $data_array['error'])) {
 
                 // если загрузили фото, проверяем его
-                if ( in_array($ext, array( 'jpg', 'jpeg', 'gif', 'png', 'bmp' ), true) ) {
+                if (in_array($ext, array('jpg', 'jpeg', 'gif', 'png', 'bmp'), true)) {
                     $size = getimagesize(PATH . '/upload/userfiles/' . $usr['id'] . '/' . $name);
-                    if ( $size === false ) {
+                    if ($size === false) {
                         @unlink(PATH . '/upload/userfiles/' . $usr['id'] . '/' . $name);
                         continue;
                     }
@@ -198,44 +198,43 @@ if ( $fdo == 'addfile' ) {
                 $file_id = $inDB->get_last_id('cms_user_files');
 
                 cmsActions::log('add_file', array(
-                    'object'      => $name,
-                    'object_url'  => '/users/files/download' . $file_id . '.html',
-                    'object_id'   => $file_id,
-                    'target'      => '',
-                    'target_url'  => '',
+                    'object' => $name,
+                    'object_url' => '/users/files/download' . $file_id . '.html',
+                    'object_id' => $file_id,
+                    'target' => '',
+                    'target_url' => '',
                     'description' => ''
                 ));
             }
         }
 
-        if ( sizeof($loaded_files) ) {
+        if (sizeof($loaded_files)) {
             cmsCore::addSessionMessage($_LANG['FILE_UPLOAD_FINISH'], 'success');
 
-            if ( $model->config['filessize'] ) {
+            if ($model->config['filessize']) {
                 cmsCore::addSessionMessage('<strong>' . $_LANG['FREE_SPACE_LEFT'] . ':</strong> ' . round($free_mb - $size_mb, 2) . ' ' . $_LANG['MBITE'], 'info');
             }
 
             cmsCore::redirect('/users/' . $usr['id'] . '/files.html');
-        }
-        else {
+        } else {
             cmsCore::addSessionMessage($_LANG['ERR_BIG_FILE'] . ' ' . $_LANG['ERR_FILE_NAME'], 'error');
             cmsCore::redirectBack();
         }
     }
 
-    if ( !cmsCore::inRequest('upload') ) {
+    if (!cmsCore::inRequest('upload')) {
         $inPage->setTitle($_LANG['UPLOAD_FILES']);
         $inPage->addHeadJS('includes/jquery/multifile/jquery.multifile.js');
 
         $inPage->addPathway($usr['nickname'], cmsUser::getProfileURL($usr['login']));
         $inPage->addPathway($_LANG['FILES_ARCHIVE'], '/users/' . $usr['id'] . '/files.html');
         $inPage->addPathway($_LANG['UPLOAD_FILES']);
-        $inPage->addHeadJsLang(array( 'FILE_SELECTED', 'FILE_DENIED', 'FILE_DUPLICATE' ));
+        $inPage->addHeadJsLang(array('FILE_SELECTED', 'FILE_DENIED', 'FILE_DUPLICATE'));
 
         $post_max_b = trim(@ini_get('upload_max_filesize'));
-        $last       = mb_strtolower($post_max_b{mb_strlen($post_max_b) - 1});
+        $last = mb_strtolower($post_max_b[mb_strlen($post_max_b) - 1]);
 
-        switch ( $last ) {
+        switch ($last) {
             case 'g':
                 $post_max_b *= 1024;
             case 'm':
@@ -256,32 +255,31 @@ if ( $fdo == 'addfile' ) {
 
 //========================= MULTIPLE FILES DELETE ============================//
 
-if ( $fdo == 'delfilelist' ) {
+if ($fdo == 'delfilelist') {
     $files = cmsCore::request('files', 'array_int');
 
-    if ( !$files ) {
+    if (!$files) {
         cmsCore::error404();
     }
 
-    if ( !$inUser->id || ($inUser->id != $id && !$inUser->is_admin) ) {
+    if (!$inUser->id || ($inUser->id != $id && !$inUser->is_admin)) {
         cmsCore::error404();
     }
 
     $a_list = rtrim(implode(',', $files), ',');
-    $fsql   = '';
+    $fsql = '';
 
-    if ( $a_list ) {
+    if ($a_list) {
         $fsql .= "id IN ({$a_list})";
-    }
-    else {
+    } else {
         $fsql .= '1=0';
     }
 
-    $sql    = "SELECT id, filename FROM cms_user_files WHERE user_id = '" . $id . "' AND " . $fsql;
+    $sql = "SELECT id, filename FROM cms_user_files WHERE user_id = '" . $id . "' AND " . $fsql;
     $result = $inDB->query($sql);
 
-    if ( $inDB->num_rows($result) ) {
-        while ( $file = $inDB->fetch_assoc($result) ) {
+    if ($inDB->num_rows($result)) {
+        while ($file = $inDB->fetch_assoc($result)) {
             @unlink(PATH . '/upload/userfiles/' . $id . '/' . $file['filename']);
             cmsActions::removeObjectLog('add_file', $file['id']);
         }
@@ -293,26 +291,25 @@ if ( $fdo == 'delfilelist' ) {
 
 //======================= MULTIPLE FILES PUBLISHING ==========================//
 
-if ( $fdo == 'pubfilelist' ) {
+if ($fdo == 'pubfilelist') {
     $files = cmsCore::request('files', 'array_int', array());
 
-    if ( !$files ) {
+    if (!$files) {
         cmsCore::error404();
     }
 
     $allow = cmsCore::request('allow', 'str', 'nobody');
 
-    if ( !$inUser->id || ($inUser->id != $id && !$inUser->is_admin) ) {
+    if (!$inUser->id || ($inUser->id != $id && !$inUser->is_admin)) {
         cmsCore::error404();
     }
 
     $a_list = rtrim(implode(',', $files), ',');
-    $fsql   = '';
+    $fsql = '';
 
-    if ( $a_list ) {
+    if ($a_list) {
         $fsql .= "id IN ({$a_list})";
-    }
-    else {
+    } else {
         $fsql .= '1=0';
     }
 

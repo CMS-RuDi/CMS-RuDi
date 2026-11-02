@@ -11,8 +11,7 @@
 
 namespace Mso\IdnaConvert;
 
-class EncodingHelper
-{
+class EncodingHelper {
 
     /**
      * Convert a string from any of various encodings to UTF-8
@@ -23,41 +22,40 @@ class EncodingHelper
      * @return  string|false  The encoded string or false on failure
      * @since 0.0.1
      */
-    public static function toUtf8($string = '', $encoding = 'iso-8859-1', $safe_mode = false)
-    {
+    public static function toUtf8($string = '', $encoding = 'iso-8859-1', $safe_mode = false) {
         $safe = ($safe_mode) ? $string : false;
-        if ( strtoupper($encoding) == 'UTF-8' || strtoupper($encoding) == 'UTF8' ) {
+        if (strtoupper($encoding) == 'UTF-8' || strtoupper($encoding) == 'UTF8') {
 
             return $string;
         }
-        if ( strtoupper($encoding) == 'ISO-8859-1' ) {
+        if (strtoupper($encoding) == 'ISO-8859-1') {
 
             return \utf8_encode($string);
-        } if ( strtoupper($encoding) == 'WINDOWS-1252' ) {
+        } if (strtoupper($encoding) == 'WINDOWS-1252') {
 
             return \utf8_encode(self::map_w1252_iso8859_1($string));
         }
 
-        if ( strtoupper($encoding) == 'UNICODE-1-1-UTF-7' ) {
+        if (strtoupper($encoding) == 'UNICODE-1-1-UTF-7') {
             $encoding = 'utf-7';
         }
-        if ( function_exists('mb_convert_encoding') ) {
+        if (function_exists('mb_convert_encoding')) {
             $conv = @mb_convert_encoding($string, 'UTF-8', strtoupper($encoding));
-            if ( $conv ) {
+            if ($conv) {
 
                 return $conv;
             }
         }
-        if ( function_exists('iconv') ) {
+        if (function_exists('iconv')) {
             $conv = @iconv(strtoupper($encoding), 'UTF-8', $string);
-            if ( $conv ) {
+            if ($conv) {
 
                 return $conv;
             }
         }
-        if ( function_exists('libiconv') ) {
+        if (function_exists('libiconv')) {
             $conv = @libiconv(strtoupper($encoding), 'UTF-8', $string);
-            if ( $conv ) {
+            if ($conv) {
 
                 return $conv;
             }
@@ -75,44 +73,43 @@ class EncodingHelper
      * @return  string|false  The decoded string or false on failure
      * @since 0.0.1
      */
-    public static function fromUtf8($string = '', $encoding = 'iso-8859-1', $safe_mode = false)
-    {
-        $safe     = ($safe_mode) ? $string : false;
-        if ( !$encoding )
+    public static function fromUtf8($string = '', $encoding = 'iso-8859-1', $safe_mode = false) {
+        $safe = ($safe_mode) ? $string : false;
+        if (!$encoding)
             $encoding = 'ISO-8859-1';
-        if ( strtoupper($encoding) == 'UTF-8' || strtoupper($encoding) == 'UTF8' ) {
+        if (strtoupper($encoding) == 'UTF-8' || strtoupper($encoding) == 'UTF8') {
 
             return $string;
         }
-        if ( strtoupper($encoding) == 'ISO-8859-1' ) {
+        if (strtoupper($encoding) == 'ISO-8859-1') {
 
             return utf8_decode($string);
         }
-        if ( strtoupper($encoding) == 'WINDOWS-1252' ) {
+        if (strtoupper($encoding) == 'WINDOWS-1252') {
 
             return self::map_iso8859_1_w1252(utf8_decode($string));
         }
 
-        if ( strtoupper($encoding) == 'UNICODE-1-1-UTF-7' ) {
+        if (strtoupper($encoding) == 'UNICODE-1-1-UTF-7') {
             $encoding = 'utf-7';
         }
-        if ( function_exists('mb_convert_encoding') ) {
+        if (function_exists('mb_convert_encoding')) {
             $conv = @mb_convert_encoding($string, strtoupper($encoding), 'UTF-8');
-            if ( $conv ) {
+            if ($conv) {
 
                 return $conv;
             }
         }
-        if ( function_exists('iconv') ) {
+        if (function_exists('iconv')) {
             $conv = @iconv('UTF-8', strtoupper($encoding), $string);
-            if ( $conv ) {
+            if ($conv) {
 
                 return $conv;
             }
         }
-        if ( function_exists('libiconv') ) {
+        if (function_exists('libiconv')) {
             $conv = @libiconv('UTF-8', strtoupper($encoding), $string);
-            if ( $conv ) {
+            if ($conv) {
 
                 return $conv;
             }
@@ -129,17 +126,16 @@ class EncodingHelper
      * @return string  The resulting ISO-8859-1 string
      * @since 0.0.1
      */
-    protected static function map_w1252_iso8859_1($string = '')
-    {
-        if ( $string == '' ) {
+    protected static function map_w1252_iso8859_1($string = '') {
+        if ($string == '') {
 
             return '';
         }
         $return = '';
 
-        for ( $i = 0; $i < strlen($string); ++$i ) {
-            $c = ord($string{$i});
-            switch ( $c ) {
+        for ($i = 0; $i < strlen($string); ++$i) {
+            $c = ord($string[$i]);
+            switch ($c) {
                 case 129: $return .= chr(252);
                     break;
                 case 132: $return .= chr(228);
@@ -169,16 +165,15 @@ class EncodingHelper
      * @return  string  The resulting Win1252 string
      * @since 0.0.1
      */
-    protected static function map_iso8859_1_w1252($string = '')
-    {
-        if ( $string == '' ) {
+    protected static function map_iso8859_1_w1252($string = '') {
+        if ($string == '') {
             return '';
         }
 
         $return = '';
-        for ( $i = 0; $i < strlen($string); ++$i ) {
-            $c = ord($string{$i});
-            switch ( $c ) {
+        for ($i = 0; $i < strlen($string); ++$i) {
+            $c = ord($string[$i]);
+            switch ($c) {
                 case 196: $return .= chr(142);
                     break;
                 case 214: $return .= chr(153);
@@ -199,5 +194,4 @@ class EncodingHelper
 
         return $return;
     }
-
 }

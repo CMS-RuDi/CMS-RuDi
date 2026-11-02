@@ -19,10 +19,8 @@
 
 namespace Mso\IdnaConvert;
 
-class UnicodeTranscoder implements UnicodeTranscoderInterface
-{
-
-    private static $mechs = [ 'ucs4', 'ucs4array', 'utf8', 'utf7', 'utf7imap' ];
+class UnicodeTranscoder implements UnicodeTranscoderInterface {
+    private static $mechs = ['ucs4', 'ucs4array', 'utf8', 'utf7', 'utf7imap'];
     // unsupported yet: 'ucs4le', 'ucs4be', 'utf16', 'utf16le', 'utf16be'
 
     private static $allow_overlong = false;
@@ -42,27 +40,26 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
      * @throws \InvalidArgumentException
      * @since 0.0.1
      */
-    public static function convert($data, $from, $to, $safe_mode = false, $safe_char = 0xFFFC)
-    {
+    public static function convert($data, $from, $to, $safe_mode = false, $safe_char = 0xFFFC) {
         self::$safe_mode = ($safe_mode) ? true : false;
         self::$safe_char = ($safe_char) ? $safe_char : 0xFFFC;
 
-        if ( self::$safe_mode ) {
+        if (self::$safe_mode) {
             self::$allow_overlong = true;
         }
-        if ( !in_array($from, self::$mechs) ) {
+        if (!in_array($from, self::$mechs)) {
             throw new \InvalidArgumentException(sprintf('Invalid input format %s', $from));
         }
-        if ( !in_array($to, self::$mechs) ) {
+        if (!in_array($to, self::$mechs)) {
             throw new \InvalidArgumentException(sprintf('Invalid output format %s', $to));
         }
-        if ( $from != 'ucs4array' ) {
+        if ($from != 'ucs4array') {
             $methodName = $from . '_ucs4array';
-            $data       = self::$methodName($data);
+            $data = self::$methodName($data);
         }
-        if ( $to != 'ucs4array' ) {
+        if ($to != 'ucs4array') {
             $methodName = 'ucs4array_' . $to;
-            $data       = self::$methodName($data);
+            $data = self::$methodName($data);
         }
 
         return $data;
@@ -76,93 +73,85 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
      * @throws \InvalidArgumentException
      * @access public
      */
-    public static function utf8_ucs4array($input)
-    {
-        $start_byte = $next_byte  = 0;
+    public static function utf8_ucs4array($input) {
+        $start_byte = $next_byte = 0;
 
-        $output  = [];
+        $output = [];
         $out_len = 0;
         $inp_len = self::byteLength($input);
-        $mode    = 'next';
-        $test    = 'none';
-        for ( $k = 0; $k < $inp_len; ++$k ) {
-            $v = ord($input{$k}); // Extract byte from input string
+        $mode = 'next';
+        $test = 'none';
+        for ($k = 0; $k < $inp_len; ++$k) {
+            $v = ord($input[$k]); // Extract byte from input string
 
-            if ( $v < 128 ) { // We found an ASCII char - put into stirng as is
+            if ($v < 128) { // We found an ASCII char - put into stirng as is
                 $output[$out_len] = $v;
                 ++$out_len;
-                if ( 'add' == $mode ) {
-                    if ( self::$safe_mode ) {
+                if ('add' == $mode) {
+                    if (self::$safe_mode) {
                         $output[$out_len - 2] = self::$safe_char;
-                        $mode                 = 'next';
-                    }
-                    else {
+                        $mode = 'next';
+                    } else {
                         throw new \InvalidArgumentException(sprintf('Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d', $k));
                     }
                 }
                 continue;
             }
-            if ( 'next' == $mode ) { // Try to find the next start byte; determine the width of the Unicode char
+            if ('next' == $mode) { // Try to find the next start byte; determine the width of the Unicode char
                 $start_byte = $v;
-                $mode       = 'add';
-                $test       = 'range';
-                if ( $v >> 5 == 6 ) { // &110xxxxx 10xxxxx
+                $mode = 'add';
+                $test = 'range';
+                if ($v >> 5 == 6) { // &110xxxxx 10xxxxx
                     $next_byte = 0; // Tells, how many times subsequent bitmasks must rotate 6bits to the left
-                    $v         = ($v - 192) << 6;
-                }
-                elseif ( $v >> 4 == 14 ) { // &1110xxxx 10xxxxxx 10xxxxxx
+                    $v = ($v - 192) << 6;
+                } elseif ($v >> 4 == 14) { // &1110xxxx 10xxxxxx 10xxxxxx
                     $next_byte = 1;
-                    $v         = ($v - 224) << 12;
-                }
-                elseif ( $v >> 3 == 30 ) { // &11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+                    $v = ($v - 224) << 12;
+                } elseif ($v >> 3 == 30) { // &11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
                     $next_byte = 2;
-                    $v         = ($v - 240) << 18;
-                }
-                elseif ( self::$safe_mode ) {
-                    $mode             = 'next';
+                    $v = ($v - 240) << 18;
+                } elseif (self::$safe_mode) {
+                    $mode = 'next';
                     $output[$out_len] = self::$safe_char;
                     ++$out_len;
                     continue;
-                }
-                else {
+                } else {
                     throw new \InvalidArgumentException(sprintf('This might be UTF-8, but I don\'t understand it at byte %d', $k));
                 }
-                if ( $inp_len - $k - $next_byte < 2 ) {
+                if ($inp_len - $k - $next_byte < 2) {
                     $output[$out_len] = self::$safe_char;
-                    $mode             = 'no';
+                    $mode = 'no';
                     continue;
                 }
 
-                if ( 'add' == $mode ) {
+                if ('add' == $mode) {
                     $output[$out_len] = (int) $v;
                     ++$out_len;
                     continue;
                 }
             }
-            if ( 'add' == $mode ) {
-                if ( !self::$allow_overlong && $test == 'range' ) {
+            if ('add' == $mode) {
+                if (!self::$allow_overlong && $test == 'range') {
                     $test = 'none';
-                    if ( ($v < 0xA0 && $start_byte == 0xE0) || ($v < 0x90 && $start_byte == 0xF0) || ($v > 0x8F && $start_byte == 0xF4) ) {
+                    if (($v < 0xA0 && $start_byte == 0xE0) || ($v < 0x90 && $start_byte == 0xF0) || ($v > 0x8F && $start_byte == 0xF4)) {
                         throw new \InvalidArgumentException(sprintf('Bogus UTF-8 character detected (out of legal range) at byte %d', $k));
                     }
                 }
-                if ( $v >> 6 == 2 ) { // Bit mask must be 10xxxxxx
-                    $v                      = ($v - 128) << ($next_byte * 6);
+                if ($v >> 6 == 2) { // Bit mask must be 10xxxxxx
+                    $v = ($v - 128) << ($next_byte * 6);
                     $output[($out_len - 1)] += $v;
                     --$next_byte;
-                }
-                else {
-                    if ( self::$safe_mode ) {
+                } else {
+                    if (self::$safe_mode) {
                         $output[$out_len - 1] = ord(self::$safe_char);
                         $k--;
-                        $mode                 = 'next';
+                        $mode = 'next';
                         continue;
-                    }
-                    else {
+                    } else {
                         throw new \InvalidArgumentException(sprintf('Conversion from UTF-8 to UCS-4 failed: malformed input at byte %d', $k));
                     }
                 }
-                if ( $next_byte < 0 ) {
+                if ($next_byte < 0) {
                     $mode = 'next';
                 }
             }
@@ -178,26 +167,20 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
      * @return string
      * @access   public
      */
-    public static function ucs4array_utf8($input)
-    {
+    public static function ucs4array_utf8($input) {
         $output = '';
-        foreach ( $input as $k => $v ) {
-            if ( $v < 128 ) { // 7bit are transferred literally
+        foreach ($input as $k => $v) {
+            if ($v < 128) { // 7bit are transferred literally
                 $output .= chr($v);
-            }
-            elseif ( $v < (1 << 11) ) { // 2 bytes
+            } elseif ($v < (1 << 11)) { // 2 bytes
                 $output .= chr(192 + ($v >> 6)) . chr(128 + ($v & 63));
-            }
-            elseif ( $v < (1 << 16) ) { // 3 bytes
+            } elseif ($v < (1 << 16)) { // 3 bytes
                 $output .= chr(224 + ($v >> 12)) . chr(128 + (($v >> 6) & 63)) . chr(128 + ($v & 63));
-            }
-            elseif ( $v < (1 << 21) ) { // 4 bytes
+            } elseif ($v < (1 << 21)) { // 4 bytes
                 $output .= chr(240 + ($v >> 18)) . chr(128 + (($v >> 12) & 63)) . chr(128 + (($v >> 6) & 63)) . chr(128 + ($v & 63));
-            }
-            elseif ( self::$safe_mode ) {
+            } elseif (self::$safe_mode) {
                 $output .= self::$safe_char;
-            }
-            else {
+            } else {
                 throw new \InvalidArgumentException(sprintf('Conversion from UCS-4 to UTF-8 failed: malformed input at byte %d', $k));
             }
         }
@@ -205,60 +188,56 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
         return $output;
     }
 
-    public static function utf7imap_ucs4array($input)
-    {
+    public static function utf7imap_ucs4array($input) {
         return self::utf7_ucs4array(str_replace(',', '/', $input), '&');
     }
 
-    public static function utf7_ucs4array($input, $sc = '+')
-    {
-        $output  = [];
+    public static function utf7_ucs4array($input, $sc = '+') {
+        $output = [];
         $out_len = 0;
         $inp_len = self::byteLength($input);
-        $mode    = 'd';
-        $b64     = '';
+        $mode = 'd';
+        $b64 = '';
 
-        for ( $k = 0; $k < $inp_len; ++$k ) {
-            $c = $input{$k};
+        for ($k = 0; $k < $inp_len; ++$k) {
+            $c = $input[$k];
 
             // Ignore zero bytes
-            if ( 0 == ord($c) ) {
+            if (0 == ord($c)) {
                 continue;
             }
-            if ( 'b' == $mode ) {
+            if ('b' == $mode) {
                 // Sequence got terminated
-                if ( !preg_match('![A-Za-z0-9/' . preg_quote($sc, '!') . ']!', $c) ) {
-                    if ( '-' == $c ) {
-                        if ( $b64 == '' ) {
+                if (!preg_match('![A-Za-z0-9/' . preg_quote($sc, '!') . ']!', $c)) {
+                    if ('-' == $c) {
+                        if ($b64 == '') {
                             $output[$out_len] = ord($sc);
                             $out_len++;
-                            $mode             = 'd';
+                            $mode = 'd';
 
                             continue;
                         }
                     }
                     $tmp = base64_decode($b64);
                     $tmp = substr($tmp, -1 * (strlen($tmp) % 2));
-                    for ( $i = 0; $i < strlen($tmp); $i++ ) {
-                        if ( $i % 2 ) {
-                            $output[$out_len] += ord($tmp{$i});
+                    for ($i = 0; $i < strlen($tmp); $i++) {
+                        if ($i % 2) {
+                            $output[$out_len] += ord($tmp[$i]);
                             $out_len++;
-                        }
-                        else {
-                            $output[$out_len] = ord($tmp{$i}) << 8;
+                        } else {
+                            $output[$out_len] = ord($tmp[$i]) << 8;
                         }
                     }
                     $mode = 'd';
-                    $b64  = '';
+                    $b64 = '';
 
                     continue;
-                }
-                else {
+                } else {
                     $b64 .= $c;
                 }
             }
-            if ( 'd' == $mode ) {
-                if ( $sc == $c ) {
+            if ('d' == $mode) {
+                if ($sc == $c) {
                     $mode = 'b';
 
                     continue;
@@ -271,45 +250,40 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
         return $output;
     }
 
-    public static function ucs4array_utf7imap($input)
-    {
+    public static function ucs4array_utf7imap($input) {
         return str_replace('/', ',', self::ucs4array_utf7($input, '&'));
     }
 
-    public static function ucs4array_utf7($input, $sc = '+')
-    {
+    public static function ucs4array_utf7($input, $sc = '+') {
         $output = '';
-        $mode   = 'd';
-        $b64    = '';
-        while ( true ) {
-            $v         = (!empty($input)) ? array_shift($input) : false;
+        $mode = 'd';
+        $b64 = '';
+        while (true) {
+            $v = (!empty($input)) ? array_shift($input) : false;
             $is_direct = (false !== $v) ? (0x20 <= $v && $v <= 0x7e && $v != ord($sc)) : true;
-            if ( $mode == 'b' ) {
-                if ( $is_direct ) {
-                    if ( $b64 == chr(0) . $sc ) {
+            if ($mode == 'b') {
+                if ($is_direct) {
+                    if ($b64 == chr(0) . $sc) {
                         $output .= $sc . '-';
-                        $b64    = '';
-                    }
-                    elseif ( $b64 ) {
+                        $b64 = '';
+                    } elseif ($b64) {
                         $output .= $sc . str_replace('=', '', base64_encode($b64)) . '-';
-                        $b64    = '';
+                        $b64 = '';
                     }
                     $mode = 'd';
-                }
-                elseif ( false !== $v ) {
+                } elseif (false !== $v) {
                     $b64 .= chr(($v >> 8) & 255) . chr($v & 255);
                 }
             }
-            if ( $mode == 'd' && false !== $v ) {
-                if ( $is_direct ) {
+            if ($mode == 'd' && false !== $v) {
+                if ($is_direct) {
                     $output .= chr($v);
-                }
-                else {
-                    $b64  = chr(($v >> 8) & 255) . chr($v & 255);
+                } else {
+                    $b64 = chr(($v >> 8) & 255) . chr($v & 255);
                     $mode = 'b';
                 }
             }
-            if ( false === $v && $b64 == '' )
+            if (false === $v && $b64 == '')
                 break;
         }
 
@@ -322,10 +296,9 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
      * @return string
      * @access   public
      */
-    public static function ucs4array_ucs4($input)
-    {
+    public static function ucs4array_ucs4($input) {
         $output = '';
-        foreach ( $input as $v ) {
+        foreach ($input as $v) {
             $output .= chr(($v >> 24) & 255) . chr(($v >> 16) & 255) . chr(($v >> 8) & 255) . chr($v & 255);
         }
 
@@ -338,25 +311,24 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
      * @return array
      * @access   public
      */
-    public static function ucs4_ucs4array($input)
-    {
+    public static function ucs4_ucs4array($input) {
         $output = [];
 
         $inp_len = self::byteLength($input);
         // Input length must be dividable by 4
-        if ( $inp_len % 4 ) {
+        if ($inp_len % 4) {
             throw new \InvalidArgumentException('Input UCS4 string is broken');
         }
         // Empty input - return empty output
-        if ( !$inp_len )
+        if (!$inp_len)
             return $output;
 
-        for ( $i = 0, $out_len = -1; $i < $inp_len; ++$i ) {
-            if ( !($i % 4) ) { // Increment output position every 4 input bytes
+        for ($i = 0, $out_len = -1; $i < $inp_len; ++$i) {
+            if (!($i % 4)) { // Increment output position every 4 input bytes
                 $out_len++;
                 $output[$out_len] = 0;
             }
-            $output[$out_len] += ord($input{$i}) << (8 * (3 - ($i % 4)));
+            $output[$out_len] += ord($input[$i]) << (8 * (3 - ($i % 4)));
         }
 
         return $output;
@@ -369,12 +341,10 @@ class UnicodeTranscoder implements UnicodeTranscoderInterface
      * @param string $string the string for which to get the length.
      * @return integer the length of the string in bytes.
      */
-    protected static function byteLength($string)
-    {
-        if ( (extension_loaded('mbstring') && (ini_get('mbstring.func_overload') & 0x02) === 0x02 ) ) {
+    protected static function byteLength($string) {
+        if ((extension_loaded('mbstring') && (ini_get('mbstring.func_overload') & 0x02) === 0x02)) {
             return mb_strlen($string, '8bit');
         }
         return strlen((binary) $string);
     }
-
 }
