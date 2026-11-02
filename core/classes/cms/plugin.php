@@ -433,7 +433,7 @@ class plugin
     /**
      * Загружает список активных плагинов
      */
-    final private static function loadEnabledPlugins()
+    final protected static function loadEnabledPlugins()
     {
         if ( empty(self::$plugins) ) {
             self::$plugins = (new model())->filterEqual('published', 1)->useCache('plugins')->get('plugins', function ($item, $model) {
@@ -469,5 +469,4 @@ class plugin
     {
         return false;
     }
-
 }

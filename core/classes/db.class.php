@@ -38,11 +38,6 @@ class cmsDatabase
         $this->prefix = cmsConfig::getConfig('db_prefix') . '_';
     }
 
-    public function __destruct()
-    {
-        $this->db->__destruct();
-    }
-
     /**
      * Реинициализирует соединение с базой
      */
@@ -515,7 +510,7 @@ class cmsDatabase
         return $cat_id;
     }
 
-    public function addRootNsCategory($table, $differ = '', $cat)
+    public function addRootNsCategory($table, $differ = '', $cat = array())
     {
         $cat_id = cmsCore::getInstance()->nestedSetsInit($table)->AddRootNode($differ);
 
@@ -577,5 +572,4 @@ class cmsDatabase
     {
         return $this->db->importDump($sql_file);
     }
-
 }

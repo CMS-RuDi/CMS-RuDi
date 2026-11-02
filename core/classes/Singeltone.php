@@ -15,12 +15,12 @@ trait Singeltone
 
     }
 
-    protected function __sleep()
+    public function __sleep()
     {
 
     }
 
-    protected function __wakeup()
+    public function __wakeup()
     {
 
     }
@@ -38,5 +38,4 @@ trait Singeltone
 
         return static::$_instance;
     }
-
 }

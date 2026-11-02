@@ -41,15 +41,11 @@ abstract class tplMainClass
         if ( !empty($tpl_var) ) {
             if ( is_array($tpl_var) ) {
                 foreach ( $tpl_var as $key => $val ) {
-                    if ( $key ) {
-                        $this->tpl_vars[$key] = $val;
-                    }
+                    $this->tpl_vars[$key] = $val;
                 }
             }
             else {
-                if ( $tpl_var ) {
-                    $this->tpl_vars[$tpl_var] = $value;
-                }
+                $this->tpl_vars[$tpl_var] = $value;
             }
         }
 
@@ -83,5 +79,4 @@ abstract class tplMainClass
     {
         return self::$tpl->{$name}(...$arguments);
     }
-
 }
