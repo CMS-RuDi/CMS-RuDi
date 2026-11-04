@@ -1,10 +1,19 @@
 <?php
 
+/*
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
+ *
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
+ *
+ *                      LICENSED BY GNU/GPL v2
+ */
+
 namespace cms;
 
-class controller
-{
-
+class controller {
     /**
      * Массив объектов админок и фронтэндов компонентов
      *
@@ -85,14 +94,12 @@ class controller
      */
     public $current_params;
 
-    public function __construct($request = null)
-    {
+    public function __construct($request = null) {
         self::loadComponents();
 
-        if ( $request instanceof \cms\request ) {
+        if ($request instanceof \cms\request) {
             $this->request = $request;
-        }
-        else {
+        } else {
             $this->request = \cms\request::getInstance();
         }
 
@@ -101,18 +108,18 @@ class controller
         $this->lang = lang::getInstance();
 
         // components\Название_Компонента\frontend;
-        $part       = explode('\\', get_called_class());
+        $part = explode('\\', get_called_class());
         $this->name = isset($part[1]) ? $part[1] : null;
 
-        if ( $this->name ) {
-            $this->root_url  = $this->name;
+        if ($this->name) {
+            $this->root_url = $this->name;
             $this->root_path = PATH . '/components/' . $this->name . '/';
 
             lang::loadComponentLang($this->name);
 
             $this->title = $this->lang->get('component_' . $this->name . '_title');
 
-            if ( empty($this->title) ) {
+            if (empty($this->title)) {
                 $this->title = $this->name;
             }
 
@@ -122,14 +129,12 @@ class controller
         }
     }
 
-    public function setRootURL($root_url)
-    {
+    public function setRootURL($root_url) {
         $this->root_url = $root_url;
     }
 
-    public static function loadComponents()
-    {
-        if ( !isset(self::$components) ) {
+    public static function loadComponents() {
+        if (!isset(self::$components)) {
             $model = new model();
 
             self::$components = $model->useCache('components')->get('components', function ($item, $model) {
@@ -139,8 +144,7 @@ class controller
         }
     }
 
-    public static function getAllComponents()
-    {
+    public static function getAllComponents() {
         self::loadComponents();
 
         return self::$components;
@@ -153,8 +157,7 @@ class controller
      *
      * @return boolean|array
      */
-    public static function getComponentByName($name)
-    {
+    public static function getComponentByName($name) {
         self::loadComponents();
 
         return isset(self::$components[$name]) ? self::$components[$name] : false;
@@ -167,12 +170,11 @@ class controller
      *
      * @return boolean|array
      */
-    public static function getComponentById($id)
-    {
+    public static function getComponentById($id) {
         self::loadComponents();
 
-        foreach ( self::$components as $component ) {
-            if ( $component['id'] == $id ) {
+        foreach (self::$components as $component) {
+            if ($component['id'] == $id) {
                 return $component;
             }
         }
@@ -180,16 +182,14 @@ class controller
         return false;
     }
 
-    public function hasSlug()
-    {
+    public function hasSlug() {
         return !empty(self::$controllers[$this->name]['slug']) ? self::$controllers[$this->name]['slug'] : false;
     }
 
     /**
      * @see \cms\controller::enabled()
      */
-    public function isEnabled()
-    {
+    public function isEnabled() {
         return $this->enabled($this->name);
     }
 
@@ -200,8 +200,7 @@ class controller
      *
      * @return bool
      */
-    public static function enabled($name)
-    {
+    public static function enabled($name) {
         self::loadComponents();
 
         return !empty(self::$components[$name]['published']);
@@ -214,8 +213,7 @@ class controller
      *
      * @return bool
      */
-    public static function installed($name)
-    {
+    public static function installed($name) {
         self::loadComponents();
 
         return isset(self::$components[$name]);
@@ -224,8 +222,7 @@ class controller
     /**
      * @see \cms\controller::getOptions()
      */
-    public function getConfig()
-    {
+    public function getConfig() {
         return $this->getOptions();
     }
 
@@ -234,13 +231,11 @@ class controller
      *
      * @return array
      */
-    public function getOptions()
-    {
+    public function getOptions() {
         return (array) self::loadOptions($this->name);
     }
 
-    public function setOption($key, $val)
-    {
+    public function setOption($key, $val) {
         $this->options[$key] = $val;
         return $this;
     }
@@ -252,15 +247,14 @@ class controller
      *
      * @return array
      */
-    public static function loadOptions($component_name)
-    {
+    public static function loadOptions($component_name) {
         self::loadComponents();
 
-        if ( !isset(self::$components[$component_name]) ) {
+        if (!isset(self::$components[$component_name])) {
             return [];
         }
 
-        if ( empty(self::$components[$component_name]['options']) ) {
+        if (empty(self::$components[$component_name]['options'])) {
             self::$components[$component_name]['options'] = self::$components[$component_name]['config'];
 
             $default_config = \cmsCore::getComponentDefaultConfig($component_name);
@@ -276,8 +270,7 @@ class controller
      *
      * @return bool
      */
-    public function saveConfig()
-    {
+    public function saveConfig() {
         return self::saveOptions($this->name, $this->options);
     }
 
@@ -289,22 +282,20 @@ class controller
      *
      * @return bool
      */
-    public static function saveOptions($component_name, $options)
-    {
+    public static function saveOptions($component_name, $options) {
         $model = new model();
 
         $model->filterEqual('link', $component_name);
 
-        $model->updateFiltered('components', array( 'config' => $options ));
+        $model->updateFiltered('components', array('config' => $options));
 
         cache::getInstance()->clean('components');
 
         return true;
     }
 
-    public static function getComponentsMapping()
-    {
-        if ( self::$mapping !== null ) {
+    public static function getComponentsMapping() {
+        if (self::$mapping !== null) {
             return self::$mapping;
         }
 
@@ -312,8 +303,8 @@ class controller
 
         self::loadComponents();
 
-        foreach ( self::$components as $component ) {
-            if ( !empty($component['slug']) ) {
+        foreach (self::$components as $component) {
+            if (!empty($component['slug'])) {
                 self::$mapping[$component['link']] = $component['slug'];
             }
         }
@@ -326,14 +317,13 @@ class controller
     /**
      * Вызывается до начала работы экшена
      */
-    public function before($action_name)
-    {
-        if ( $this->use_seo_options && $action_name == 'index' ) {
-            if ( !empty($this->options['seo_keys']) ) {
+    public function before($action_name) {
+        if ($this->use_seo_options && $action_name == 'index') {
+            if (!empty($this->options['seo_keys'])) {
                 $this->page->setKeywords($this->options['seo_keys']);
             }
 
-            if ( !empty($this->options['seo_desc']) ) {
+            if (!empty($this->options['seo_desc'])) {
                 $this->page->setDescription($this->options['seo_desc']);
             }
         }
@@ -344,8 +334,7 @@ class controller
     /**
      * Вызывается после работы экшена
      */
-    public function after($action_name)
-    {
+    public function after($action_name) {
         return true;
     }
 
@@ -356,17 +345,16 @@ class controller
      *
      * @return boolean
      */
-    public function isActionExists($action_name)
-    {
+    public function isActionExists($action_name) {
         $method_name = 'action' . \cms\helper\str::toCamel('_', $action_name, true);
 
-        if ( method_exists($this, $method_name) ) {
+        if (method_exists($this, $method_name)) {
             return true;
         }
 
         $action_file = $this->root_path . 'actions/' . $action_name . '.php';
 
-        if ( is_readable($action_file) ) {
+        if (is_readable($action_file)) {
             return true;
         }
 
@@ -381,9 +369,8 @@ class controller
      *
      * @return bool
      */
-    public function runAction($action_name, $params = [])
-    {
-        if ( $this->before($action_name) === false ) {
+    public function runAction($action_name, $params = []) {
+        if ($this->before($action_name) === false) {
             return false;
         }
 
@@ -394,23 +381,21 @@ class controller
         // проверяем наличие экшена в отдельном файле
         $action_file = $this->root_path . 'actions/' . $action_name . '.php';
 
-        if ( is_readable($action_file) ) {
+        if (is_readable($action_file)) {
             // вызываем экшен из отдельного файла
             $result = $this->runExternalAction($action_name, $this->current_params);
-        }
-        else {
+        } else {
             $method_name = 'action' . helper\str::toCamel('_', $action_name, true);
 
             // Если файла нет, ищем метод класса
-            if ( method_exists($this, $method_name) ) {
+            if (method_exists($this, $method_name)) {
                 $result = $this->{$method_name}(...$this->current_params);
-            }
-            else {
+            } else {
                 // если нет экшена в отдельном файле,
                 // проверяем метод route()
                 $route_uri = $action_name;
 
-                if ( $this->current_params ) {
+                if ($this->current_params) {
                     $route_uri .= '/' . implode('/', $this->current_params);
                 }
 
@@ -430,14 +415,13 @@ class controller
      * @param array $params
      * @param bool $exit_if_error
      */
-    public function runExternalAction($action_name, $params = array(), $exit_if_error = false)
-    {
+    public function runExternalAction($action_name, $params = array(), $exit_if_error = false) {
         $action_file = $this->root_path . 'actions/' . $action_name . '.php';
 
-        $class_name = str_replace([ PATH, '/' ], [ '', '\\' ], $this->root_path . 'actions/' . $action_name);
+        $class_name = str_replace([PATH, '/'], ['', '\\'], $this->root_path . 'actions/' . $action_name);
 
-        if ( !is_readable($action_file) ) {
-            if ( $exit_if_error ) {
+        if (!is_readable($action_file)) {
+            if ($exit_if_error) {
                 \cmsCore::halt($this->lang->file_not_found . ': ' . str_replace(PATH, '', $action_file));
 //            \cmsCore::error($this->lang->file_not_found . ': ' . str_replace(PATH, '', $action_file));
             }
@@ -447,8 +431,8 @@ class controller
 
         include_once $action_file;
 
-        if ( !class_exists($class_name, false) ) {
-            if ( $exit_if_error ) {
+        if (!class_exists($class_name, false)) {
+            if ($exit_if_error) {
                 \cmsCore::halt($this->lang->vsprintf('class_not_defined', str_replace(PATH, '', $action_file), $class_name));
 //            cmsCore::error($this->lang->vsprintf('class_not_defined', str_replace(PATH, '', $action_file), $class_name));
             }
@@ -463,16 +447,14 @@ class controller
     /**
      * Вызывается до начала работы хука
      */
-    public function beforeHook($event_name)
-    {
+    public function beforeHook($event_name) {
         return true;
     }
 
     /**
      * Вызывается после работы хука
      */
-    public function afterHook($event_name)
-    {
+    public function afterHook($event_name) {
         return true;
     }
 
@@ -480,26 +462,23 @@ class controller
      * Находит и запускает хук для указанного события
      * @param string $event_name
      */
-    public function runHook($event_name, $params = array())
-    {
-        if ( $this->beforeHook($event_name) === false ) {
+    public function runHook($event_name, $params = array()) {
+        if ($this->beforeHook($event_name) === false) {
             return false;
         }
 
         $method_name = 'on' . \cms\helper\str::toCamel('_', $event_name, true);
 
-        if ( method_exists($this, $method_name) ) {
+        if (method_exists($this, $method_name)) {
             $result = $this->{$method_name}($params);
-        }
-        else {
+        } else {
             // если метода хука нет, проверяем наличие его в отдельном файле
             $hook_file = $this->root_path . 'hooks/' . $event_name . '.php';
 
-            if ( is_readable($hook_file) ) {
+            if (is_readable($hook_file)) {
                 // вызываем хук из отдельного файла
                 $result = $this->runExternalHook($event_name, $params);
-            }
-            else {
+            } else {
                 // хука нет вообще, возвращаем данные запроса без изменений
                 return $this->request->getData();
             }
@@ -515,11 +494,10 @@ class controller
      *
      * @param str $event_name
      */
-    public function runExternalHook($event_name, $params = array())
-    {
+    public function runExternalHook($event_name, $params = array()) {
         $class_name = 'on' . \cms\helper\str::toCamel('_', $this->name, true) . \cms\helper\str::toCamel('_', $event_name, true);
 
-        if ( !class_exists($class_name, false) ) {
+        if (!class_exists($class_name, false)) {
 
             $hook_file = $this->root_path . 'hooks/' . $event_name . '.php';
 
@@ -531,11 +509,10 @@ class controller
 
     //========================================================================//
 
-    public function loadRoutes()
-    {
+    public function loadRoutes() {
         $file = $this->root_path . 'routes.php';
 
-        if ( !is_readable($file) ) {
+        if (!is_readable($file)) {
             return [];
         }
 
@@ -545,15 +522,14 @@ class controller
 
         $routes = call_user_func($routes_func);
 
-        if ( !is_array($routes) ) {
+        if (!is_array($routes)) {
             return [];
         }
 
         return $routes;
     }
 
-    public function halt($text = '')
-    {
+    public function halt($text = '') {
         die((string) $text);
     }
 
@@ -564,16 +540,14 @@ class controller
      *
      * @return string
      */
-    public function routeAction($action_name)
-    {
+    public function routeAction($action_name) {
         return $action_name;
     }
 
-    public function route($uri)
-    {
+    public function route($uri) {
         $action_name = $this->parseRoute($uri);
 
-        if ( !$action_name ) {
+        if (!$action_name) {
             return false;
         }
 
@@ -587,8 +561,7 @@ class controller
      *
      * @return boolean
      */
-    public function parseRoute($uri)
-    {
+    public function parseRoute($uri) {
         $routes = $this->loadRoutes();
 
         // Флаг удачного перебора
@@ -598,13 +571,13 @@ class controller
         $action_name = false;
 
         // перебираем все маршруты
-        if ( $routes ) {
-            foreach ( $routes as $route ) {
+        if ($routes) {
+            foreach ($routes as $route) {
                 // сравниваем шаблон маршрута с текущим URI
                 preg_match($route['pattern'], $uri, $matches);
 
                 // Если найдено совпадение
-                if ( $matches ) {
+                if ($matches) {
                     $action_name = $route['action'];
 
                     // удаляем шаблон и экшен из параметров маршрута,
@@ -613,12 +586,11 @@ class controller
                     unset($route['action']);
 
                     // перебираем параметры маршрута в виде ключ=>значение
-                    foreach ( $route as $key => $value ) {
-                        if ( is_integer($key) ) {
+                    foreach ($route as $key => $value) {
+                        if (is_integer($key)) {
                             // Если ключ - целое число, то значением является сегмент URI
                             $this->request->set($value, $matches[$key]);
-                        }
-                        else {
+                        } else {
                             // иначе, значение берется из маршрута
                             $this->request->set($key, $value);
                         }
@@ -634,7 +606,7 @@ class controller
         }
 
         // Если в маршруте нет совпадений
-        if ( !$is_found ) {
+        if (!$is_found) {
             return false;
         }
 
@@ -643,69 +615,63 @@ class controller
 
     //========================================================================//
 
-    public function validate_required($value)
-    {
-        if ( $value === '0' ) {
+    public function validate_required($value) {
+        if ($value === '0') {
             return true;
         }
 
-        if ( empty($value) ) {
+        if (empty($value)) {
             return ERR_VALIDATE_REQUIRED;
         }
 
         return true;
     }
 
-    public function validate_min($min, $value)
-    {
-        if ( (int) $value < $min ) {
+    public function validate_min($min, $value) {
+        if ((int) $value < $min) {
             return sprintf(ERR_VALIDATE_MIN, $min);
         }
 
         return true;
     }
 
-    public function validate_max($max, $value)
-    {
-        if ( (int) $value > $max ) {
+    public function validate_max($max, $value) {
+        if ((int) $value > $max) {
             return sprintf(ERR_VALIDATE_MAX, $max);
         }
 
         return true;
     }
 
-    public function validate_min_length($length, $value)
-    {
-        if ( empty($value) ) {
+    public function validate_min_length($length, $value) {
+        if (empty($value)) {
             return true;
         }
 
-        if ( mb_strlen($value) < $length ) {
+        if (mb_strlen($value) < $length) {
             return sprintf(ERR_VALIDATE_MIN_LENGTH, $length);
         }
 
         return true;
     }
 
-    public function validate_max_length($length, $value)
-    {
-        if ( empty($value) ) {
+    public function validate_max_length($length, $value) {
+        if (empty($value)) {
             return true;
         }
 
-        if ( mb_strlen($value) > $length ) {
+        if (mb_strlen($value) > $length) {
             return sprintf(ERR_VALIDATE_MAX_LENGTH, $length);
         }
 
         return true;
     }
 
-    public function validate_array_key($array, $value)
-    {
-        if ( is_array($value) ) {
+    public function validate_array_key($array, $value) {
+        if (is_array($value)) {
             $result = true;
-            foreach ( $value as $val ) {
-                if ( !isset($array[$val]) ) {
+            foreach ($value as $val) {
+                if (!isset($array[$val])) {
                     $result = ERR_VALIDATE_INVALID;
                     break;
                 }
@@ -713,25 +679,24 @@ class controller
             return $result;
         }
 
-        if ( !isset($array[$value]) ) {
+        if (!isset($array[$value])) {
             return ERR_VALIDATE_INVALID;
         }
 
         return true;
     }
 
-    public function validate_array_keys($array, $values)
-    {
-        if ( empty($values) ) {
+    public function validate_array_keys($array, $values) {
+        if (empty($values)) {
             return true;
         }
 
-        if ( !is_array($values) ) {
+        if (!is_array($values)) {
             return ERR_VALIDATE_INVALID;
         }
 
-        foreach ( $values as $value ) {
-            if ( !isset($array[$value]) ) {
+        foreach ($values as $value) {
+            if (!isset($array[$value])) {
                 return ERR_VALIDATE_INVALID;
             }
         }
@@ -739,123 +704,114 @@ class controller
         return true;
     }
 
-    public function validate_in_array($array, $value)
-    {
-        if ( empty($value) ) {
+    public function validate_in_array($array, $value) {
+        if (empty($value)) {
             return true;
         }
 
-        if ( !in_array($value, $array) ) {
+        if (!in_array($value, $array)) {
             return ERR_VALIDATE_INVALID;
         }
 
         return true;
     }
 
-    public function validate_email($value)
-    {
-        if ( empty($value) ) {
+    public function validate_email($value) {
+        if (empty($value)) {
             return true;
         }
 
-        if ( !is_string($value) || !preg_match("/^([a-z0-9\._-]+)@([a-z0-9\._-]+)\.([a-z]{2,6})$/i", $value) ) {
+        if (!is_string($value) || !preg_match("/^([a-z0-9\._-]+)@([a-z0-9\._-]+)\.([a-z]{2,6})$/i", $value)) {
             return ERR_VALIDATE_EMAIL;
         }
 
         return true;
     }
 
-    public function validate_alphanumeric($value)
-    {
-        if ( empty($value) ) {
+    public function validate_alphanumeric($value) {
+        if (empty($value)) {
             return true;
         }
 
-        if ( !is_string($value) || !preg_match("/^([a-z0-9]*)$/i", $value) ) {
+        if (!is_string($value) || !preg_match("/^([a-z0-9]*)$/i", $value)) {
             return ERR_VALIDATE_ALPHANUMERIC;
         }
 
         return true;
     }
 
-    public function validate_sysname($value)
-    {
-        if ( empty($value) ) {
+    public function validate_sysname($value) {
+        if (empty($value)) {
             return true;
         }
 
-        if ( !is_string($value) || !preg_match("/^([a-z0-9\_]*)$/", $value) ) {
+        if (!is_string($value) || !preg_match("/^([a-z0-9\_]*)$/", $value)) {
             return ERR_VALIDATE_SYSNAME;
         }
 
         return true;
     }
 
-    public function validate_slug($value)
-    {
-        if ( empty($value) ) {
+    public function validate_slug($value) {
+        if (empty($value)) {
             return true;
         }
 
-        if ( !is_string($value) || !preg_match("/^([a-z0-9\-\/]*)$/", $value) ) {
+        if (!is_string($value) || !preg_match("/^([a-z0-9\-\/]*)$/", $value)) {
             return ERR_VALIDATE_SLUG;
         }
 
         return true;
     }
 
-    public function validate_digits($value)
-    {
-        if ( empty($value) ) {
+    public function validate_digits($value) {
+        if (empty($value)) {
             return true;
         }
 
-        if ( !in_array(gettype($value), array( 'integer', 'string' )) || !preg_match("/^([0-9]+)$/i", $value) ) {
+        if (!in_array(gettype($value), array('integer', 'string')) || !preg_match("/^([0-9]+)$/i", $value)) {
             return ERR_VALIDATE_DIGITS;
         }
 
         return true;
     }
 
-    public function validate_number($value)
-    {
-        if ( empty($value) ) {
+    public function validate_number($value) {
+        if (empty($value)) {
             return true;
         }
 
-        if ( !in_array(gettype($value), array( 'integer', 'string', 'double' )) || !preg_match("/^([\-]?)([0-9\.,]+)$/i", $value) ) {
+        if (!in_array(gettype($value), array('integer', 'string', 'double')) || !preg_match("/^([\-]?)([0-9\.,]+)$/i", $value)) {
             return ERR_VALIDATE_NUMBER;
         }
 
         return true;
     }
 
-    public function validate_color($value)
-    {
-        if ( empty($value) ) {
+    public function validate_color($value) {
+        if (empty($value)) {
             return true;
         }
 
-        if ( !is_string($value) ) {
+        if (!is_string($value)) {
             return ERR_VALIDATE_INVALID;
         }
 
         $value = ltrim($value, '#');
 
-        if ( ctype_xdigit($value) && (strlen($value) == 6 || strlen($value) == 3) ) {
+        if (ctype_xdigit($value) && (strlen($value) == 6 || strlen($value) == 3)) {
             return true;
         }
 
         return ERR_VALIDATE_INVALID;
     }
 
-    public function validate_regexp($regexp, $value)
-    {
-        if ( empty($value) ) {
+    public function validate_regexp($regexp, $value) {
+        if (empty($value)) {
             return true;
         }
 
-        if ( !in_array(gettype($value), array( 'integer', 'string', 'double' )) || !preg_match($regexp, $value) ) {
+        if (!in_array(gettype($value), array('integer', 'string', 'double')) || !preg_match($regexp, $value)) {
             return ERR_VALIDATE_REGEXP;
         }
 
@@ -958,12 +914,11 @@ class controller
      *
      * @return \self|false
      */
-    public static function getController($component, $reinit = false, $request = false)
-    {
-        if ( !isset(self::$factory['cotrollers'][$component]) || $reinit === true ) {
+    public static function getController($component, $reinit = false, $request = false) {
+        if (!isset(self::$factory['cotrollers'][$component]) || $reinit === true) {
             $class_name = '\\components\\' . $component . '\\frontend';
 
-            if ( \cmsCore::includeFile('components/' . $component . '/frontend.php') && class_exists($class_name, false) ) {
+            if (\cmsCore::includeFile('components/' . $component . '/frontend.php') && class_exists($class_name, false)) {
                 self::$factory['cotrollers'][$component] = new $class_name($request instanceof \cms\request ? $request : \cms\request::getInstance());
             }
         }
@@ -971,15 +926,13 @@ class controller
         return isset(self::$factory['cotrollers'][$component]) ? self::$factory['cotrollers'][$component] : false;
     }
 
-    public static function getModelClassName($component_name)
-    {
+    public static function getModelClassName($component_name) {
         $new_class_name = '\\components\\' . $component_name . '\\model';
         $old_class_name = 'cms_model_' . $component_name;
 
-        if ( class_exists($new_class_name) ) {
+        if (class_exists($new_class_name)) {
             return $new_class_name;
-        }
-        else if ( class_exists($old_class_name) ) {
+        } else if (class_exists($old_class_name)) {
             return $old_class_name;
         }
 
@@ -996,23 +949,19 @@ class controller
      *
      * @return \cms\model
      */
-    public static function getModel($component, $reinit = false)
-    {
-        if ( !isset(self::$factory['models'][$component]) || $reinit === true ) {
+    public static function getModel($component, $reinit = false) {
+        if (!isset(self::$factory['models'][$component]) || $reinit === true) {
             $class_name = self::getModelClassName($component);
 
-            if ( class_exists($class_name) ) {
-                if ( method_exists($class_name, 'getInstance') ) {
+            if (class_exists($class_name)) {
+                if (method_exists($class_name, 'getInstance')) {
                     self::$factory['models'][$component] = $class_name::getInstance();
-                }
-                else if ( method_exists($class_name, 'initModel') ) {
+                } else if (method_exists($class_name, 'initModel')) {
                     self::$factory['models'][$component] = $class_name::initModel();
-                }
-                else {
+                } else {
                     self::$factory['models'][$component] = new $class_name();
                 }
-            }
-            else {
+            } else {
                 return new \cms\model();
             }
         }
@@ -1028,12 +977,10 @@ class controller
      *
      * @return \cms\model
      */
-    public function model($component = false)
-    {
-        if ( empty($component) ) {
+    public function model($component = false) {
+        if (empty($component)) {
             return $this->model;
-        }
-        else {
+        } else {
             self::getModel($component);
         }
     }
@@ -1045,8 +992,7 @@ class controller
      * @param array|string $params
      * @param array $query
      */
-    public function redirectToAction($action = '', $params = [], $query = [])
-    {
+    public function redirectToAction($action = '', $params = [], $query = []) {
         \cmsCore::redirect($this->genActionUrl($action, $params, $query));
     }
 
@@ -1059,24 +1005,22 @@ class controller
      *
      * @return string
      */
-    public function genActionUrl($action = '', $params = [], $query = [])
-    {
+    public function genActionUrl($action = '', $params = [], $query = []) {
         $location = '/' . $this->root_url;
 
-        if ( !empty($action) && $action != 'index' ) {
+        if (!empty($action) && $action != 'index') {
             $location .= '/' . $action;
         }
 
-        if ( !empty($params) ) {
-            if ( is_array($params) ) {
+        if (!empty($params)) {
+            if (is_array($params)) {
                 $location .= '/' . implode('/', $params);
-            }
-            else {
+            } else {
                 $location .= '/' . $params;
             }
         }
 
-        if ( $query ) {
+        if ($query) {
             $location .= '?' . http_build_query($query);
         }
 
@@ -1085,18 +1029,15 @@ class controller
 
     //========================================================================//
 
-    public function page()
-    {
+    public function page() {
         return $this->page;
     }
 
-    public function request()
-    {
+    public function request() {
         return $this->request;
     }
 
-    public function options($key)
-    {
+    public function options($key) {
         return isset($this->options[$key]) ? $this->options[$key] : null;
     }
 
@@ -1106,8 +1047,7 @@ class controller
      * @param string $file
      * @return \cmsPage
      */
-    public function tpl($file)
-    {
+    public function tpl($file) {
         $parts = explode('/', $file);
 
         $file = $parts[count($parts) - 1];
@@ -1116,5 +1056,4 @@ class controller
 
         return $this->page->initTemplate('components/' . $this->name . (count($parts) > 0 ? '/' . implode('/', $parts) : ''), $file);
     }
-
 }

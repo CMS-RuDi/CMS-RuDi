@@ -90,7 +90,7 @@
         {/if}
         
         <li>
-            <a href="http://www.instantcms.ru/wiki" target="_blank" class="help">{$lang->ad_docs}</a>
+            <a href="https://cmsrudi.ru" target="_blank" class="help">{$lang->ad_docs}</a>
         </li>
     </ul>
 </div>

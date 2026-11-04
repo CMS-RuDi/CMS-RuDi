@@ -2,23 +2,9 @@
     <p>{$lang->ad_no_search_components}</p>
     <p>{$lang->ad_if_want_setup_components}</p>
 
-    <h3>{$lang->ad_try_premium}</h3>
-    
-    <div class="advert_iaudio">
-        <a href="http://www.instantvideo.ru/software/iaudio.html"><strong>iAudio</strong></a> &mdash; {$lang->ad_audio_galery}
-    </div>
-    <div class="advert_billing">
-        <a href="http://www.instantcms.ru/billing/about.html"><strong>{$lang->ad_billing}</strong></a> &mdash; {$lang->ad_gain}
-    </div>
-    <div class="advert_inmaps">
-        <a href="http://www.instantmaps.ru/"><strong>InstantMaps</strong></a> &mdash; {$lang->ad_object_to_map}
-    </div>
-    <div class="advert_inshop">
-        <a href="http://www.instantcms.ru/blogs/InstantSoft/professionalnyi-magazin-dlja-InstantCMS.html"><strong>InstantShop</strong></a> &mdash; {$lang->ad_shop}
-    </div>
-    <div class="advert_invideo">
-        <a href="http://www.instantvideo.ru/software/instantvideo.html"><strong>InstantVideo</strong></a> &mdash; {$lang->ad_video_galery}
-    </div>
+    <h3>CMS RuDi</h3>
+
+    <p><a href="https://cmsrudi.ru" target="_blank">https://cmsrudi.ru</a></p>
 {else}
     {if !empty($new_components)}
         <p><strong>{$lang->ad_components_setup}</strong></p>

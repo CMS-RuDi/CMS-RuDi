@@ -235,20 +235,15 @@
                         {/if}
 
                         <div class="small_box">
-                            <div class="small_title">{$lang->ad_icms_rave}</div>
+                            <div class="small_title">CMS RuDi</div>
                             <ul>
-                                <li><a href="http://www.instantcms.ru/"><strong>{$lang->ad_icms_official}</strong></a></li>
-                                <li><a href="http://www.instantcms.ru/wiki">{$lang->ad_icms_documentation}</a></li>
-                                <li><a href="http://www.instantcms.ru/forum">{$lang->ad_icms_forum}</a></li>
+                                <li><a href="https://cmsrudi.ru" target="_blank"><strong>{$lang->ad_icms_official}</strong></a></li>
+                                <li><a href="https://cmsrudi.ru" target="_blank">{$lang->ad_icms_documentation}</a></li>
                             </ul>
                         </div>
                         <div class="small_box">
-                            <div class="small_title">{$lang->ad_premium}</div>
-                            <div class="advert_iaudio"><a href="http://www.instantvideo.ru/software/iaudio.html"><strong>iAudio</strong></a> &mdash; {$lang->ad_audio_galery}</div>
-                            <div class="advert_billing"><a href="http://www.instantcms.ru/billing/about.html"><strong>{$lang->ad_billing}</strong></a> &mdash; {$lang->ad_gain}</div>
-                            <div class="advert_inmaps"><a href="http://www.instantmaps.ru/"><strong>InstantMaps</strong></a> &mdash; {$lang->ad_object_to_map}</div>
-                            <div class="advert_inshop"><a href="http://www.instantcms.ru/blogs/InstantSoft/professionalnyi-magazin-dlja-InstantCMS.html"><strong>InstantShop</strong></a> &mdash; {$lang->ad_shop}</div>
-                            <div class="advert_invideo"><a href="http://www.instantvideo.ru/software/instantvideo.html"><strong>InstantVideo</strong></a> &mdash; {$lang->ad_video_galery}></div>
+                            <div class="small_title">CMS RuDi</div>
+                            <div><a href="https://cmsrudi.ru" target="_blank"><strong>CMS RuDi</strong></a> &mdash; https://cmsrudi.ru</div>
                         </div>
                     </td>
                 </tr>

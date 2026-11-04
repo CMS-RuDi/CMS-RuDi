@@ -1,19 +1,21 @@
 <?php
 
 /*
- *                           InstantCMS v1.10.7
- *                        http://www.instantcms.ru/
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
  *
- *                   written by InstantCMS Team, 2007-2017
- *                produced by InstantSoft, (www.instantsoft.ru)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                        LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
 /**
  * Класс для работы с php шаблонами
  */
 class phpTpl extends tplMainClass {
+    protected static $tpl;
     private static $cycle_vars;
 
     protected function initTemplateEngine() {
@@ -30,7 +32,11 @@ class phpTpl extends tplMainClass {
         $user_id = \cmsUser::getInstance()->id;
         $is_admin = \cmsUser::getInstance()->is_admin;
 
-        $inConf = \cmsConfig::getInstance()->getConfig();
+        $inCore = \cmsCore::getInstance();
+        $inPage = \cmsPage::getInstance();
+        $inUser = \cmsUser::getInstance();
+        $inDB = \cmsDatabase::getInstance();
+        $inConf = \cmsConfig::getInstance();
 
         if (file_exists(TEMPLATE_DIR . $this->tpl_file)) {
             include(TEMPLATE_DIR . $this->tpl_file);

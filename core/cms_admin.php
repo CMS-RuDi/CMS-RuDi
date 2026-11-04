@@ -1,26 +1,43 @@
 <?php
 
 /*
- *                           InstantCMS v1.10.7
- *                        http://www.instantcms.ru/
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
  *
- *                   written by InstantCMS Team, 2007-2017
- *                produced by InstantSoft, (www.instantsoft.ru)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                        LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
-class cmsAdmin extends cmsCore
-{
-
-    protected static $_instance;
+class cmsAdmin extends cmsCore {
 
     /**
      * Устаревший метод используйте _installPlugin
      */
-    public function installPlugin($plugin, $events, $config)
-    {
-        return $this->_installPlugin($plugin, $config);
+    public function installPlugin($plugin, $events = [], $config = []) {
+        $name = is_array($plugin) ? (isset($plugin['plugin']) ? $plugin['plugin'] : '') : $plugin;
+
+        if (!$name) {
+            return false;
+        }
+
+        $plugin_obj = \cms\plugin::load($name);
+
+        if (!$plugin_obj) {
+            return false;
+        }
+
+        if (!empty($config)) {
+            $plugin_obj->setConfig($config);
+        }
+
+        if (!empty($events)) {
+            $plugin_obj->setEvents($events);
+        }
+
+        return (bool) $plugin_obj->install();
     }
 
     /**
@@ -32,16 +49,19 @@ class cmsAdmin extends cmsCore
      *
      * @return false|int
      */
-    public function _installPlugin($name, $config = false)
-    {
-        $plugin = \cms\plugin::load($plugin);
+    public function _installPlugin($name, $config = false) {
+        if (is_array($name)) {
+            $name = isset($name['plugin']) ? $name['plugin'] : '';
+        }
 
-        if ( !empty($plugin) ) {
-            if ( !empty($config) ) {
+        $plugin = \cms\plugin::load($name);
+
+        if (!empty($plugin)) {
+            if (!empty($config)) {
                 $plugin->setConfig($config);
             }
 
-            if ( $id = $plugin->install() ) {
+            if ($id = $plugin->install()) {
                 return $id;
             }
         }
@@ -52,9 +72,28 @@ class cmsAdmin extends cmsCore
     /**
      * Устаревший метод используйте _updatePlugin
      */
-    public function upgradePlugin($plugin, $events, $config)
-    {
-        return $this->_updatePlugin($plugin, $config);
+    public function upgradePlugin($plugin, $events = [], $config = []) {
+        $name = is_array($plugin) ? (isset($plugin['plugin']) ? $plugin['plugin'] : '') : $plugin;
+
+        if (!$name) {
+            return false;
+        }
+
+        $plugin_obj = \cms\plugin::load($name);
+
+        if (!$plugin_obj) {
+            return false;
+        }
+
+        if (!empty($config)) {
+            $plugin_obj->setConfig($config);
+        }
+
+        if (!empty($events)) {
+            $plugin_obj->setEvents($events);
+        }
+
+        return (bool) $plugin_obj->upgrade();
     }
 
     /**
@@ -65,12 +104,15 @@ class cmsAdmin extends cmsCore
      *
      * @return boolean
      */
-    public function _updatePlugin($name, $config = false)
-    {
-        $plugin = \cms\plugin::load($plugin);
+    public function _updatePlugin($name, $config = false) {
+        if (is_array($name)) {
+            $name = isset($name['plugin']) ? $name['plugin'] : '';
+        }
 
-        if ( !empty($plugin) ) {
-            if ( !empty($config) ) {
+        $plugin = \cms\plugin::load($name);
+
+        if (!empty($plugin)) {
+            if (!empty($config)) {
                 $plugin->setConfig($config);
             }
 
@@ -85,23 +127,22 @@ class cmsAdmin extends cmsCore
      *
      * @return array
      */
-    public function getNewPlugins()
-    {
+    public function getNewPlugins() {
         $new_plugins = [];
         $all_plugins = $this->getPluginsDirs();
 
-        if ( !$all_plugins ) {
+        if (!$all_plugins) {
             return false;
         }
 
-        foreach ( $all_plugins as $plugin ) {
+        foreach ($all_plugins as $plugin) {
             $installed = cmsDatabase::getInstance()->rows_count('cms_plugins', "plugin='" . $plugin . "'", 1);
-            if ( !$installed ) {
+            if (!$installed) {
                 $new_plugins[] = $plugin;
             }
         }
 
-        if ( !$new_plugins ) {
+        if (!$new_plugins) {
             return false;
         }
 
@@ -112,26 +153,30 @@ class cmsAdmin extends cmsCore
      * Возвращает список плагинов, версия которых изменилась в большую сторону
      * @return array
      */
-    public function getUpdatedPlugins()
-    {
+    public function getUpdatedPlugins() {
         $upd_plugins = array();
         $all_plugins = $this->getPluginsDirs();
 
-        if ( !$all_plugins ) {
+        if (!$all_plugins) {
             return false;
         }
 
-        foreach ( $all_plugins as $plugin ) {
+        foreach ($all_plugins as $plugin) {
             $plugin_obj = $this->loadPlugin($plugin);
-            $version    = $this->getPluginVersion($plugin);
-            if ( $version ) {
-                if ( version_compare($plugin_obj->info['version'], $version) > 0 ) {
-                    $upd_plugins[] = $plugin;
-                }
+            $version = $this->getPluginVersion($plugin);
+
+            if (!$plugin_obj || !$version) {
+                continue;
+            }
+
+            $new_version = method_exists($plugin_obj, 'getVersion') ? $plugin_obj->getVersion() : (isset($plugin_obj->info['version']) ? $plugin_obj->info['version'] : '');
+
+            if ($new_version && version_compare($new_version, $version) > 0) {
+                $upd_plugins[] = $plugin;
             }
         }
 
-        if ( !$upd_plugins ) {
+        if (!$upd_plugins) {
             return false;
         }
 
@@ -140,11 +185,10 @@ class cmsAdmin extends cmsCore
 
     /**
      * Возвращает список папок с плагинами
-     * 
+     *
      * @return array
      */
-    public static function getPluginsDirs()
-    {
+    public static function getPluginsDirs() {
         return \cms\helper\files::getDirsList(PATH . '/plugins');
     }
 
@@ -153,8 +197,7 @@ class cmsAdmin extends cmsCore
      * @param string $plugin
      * @return int
      */
-    public function getPluginId($plugin)
-    {
+    public function getPluginId($plugin) {
         return cmsDatabase::getInstance()->get_field('cms_plugins', "plugin='" . $plugin . "'", 'id');
     }
 
@@ -163,8 +206,7 @@ class cmsAdmin extends cmsCore
      * @param int $plugin_id
      * @return string
      */
-    public function getPluginById($plugin_id)
-    {
+    public function getPluginById($plugin_id) {
         return cmsDatabase::getInstance()->get_field('cms_plugins', "id='" . $plugin_id . "'", 'plugin');
     }
 
@@ -173,9 +215,36 @@ class cmsAdmin extends cmsCore
      * @param string $plugin
      * @return float
      */
-    public function getPluginVersion($plugin)
-    {
+    public function getPluginVersion($plugin) {
         return cmsDatabase::getInstance()->get_field('cms_plugins', "plugin='" . $plugin . "'", 'version');
+    }
+
+    /**
+     * Удаляет плагин и его подписки на события (совместимость с InstantCMS 1.10.x)
+     *
+     * @param int $plugin_id
+     *
+     * @return bool
+     */
+    public function removePlugin($plugin_id) {
+        if (!$plugin_id) {
+            return false;
+        }
+
+        $inDB = cmsDatabase::getInstance();
+        $name = $inDB->get_field('cms_plugins', 'id=' . (int) $plugin_id, 'plugin');
+
+        $inDB->delete('cms_plugins', 'id=' . (int) $plugin_id);
+
+        if ($name && $inDB->isTableExists('cms_events')) {
+            $inDB->delete('cms_events', "type='plugin' AND name='" . $inDB->escape_string($name) . "'");
+        }
+
+        if ($inDB->isTableExists('cms_event_hooks')) {
+            $inDB->delete('cms_event_hooks', 'plugin_id=' . (int) $plugin_id);
+        }
+
+        return true;
     }
 
     /**
@@ -185,13 +254,12 @@ class cmsAdmin extends cmsCore
      * @param array $config
      * @return int
      */
-    public function installComponent($component, $config)
-    {
+    public function installComponent($component, $config) {
         $inDB = cmsDatabase::getInstance();
 
-        $config_yaml = cmsCore::arrayToYaml($config);
+        $config_yaml = cmsCore::arrayToYaml((array) $config);
 
-        if ( !$config_yaml ) {
+        if (!$config_yaml) {
             $config_yaml = '';
         }
 
@@ -210,15 +278,16 @@ class cmsAdmin extends cmsCore
      * @param array $config
      * @return bool
      */
-    public function upgradeComponent($component, $config)
-    {
+    public function upgradeComponent($component, $config) {
         $inDB = cmsDatabase::getInstance();
+
+        $config = (array) $config;
 
         //находим ID установленной версии
         $component_id = $this->getComponentId($component['link']);
 
         //если компонент еще не был установлен, выходим
-        if ( !$component_id ) {
+        if (!$component_id) {
             return false;
         }
 
@@ -226,15 +295,15 @@ class cmsAdmin extends cmsCore
         $old_config = $this->loadComponentConfig($component['link']);
 
         //удаляем настройки, которые больше не нужны
-        foreach ( $old_config as $param => $value ) {
-            if ( !isset($config[$param]) ) {
+        foreach ($old_config as $param => $value) {
+            if (!isset($config[$param])) {
                 unset($old_config[$param]);
             }
         }
 
         //добавляем настройки, которых раньше не было
-        foreach ( $config as $param => $value ) {
-            if ( !isset($old_config[$param]) ) {
+        foreach ($config as $param => $value) {
+            if (!isset($old_config[$param])) {
                 $old_config[$param] = $value;
             }
         }
@@ -247,29 +316,61 @@ class cmsAdmin extends cmsCore
     }
 
     /**
-     * Возвращает список компонентов, имеющихся на диске, но не установленных
-     * @return array
+     * Удаляет компонент и зависимые модули (совместимость с InstantCMS 1.10.x)
+     *
+     * @param int $component_id
+     *
+     * @return bool
      */
-    public function getNewComponents()
-    {
-        $new_components = array();
-        $all_components = self::getComponentsDirs();
-
-        if ( !$all_components ) {
+    public function removeComponent($component_id) {
+        if (!$component_id) {
             return false;
         }
 
-        foreach ( $all_components as $component ) {
+        $component = $this->getComponentById($component_id);
+
+        if ($this->loadComponentInstaller($component)) {
+            $_component = call_user_func('info_component_' . $component);
+
+            if (isset($_component['modules']) && is_array($_component['modules'])) {
+                foreach ($_component['modules'] as $module => $title) {
+                    $module_id = $this->getModuleId($module);
+
+                    if ($module_id) {
+                        $this->removeModule($module_id);
+                    }
+                }
+            }
+        }
+
+        cmsDatabase::getInstance()->delete('cms_components', "id = '" . (int) $component_id . "' AND system = 0");
+
+        return true;
+    }
+
+    /**
+     * Возвращает список компонентов, имеющихся на диске, но не установленных
+     * @return array
+     */
+    public function getNewComponents() {
+        $new_components = array();
+        $all_components = self::getComponentsDirs();
+
+        if (!$all_components) {
+            return false;
+        }
+
+        foreach ($all_components as $component) {
             $installer_file = PATH . '/components/' . $component . '/install.php';
 
-            if ( file_exists($installer_file) ) {
-                if ( !$this->isComponentInstalled($component) ) {
+            if (file_exists($installer_file)) {
+                if (!$this->isComponentInstalled($component)) {
                     $new_components[] = $component;
                 }
             }
         }
 
-        if ( !$new_components ) {
+        if (!$new_components) {
             return false;
         }
 
@@ -280,25 +381,24 @@ class cmsAdmin extends cmsCore
      * Возвращает список компонентов, версия которых изменилась в большую сторону
      * @return array
      */
-    public function getUpdatedComponents()
-    {
+    public function getUpdatedComponents() {
         $components = \cms\controller::getAllComponents();
 
         $upd_components = array();
 
-        foreach ( $components as $component ) {
-            if ( $this->loadComponentInstaller($component['link']) ) {
-                $version    = $component['version'];
+        foreach ($components as $component) {
+            if ($this->loadComponentInstaller($component['link'])) {
+                $version = $component['version'];
                 $_component = call_user_func('info_component_' . $component['link']);
-                if ( $version ) {
-                    if ( version_compare($_component['version'], $version) > 0 ) {
+                if ($version) {
+                    if (version_compare($_component['version'], $version) > 0) {
                         $upd_components[] = $component['link'];
                     }
                 }
             }
         }
 
-        if ( !$upd_components ) {
+        if (!$upd_components) {
             return false;
         }
 
@@ -309,8 +409,7 @@ class cmsAdmin extends cmsCore
      * Возвращает список папок с компонентами
      * @return array
      */
-    public static function getComponentsDirs()
-    {
+    public static function getComponentsDirs() {
         return cmsCore::getDirsList('/components');
     }
 
@@ -319,14 +418,13 @@ class cmsAdmin extends cmsCore
      * @param string $component
      * @return int
      */
-    public function getComponentId($component)
-    {
+    public function getComponentId($component) {
         $components = \cms\controller::getAllComponents();
 
         $component_id = 0;
 
-        foreach ( $components as $inst_component ) {
-            if ( $inst_component['link'] == $component ) {
+        foreach ($components as $inst_component) {
+            if ($inst_component['link'] == $component) {
                 $component_id = $inst_component['id'];
                 break;
             }
@@ -340,14 +438,13 @@ class cmsAdmin extends cmsCore
      * @param int $component_id
      * @return string
      */
-    public function getComponentById($component_id)
-    {
+    public function getComponentById($component_id) {
         $components = \cms\controller::getAllComponents();
 
         $link = '';
 
-        foreach ( $components as $inst_component ) {
-            if ( $inst_component['id'] == $component_id ) {
+        foreach ($components as $inst_component) {
+            if ($inst_component['id'] == $component_id) {
                 $link = $inst_component['link'];
                 break;
             }
@@ -361,14 +458,13 @@ class cmsAdmin extends cmsCore
      * @param string $component
      * @return float
      */
-    public function getComponentVersion($component)
-    {
+    public function getComponentVersion($component) {
         $components = \cms\controller::getAllComponents();
 
         $version = '';
 
-        foreach ( $components as $inst_component ) {
-            if ( $inst_component['link'] == $component ) {
+        foreach ($components as $inst_component) {
+            if ($inst_component['link'] == $component) {
                 $version = $inst_component['version'];
                 break;
             }
@@ -382,8 +478,7 @@ class cmsAdmin extends cmsCore
      * @param str $component Название компонента
      * @return type
      */
-    public function loadComponentInstaller($component)
-    {
+    public function loadComponentInstaller($component) {
         return cmsCore::includeFile('components/' . $component . '/install.php');
     }
 
@@ -393,13 +488,12 @@ class cmsAdmin extends cmsCore
      * @param array $config
      * @return int id модуля
      */
-    public function installModule($module, $config)
-    {
+    public function installModule($module, $config) {
         $inDB = cmsDatabase::getInstance();
 
-        $config_yaml = cmsCore::arrayToYaml($config);
+        $config_yaml = cmsCore::arrayToYaml((array) $config);
 
-        if ( !$config_yaml ) {
+        if (!$config_yaml) {
             $config_yaml = '';
         }
 
@@ -413,7 +507,7 @@ class cmsAdmin extends cmsCore
         // $_module['link'] = 'mod_actions';
         // писать
         // $_module['content'] = 'mod_actions';
-        if ( isset($module['link']) ) {
+        if (isset($module['link'])) {
             $module['content'] = $module['link'];
         }
 
@@ -427,12 +521,13 @@ class cmsAdmin extends cmsCore
      * @param array $config
      * @return bool
      */
-    public function upgradeModule($module, $config)
-    {
+    public function upgradeModule($module, $config) {
         $inDB = cmsDatabase::getInstance();
 
+        $config = (array) $config;
+
         // удалить в следующем обновлении
-        if ( isset($module['link']) ) {
+        if (isset($module['link'])) {
             $module['content'] = $module['link'];
         }
 
@@ -440,7 +535,7 @@ class cmsAdmin extends cmsCore
         $module_id = $this->getModuleId($module['content']);
 
         //если модуль еще не был установлен, выходим
-        if ( !$module_id ) {
+        if (!$module_id) {
             return false;
         }
 
@@ -448,15 +543,15 @@ class cmsAdmin extends cmsCore
         $old_config = $this->loadModuleConfig($module_id);
 
         //удаляем настройки, которые больше не нужны
-        foreach ( $old_config as $param => $value ) {
-            if ( !isset($config[$param]) ) {
+        foreach ($old_config as $param => $value) {
+            if (!isset($config[$param])) {
                 unset($old_config[$param]);
             }
         }
 
         //добавляем настройки, которых раньше не было
-        foreach ( $config as $param => $value ) {
-            if ( !isset($old_config[$param]) ) {
+        foreach ($config as $param => $value) {
+            if (!isset($old_config[$param])) {
                 $old_config[$param] = $value;
             }
         }
@@ -480,18 +575,17 @@ class cmsAdmin extends cmsCore
      * @param mixed $module_id
      * @return bool
      */
-    public function removeModule($module_id)
-    {
-        if ( is_array($module_id) ) {
-            foreach ( $module_id as $id ) {
+    public function removeModule($module_id) {
+        if (is_array($module_id)) {
+            foreach ($module_id as $id) {
                 $this->removeModule((int) $id);
             }
         }
 
         $module = $this->getModuleById($module_id);
 
-        if ( $this->loadModuleInstaller($module) ) {
-            if ( function_exists('remove_module_' . $module) ) {
+        if ($this->loadModuleInstaller($module)) {
+            if (function_exists('remove_module_' . $module)) {
                 call_user_func('remove_module_' . $module);
             }
         }
@@ -503,28 +597,27 @@ class cmsAdmin extends cmsCore
      * Возвращает список модулей, имеющихся на диске, но не установленных
      * @return array
      */
-    public function getNewModules()
-    {
+    public function getNewModules() {
         $new_modules = array();
         $all_modules = self::getModulesDirs();
 
-        if ( !$all_modules ) {
+        if (!$all_modules) {
             return false;
         }
 
-        foreach ( $all_modules as $module ) {
+        foreach ($all_modules as $module) {
             $installer_file = PATH . '/modules/' . $module . '/install.php';
 
-            if ( file_exists($installer_file) ) {
+            if (file_exists($installer_file)) {
 
                 $installed = cmsDatabase::getInstance()->rows_count('cms_modules', "content='" . $module . "' AND user=0", 1);
-                if ( !$installed ) {
+                if (!$installed) {
                     $new_modules[] = $module;
                 }
             }
         }
 
-        if ( !$new_modules ) {
+        if (!$new_modules) {
             return false;
         }
 
@@ -535,29 +628,28 @@ class cmsAdmin extends cmsCore
      * Возвращает список модулей, версия которых изменилась в большую сторону
      * @return array
      */
-    public function getUpdatedModules()
-    {
+    public function getUpdatedModules() {
         $upd_modules = array();
         $all_modules = cmsDatabase::getInstance()->get_table('cms_modules', 'user=0 AND original = 1');
 
-        if ( !$all_modules ) {
+        if (!$all_modules) {
             return false;
         }
 
-        foreach ( $all_modules as $module ) {
-            if ( $this->loadModuleInstaller($module['content']) ) {
+        foreach ($all_modules as $module) {
+            if ($this->loadModuleInstaller($module['content'])) {
                 $version = $module['version'];
                 $_module = call_user_func('info_module_' . $module['content']);
 
-                if ( $version ) {
-                    if ( version_compare($_module['version'], $version) > 0 ) {
+                if ($version) {
+                    if (version_compare($_module['version'], $version) > 0) {
                         $upd_modules[] = $module['content'];
                     }
                 }
             }
         }
 
-        if ( !$upd_modules ) {
+        if (!$upd_modules) {
             return false;
         }
 
@@ -568,8 +660,7 @@ class cmsAdmin extends cmsCore
      * Возвращает список папок с модулями
      * @return array
      */
-    public static function getModulesDirs()
-    {
+    public static function getModulesDirs() {
         return cmsCore::getDirsList('/modules');
     }
 
@@ -578,8 +669,7 @@ class cmsAdmin extends cmsCore
      * @param string $module
      * @return int
      */
-    public function getModuleId($module)
-    {
+    public function getModuleId($module) {
         return cmsDatabase::getInstance()->get_field('cms_modules', "content='" . $module . "' AND user=0", 'id');
     }
 
@@ -588,8 +678,7 @@ class cmsAdmin extends cmsCore
      * @param int $module_id
      * @return string
      */
-    public function getModuleById($module_id)
-    {
+    public function getModuleById($module_id) {
         return cmsDatabase::getInstance()->get_field('cms_modules', "id='" . $module_id . "' AND user=0", 'content');
     }
 
@@ -598,8 +687,7 @@ class cmsAdmin extends cmsCore
      * @param string $module
      * @return float
      */
-    public function getModuleVersion($module)
-    {
+    public function getModuleVersion($module) {
         return cmsDatabase::getInstance()->get_field('cms_modules', "content='" . $module . "' AND user=0", 'version');
     }
 
@@ -608,8 +696,7 @@ class cmsAdmin extends cmsCore
      * @param string $module
      * @return bool
      */
-    public function loadModuleInstaller($module)
-    {
+    public function loadModuleInstaller($module) {
         return cmsCore::includeFile('modules/' . $module . '/install.php');
     }
 
@@ -621,14 +708,12 @@ class cmsAdmin extends cmsCore
      *
      * @return bool
      */
-    public function isPluginHook($plugin_id, $event)
-    {
+    public function isPluginHook($plugin_id, $event) {
         $db = \cms\db::getInstance();
 
-        if ( is_numeric($plugin_id) ) {
+        if (is_numeric($plugin_id)) {
             $name = $db->getField('plugins', 'id=' . (int) $plugin_id, 'plugin');
-        }
-        else {
+        } else {
             $name = $plugin_id;
         }
 
@@ -639,14 +724,13 @@ class cmsAdmin extends cmsCore
      * Возвращает все шаблоны оберток модулей
      * @return boolean
      */
-    public static function getModuleTemplates()
-    {
+    public static function getModuleTemplates() {
         $tpl_dir = is_dir(TEMPLATE_DIR . 'modules') ? TEMPLATE_DIR . 'modules' : DEFAULT_TEMPLATE_DIR . 'modules';
-        $pdir    = opendir($tpl_dir);
+        $pdir = opendir($tpl_dir);
 
         $templates = array();
 
-        while ( $nextfile = readdir($pdir) ) {
+        while ($nextfile = readdir($pdir)) {
             if (
                     ($nextfile != '.') &&
                     ($nextfile != '..') &&
@@ -657,7 +741,7 @@ class cmsAdmin extends cmsCore
             }
         }
 
-        if ( !sizeof($templates) ) {
+        if (!sizeof($templates)) {
             return false;
         }
 
@@ -670,24 +754,23 @@ class cmsAdmin extends cmsCore
      * @param string $linkid
      * @return string
      */
-    public function getMenuLink($linktype, $linkid)
-    {
+    public function getMenuLink($linktype, $linkid) {
         $inDB = cmsDatabase::getInstance();
 
         $menulink = '';
 
-        if ( $linktype == 'component' ) {
+        if ($linktype == 'component') {
             $menulink = '/' . $linkid;
         }
 
-        if ( $linktype == 'link' ) {
+        if ($linktype == 'link') {
             $menulink = $linkid;
         }
 
-        if ( $linktype == 'category' || $linktype == 'content' ) {
+        if ($linktype == 'category' || $linktype == 'content') {
             $model = new cms_model_content();
 
-            switch ( $linktype ) {
+            switch ($linktype) {
                 case 'category':
                     $menulink = $model->getCategoryURL(null, $inDB->get_field('cms_category', "id='" . $linkid . "'", 'seolink'));
                     break;
@@ -697,26 +780,25 @@ class cmsAdmin extends cmsCore
             }
         }
 
-        if ( $linktype == 'blog' ) {
-            $model    = new cms_model_blogs();
+        if ($linktype == 'blog') {
+            $model = new cms_model_blogs();
             $menulink = $model->getBlogURL($inDB->get_field('cms_blogs', "id='" . $linkid . "'", 'seolink'));
         }
 
-        if ( $linktype == 'video_cat' ) {
-            $model    = cms_model_video::initModel();
-            $cat      = $inDB->get_fields('cms_video_category', "id='" . $linkid . "'", 'id, seolink');
+        if ($linktype == 'video_cat') {
+            $model = cms_model_video::initModel();
+            $cat = $inDB->get_fields('cms_video_category', "id='" . $linkid . "'", 'id, seolink');
             $menulink = $model->getCatLink($cat['seolink'], $cat['id']);
         }
 
-        if ( $linktype == 'uccat' ) {
+        if ($linktype == 'uccat') {
             $menulink = '/catalog/' . $linkid;
         }
 
-        if ( $linktype == 'photoalbum' ) {
+        if ($linktype == 'photoalbum') {
             $menulink = '/photos/' . $linkid;
         }
 
         return $menulink;
     }
-
 }

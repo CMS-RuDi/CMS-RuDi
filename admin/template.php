@@ -1,18 +1,19 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <?php
 /*
- *                           InstantCMS v1.10.6
- *                        http://www.instantcms.ru/
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
  *
- *                   written by InstantCMS Team, 2007-2015
- *                produced by InstantSoft, (www.instantsoft.ru)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                        LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
 defined('VALID_CMS_ADMIN') or die();
 
-$inDB         = cmsDatabase::getInstance();
+$inDB = cmsDatabase::getInstance();
 ?>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
@@ -54,10 +55,9 @@ $inDB         = cmsDatabase::getInstance();
                                     <td>
                                         <?php
                                         $new_messages = $inUser->getNewMsg();
-                                        if ( $new_messages['total'] ) {
+                                        if ($new_messages['total']) {
                                             $msg_link = '<a href="/users/' . $inUser->id . '/messages.html" style="color:yellow">' . $_LANG['AD_NEW_MSG'] . ' (' . $new_messages['total'] . ')</a>';
-                                        }
-                                        else {
+                                        } else {
                                             $msg_link = '<span>' . $_LANG['NO'] . ' ' . $_LANG['NEW_MESSAGES'] . '</span>';
                                         }
                                         ?>
@@ -79,11 +79,11 @@ $inDB         = cmsDatabase::getInstance();
                         </div>
                         <?php
                         $messages = cmsCore::getSessionMessages();
-                        if ( $messages ) {
+                        if ($messages) {
                             ?>
                             <div class="sess_messages">
                                 <?php
-                                foreach ( $messages as $message ) {
+                                foreach ($messages as $message) {
                                     echo $message;
                                 }
                                 ?>
@@ -98,7 +98,7 @@ $inDB         = cmsDatabase::getInstance();
             <tr>
                 <td height="50">
                     <div id="footer" style="text-align:center;background:#ecf0f1;height:50px;line-height:50px;border-top: 1px solid #95a5a6;">
-                        &copy; <a href="http://www.instantcms.ru/"><strong>InstantCMS</strong></a><strong> v<?php echo CORE_VERSION ?>, 2007—<?php echo date('Y'); ?></strong><br />
+                        &copy; <a href="https://cmsrudi.ru/"><strong>CMS RuDi</strong></a><strong> v<?php echo CORE_VERSION ?>, <?php echo date('Y'); ?></strong><br />
                     </div>
                 </td>
             </tr>

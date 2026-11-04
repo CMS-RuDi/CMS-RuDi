@@ -1,237 +1,232 @@
 <?php
 
 /*
- *                           InstantCMS v1.10.6
- *                        http://www.instantcms.ru/
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
  *
- *                   written by InstantCMS Team, 2007-2015
- *                produced by InstantSoft, (www.instantsoft.ru)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                        LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
-function printLangPanel($target, $target_id, $field)
-{
+function printLangPanel($target, $target_id, $field) {
     echo \cms\backend::getLangPanel($target, $target_id, $field);
 }
 
-function cpAccessDenied()
-{
+function cpAccessDenied() {
     \cms\backend::accessDenied();
 }
 
-function cpWarning($text)
-{
-    \cmsCore::aaddSessionMessage($text, 'error');
+function cpWarning($text) {
+    \cmsCore::addSessionMessage($text, 'error');
 }
 
-function cpWritable($file)
-{ //relative path with starting "/"
-    if ( is_writable(PATH . $file) ) {
+function cpWritable($file) { //relative path with starting "/"
+    if (is_writable(PATH . $file)) {
         return true;
-    }
-    else {
+    } else {
         return @chmod(PATH . $file, 0777);
     }
 }
 
-function cpCheckWritable($file, $type = 'file')
-{
-    if ( !cpWritable($file) ) {
-        if ( $type == 'file' ) {
-            \cmsCore::aaddSessionMessage(\cms\lang::getInstance()->file_not_writable, 'error');
-        }
-        else {
-            \cmsCore::aaddSessionMessage(\cms\lang::getInstance()->dir_not_writable, 'error');
+function cpCheckWritable($file, $type = 'file') {
+    if (!cpWritable($file)) {
+        if ($type == 'file') {
+            \cmsCore::addSessionMessage(\cms\lang::getInstance()->file_not_writable, 'error');
+        } else {
+            \cmsCore::addSessionMessage(\cms\lang::getInstance()->dir_not_writable, 'error');
         }
     }
 }
 
 /////////////////////////// PAGE GENERATION ////////////////////////////////////
 
-function cpHead()
-{
+function cpHead() {
     \components\cp\frontend::prepareHead();
 
     \cmsPage::getInstance()->printHead();
 }
 
-function cpMenu()
-{
+function cpMenu() {
     (new \components\cp\frontend())->generateMenu();
 }
 
-function cpToolMenu($toolmenu_list)
-{
+function cpToolMenu($toolmenu_list) {
+    // Совместимость с InstantCMS 1.10.x: старые бэкенды передают свой список
+    if (is_array($toolmenu_list)) {
+        foreach ($toolmenu_list as $item) {
+            if (empty($item) || empty($item['title'])) {
+                continue;
+            }
+
+            \cms\backend::addToolMenuItem(
+                    $item['title'],
+                    isset($item['link']) ? $item['link'] : '',
+                    isset($item['icon']) ? $item['icon'] : '',
+                    isset($item['target']) ? $item['target'] : false
+            );
+        }
+    }
+
     \cms\backend::printToolMenu();
 }
 
 //////////////////////////////////////////////// PATHWAY ///////////////////////
-function cpPathway($separator = '&raquo;')
-{
+function cpPathway($separator = '&raquo;') {
     \cmsPage::getInstance()->printPathway($separator);
 }
 
-function cpAddPathway($title, $link = '')
-{
+function cpAddPathway($title, $link = '') {
     return \cmsPage::getInstance()->addPathway($title, $link);
 }
 
-function cpModulePositions($template)
-{
+function cpModulePositions($template) {
     $pos = array();
 
     $posfile = PATH . '/templates/' . $template . '/positions.txt';
 
-    if ( file_exists($posfile) ) {
+    if (file_exists($posfile)) {
         $file = fopen($posfile, 'r');
 
-        while ( !feof($file) ) {
+        while (!feof($file)) {
             $str = fgets($file);
             $str = str_replace("\n", '', $str);
             $str = str_replace("\r", '', $str);
-            if ( !mb_strstr($str, '#') && mb_strlen($str) > 1 ) {
+            if (!mb_strstr($str, '#') && mb_strlen($str) > 1) {
                 $pos[] = $str;
             }
         }
         fclose($file);
         return $pos;
-    }
-    else {
+    } else {
         return false;
     }
 }
 
-function cpAddParam($query, $param, $value)
-{
+function cpAddParam($query, $param, $value) {
     $new_query = '';
 
     mb_parse_str($query, $params);
 
-    $l     = 0;
+    $l = 0;
     $added = false;
 
-    foreach ( $params as $key => $val ) {
-        $l ++;
-        if ( $key != $param && $key != 'nofilter' ) {
+    foreach ($params as $key => $val) {
+        $l++;
+        if ($key != $param && $key != 'nofilter') {
             $new_query .= $key . '=' . $val;
-        }
-        else {
+        } else {
             $new_query .= $key . '=' . $value;
-            $added     = true;
+            $added = true;
         }
 
-        if ( $l < sizeof($params) ) {
+        if ($l < sizeof($params)) {
             $new_query .= '&';
         }
     }
 
-    if ( !$added ) {
-        if ( mb_strlen($new_query) > 1 ) {
+    if (!$added) {
+        if (mb_strlen($new_query) > 1) {
             $new_query .= '&' . $param . '=' . $value;
-        }
-        else {
+        } else {
             $new_query .= $param . '=' . $value;
         }
     }
     return $new_query;
 }
 
-function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title')
-{
-    $action    = cmsCore::getInstance()->do;
+function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title') {
+    $action = cmsCore::getInstance()->do;
     $component = cms\backend::getComponent();
 
     $event = 'admin.listtable_' . strtolower($table) . '_' . strtolower($action) . (!empty($component) ? '_' . strtolower($component) : '');
 
-    list($table, $_fields, $_actions, $where, $orderby) = \cms\events::call($event, array( $table, $_fields, $_actions, $where, $orderby ));
+    list($table, $_fields, $_actions, $where, $orderby) = \cms\events::call($event, array($table, $_fields, $_actions, $where, $orderby));
 
     global $_LANG;
     $inDB = cmsDatabase::getInstance();
 
     $perpage = 60;
 
-    $sql        = 'SELECT *';
+    $sql = 'SELECT *';
     $is_actions = sizeof($_actions);
 
-    foreach ( $_fields as $key => $value ) {
-        if ( isset($_fields[$key]['fdate']) ) {
+    foreach ($_fields as $key => $value) {
+        if (isset($_fields[$key]['fdate'])) {
             $sql .= ", DATE_FORMAT(" . $_fields[$key]['field'] . ", '" . $_fields[$key]['fdate'] . "') as `" . $_fields[$key]['field'] . "`";
         }
     }
 
     $sql .= ' FROM ' . $table;
 
-    if ( isset($_SESSION['filter_table']) && $_SESSION['filter_table'] != $table ) {
+    if (isset($_SESSION['filter_table']) && $_SESSION['filter_table'] != $table) {
         unset($_SESSION['filter']);
     }
 
-    if ( cmsCore::inRequest('nofilter') ) {
+    if (cmsCore::inRequest('nofilter')) {
         unset($_SESSION['filter']);
         cmsCore::redirect('/' . cmsCore::getInstance()->getUri() . '?' . str_replace('&nofilter', '', $_SERVER['QUERY_STRING']));
     }
 
     $filter = false;
 
-    if ( cmsCore::inRequest('filter') ) {
-        $filter             = cmsCore::request('filter', 'array_str', '');
+    if (cmsCore::inRequest('filter')) {
+        $filter = cmsCore::request('filter', 'array_str', '');
         $_SESSION['filter'] = $filter;
-    }
-    elseif ( isset($_SESSION['filter']) ) {
+    } elseif (isset($_SESSION['filter'])) {
         $filter = $_SESSION['filter'];
     }
 
     $f = 0;
 
-    if ( $filter ) {
+    if ($filter) {
         $sql .= ' WHERE 1=1';
 
-        foreach ( $filter as $key => $value ) {
-            if ( $filter[$key] && $filter[$key] != -100 ) {
+        foreach ($filter as $key => $value) {
+            if ($filter[$key] && $filter[$key] != -100) {
                 $sql .= ' AND ';
-                if ( !is_numeric($filter[$key]) ) {
+                if (!is_numeric($filter[$key])) {
                     $sql .= $key . " LIKE '%" . $filter[$key] . "%'";
-                }
-                else {
+                } else {
                     $sql .= $key . " = '" . $filter[$key] . "'";
                 }
                 $f++;
             }
         }
 
-        if ( !isset($_SESSION['filter']) ) {
+        if (!isset($_SESSION['filter'])) {
             $_SESSION['filter'] = $filter;
         }
     }
 
-    if ( mb_strlen($where) > 3 ) {
-        if ( mb_strstr($sql, 'WHERE') ) {
+    if (mb_strlen($where) > 3) {
+        if (mb_strstr($sql, 'WHERE')) {
             $sql .= ' AND ' . $where;
-        }
-        else {
+        } else {
             $sql .= ' WHERE ' . $where;
         }
     }
 
     $sort = cmsCore::request('sort', 'str', '');
 
-    if ( $sort == false ) {
-        if ( $orderby ) {
+    if ($sort == false) {
+        if ($orderby) {
             $sort = $orderby;
-        }
-        else {
-            foreach ( $_fields as $key => $value ) {
-                if ( $_fields[$key]['field'] == 'ordering' && $sort != 'NSLeft' ) {
+        } else {
+            foreach ($_fields as $key => $value) {
+                if ($_fields[$key]['field'] == 'ordering' && $sort != 'NSLeft') {
                     $sort = 'ordering';
-                    $so   = 'asc';
+                    $so = 'asc';
                 }
             }
         }
     }
 
-    if ( $sort ) {
+    if ($sort) {
         $sql .= ' ORDER BY ' . $sort;
-        if ( cmsCore::inRequest('so') ) {
+        if (cmsCore::inRequest('so')) {
             $sql .= ' ' . cmsCore::request('so', 'str', '');
         }
     }
@@ -239,7 +234,7 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
     $page = cmsCore::request('page', 'int', 1);
 
     $total_rs = $inDB->query($sql);
-    $total    = $inDB->num_rows($total_rs);
+    $total = $inDB->num_rows($total_rs);
 
     $sql .= " LIMIT " . ($page - 1) * $perpage . ", $perpage";
 
@@ -247,48 +242,46 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
 
     $_SESSION['filter_table'] = $table;
 
-    if ( $inDB->error() ) {
+    if ($inDB->error()) {
         unset($_SESSION['filter']);
         cmsCore::redirect('/' . cmsCore::getInstance()->getUri() . '?' . $_SERVER['QUERY_STRING']);
     }
 
     $filters = 0;
-    $f_html  = '';
+    $f_html = '';
     //Find and render filters
-    foreach ( $_fields as $key => $value ) {
-        if ( isset($_fields[$key]['filter']) ) {
+    foreach ($_fields as $key => $value) {
+        if (isset($_fields[$key]['filter'])) {
             $f_html .= '<td width="">' . $_fields[$key]['title'] . ': </td>';
 
-            if ( !isset($filter[$_fields[$key]['field']]) ) {
+            if (!isset($filter[$_fields[$key]['field']])) {
                 $initval = '';
-            }
-            else {
+            } else {
                 $initval = $filter[$_fields[$key]['field']];
             }
 
-            $f_html    .= '<td width="">';
+            $f_html .= '<td width="">';
             $inputname = 'filter[' . $_fields[$key]['field'] . ']';
 
-            if ( !isset($_fields[$key]['filterlist']) ) {
+            if (!isset($_fields[$key]['filterlist'])) {
                 $f_html .= '<input name="' . $inputname . '" type="text" size="' . $_fields[$key]['filter'] . '" class="filter_input" value="' . $initval . '"/></td>';
-            }
-            else {
+            } else {
                 $f_html .= cpBuildList($inputname, $_fields[$key]['filterlist'], $initval);
             }
 
-            $f_html                  .= '</td>';
-            $filters                 += 1;
+            $f_html .= '</td>';
+            $filters += 1;
             $_SERVER['QUERY_STRING'] = str_replace('filter[' . $_fields[$key]['field'] . ']=', '', $_SERVER['QUERY_STRING']);
         }
     }
     //draw filters
-    if ( $filters > 0 ) {
+    if ($filters > 0) {
         echo '<div class="filter">';
         echo '<form name="filterform" action="/' . cmsCore::getInstance()->getUri() . '?' . $_SERVER['QUERY_STRING'] . '" method="POST">';
         echo '<table width="250"><tr>';
         echo $f_html;
         echo '<td width="80"><input type="submit" class="filter_submit" value="' . $_LANG['AD_FILTER'] . '" /></td>';
-        if ( $f > 0 ) {
+        if ($f > 0) {
             echo '<td width="80"><input type="button" onclick="window.location.href=\'/' . cmsCore::getInstance()->getUri() . '?' . $_SERVER['QUERY_STRING'] . '&nofilter\'" class="filter_submit" value="' . $_LANG['AD_ALL'] . '" /></td>';
         }
         echo '</tr></table>';
@@ -296,7 +289,7 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
         echo '</div>';
     }
 
-    if ( $inDB->num_rows($result) ) {
+    if ($inDB->num_rows($result)) {
         //DRAW LIST TABLE
         echo '<form name="selform" action="/' . cmsCore::getInstance()->getUri() . '?view=' . $GLOBALS['applet'] . '&do=saveorder" method="post">';
         echo '<table id="listTable" border="0" class="tablesorter" width="100%" cellpadding="0" cellspacing="0">';
@@ -304,170 +297,153 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
         echo '<thead>' . "\n";
         echo '<tr>' . "\n";
         echo '<th width="20" class="lt_header" align="center"><a class="lt_header_link" href="javascript:invert();" title="' . $_LANG['AD_INVERT_SELECTION'] . '">#</a></th>' . "\n";
-        foreach ( $_fields as $key => $value ) {
+        foreach ($_fields as $key => $value) {
             echo '<th width="' . $_fields[$key]['width'] . '" class="lt_header">';
             echo $_fields[$key]['title'];
             echo '</th>' . "\n";
         }
-        if ( $is_actions ) {
+        if ($is_actions) {
             echo '<th width="80" class="lt_header" align="center">' . $_LANG['AD_ACTIONS'] . '</th>' . "\n";
         }
         echo '</tr>' . "\n";
         echo '</thead><tbody>' . "\n";
         //TABLE BODY
-        $r    = 0;
-        while ( $item = $inDB->fetch_assoc($result) ) {
+        $r = 0;
+        while ($item = $inDB->fetch_assoc($result)) {
             $r++;
-            if ( $r % 2 ) {
+            if ($r % 2) {
                 $row_class = 'lt_row1';
-            }
-            else {
+            } else {
                 $row_class = 'lt_row2';
             }
             echo '<tr id="lt_row2">' . "\n";
             echo '<td class="' . $row_class . '" align="center" valign="middle"><input type="checkbox" name="item[]" value="' . $item['id'] . '" /></td>' . "\n";
-            foreach ( $_fields as $key => $value ) {
-                if ( isset($_fields[$key]['link']) ) {
+            foreach ($_fields as $key => $value) {
+                if (isset($_fields[$key]['link'])) {
                     $link = $_fields[$key]['link'];
 
-                    foreach ( $item as $f => $v ) {
+                    foreach ($item as $f => $v) {
                         $link = str_replace('%' . $f . '%', $v, $link);
                     }
 
-                    if ( isset($_fields[$key]['prc']) ) {
+                    if (isset($_fields[$key]['prc'])) {
                         // функция обработки под названием $_fields[$key]['prc']
                         // какие параметры передать функции - один ключ или произвольный массив ключей
-                        if ( is_array($_fields[$key]['field']) ) {
-                            foreach ( $_fields[$key]['field'] as $func_field ) {
+                        if (is_array($_fields[$key]['field'])) {
+                            foreach ($_fields[$key]['field'] as $func_field) {
                                 $in_func_array[$func_field] = $item[$func_field];
                             }
                             $data = call_user_func($_fields[$key]['prc'], $in_func_array);
-                        }
-                        else {
+                        } else {
                             $data = call_user_func($_fields[$key]['prc'], $item[$_fields[$key]['field']]);
                         }
-                    }
-                    else {
+                    } else {
                         $data = $item[$_fields[$key]['field']];
 
-                        if ( isset($_fields[$key]['maxlen']) ) {
-                            if ( mb_strlen($data) > $_fields[$key]['maxlen'] ) {
+                        if (isset($_fields[$key]['maxlen'])) {
+                            if (mb_strlen($data) > $_fields[$key]['maxlen']) {
                                 $data = mb_substr($data, 0, $_fields[$key]['maxlen']) . '...';
                             }
                         }
                     }
 
                     //nested sets otstup
-                    if ( isset($item['NSLevel']) && ($_fields[$key]['field'] == 'title' || (is_array($_fields[$key]['field']) && in_array('title', $_fields[$key]['field']))) ) {
+                    if (isset($item['NSLevel']) && ($_fields[$key]['field'] == 'title' || (is_array($_fields[$key]['field']) && in_array('title', $_fields[$key]['field'])))) {
                         $otstup = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', ($item['NSLevel'] - 1));
-                        if ( $item['NSLevel'] - 1 > 0 ) {
+                        if ($item['NSLevel'] - 1 > 0) {
                             $otstup .= ' &raquo; ';
                         }
-                    }
-                    else {
+                    } else {
                         $otstup = '';
                     }
 
                     echo '<td class="' . $row_class . '" valign="middle">' . $otstup . '<a class="lt_link" href="' . $link . '">' . $data . '</a></td>' . "\n";
-                }
-                else {
-                    if ( $_fields[$key]['field'] != 'ordering' ) {
-                        if ( $_fields[$key]['field'] == 'published' ) {
-                            if ( isset($_fields[$key]['do']) ) {
+                } else {
+                    if ($_fields[$key]['field'] != 'ordering') {
+                        if ($_fields[$key]['field'] == 'published') {
+                            if (isset($_fields[$key]['do'])) {
                                 $do = $_fields[$key]['do'];
-                            }
-                            else {
+                            } else {
                                 $do = 'do';
                             }
 
-                            if ( isset($_fields[$key]['do_suffix']) ) {
+                            if (isset($_fields[$key]['do_suffix'])) {
                                 $dos = $_fields[$key]['do_suffix'];
                                 $ids = 'item_id';
-                            }
-                            else {
+                            } else {
                                 $dos = '';
                                 $ids = 'id';
                             }
 
-                            if ( !empty($_fields[$key]['uri']) ) {
-                                $qs  = str_replace([ '%id%', '%do%' ], [ $item_id, 'hide' ], $_fields[$key]['uri']);
-                                $qs2 = str_replace([ '%id%', '%do%' ], [ $item_id, 'show' ], $_fields[$key]['uri']);
-                            }
-                            else {
-                                $qs  = cpAddParam($_SERVER['QUERY_STRING'], $do, 'hide' . $dos);
-                                $qs  = '/' . cmsCore::getInstance()->getUri() . '?' . cpAddParam($qs, $ids, $item['id']);
+                            if (!empty($_fields[$key]['uri'])) {
+                                $qs = str_replace(['%id%', '%do%'], [$item_id, 'hide'], $_fields[$key]['uri']);
+                                $qs2 = str_replace(['%id%', '%do%'], [$item_id, 'show'], $_fields[$key]['uri']);
+                            } else {
+                                $qs = cpAddParam($_SERVER['QUERY_STRING'], $do, 'hide' . $dos);
+                                $qs = '/' . cmsCore::getInstance()->getUri() . '?' . cpAddParam($qs, $ids, $item['id']);
                                 $qs2 = cpAddParam($_SERVER['QUERY_STRING'], $do, 'show' . $dos);
                                 $qs2 = '/' . cmsCore::getInstance()->getUri() . '?' . cpAddParam($qs2, $ids, $item['id']);
                             }
 
-                            if ( $item['published'] ) {
+                            if ($item['published']) {
                                 $qs = "pub(" . $item['id'] . ", '" . $qs . "', '" . $qs2 . "', 'off', 'on');";
 
                                 echo '<td class="' . $row_class . '" valign="middle"><a title="' . $_LANG['HIDE'] . '" class="uittip" id="publink' . $item['id'] . '" href="javascript:' . $qs . '"><img id="pub' . $item['id'] . '" src="/admin/images/actions/on.gif" border="0"/></a></td>' . "\n";
-                            }
-                            else {
+                            } else {
                                 $qs = "pub(" . $item['id'] . ", '" . $qs2 . "', '" . $qs . "', 'on', 'off');";
 
                                 echo '<td class="' . $row_class . '" valign="middle"><a title="' . $_LANG['SHOW'] . '" class="uittip" id="publink' . $item['id'] . '" href="javascript:' . $qs . '"><img id="pub' . $item['id'] . '" src="/admin/images/actions/off.gif" border="0"/></a></td>' . "\n";
                             }
-                        }
-                        else {
-                            if ( isset($_fields[$key]['prc']) ) {
+                        } else {
+                            if (isset($_fields[$key]['prc'])) {
                                 // функция обработки под названием $_fields[$key]['prc']
                                 // какие параметры передать функции - один ключ или произвольный массив ключей
-                                if ( is_array($_fields[$key]['field']) ) {
-                                    foreach ( $_fields[$key]['field'] as $func_field ) {
+                                if (is_array($_fields[$key]['field'])) {
+                                    foreach ($_fields[$key]['field'] as $func_field) {
                                         $in_func_array[$func_field] = $item[$func_field];
                                     }
                                     $data = call_user_func($_fields[$key]['prc'], $in_func_array);
-                                }
-                                else {
+                                } else {
                                     $data = call_user_func($_fields[$key]['prc'], $item[$_fields[$key]['field']]);
                                 }
-                            }
-                            else {
+                            } else {
                                 $data = $item[$_fields[$key]['field']];
-                                if ( isset($_fields[$key]['maxlen']) ) {
-                                    if ( mb_strlen($data) > $_fields[$key]['maxlen'] ) {
+                                if (isset($_fields[$key]['maxlen'])) {
+                                    if (mb_strlen($data) > $_fields[$key]['maxlen']) {
                                         $data = mb_substr($data, 0, $_fields[$key]['maxlen']) . '...';
                                     }
                                 }
                             }
                             //nested sets otstup
-                            if ( isset($item['NSLevel']) && ($_fields[$key]['field'] == 'title' || (is_array($_fields[$key]['field']) && in_array('title', $_fields[$key]['field']))) ) {
+                            if (isset($item['NSLevel']) && ($_fields[$key]['field'] == 'title' || (is_array($_fields[$key]['field']) && in_array('title', $_fields[$key]['field'])))) {
                                 $otstup = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', ($item['NSLevel'] - 1));
-                                if ( $item['NSLevel'] - 1 > 0 ) {
+                                if ($item['NSLevel'] - 1 > 0) {
                                     $otstup .= ' &raquo; ';
                                 }
-                            }
-                            else {
+                            } else {
                                 $otstup = '';
                             }
                             echo '<td class="' . $row_class . '" valign="middle">' . $otstup . $data . '</td>' . "\n";
                         }
-                    }
-                    else {
-                        if ( isset($_fields[$key]['do']) ) {
+                    } else {
+                        if (isset($_fields[$key]['do'])) {
                             $do = 'do=config&id=' . (int) $_REQUEST['id'] . '&' . $_fields[$key]['do'];
-                        }
-                        else {
+                        } else {
                             $do = 'do';
                         }
-                        if ( isset($_fields[$key]['do_suffix']) ) {
+                        if (isset($_fields[$key]['do_suffix'])) {
                             $dos = $_fields[$key]['do_suffix'];
                             $ids = 'item_id';
-                        }
-                        else {
+                        } else {
                             $dos = '';
                             $ids = 'id';
                         }
                         echo '<td class="' . $row_class . '" valign="middle">
 									<a title="' . $_LANG['AD_DOWN'] . '" href="/' . cmsCore::getInstance()->getUri() . '?' . $do . '=move_down&co=' . $item[$_fields[$key]['field']] . '&' . $ids . '=' . $item['id'] . '"><img src="/admin/images/actions/down.gif" border="0"/></a>';
-                        if ( $table != 'cms_menu' && $table != 'cms_category' ) {
+                        if ($table != 'cms_menu' && $table != 'cms_category') {
                             echo '<input class="lt_input" type="text" size="4" name="ordering[]" value="' . $item['ordering'] . '" />';
                             echo '<input name="ids[]" type="hidden" value="' . $item['id'] . '" />';
-                        }
-                        else {
+                        } else {
                             echo '<input class="lt_input" type="text" size="4" name="ordering[]" value="' . $item['ordering'] . '" disabled/>';
                         }
                         echo '<a title="' . $_LANG['AD_UP'] . '" href="/' . cmsCore::getInstance()->getUri() . '?' . $do . '=move_up&co=' . $item[$_fields[$key]['field']] . '&' . $ids . '=' . $item['id'] . '"><img src="/admin/images/actions/top.gif" border="0"/></a>' .
@@ -475,33 +451,30 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
                     }
                 }
             }
-            if ( $is_actions ) {
+            if ($is_actions) {
                 echo '<td width="110" class="' . $row_class . '" align="right" valign="middle"><div style="padding-right:8px">';
-                foreach ( $_actions as $key => $value ) {
-                    if ( isset($_actions[$key]['condition']) ) {
+                foreach ($_actions as $key => $value) {
+                    if (isset($_actions[$key]['condition'])) {
                         $print = $_actions[$key]['condition']($item);
-                    }
-                    else {
+                    } else {
                         $print = true;
                     }
-                    if ( $print ) {
-                        $icon  = $_actions[$key]['icon'];
+                    if ($print) {
+                        $icon = $_actions[$key]['icon'];
                         $title = $_actions[$key]['title'];
-                        $link  = $_actions[$key]['link'];
+                        $link = $_actions[$key]['link'];
 
-                        if ( is_array($link) ) {
+                        if (is_array($link)) {
                             $link = call_user_func($link, $item);
-                        }
-                        else {
-                            foreach ( $item as $f => $v ) {
+                        } else {
+                            foreach ($item as $f => $v) {
                                 $link = str_replace('%' . $f . '%', $v, $link);
                             }
                         }
 
-                        if ( !isset($_actions[$key]['confirm']) ) {
+                        if (!isset($_actions[$key]['confirm'])) {
                             echo '<a href="' . $link . '" class="uittip" title="' . $title . '"><img hspace="2" src="/admin/images/actions/' . $icon . '" border="0" alt="' . $title . '"/></a>';
-                        }
-                        else {
+                        } else {
                             echo '<a href="#" class="uittip" onclick="jsmsg(\'' . $_actions[$key]['confirm'] . '\', \'' . $link . '\')" title="' . $title . '"><img hspace="2" src="/admin/images/actions/' . $icon . '" border="0" alt="' . $title . '"/></a>';
                         }
                     }
@@ -518,30 +491,28 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
 
         $link = '?view=' . $GLOBALS['applet'];
 
-        if ( $sort ) {
+        if ($sort) {
             $link .= '&sort=' . $sort;
-            if ( cmsCore::inRequest('so') ) {
+            if (cmsCore::inRequest('so')) {
                 $link .= '&so=' . cmsCore::request('so');
             }
         }
 
         echo cmsPage::getPagebar($total, $page, $perpage, '/' . cmsCore::getInstance()->getUri() . '?' . cpAddParam($_SERVER['QUERY_STRING'], 'page', '%page%'));
-    }
-    else {
+    } else {
         echo '<p class="cp_message">' . $_LANG['OBJECTS_NOT_FOUND'] . '</p>';
     }
 }
 
 ///////////////////////////// LIST TABLE PROCESSORS ////////////////////////////
 
-function cpForumCatById($id)
-{
-    if ( \cms\controller::installed('forum') ) {
+function cpForumCatById($id) {
+    if (\cms\controller::installed('forum')) {
         $inDB = cmsDatabase::getInstance();
 
         $result = $inDB->query("SELECT title FROM cms_forum_cats WHERE id = $id");
 
-        if ( $inDB->num_rows($result) ) {
+        if ($inDB->num_rows($result)) {
             $cat = $inDB->fetch_assoc($result);
             return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a> (' . $id . ')';
         }
@@ -550,14 +521,13 @@ function cpForumCatById($id)
     return '--';
 }
 
-function cpFaqCatById($id)
-{
-    if ( \cms\controller::installed('faq') ) {
+function cpFaqCatById($id) {
+    if (\cms\controller::installed('faq')) {
         $inDB = cmsDatabase::getInstance();
 
         $result = $inDB->query("SELECT title FROM cms_faq_cats WHERE id = $id");
 
-        if ( $inDB->num_rows($result) ) {
+        if ($inDB->num_rows($result)) {
             $cat = $inDB->fetch_assoc($result);
             return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a>';
         }
@@ -566,19 +536,17 @@ function cpFaqCatById($id)
     return '--';
 }
 
-function cpCatalogCatById($id)
-{
-    if ( \cms\controller::installed('catalog') ) {
+function cpCatalogCatById($id) {
+    if (\cms\controller::installed('catalog')) {
         $inDB = cmsDatabase::getInstance();
 
         $result = $inDB->query("SELECT title, parent_id FROM cms_uc_cats WHERE id = $id");
 
-        if ( $inDB->num_rows($result) ) {
+        if ($inDB->num_rows($result)) {
             $cat = $inDB->fetch_assoc($result);
-            if ( $cat['parent_id'] ) {
+            if ($cat['parent_id']) {
                 return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a> (' . $id . ')';
-            }
-            else {
+            } else {
                 return $cat['title'];
             }
         }
@@ -587,14 +555,13 @@ function cpCatalogCatById($id)
     return '--';
 }
 
-function cpBoardCatById($id)
-{
-    if ( \cms\controller::installed('board') ) {
+function cpBoardCatById($id) {
+    if (\cms\controller::installed('board')) {
         $inDB = cmsDatabase::getInstance();
 
         $result = $inDB->query("SELECT title FROM cms_board_cats WHERE id = $id");
 
-        if ( $inDB->num_rows($result) ) {
+        if ($inDB->num_rows($result)) {
             $cat = $inDB->fetch_assoc($result);
             return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a> (' . $id . ')';
         }
@@ -603,121 +570,104 @@ function cpBoardCatById($id)
     return '--';
 }
 
-function cpGroupById($id)
-{
-    if ( isset($GLOBALS['groups'][$id]) ) {
+function cpGroupById($id) {
+    if (isset($GLOBALS['groups'][$id])) {
         $title = $GLOBALS['groups'][$id];
-    }
-    else {
-        $title                  = cmsUser::getGroupTitle($id);
+    } else {
+        $title = cmsUser::getGroupTitle($id);
         $GLOBALS['groups'][$id] = $title;
     }
 
     return '<a href="index.php?view=usergroups&do=edit&id=' . $id . '">' . $title . '</a>';
 }
 
-function cpCatById($id)
-{
+function cpCatById($id) {
     $inDB = cmsDatabase::getInstance();
 
     $result = $inDB->query("SELECT title, parent_id FROM cms_category WHERE id = $id");
 
-    if ( $inDB->num_rows($result) ) {
+    if ($inDB->num_rows($result)) {
         $cat = $inDB->fetch_assoc($result);
-        if ( $cat['parent_id'] ) {
+        if ($cat['parent_id']) {
             return '<a href="' . \cms\backend::getBackend('content')->genActionUrl('edit_category', $id) . '">' . $cat['title'] . '</a> (' . $id . ')';
-        }
-        else {
+        } else {
             return $cat['title'];
         }
-    }
-    else {
+    } else {
         return '--';
     }
 }
 
-function cpModuleById($id)
-{
+function cpModuleById($id) {
     return \cms\controller::getModel('cp')->getModuleContentById($id);
 }
 
-function cpModuleTitleById($id)
-{
+function cpModuleTitleById($id) {
     return \cms\controller::getModel('cp')->getModuleNameById($id);
 }
 
-function cpTemplateById($template_id)
-{
+function cpTemplateById($template_id) {
     global $_LANG;
 
-    if ( $template_id ) {
+    if ($template_id) {
         return $template_id;
-    }
-    else {
+    } else {
         return '<span style="color:silver">' . $_LANG['AD_AS_SITE'] . '</span>';
     }
 }
 
-function cpUserNick($user_id = 0)
-{
+function cpUserNick($user_id = 0) {
     global $_LANG;
 
     $inDB = cmsDatabase::getInstance();
 
-    if ( $user_id ) {
-        $sql    = "SELECT nickname FROM cms_users WHERE id = $user_id";
+    if ($user_id) {
+        $sql = "SELECT nickname FROM cms_users WHERE id = $user_id";
         $result = $inDB->query($sql);
 
-        if ( $inDB->num_rows($result) ) {
+        if ($inDB->num_rows($result)) {
             $usr = $inDB->fetch_assoc($result);
             return $usr['nickname'];
-        }
-        else {
+        } else {
             return false;
         }
-    }
-    else {
+    } else {
         return '<em style="color:gray">' . $_LANG['AD_NOT_DEFINED'] . '</em>';
     }
 }
 
-function cpYesNo($option)
-{
+function cpYesNo($option) {
     global $_LANG;
 
-    if ( $option ) {
+    if ($option) {
         return '<span style="color:green">' . $_LANG['YES'] . '</span>';
-    }
-    else {
+    } else {
         return '<span style="color:red">' . $_LANG['NO'] . '</span>';
     }
 }
 
 //////////////////////////////////////////////// DATABASE //////////////////////////////////////////////////////////
-function dbMoveUp($table, $id, $current_ord)
-{
-    $inDB        = cmsDatabase::getInstance();
-    $id          = (int) $id;
+function dbMoveUp($table, $id, $current_ord) {
+    $inDB = cmsDatabase::getInstance();
+    $id = (int) $id;
     $current_ord = (int) $current_ord;
-    $sql         = "UPDATE $table SET ordering = ordering + 1 WHERE ordering = ($current_ord-1) LIMIT 1";
+    $sql = "UPDATE $table SET ordering = ordering + 1 WHERE ordering = ($current_ord-1) LIMIT 1";
     $inDB->query($sql);
-    $sql         = "UPDATE $table SET ordering = ordering - 1 WHERE id = $id LIMIT 1";
+    $sql = "UPDATE $table SET ordering = ordering - 1 WHERE id = $id LIMIT 1";
     $inDB->query($sql);
 }
 
-function dbMoveDown($table, $id, $current_ord)
-{
-    $inDB        = cmsDatabase::getInstance();
-    $id          = (int) $id;
+function dbMoveDown($table, $id, $current_ord) {
+    $inDB = cmsDatabase::getInstance();
+    $id = (int) $id;
     $current_ord = (int) $current_ord;
-    $sql         = "UPDATE $table SET ordering = ordering - 1 WHERE ordering = ($current_ord+1) LIMIT 1";
+    $sql = "UPDATE $table SET ordering = ordering - 1 WHERE ordering = ($current_ord+1) LIMIT 1";
     $inDB->query($sql);
-    $sql         = "UPDATE $table SET ordering = ordering + 1 WHERE id = $id LIMIT 1";
+    $sql = "UPDATE $table SET ordering = ordering + 1 WHERE id = $id LIMIT 1";
     $inDB->query($sql);
 }
 
-function dbShow($table, $id)
-{
+function dbShow($table, $id) {
     $inDB = cmsDatabase::getInstance();
 
     $id = (int) $id;
@@ -727,18 +677,17 @@ function dbShow($table, $id)
     $inDB->query($sql);
 }
 
-function dbShowList($table, $list)
-{
+function dbShowList($table, $list) {
     $inDB = cmsDatabase::getInstance();
 
-    if ( is_array($list) ) {
-        $sql  = "UPDATE $table SET published = 1 WHERE ";
+    if (is_array($list)) {
+        $sql = "UPDATE $table SET published = 1 WHERE ";
         $item = 0;
 
-        foreach ( $list as $key => $value ) {
-            $item ++;
+        foreach ($list as $key => $value) {
+            $item++;
             $sql .= 'id = ' . (int) $value;
-            if ( $item < sizeof($list) ) {
+            if ($item < sizeof($list)) {
                 $sql .= ' OR ';
             }
         }
@@ -748,25 +697,23 @@ function dbShowList($table, $list)
     }
 }
 
-function dbHide($table, $id)
-{
+function dbHide($table, $id) {
     $inDB = cmsDatabase::getInstance();
-    $id   = (int) $id;
-    $sql  = "UPDATE $table SET published = 0 WHERE id = $id";
+    $id = (int) $id;
+    $sql = "UPDATE $table SET published = 0 WHERE id = $id";
     $inDB->query($sql);
 }
 
-function dbHideList($table, $list)
-{
+function dbHideList($table, $list) {
     $inDB = cmsDatabase::getInstance();
 
-    if ( is_array($list) ) {
-        $sql  = "UPDATE $table SET published = 0 WHERE ";
+    if (is_array($list)) {
+        $sql = "UPDATE $table SET published = 0 WHERE ";
         $item = 0;
-        foreach ( $list as $key => $value ) {
-            $item ++;
+        foreach ($list as $key => $value) {
+            $item++;
             $sql .= 'id = ' . (int) $value;
-            if ( $item < sizeof($list) ) {
+            if ($item < sizeof($list)) {
                 $sql .= ' OR ';
             }
         }
@@ -775,51 +722,49 @@ function dbHideList($table, $list)
     }
 }
 
-function dbDelete($table, $id)
-{
+function dbDelete($table, $id) {
     $inCore = cmsCore::getInstance();
-    $inDB   = cmsDatabase::getInstance();
-    $id     = (int) $id;
-    $sql    = "DELETE FROM $table WHERE id = $id LIMIT 1";
+    $inDB = cmsDatabase::getInstance();
+    $id = (int) $id;
+    $sql = "DELETE FROM $table WHERE id = $id LIMIT 1";
     $inDB->query($sql);
 
-    if ( $table == 'cms_content' ) {
+    if ($table == 'cms_content') {
         cmsClearTags('content', $id);
         $inCore->deleteRatings('content', $id);
         $inCore->deleteComments('article', $id);
         $inDB->query("DELETE FROM cms_tags WHERE target='content' AND item_id=$id");
     }
 
-    if ( $table == 'cms_modules' ) {
+    if ($table == 'cms_modules') {
         $inDB->query("DELETE FROM cms_modules_bind WHERE module_id=$id");
     }
 }
 
-function dbDeleteList($table, $list)
-{
+function dbDeleteList($table, $list) {
     $inDB = cmsDatabase::getInstance();
 
-    if ( is_array($list) ) {
-        $sql  = "DELETE FROM $table WHERE ";
+    if (is_array($list)) {
+        $sql = "DELETE FROM $table WHERE ";
         $item = 0;
 
-        foreach ( $list as $key => $value ) {
-            $item ++;
+        foreach ($list as $key => $value) {
+            $item++;
             $value = (int) $value;
-            $sql   .= 'id = ' . $value;
+            $sql .= 'id = ' . $value;
 
-            if ( $item < sizeof($list) ) {
+            if ($item < sizeof($list)) {
                 $sql .= ' OR ';
             }
 
-            if ( $table == 'cms_content' ) {
+            if ($table == 'cms_content') {
                 cmsClearTags('content', $value);
                 $inDB->query("DELETE FROM cms_comments WHERE target='article' AND target_id=$value");
                 $inDB->query("DELETE FROM cms_ratings WHERE target='content' AND item_id=$value");
                 $inDB->query("DELETE FROM cms_tags WHERE target='content' AND item_id=$value");
             }
 
-            if ( $table == 'cms_modules' ) {
+            if ($table == 'cms_modules') {
                 $inDB->query("DELETE FROM cms_modules_bind WHERE module_id=$value");
             }
         }
@@ -832,13 +777,11 @@ function dbDeleteList($table, $list)
 
 //============================ HTML GENERATORS ===============================//
 
-function insertPanel()
-{
+function insertPanel() {
     echo \cms\backend::getPanelHtml();
 }
 
-function cpBuildList($attr_name, $list, $selected_id = false)
-{
+function cpBuildList($attr_name, $list, $selected_id = false) {
     global $_LANG;
 
     $html = '';
@@ -847,11 +790,10 @@ function cpBuildList($attr_name, $list, $selected_id = false)
 
     $html .= '<option value="-100">-- ' . $_LANG['AD_ALL'] . ' --</option>' . "\n";
 
-    foreach ( $list as $key => $value ) {
-        if ( $selected_id == $list[$key]['id'] ) {
+    foreach ($list as $key => $value) {
+        if ($selected_id == $list[$key]['id']) {
             $sel = 'selected';
-        }
-        else {
+        } else {
             $sel = '';
         }
         $html .= '<option value="' . $list[$key]['id'] . '" ' . $sel . '>' . $list[$key]['title'] . '</option>' . "\n";
@@ -862,70 +804,68 @@ function cpBuildList($attr_name, $list, $selected_id = false)
     return $html;
 }
 
-function cpGetList($listtype, $field_name = 'title')
-{
+function cpGetList($listtype, $field_name = 'title') {
     global $_LANG;
     $list = array();
 
     // Позиции для модулей
-    if ( $listtype == 'positions' ) {
+    if ($listtype == 'positions') {
         $pos = cpModulePositions(cmsConfig::getConfig('template'));
 
-        foreach ( $pos as $p ) {
-            $list[] = array( 'title' => $p, 'id' => $p );
+        foreach ($pos as $p) {
+            $list[] = array('title' => $p, 'id' => $p);
         }
 
         return $list;
     }
 
     // Типы меню
-    if ( $listtype == 'menu' ) {
-        $list[] = array( 'title' => $_LANG['AD_MAIN_MENU'], 'id' => 'mainmenu' );
-        $list[] = array( 'title' => $_LANG['AD_USER_MENU'], 'id' => 'usermenu' );
-        $list[] = array( 'title' => $_LANG['AD_AUTH_MENU'], 'id' => 'authmenu' );
+    if ($listtype == 'menu') {
+        $list[] = array('title' => $_LANG['AD_MAIN_MENU'], 'id' => 'mainmenu');
+        $list[] = array('title' => $_LANG['AD_USER_MENU'], 'id' => 'usermenu');
+        $list[] = array('title' => $_LANG['AD_AUTH_MENU'], 'id' => 'authmenu');
 
-        for ( $m = 1; $m <= 20; $m++ ) {
-            $list[] = array( 'title' => "{$_LANG['AD_SUBMENU']} {$m}", 'id' => 'menu' . $m );
+        for ($m = 1; $m <= 20; $m++) {
+            $list[] = array('title' => "{$_LANG['AD_SUBMENU']} {$m}", 'id' => 'menu' . $m);
         }
 
         return $list;
     }
 
     //...или записи из таблицы
-    $inDB   = cmsDatabase::getInstance();
-    $sql    = "SELECT id, {$field_name} FROM $listtype ORDER BY {$field_name} ASC";
+    $inDB = cmsDatabase::getInstance();
+    $sql = "SELECT id, {$field_name} FROM $listtype ORDER BY {$field_name} ASC";
     $result = $inDB->query($sql);
 
-    if ( $inDB->num_rows($result) > 0 ) {
-        while ( $item = $inDB->fetch_assoc($result) ) {
-            $next                 = sizeof($list);
+    if ($inDB->num_rows($result) > 0) {
+        while ($item = $inDB->fetch_assoc($result)) {
+            $next = sizeof($list);
             $list[$next]['title'] = $item[$field_name];
-            $list[$next]['id']    = $item['id'];
+            $list[$next]['id'] = $item['id'];
         }
     }
 
     return $list;
 }
 
-function getFullAwardsList()
-{
+function getFullAwardsList() {
     $inDB = cmsDatabase::getInstance();
 
     $awards = array();
 
     $rs = $inDB->query("SELECT title FROM cms_user_awards GROUP BY title");
 
-    if ( $inDB->num_rows($rs) ) {
-        while ( $aw = $inDB->fetch_assoc($rs) ) {
+    if ($inDB->num_rows($rs)) {
+        while ($aw = $inDB->fetch_assoc($rs)) {
             $awards[] = $aw;
         }
     }
 
     $rs = $inDB->query("SELECT title FROM cms_user_autoawards GROUP BY title");
 
-    if ( $inDB->num_rows($rs) ) {
-        while ( $aw = $inDB->fetch_assoc($rs) ) {
-            if ( !in_array(array( 'title' => $aw['title'] ), $awards) ) {
+    if ($inDB->num_rows($rs)) {
+        while ($aw = $inDB->fetch_assoc($rs)) {
+            if (!in_array(array('title' => $aw['title']), $awards)) {
                 $awards[] = $aw;
             }
         }
@@ -940,7 +880,6 @@ function getFullAwardsList()
  * @param bool $is_clear Если TRUE, то директория будет очищена, но не удалена
  * @return bool
  */
-function files_remove_directory($directory, $is_clear = false)
-{
+function files_remove_directory($directory, $is_clear = false) {
     return \cms\helper\files::removeDirectory($directory, $is_clear);
 }

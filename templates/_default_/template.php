@@ -1,12 +1,13 @@
 <?php
 /*
- *                           InstantCMS v1.10.7
- *                        http://www.instantcms.ru/
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
  *
- *                   written by InstantCMS Team, 2007-2017
- *                produced by InstantSoft, (www.instantsoft.ru)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                        LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
 /*
@@ -14,7 +15,7 @@
  */
 
 // Получаем количество модулей на нужные позиции
-$mod_count['top']     = $this->countModules('top');
+$mod_count['top'] = $this->countModules('top');
 $mod_count['topmenu'] = $this->countModules('topmenu');
 $mod_count['sidebar'] = $this->countModules('sidebar');
 
@@ -31,7 +32,7 @@ $this->addHeadJS('includes/jquery/colorbox/jquery.colorbox.js');
 $this->addHeadCSS('includes/jquery/colorbox/colorbox.css');
 $this->addHeadJS('includes/jquery/colorbox/init_colorbox.js');
 // LANG фразы для colorbox
-$this->addHeadJsLang(array( 'CBOX_IMAGE', 'CBOX_FROM', 'CBOX_PREVIOUS', 'CBOX_NEXT', 'CBOX_CLOSE', 'CBOX_XHR_ERROR', 'CBOX_IMG_ERROR', 'CBOX_SLIDESHOWSTOP', 'CBOX_SLIDESHOWSTART' ));
+$this->addHeadJsLang(array('CBOX_IMAGE', 'CBOX_FROM', 'CBOX_PREVIOUS', 'CBOX_NEXT', 'CBOX_CLOSE', 'CBOX_XHR_ERROR', 'CBOX_IMG_ERROR', 'CBOX_SLIDESHOWSTOP', 'CBOX_SLIDESHOWSTART'));
 $this->addHead('<script type="text/javascript">var TEMPLATE = "' . TEMPLATE . '";</script>');
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -41,14 +42,14 @@ $this->addHead('<script type="text/javascript">var TEMPLATE = "' . TEMPLATE . '"
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <meta name="viewport" content="width=device-width">
         <?php $this->printHead(); ?>
-        <?php if ( $inUser->is_admin ) { ?>
+        <?php if ($inUser->is_admin) { ?>
             <script src="/admin/js/modconfig.js" type="text/javascript"></script>
             <link href="/templates/<?php echo TEMPLATE; ?>/css/modconfig.css" rel="stylesheet" type="text/css" />
         <?php } ?>
     </head>
 
     <body>
-        <?php if ( $inConf->siteoff && $inUser->is_admin ) { ?>
+        <?php if ($inConf->siteoff && $inUser->is_admin) { ?>
             <div style="margin:4px; padding:5px; border:solid 1px red; background:#FFF; position: fixed;opacity: 0.8; z-index:999"><?php echo $_LANG['SITE_IS_DISABLE']; ?></div>
         <?php } ?>
         <div id="wrapper">
@@ -60,16 +61,16 @@ $this->addHead('<script type="text/javascript">var TEMPLATE = "' . TEMPLATE . '"
                     </div>
                     <div class="grid_10">
                         <?php
-                        if ( $inConf->is_change_lang ) {
+                        if ($inConf->is_change_lang) {
 
                             $langs = cmsCore::getDirsList('/languages');
                             ?>
                             <div onclick="$('#langs-select').toggle().toggleClass('active_lang');$(this).toggleClass('active_lang'); return false;" title="<?php echo $_LANG['TEMPLATE_INTERFACE_LANG']; ?>" id="langs" style="background-image:  url(/templates/<?php echo TEMPLATE; ?>/images/icons/langs/<?php echo $inConf->lang; ?>.png);">
                                 <span>&#9660;</span>
                                 <ul id="langs-select">
-                                    <?php foreach ( $langs as $lng ) { ?>
+                                    <?php foreach ($langs as $lng) { ?>
                                         <li onclick="setLang('<?php echo $lng; ?>'); return false;" style="background-image:  url(/templates/<?php echo TEMPLATE; ?>/images/icons/langs/<?php echo $lng; ?>.png);"><?php echo $lng; ?></li>
-                                    <?php } ?>
+                                        <?php } ?>
                                 </ul>
                             </div>
 
@@ -81,7 +82,7 @@ $this->addHead('<script type="text/javascript">var TEMPLATE = "' . TEMPLATE . '"
 
             <div id="page">
 
-                <?php if ( $mod_count['topmenu'] ) { ?>
+                <?php if ($mod_count['topmenu']) { ?>
                     <div class="container_12" id="topmenu">
                         <div class="grid_12">
                             <?php $this->printModules('topmenu'); ?>
@@ -89,7 +90,7 @@ $this->addHead('<script type="text/javascript">var TEMPLATE = "' . TEMPLATE . '"
                     </div>
                 <?php } ?>
 
-                <?php if ( $mod_count['top'] ) { ?>
+                <?php if ($mod_count['top']) { ?>
                     <div class="clear"></div>
 
                     <div id="topwide" class="container_12">
@@ -104,29 +105,28 @@ $this->addHead('<script type="text/javascript">var TEMPLATE = "' . TEMPLATE . '"
                 <div class="clear"></div>
 
                 <div id="mainbody" class="container_12">
-                    <div id="main" class="<?php if ( $mod_count['sidebar'] ) { ?>grid_8<?php
-                    }
-                    else {
+                    <div id="main" class="<?php if ($mod_count['sidebar']) { ?>grid_8<?php
+                    } else {
                         ?>grid_12<?php } ?>">
                          <?php $this->printModules('maintop'); ?>
 
                         <?php $messages = cmsCore::getSessionMessages(); ?>
-                        <?php if ( $messages ) { ?>
+                        <?php if ($messages) { ?>
                             <div class="sess_messages" id="sess_messages">
-                                <?php foreach ( $messages as $message ) { ?>
+                                <?php foreach ($messages as $message) { ?>
                                     <?php echo $message; ?>
                                 <?php } ?>
                             </div>
                         <?php } ?>
 
-                        <?php if ( $this->page_body ) { ?>
+                        <?php if ($this->page_body) { ?>
                             <div class="component">
                                 <?php $this->printBody(); ?>
                             </div>
                         <?php } ?>
                         <?php $this->printModules('mainbottom'); ?>
                     </div>
-                    <?php if ( $mod_count['sidebar'] ) { ?>
+                    <?php if ($mod_count['sidebar']) { ?>
                         <div class="grid_4" id="sidebar"><?php $this->printModules('sidebar'); ?></div>
                     <?php } ?>
                 </div>
@@ -141,9 +141,7 @@ $this->addHead('<script type="text/javascript">var TEMPLATE = "' . TEMPLATE . '"
                     <div id="copyright"><?php $this->printSitename(); ?> &copy; <?php echo date('Y'); ?></div>
                 </div>
                 <div class="grid_4 foot_right">
-                    <a href="http://www.instantcms.ru/" title="<?php echo $_LANG['POWERED_BY_INSTANTCMS']; ?>" target="_blank">
-                        <img src="/templates/<?php echo TEMPLATE; ?>/images/b88x31.gif" />
-                    </a>
+                    <a href="https://cmsrudi.ru" title="CMS RuDi" target="_blank">CMS RuDi</a>
                 </div>
             </div>
         </div>

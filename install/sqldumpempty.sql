@@ -313,7 +313,7 @@ CREATE TABLE IF NOT EXISTS `#__components` (
   `link` varchar(200) NOT NULL COMMENT 'Идентификатор',
   `config` text NOT NULL COMMENT 'Опции',
   `internal` int(11) NOT NULL,
-  `author` varchar(200) NOT NULL DEFAULT 'InstantCMS team' COMMENT 'Автор',
+  `author` varchar(200) NOT NULL DEFAULT 'CMS RuDi team' COMMENT 'Автор',
   `published` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'Включен?',
   `version` varchar(6) NOT NULL DEFAULT '1.10.3' COMMENT 'Версия',
   `system` int(11) NOT NULL DEFAULT '0' COMMENT 'Системный?',
@@ -322,23 +322,23 @@ CREATE TABLE IF NOT EXISTS `#__components` (
 ) ENGINE=MyISAM AUTO_INCREMENT=30 DEFAULT CHARSET=utf8 COMMENT='Установленные в системе компоненты';
 
 INSERT INTO `#__components` (`id`, `title`, `link`, `config`, `internal`, `author`, `published`, `version`, `system`) VALUES
-(1, 'Каталог статей', 'content', '---\nreaddesc: 0\nrating: 1\nperpage: 15\npt_show: 1\npt_disp: 1\npt_hide: 1\nautokeys: 1\nimg_small_w: 100\nimg_big_w: 200\nimg_sqr: 1\nimg_users: 1\nwatermark: 1\nwatermark_only_big: 1\naf_on: 0\naf_delete: 1\naf_showlink: 1\naf_forum_id: 1\naf_hidecat_id: 2\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(2, 'Регистрация', 'registration', '---\nreg_type: open\ninv_count: 3\ninv_karma: 1\ninv_period: WEEK\nis_on: 1\nact: 0\nsend: false\noffmsg: >\n  Регистрация приостановлена по\n  техническим причинам.\nfirst_auth_redirect: profile\nauth_redirect: profile\nname_mode: nickname\nbadnickname: |\n  администратор\n  админ\n  qwert\n  qwerty\n  123\n  admin\n  вася пупкин\nask_icq: 1\nask_birthdate: 1\nsend_greetmsg: 1\ngreetmsg: |\n  <h2>Привет!</h2>\n  <p><span style="font-size: medium;">Мы очень <span style="color: rgb(51, 153, 102);">рады</span> что ты зарегистрировался!</span></p>\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(3, 'Фотогалерея', 'photos', '---\nlink: 0\nsaveorig: 0\nmaxcols: 2\norderby: title\norderto: desc\nshowlat: 1\nwatermark: 1\ntumb_view: 2\ntumb_from: 1\ntumb_club: \nis_today: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(5, 'Поиск', 'search', '---\nperpage: 10\ncomp:\n  - content\n  - photos\n  - catalog\n  - forum\n  - blogs\n  - faq\n  - board\n  - clubs\nsearch_engine:\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(6, 'Конструктор форм', 'forms', '---\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(7, 'Комментарии пользователей', 'comments', '---\nemail: \ncanguests: 1\nregcap: 0\npublish: 1\nsmiles: 1\nbbcode: 1\nselfdel: 0\nsubscribe: 1\nanchors: 0\nrecode: 0\nmin_karma: 0\nmin_karma_show: 0\nmin_karma_add: 0\nperpage: 20\nj_code: 1\ncmm_ajax: 0\ncmm_ip: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(8, 'Архив статей', 'arhive', '---\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(10, 'Профили пользователей', 'users', '---\nshowgroup: 1\nsw_stats: \nsw_comm: 1\nsw_search: 1\nsw_forum: 1\nsw_photo: 1\nsw_wall: 1\nsw_friends: 1\nsw_blogs: 1\nsw_clubs: 1\nsw_feed: 1\nsw_content: 1\nsw_awards: 1\nsw_board: 1\nsw_msg: 1\nsw_guest: 1\nkarmatime: 1\nkarmaint: DAY\nphotosize: 0\nwatermark: 1\nsmallw: 64\nmedw: 200\nmedh: 500\nsw_files: 1\nfilessize: 100\nfilestype: jpeg,gif,png,jpg,bmp,zip,rar,tar\nprivforms: \n  - 3\nj_code: 1\ndeltime: 6\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(15, 'Блоги', 'blogs', '---\nperpage: 10\nperpage_blog: 15\nupdate_date: 0\nupdate_seo_link: 0\nmin_karma_private: 0\nmin_karma_public: 5\nmin_karma: 1\nwatermark: 1\nimg_on: 1\nrss_all: 1\nrss_one: 1\nj_code: 1\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(18, 'Лента активности', 'actions', '---\r\nshow_target: 1\r\nperpage: 10\r\nperpage_tab: 15\r\nis_all: 1\r\nact_type: \r\n  add_quest: 16\r\n  add_club_user: 15\r\n  vote_movie: 31\r\n  add_movie: 30\r\n  add_friend: 20\r\n  add_post: 10\r\n  add_post_club: 25\r\n  add_catalog: 13\r\n  add_wall_my: 29\r\n  add_wall: 23\r\n  add_wall_club: 24\r\n  add_comment: 2\r\n  add_user_photo_multi: 27\r\n  add_board: 12\r\n  add_fpost: 17\r\n  add_article: 8\r\n  add_thread: 18\r\n  add_photo: 7\r\n  add_user_photo: 26\r\n  add_avatar: 19\r\n  add_file: 22\r\n  set_status: 11\r\n  add_award: 21\r\n  add_user: 28\r\n  add_blog: 9\r\n  add_club: 14\r\n', 0, 'InstantCMS Team', 1, '1.10.3', 1),
-(19, 'RSS генератор', 'rssfeed', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
-(21, 'Награждение пользователей', 'autoawards', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
-(23, 'Клубы пользователей', 'clubs', '---\nseo_club: title\nenabled_blogs: 1\nenabled_photos: 1\nthumb1: 48\nthumb2: 200\nthumbsqr: 1\ncancreate: 1\nperpage: 10\ncreate_min_karma: 0\ncreate_min_rating: 0\n', 0, 'InstantCMS team', 1, '1.10.3', 1),
-(24, 'Скачивание и редирект', 'files', '', 1, 'InstantCMS team', 1, '1.10.3', 1),
-(26, 'Подписки', 'subscribes', '', 1, 'InstantCMS team', 1, '1.10.3', 1),
-(27, 'Геолокация', 'geo', '---\n', 1, 'InstantCMS team', 1, '1.10.3', 1),
-(28, 'Панель управления', 'cp', '', 0, 'InstantCMS team', 1, '1.0.0', 1);
+(1, 'Каталог статей', 'content', '---\nreaddesc: 0\nrating: 1\nperpage: 15\npt_show: 1\npt_disp: 1\npt_hide: 1\nautokeys: 1\nimg_small_w: 100\nimg_big_w: 200\nimg_sqr: 1\nimg_users: 1\nwatermark: 1\nwatermark_only_big: 1\naf_on: 0\naf_delete: 1\naf_showlink: 1\naf_forum_id: 1\naf_hidecat_id: 2\n', 0, 'CMS RuDi team', 1, '1.10.3', 1),
+(2, 'Регистрация', 'registration', '---\nreg_type: open\ninv_count: 3\ninv_karma: 1\ninv_period: WEEK\nis_on: 1\nact: 0\nsend: false\noffmsg: >\n  Регистрация приостановлена по\n  техническим причинам.\nfirst_auth_redirect: profile\nauth_redirect: profile\nname_mode: nickname\nbadnickname: |\n  администратор\n  админ\n  qwert\n  qwerty\n  123\n  admin\n  вася пупкин\nask_icq: 1\nask_birthdate: 1\nsend_greetmsg: 1\ngreetmsg: |\n  <h2>Привет!</h2>\n  <p><span style="font-size: medium;">Мы очень <span style="color: rgb(51, 153, 102);">рады</span> что ты зарегистрировался!</span></p>\n', 0, 'CMS RuDi team', 1, '1.10.3', 1),
+(3, 'Фотогалерея', 'photos', '---\nlink: 0\nsaveorig: 0\nmaxcols: 2\norderby: title\norderto: desc\nshowlat: 1\nwatermark: 1\ntumb_view: 2\ntumb_from: 1\ntumb_club: \nis_today: 1\n', 0, 'CMS RuDi team', 1, '1.10.3', 1),
+(5, 'Поиск', 'search', '---\nperpage: 10\ncomp:\n  - content\n  - photos\n  - catalog\n  - forum\n  - blogs\n  - faq\n  - board\n  - clubs\nsearch_engine:\n', 0, 'CMS RuDi team', 1, '1.10.3', 1),
+(6, 'Конструктор форм', 'forms', '---\n', 0, 'CMS RuDi team', 1, '1.10.3', 1),
+(7, 'Комментарии пользователей', 'comments', '---\nemail: \ncanguests: 1\nregcap: 0\npublish: 1\nsmiles: 1\nbbcode: 1\nselfdel: 0\nsubscribe: 1\nanchors: 0\nrecode: 0\nmin_karma: 0\nmin_karma_show: 0\nmin_karma_add: 0\nperpage: 20\nj_code: 1\ncmm_ajax: 0\ncmm_ip: 1\n', 0, 'CMS RuDi team', 1, '1.10.3', 1),
+(8, 'Архив статей', 'arhive', '---\n', 0, 'CMS RuDi team', 1, '1.10.3', 1),
+(10, 'Профили пользователей', 'users', '---\nshowgroup: 1\nsw_stats: \nsw_comm: 1\nsw_search: 1\nsw_forum: 1\nsw_photo: 1\nsw_wall: 1\nsw_friends: 1\nsw_blogs: 1\nsw_clubs: 1\nsw_feed: 1\nsw_content: 1\nsw_awards: 1\nsw_board: 1\nsw_msg: 1\nsw_guest: 1\nkarmatime: 1\nkarmaint: DAY\nphotosize: 0\nwatermark: 1\nsmallw: 64\nmedw: 200\nmedh: 500\nsw_files: 1\nfilessize: 100\nfilestype: jpeg,gif,png,jpg,bmp,zip,rar,tar\nprivforms: \n  - 3\nj_code: 1\ndeltime: 6\n', 0, 'CMS RuDi team', 1, '1.10.3', 1),
+(15, 'Блоги', 'blogs', '---\nperpage: 10\nperpage_blog: 15\nupdate_date: 0\nupdate_seo_link: 0\nmin_karma_private: 0\nmin_karma_public: 5\nmin_karma: 1\nwatermark: 1\nimg_on: 1\nrss_all: 1\nrss_one: 1\nj_code: 1\n', 0, 'CMS RuDi team', 1, '1.10.3', 1),
+(18, 'Лента активности', 'actions', '---\r\nshow_target: 1\r\nperpage: 10\r\nperpage_tab: 15\r\nis_all: 1\r\nact_type: \r\n  add_quest: 16\r\n  add_club_user: 15\r\n  vote_movie: 31\r\n  add_movie: 30\r\n  add_friend: 20\r\n  add_post: 10\r\n  add_post_club: 25\r\n  add_catalog: 13\r\n  add_wall_my: 29\r\n  add_wall: 23\r\n  add_wall_club: 24\r\n  add_comment: 2\r\n  add_user_photo_multi: 27\r\n  add_board: 12\r\n  add_fpost: 17\r\n  add_article: 8\r\n  add_thread: 18\r\n  add_photo: 7\r\n  add_user_photo: 26\r\n  add_avatar: 19\r\n  add_file: 22\r\n  set_status: 11\r\n  add_award: 21\r\n  add_user: 28\r\n  add_blog: 9\r\n  add_club: 14\r\n', 0, 'CMS RuDi Team', 1, '1.10.3', 1),
+(19, 'RSS генератор', 'rssfeed', '---\n', 1, 'CMS RuDi team', 1, '1.10.3', 1),
+(21, 'Награждение пользователей', 'autoawards', '---\n', 1, 'CMS RuDi team', 1, '1.10.3', 1),
+(23, 'Клубы пользователей', 'clubs', '---\nseo_club: title\nenabled_blogs: 1\nenabled_photos: 1\nthumb1: 48\nthumb2: 200\nthumbsqr: 1\ncancreate: 1\nperpage: 10\ncreate_min_karma: 0\ncreate_min_rating: 0\n', 0, 'CMS RuDi team', 1, '1.10.3', 1),
+(24, 'Скачивание и редирект', 'files', '', 1, 'CMS RuDi team', 1, '1.10.3', 1),
+(26, 'Подписки', 'subscribes', '', 1, 'CMS RuDi team', 1, '1.10.3', 1),
+(27, 'Геолокация', 'geo', '---\n', 1, 'CMS RuDi team', 1, '1.10.3', 1),
+(28, 'Панель управления', 'cp', '', 0, 'CMS RuDi team', 1, '1.0.0', 1);
 
 DROP TABLE IF EXISTS `#__content`;
 CREATE TABLE `#__content` (
@@ -561,7 +561,7 @@ CREATE TABLE `#__modules` (
   `template` varchar(35) NOT NULL DEFAULT 'module.tpl',
   `is_strict_bind` tinyint(1) NOT NULL DEFAULT '0',
   `is_strict_bind_hidden` tinyint(1) NOT NULL DEFAULT '0',
-  `author` varchar(100) NOT NULL default 'InstantCMS team',
+  `author` varchar(100) NOT NULL default 'CMS RuDi team',
   `version` varchar(6) NOT NULL DEFAULT '1.0',
   PRIMARY KEY (`id`),
   KEY `position` (`position`),
@@ -570,7 +570,7 @@ CREATE TABLE `#__modules` (
 
 INSERT INTO `#__modules` (`id`, `position`, `name`, `title`, `is_external`, `content`, `ordering`, `showtitle`, `published`, `user`, `config`, `original`, `css_prefix`, `access_list`, `cache`, `cachetime`, `cacheint`, `template`, `is_strict_bind`, `version`) VALUES
 (1, 'topmenu', 'Меню', 'Меню', 1, 'mod_menu', 6, 0, 1, 0, '---\nmenu: mainmenu\nshow_home: 1\ntpl: mod_menu.tpl\nis_sub_menu: 0\n', 1, '', '', 0, 1, 'HOUR', 'module_simple.tpl', 0, '1.0'),
-(17, 'top', 'Главная страница', 'Добро пожаловать!', 0, '<table cellspacing="0" cellpadding="0" border="0" width="100%">\r\n    <tbody>\r\n        <tr>\r\n            <td width="100" valign="top"><a target="_blank" href="http://www.instantcms.ru"><img border="0" alt="" src="/images/content/community.png" /></a></td>\r\n            <td>\r\n            <p class="moduletitle">Добро пожаловать!</p>\r\n            <p>Мы рады приветствовать Вас в нашей социальной сети. После регистрации Вам станут доступны все функции сайта.</p>\r\n            <p>Вы сможете завести блог, загружать фотографии и общаться с друзьями.</p>\r\n            <div>\r\n            <div>Чтобы изменить этот текст, <a href="/admin/index.php?view=modules&amp;do=edit&amp;id=17">отредактируйте модуль &quot;Главная страница&quot;</a>.</div>\r\n            </div>\r\n            </td>\r\n        </tr>\r\n    </tbody>\r\n</table>', 0, 0, 1, 1, '---\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
+(17, 'top', 'Главная страница', 'Добро пожаловать!', 0, '<table cellspacing="0" cellpadding="0" border="0" width="100%">\r\n    <tbody>\r\n        <tr>\r\n            <td width="100" valign="top"><a target="_blank" href="https://cmsrudi.ru"><img border="0" alt="" src="/images/content/community.png" /></a></td>\r\n            <td>\r\n            <p class="moduletitle">Добро пожаловать!</p>\r\n            <p>Мы рады приветствовать Вас в нашей социальной сети. После регистрации Вам станут доступны все функции сайта.</p>\r\n            <p>Вы сможете завести блог, загружать фотографии и общаться с друзьями.</p>\r\n            <div>\r\n            <div>Чтобы изменить этот текст, <a href="/admin/index.php?view=modules&amp;do=edit&amp;id=17">отредактируйте модуль &quot;Главная страница&quot;</a>.</div>\r\n            </div>\r\n            </td>\r\n        </tr>\r\n    </tbody>\r\n</table>', 0, 0, 1, 1, '---\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (44, 'sidebar', 'Облако тегов', 'Облако тегов', 1, 'mod_tags', 18, 0, 0, 0, '---\ncat_id: \nsortby: tag\nmenuid: \nminfreq: 0\nminlen: 3\ntargets: \n  content: content\n  photo: photo\n  blogpost: blog\n  catalog: catalog\n  userphoto: userphoto\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (27, 'sidebar', 'Поиск', 'Поиск', 1, 'mod_search', 1, 0, 0, 0, '---\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 0, '1.0'),
 (19, 'maintop', 'Последние материалы', 'Новые статьи', 1, 'mod_latest', 2, 1, 1, 0, '---\nnewscount: 4\nshowdesc: 0\nshowdate: 1\nshowcom: 1\nshowrss: 1\ncat_id: 6\nsubs: 1\n', 1, '', '', 0, 1, 'HOUR', 'module.tpl', 1, '1.0'),
@@ -784,18 +784,18 @@ CREATE TABLE IF NOT EXISTS `cms_plugins` (
 ) ENGINE=MyISAM AUTO_INCREMENT=37 DEFAULT CHARSET=utf8;
 
 INSERT INTO `#__plugins` (`id`, `plugin`, `title`, `description`, `version`, `url`, `author`, `author_url`, `author_email`, `plugin_type`, `published`, `config`) VALUES
-(6, 'p_usertab', 'Demo Profile Plugin', 'Пример плагина - Добавляет вкладку "Статьи" в профили всех пользователей', '1.10.3', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 0, '---\nPU_LIMIT: 10\n'),
-(3, 'p_ckeditor', 'CKEditor', 'Визуальный редактор', '4.4.6', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'wysiwyg', 1, '---\niswatermark: 0\nphoto_width: 600\nphoto_height: 600\nis_compatible: 1\nentermode: CKEDITOR.ENTER_P\nskin: moono\nupload_for_groups:\n  - 2\n'),
-(5, 'p_demo', 'Demo Plugin', 'Пример плагина - Добавляет текст в конец каждой статьи на сайте', '1.0', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 0, '---\ntext: Added By Plugin From Parameter\ncolor: blue\ncounter: 1\n'),
-(8, 'p_ping', 'Пинг поисковых систем', 'Пингует Яндекс и Гугл при добавлении статей, объявлений и постов в блоги', '1.10', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 1, '---\nYandex HOST: ping.blogs.yandex.ru\nYandex PATH: /RPC2\nGoogle HOST: blogsearch.google.com\nGoogle PATH: /ping/RPC2\n'),
-(15, 'p_morecontent', 'Похожие статьи', 'Добавляет в конец каждой статьи список похожих статей.', '1.10.4', '', 'Maximov & InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 0, '---\nP_LIMIT: 5\nP_UNSORT: 1\n'),
-(14, 'p_hidetext', 'Скрытый текст', 'Скрывает содержимое тега [hide] от незарегистрированных', '1.12', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 1, '---\n'),
-(16, 'p_loginza', 'Авторизация Loginza', 'Позволяет посетителям авторизоваться на сайте, используя аккаунты популярных социальных сетей', '1.10.4', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'plugin', 1, '---\nPL_PROVIDERS: >\n  vkontakte,facebook,mailruapi,google,yandex,openid,twitter,webmoney,rambler,flickr,mailru,loginza,myopenid,lastfm,verisign,aol,steam\nPL_LANG: ru\n'),
-(21, 'p_new_msg', 'Анимация при новом сообщении', 'Анимация при новом сообщении', '1.0', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', '', 1, '---\n'),
-(33, 'p_kcaptcha', 'Капча kCaptcha', 'Выводит капчу в форме', '1.0', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', '', 1, '---\n'),
-(35, 'p_related_posts', 'Похожие записи в блогах', 'Добавляет в конец каждого поста список похожих записей', '1.0', '', 'Pasha && InstantCMS Team', 'http://www.instantcms.ru/', '', '', 1, '---\ntags_mode: 1\nadd_mode: 1\nsearch_mode: 1\nlimit: 4\ntruncate: 200\ncash_time: 1\nblank_photo: no_image.png\n'),
-(36, 'p_recaptcha', 'Капча Recaptcha', 'Современная защита от спама. <a href="https://www.google.com/recaptcha/admin" target="_blank">Получить ключ</a>', '1.0', '', 'InstantCMS Team', 'http://www.instantcms.ru/', '', 'captcha', 0, '---\npublic_key: 0\nprivate_key:\ntheme: light\nsize: normal\nlang: ru\n'),
-(37, 'p_filters', 'Обрабатывает текст фильтрами', 'Обрабатывает текст фильтрами, унаследованными от Instant CMS. В будущем использовать фильтры не рекомендуется, вместо них используйте шорткоды.', '1.0.0', NULL, 'DS Soft', 'https://ds-soft.ru', 'admin@ds-soft.ru', '', 1, '---\nf_contents: 1\nf_filelink: 1\nf_includes: 1\nf_pages: 1\nf_replace: 1\n');
+(6, 'p_usertab', 'Demo Profile Plugin', 'Пример плагина - Добавляет вкладку "Статьи" в профили всех пользователей', '1.10.3', '', 'CMS RuDi Team', 'https://cmsrudi.ru/', '', 'plugin', 0, '---\nPU_LIMIT: 10\n'),
+(3, 'p_ckeditor', 'CKEditor', 'Визуальный редактор', '4.4.6', '', 'CMS RuDi Team', 'https://cmsrudi.ru/', '', 'wysiwyg', 1, '---\niswatermark: 0\nphoto_width: 600\nphoto_height: 600\nis_compatible: 1\nentermode: CKEDITOR.ENTER_P\nskin: moono\nupload_for_groups:\n  - 2\n'),
+(5, 'p_demo', 'Demo Plugin', 'Пример плагина - Добавляет текст в конец каждой статьи на сайте', '1.0', '', 'CMS RuDi Team', 'https://cmsrudi.ru/', '', 'plugin', 0, '---\ntext: Added By Plugin From Parameter\ncolor: blue\ncounter: 1\n'),
+(8, 'p_ping', 'Пинг поисковых систем', 'Пингует Яндекс и Гугл при добавлении статей, объявлений и постов в блоги', '1.10', '', 'CMS RuDi Team', 'https://cmsrudi.ru/', '', 'plugin', 1, '---\nYandex HOST: ping.blogs.yandex.ru\nYandex PATH: /RPC2\nGoogle HOST: blogsearch.google.com\nGoogle PATH: /ping/RPC2\n'),
+(15, 'p_morecontent', 'Похожие статьи', 'Добавляет в конец каждой статьи список похожих статей.', '1.10.4', '', 'Maximov & CMS RuDi Team', 'https://cmsrudi.ru/', '', 'plugin', 0, '---\nP_LIMIT: 5\nP_UNSORT: 1\n'),
+(14, 'p_hidetext', 'Скрытый текст', 'Скрывает содержимое тега [hide] от незарегистрированных', '1.12', '', 'CMS RuDi Team', 'https://cmsrudi.ru/', '', 'plugin', 1, '---\n'),
+(16, 'p_loginza', 'Авторизация Loginza', 'Позволяет посетителям авторизоваться на сайте, используя аккаунты популярных социальных сетей', '1.10.4', '', 'CMS RuDi Team', 'https://cmsrudi.ru/', '', 'plugin', 1, '---\nPL_PROVIDERS: >\n  vkontakte,facebook,mailruapi,google,yandex,openid,twitter,webmoney,rambler,flickr,mailru,loginza,myopenid,lastfm,verisign,aol,steam\nPL_LANG: ru\n'),
+(21, 'p_new_msg', 'Анимация при новом сообщении', 'Анимация при новом сообщении', '1.0', '', 'CMS RuDi Team', 'https://cmsrudi.ru/', '', '', 1, '---\n'),
+(33, 'p_kcaptcha', 'Капча kCaptcha', 'Выводит капчу в форме', '1.0', '', 'CMS RuDi Team', 'https://cmsrudi.ru/', '', '', 1, '---\n'),
+(35, 'p_related_posts', 'Похожие записи в блогах', 'Добавляет в конец каждого поста список похожих записей', '1.0', '', 'Pasha && CMS RuDi Team', 'https://cmsrudi.ru/', '', '', 1, '---\ntags_mode: 1\nadd_mode: 1\nsearch_mode: 1\nlimit: 4\ntruncate: 200\ncash_time: 1\nblank_photo: no_image.png\n'),
+(36, 'p_recaptcha', 'Капча Recaptcha', 'Современная защита от спама. <a href="https://www.google.com/recaptcha/admin" target="_blank">Получить ключ</a>', '1.0', '', 'CMS RuDi Team', 'https://cmsrudi.ru/', '', 'captcha', 0, '---\npublic_key: 0\nprivate_key:\ntheme: light\nsize: normal\nlang: ru\n'),
+(37, 'p_filters', 'Обрабатывает текст фильтрами', 'Обрабатывает текст фильтрами, унаследованными от CMS RuDi. В будущем использовать фильтры не рекомендуется, вместо них используйте шорткоды.', '1.0.0', NULL, 'DS Soft', 'https://ds-soft.ru', 'admin@ds-soft.ru', '', 1, '---\nf_contents: 1\nf_filelink: 1\nf_includes: 1\nf_pages: 1\nf_replace: 1\n');
 
 DROP TABLE IF EXISTS `#__ratings`;
 CREATE TABLE `#__ratings` (

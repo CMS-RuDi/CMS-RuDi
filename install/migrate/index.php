@@ -1,14 +1,14 @@
 <?php
 /*
- *                           InstantCMS v1.10.6
- *                        http://www.instantcms.ru/
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
  *
- *                   written by InstantCMS Team, 2007-2015
- *                produced by InstantSoft, (www.instantsoft.ru)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                        LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
-
 @set_time_limit(0);
 
 session_start();
@@ -22,7 +22,7 @@ require(PATH . '/core/classes/autoload.php');
 $inCore = cmsAdmin::getInstance();
 
 $inConf = cmsConfig::getInstance();
-$inDB   = cmsDatabase::getInstance();
+$inDB = cmsDatabase::getInstance();
 
 // принудительно включаем дебаг
 $inConf->debug = 1;
@@ -32,20 +32,33 @@ $version_next = '1.10.7';
 ?>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <title>InstantCMS - Миграция базы данных</title>
+        <title>CMS RuDi - Миграция базы данных</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     </head>
 
     <body>
         <style type="text/css">
-            body { font-family:Arial; font-size:14px; }
+            body {
+                font-family:Arial;
+                font-size:14px;
+            }
 
-            a { color: #0099CC; }
-            a:hover { color: #375E93; }
-            h2 { color: #375E93; }
+            a {
+                color: #0099CC;
+            }
+            a:hover {
+                color: #375E93;
+            }
+            h2 {
+                color: #375E93;
+            }
 
-            #wrapper { padding:10px 30px; }
-            #wrapper p{ line-height: 20px; }
+            #wrapper {
+                padding:10px 30px;
+            }
+            #wrapper p{
+                line-height: 20px;
+            }
 
             .migrate p {
                 line-height:16px;
@@ -74,9 +87,9 @@ $version_next = '1.10.7';
         </style>
         <div id="wrapper" class="migrate">
             <?php
-            echo "<h2>Миграция базы данных InstantCMS {$version_prev} &rarr; {$version_next}</h2>";
+            echo "<h2>Миграция базы данных CMS RuDi {$version_prev} &rarr; {$version_next}</h2>";
 
-            if ( !cmsCore::inRequest('go') ) {
+            if (!cmsCore::inRequest('go')) {
                 echo '<h3><a href="/install/migrate/index.php?go=1">начать миграцию...</a></h3>';
                 exit;
             }
@@ -89,9 +102,7 @@ $version_next = '1.10.7';
 
 // ========================================================================== //
 
-            if ( $step == 1 ) {
-
-
+            if ($step == 1) {
                 $inDB->query("ALTER TABLE `cms_blog_posts` CHANGE `edit_date` `edit_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
 
                 echo '<div style="margin:15px 0px;font-weight:bold">Миграция завершена. Удалите папку /install/ прежде чем продолжить!</div>';

@@ -1,10 +1,19 @@
 <?php
 
+/*
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
+ *
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
+ *
+ *                      LICENSED BY GNU/GPL v2
+ */
+
 namespace cms;
 
-class events
-{
-
+class events {
     /**
      * Массив включенных событий и их слушателей
      *
@@ -19,187 +28,323 @@ class events
      * @var array
      */
     protected static $old_events_names = [
-        'admin.main_menu'                   => 'CPMENU',
-        'admin.replace_panel'               => 'REPLACE_PANEL',
-        'actions.get_action'                => 'GET_ACTION',
-        'actions.log_action'                => 'LOG_ACTION',
-        'actions.delete_log'                => 'DELETE_LOG',
-        'actions.update_log'                => 'UPDATE_LOG',
-        'actions.delete_object_log'         => 'DELETE_OBJECT_LOG',
-        'actions.delete_target_log'         => 'DELETE_TARGET_LOG',
-        'actions.get_before_actions'        => 'GET_BEFORE_ACTIONS',
-        'actions.get_actions'               => 'GET_ACTIONS',
-        'arhive.get_items'                  => 'GET_ARHIVE',
-        'banners.get_banner'                => 'GET_BANNER',
-        'banners.click_banner'              => 'CLICK_BANNER',
-        'board.add_item'                    => 'ADD_BOARD_RECORD',
-        'board.update_item'                 => 'UPDATE_BOARD_RECORD',
-        'board.add_item_done'               => 'ADD_BOARD_DONE',
-        'board.get_item'                    => 'GET_BOARD_RECORD',
-        'board.get_items'                   => 'GET_BOARD_RECORDS',
-        'board.get_category'                => 'GET_BOARD_CAT',
-        'board.get_sub_categories'          => 'GET_BOARD_SUBCATS',
-        'board.delete_item'                 => 'DELETE_BOARD_RECORD',
-        'blog.add'                          => 'ADD_BLOG',
-        'blog.update'                       => 'UPDATE_BLOG',
-        'blog.get_blog'                     => 'GET_BLOG',
-        'blog.get_blogs'                    => 'GET_BLOGS',
-        'blog.add_post'                     => 'ADD_POST',
-        'blog.update_post'                  => 'UPDATE_POST',
-        'blog.delete_post'                  => 'DELETE_POST',
-        'blog.get_post'                     => 'GET_POST',
-        'blog.get_posts'                    => 'GET_POSTS',
-        'blog.is_writer'                    => 'IS_BLOG_WRITER',
-        'blog.get_categories'               => 'GET_BLOG_CATS',
-        'blog.get_category'                 => 'GET_BLOG_CAT',
-        'blog.add_category'                 => 'ADD_BLOG_CAT',
-        'blog.update_category'              => 'UPDATE_BLOG_CAT',
-        'blog.delete_category'              => 'DELETE_BLOG_CAT',
-        'blog.get_authors'                  => 'GET_BLOG_AUTHORS',
-        'blog.update_authors'               => 'UPDATE_BLOG_AUTHORS',
-        'blog.delete'                       => 'DELETE_BLOG',
-        'blogs.add_post_done'               => 'ADD_POST_DONE',
-        'catalog.add_item'                  => 'ADD_CATALOG_ITEM',
-        'catalog.add_item_done'             => 'ADD_CATALOG_DONE',
-        'catalog.update_item'               => 'UPDATE_CATALOG_ITEM',
-        'catalog.renew_item'                => 'RENEW_CATALOG_ITEM',
-        'catalog.copy_item'                 => 'COPY_CATALOG_ITEM',
-        'catalog.get_item_image'            => 'GET_CATALOG_ITEM_IMAGE',
-        'catalog.add_category'              => 'ADD_CATALOG_CAT',
-        'catalog.copy_category'             => 'COPY_CATALOG_CAT',
-        'catalog.delete_category'           => 'DELETE_CATALOG_CAT',
-        'catalog.update_category'           => 'UPDATE_CATALOG_CAT',
-        'catalog.get_sub_categories'        => 'GET_CATALOG_SUBCATS',
-        'catalog.add_discount'              => 'ADD_CATALOG_DISCOUNT',
-        'catalog.update_discount'           => 'UPDATE_CATALOG_DISCOUNT',
-        'catalog.delete_discount'           => 'DELETE_CATALOG_DISCOUNT',
-        'clubs.create_club'                 => 'ADD_CLUB',
-        'clubs.update_club'                 => 'UPDATE_CLUB',
-        'clubs.delete_club'                 => 'DELETE_CLUB',
-        'clubs.get_clubs'                   => 'GET_CLUBS',
-        'clubs.get_club'                    => 'GET_CLUB',
-        'clubs.add_post_done'               => 'ADD_POST_DONE',
-        'clubs.leave'                       => 'LEAVE_CLUB',
-        'clubs.join'                        => 'JOIN_CLUB',
-        'clubs.view_photo'                  => 'VIEW_CLUB_PHOTO',
-        'clubs.add_wall_item'               => 'ADD_WALL',
-        'comments.get_items'                => 'GET_COMMENTS',
-        'comments.before_show'              => 'BEFORE_SHOW_COMMENTS',
-        'comments.get_item'                 => 'GET_COMMENT',
-        'comments.add_item'                 => 'ADD_COMMENT',
-        'comments.delete_item'              => 'DELETE_COMMENT',
-        'comments.get_items_from_module'    => 'GET_COMMENTS_MODULE',
-        'content.get_items'                 => 'GET_ARTICLES',
-        'content.get_item'                  => 'GET_ARTICLE',
-        'content.add_item'                  => 'ADD_ARTICLE',
-        'content.add_item_done'             => 'ADD_ARTICLE_DONE',
-        'content.pre_edit_item'             => 'PRE_EDIT_ARTICLE',
-        'content.update_item'               => 'UPDATE_ARTICLE',
-        'content.after_edit_item'           => 'AFTER_EDIT_ARTICLE',
-        'content.delete_item'               => 'DELETE_ARTICLE',
-        'content.get_category'              => 'GET_CONTENT_CAT',
-        'content.get_categories_tree'       => 'GET_CONTENT_CATS_TREE',
-        'content.get_sub_categories'        => 'GET_CONTENT_SUBCATS',
+        'admin.main_menu' => 'CPMENU',
+        'admin.replace_panel' => 'REPLACE_PANEL',
+        'actions.get_action' => 'GET_ACTION',
+        'actions.log_action' => 'LOG_ACTION',
+        'actions.delete_log' => 'DELETE_LOG',
+        'actions.update_log' => 'UPDATE_LOG',
+        'actions.delete_object_log' => 'DELETE_OBJECT_LOG',
+        'actions.delete_target_log' => 'DELETE_TARGET_LOG',
+        'actions.get_before_actions' => 'GET_BEFORE_ACTIONS',
+        'actions.get_actions' => 'GET_ACTIONS',
+        'arhive.get_items' => 'GET_ARHIVE',
+        'banners.get_banner' => 'GET_BANNER',
+        'banners.click_banner' => 'CLICK_BANNER',
+        'board.add_item' => 'ADD_BOARD_RECORD',
+        'board.update_item' => 'UPDATE_BOARD_RECORD',
+        'board.add_item_done' => 'ADD_BOARD_DONE',
+        'board.get_item' => 'GET_BOARD_RECORD',
+        'board.get_items' => 'GET_BOARD_RECORDS',
+        'board.get_category' => 'GET_BOARD_CAT',
+        'board.get_sub_categories' => 'GET_BOARD_SUBCATS',
+        'board.delete_item' => 'DELETE_BOARD_RECORD',
+        'blog.add' => 'ADD_BLOG',
+        'blog.update' => 'UPDATE_BLOG',
+        'blog.get_blog' => 'GET_BLOG',
+        'blog.get_blogs' => 'GET_BLOGS',
+        'blog.add_post' => 'ADD_POST',
+        'blog.update_post' => 'UPDATE_POST',
+        'blog.delete_post' => 'DELETE_POST',
+        'blog.get_post' => 'GET_POST',
+        'blog.get_posts' => 'GET_POSTS',
+        'blog.is_writer' => 'IS_BLOG_WRITER',
+        'blog.get_categories' => 'GET_BLOG_CATS',
+        'blog.get_category' => 'GET_BLOG_CAT',
+        'blog.add_category' => 'ADD_BLOG_CAT',
+        'blog.update_category' => 'UPDATE_BLOG_CAT',
+        'blog.delete_category' => 'DELETE_BLOG_CAT',
+        'blog.get_authors' => 'GET_BLOG_AUTHORS',
+        'blog.update_authors' => 'UPDATE_BLOG_AUTHORS',
+        'blog.delete' => 'DELETE_BLOG',
+        'blogs.add_post_done' => 'ADD_POST_DONE',
+        'catalog.add_item' => 'ADD_CATALOG_ITEM',
+        'catalog.add_item_done' => 'ADD_CATALOG_DONE',
+        'catalog.update_item' => 'UPDATE_CATALOG_ITEM',
+        'catalog.renew_item' => 'RENEW_CATALOG_ITEM',
+        'catalog.copy_item' => 'COPY_CATALOG_ITEM',
+        'catalog.get_item_image' => 'GET_CATALOG_ITEM_IMAGE',
+        'catalog.add_category' => 'ADD_CATALOG_CAT',
+        'catalog.copy_category' => 'COPY_CATALOG_CAT',
+        'catalog.delete_category' => 'DELETE_CATALOG_CAT',
+        'catalog.update_category' => 'UPDATE_CATALOG_CAT',
+        'catalog.get_sub_categories' => 'GET_CATALOG_SUBCATS',
+        'catalog.add_discount' => 'ADD_CATALOG_DISCOUNT',
+        'catalog.update_discount' => 'UPDATE_CATALOG_DISCOUNT',
+        'catalog.delete_discount' => 'DELETE_CATALOG_DISCOUNT',
+        'clubs.create_club' => 'ADD_CLUB',
+        'clubs.update_club' => 'UPDATE_CLUB',
+        'clubs.delete_club' => 'DELETE_CLUB',
+        'clubs.get_clubs' => 'GET_CLUBS',
+        'clubs.get_club' => 'GET_CLUB',
+        'clubs.add_post_done' => 'ADD_POST_DONE',
+        'clubs.leave' => 'LEAVE_CLUB',
+        'clubs.join' => 'JOIN_CLUB',
+        'clubs.view_photo' => 'VIEW_CLUB_PHOTO',
+        'clubs.add_wall_item' => 'ADD_WALL',
+        'comments.get_items' => 'GET_COMMENTS',
+        'comments.before_show' => 'BEFORE_SHOW_COMMENTS',
+        'comments.get_item' => 'GET_COMMENT',
+        'comments.add_item' => 'ADD_COMMENT',
+        'comments.delete_item' => 'DELETE_COMMENT',
+        'comments.get_items_from_module' => 'GET_COMMENTS_MODULE',
+        'content.get_items' => 'GET_ARTICLES',
+        'content.get_item' => 'GET_ARTICLE',
+        'content.add_item' => 'ADD_ARTICLE',
+        'content.add_item_done' => 'ADD_ARTICLE_DONE',
+        'content.pre_edit_item' => 'PRE_EDIT_ARTICLE',
+        'content.update_item' => 'UPDATE_ARTICLE',
+        'content.after_edit_item' => 'AFTER_EDIT_ARTICLE',
+        'content.delete_item' => 'DELETE_ARTICLE',
+        'content.get_category' => 'GET_CONTENT_CAT',
+        'content.get_categories_tree' => 'GET_CONTENT_CATS_TREE',
+        'content.get_sub_categories' => 'GET_CONTENT_SUBCATS',
         'content.get_publishing_categories' => 'GET_CONTENT_PUBCATS',
-        'forms.add_form'                    => 'ADD_FORM',
-        'forms.update_form'                 => 'UPDATE_FORM',
-        'forms.get_form'                    => 'GET_FORM',
-        'forms.delete_form'                 => 'DELETE_FORM',
-        'forms.add_field'                   => 'ADD_FORM_FIELD',
-        'forms.update_field'                => 'UPDATE_FORM_FIELD',
-        'forms.get_form_fields'             => 'GET_FORM_FIELDS',
-        'forum.get_forum'                   => 'GET_FORUM',
-        'forum.get_forums'                  => 'GET_FORUMS',
-        'forum.get_thread'                  => 'GET_FORUM_THREAD',
-        'forum.get_threads'                 => 'GET_THREADS',
-        'forum.get_post'                    => 'GET_FORUM_POST',
-        'forum.get_posts'                   => 'GET_FORUM_POSTS',
-        'forum.move_post'                   => 'MOVE_FORUM_POST',
-        'forum.get_category'                => 'GET_FORUM_CAT',
-        'forum.add_post'                    => 'ADD_FORUM_POST',
-        'forum.update_post'                 => 'UPDATE_FORUM_POST',
-        'forum.delete_post'                 => 'DELETE_POST',
-        'forum.add_thread'                  => 'ADD_THREAD',
-        'forum.open_thread'                 => 'OPEN_THREAD',
-        'forum.close_thread'                => 'CLOSE_THREAD',
-        'forum.update_thread'               => 'UPDATE_THREAD',
-        'forum.get_post_file'               => 'GET_POST_FILE',
-        'forum.get_post_files'              => 'GET_POST_FILES',
-        'forum.delete_post_file'            => 'DELETE_POST_FILE',
-        'forum.add_poll'                    => 'ADD_FORUM_POLL',
-        'forum.update_poll'                 => 'UPDATE_FORUM_POLL',
-        'forum.delete_poll'                 => 'DELETE_FORUM_POLL',
-        'forum.get_thread_poll'             => 'GET_THREAD_POLL',
-        'photos.add_album'                  => 'ADD_ALBUM',
-        'photos.get_album'                  => 'GET_PHOTO_ALBUM',
-        'photos.get_albums'                 => 'GET_ALBUMS',
-        'photos.delete_album'               => 'DELETE_ALBUM',
-        'photos.add_photo'                  => 'ADD_PHOTO',
-        'photos.add_photo_done'             => 'ADD_PHOTO_DONE',
-        'photos.update_photo'               => 'UPDATE_PHOTO',
-        'photos.get_photo'                  => 'GET_PHOTO',
-        'photos.get_photos'                 => 'GET_PHOTOS',
-        'photos.delete_photo'               => 'DELETE_PHOTO',
-        'photos.publish_photo'              => 'PUBLISH_PHOTO',
-        'poll.get_poll'                     => 'GET_POLL',
-        'poll.delete_poll'                  => 'DELETE_POLL',
-        'search.get_result'                 => 'GET_SEARCH_RESULT',
-        'users.before_register'             => 'USER_BEFORE_REGISTER',
-        'users.register'                    => 'USER_REGISTER',
-        'users.activated'                   => 'USER_ACTIVATED',
-        'users.view_profile'                => 'USER_PROFILE',
-        'users.update_profile'              => 'UPDATE_USER_PROFILES',
-        'users.update_data'                 => 'UPDATE_USER_USERS',
-        'users.update_password'             => 'UPDATE_USER_PASSWORD',
-        'users.send_message'                => 'USER_SEND_MESSEDGE',
-        'users.accept_friend'               => 'USER_ACCEPT_FRIEND',
-        'users.add_wall'                    => 'ADD_WALL',
-        'users.get_user'                    => 'GET_USER',
-        'users.delete_user'                 => 'DELETE_USER',
-        'users.delete_group'                => 'DELETE_USER_GROUP',
-        'users.add_photo_album'             => 'ADD_USER_PHOTO_ALBUM',
-        'users.get_albums'                  => 'GET_USER_ALBUMS',
-        'users.get_uploaded_photos'         => 'GET_USER_UPLOADED_PHOTOS',
-        'users.load_user'                   => 'LOAD_USER',
-        'users.login'                       => 'USER_LOGIN',
-        'users.logout'                      => 'USER_LOGOUT',
-        'users.signin'                      => 'SIGNIN_USER',
-        'users.add_friend'                  => 'ADD_FRIEND',
-        'users.delete_friend'               => 'DELETE_FRIEND',
-        'users.get_wall_posts'              => 'GET_WALL_POSTS',
-        'users.get_guest'                   => 'GET_GUEST',
-        'users.give_award'                  => 'GIVE_AWARD',
-        'captcha.get'                       => 'GET_CAPTCHA',
-        'captcha.check'                     => 'CHECK_CAPTCHA',
-        'bbcode.replace_buttons'            => 'REPLACE_BBCODE_BUTTONS',
-        'bbcode.get_button'                 => 'GET_BBCODE_BUTTON',
-        'smiles.replace'                    => 'REPLACE_SMILES',
-        'page.print_head'                   => 'PRINT_PAGE_HEAD',
-        'page.print_body'                   => 'PRINT_PAGE_BODY',
-        'page.get_pagebar'                  => 'GET_PAGEBAR',
-        'loginza.auth'                      => 'LOGINZA_AUTH',
-        'loginza.button'                    => 'LOGINZA_BUTTON',
-        'core.get_main_components'          => 'URL_WITHOUT_COM_NAME',
-        'core.clear_cache'                  => 'CLEAR_CACHE',
-        'wysiwyg'                           => 'INSERT_WYSIWYG',
-        'get_index'                         => 'GET_INDEX',
+        'forms.add_form' => 'ADD_FORM',
+        'forms.update_form' => 'UPDATE_FORM',
+        'forms.get_form' => 'GET_FORM',
+        'forms.delete_form' => 'DELETE_FORM',
+        'forms.add_field' => 'ADD_FORM_FIELD',
+        'forms.update_field' => 'UPDATE_FORM_FIELD',
+        'forms.get_form_fields' => 'GET_FORM_FIELDS',
+        'forum.get_forum' => 'GET_FORUM',
+        'forum.get_forums' => 'GET_FORUMS',
+        'forum.get_thread' => 'GET_FORUM_THREAD',
+        'forum.get_threads' => 'GET_THREADS',
+        'forum.get_post' => 'GET_FORUM_POST',
+        'forum.get_posts' => 'GET_FORUM_POSTS',
+        'forum.move_post' => 'MOVE_FORUM_POST',
+        'forum.get_category' => 'GET_FORUM_CAT',
+        'forum.add_post' => 'ADD_FORUM_POST',
+        'forum.update_post' => 'UPDATE_FORUM_POST',
+        'forum.delete_post' => 'DELETE_POST',
+        'forum.add_thread' => 'ADD_THREAD',
+        'forum.open_thread' => 'OPEN_THREAD',
+        'forum.close_thread' => 'CLOSE_THREAD',
+        'forum.update_thread' => 'UPDATE_THREAD',
+        'forum.get_post_file' => 'GET_POST_FILE',
+        'forum.get_post_files' => 'GET_POST_FILES',
+        'forum.delete_post_file' => 'DELETE_POST_FILE',
+        'forum.add_poll' => 'ADD_FORUM_POLL',
+        'forum.update_poll' => 'UPDATE_FORUM_POLL',
+        'forum.delete_poll' => 'DELETE_FORUM_POLL',
+        'forum.get_thread_poll' => 'GET_THREAD_POLL',
+        'photos.add_album' => 'ADD_ALBUM',
+        'photos.get_album' => 'GET_PHOTO_ALBUM',
+        'photos.get_albums' => 'GET_ALBUMS',
+        'photos.delete_album' => 'DELETE_ALBUM',
+        'photos.add_photo' => 'ADD_PHOTO',
+        'photos.add_photo_done' => 'ADD_PHOTO_DONE',
+        'photos.update_photo' => 'UPDATE_PHOTO',
+        'photos.get_photo' => 'GET_PHOTO',
+        'photos.get_photos' => 'GET_PHOTOS',
+        'photos.delete_photo' => 'DELETE_PHOTO',
+        'photos.publish_photo' => 'PUBLISH_PHOTO',
+        'poll.get_poll' => 'GET_POLL',
+        'poll.delete_poll' => 'DELETE_POLL',
+        'search.get_result' => 'GET_SEARCH_RESULT',
+        'users.before_register' => 'USER_BEFORE_REGISTER',
+        'users.register' => 'USER_REGISTER',
+        'users.activated' => 'USER_ACTIVATED',
+        'users.view_profile' => 'USER_PROFILE',
+        'users.update_profile' => 'UPDATE_USER_PROFILES',
+        'users.update_data' => 'UPDATE_USER_USERS',
+        'users.update_password' => 'UPDATE_USER_PASSWORD',
+        'users.send_message' => 'USER_SEND_MESSEDGE',
+        'users.accept_friend' => 'USER_ACCEPT_FRIEND',
+        'users.add_wall' => 'ADD_WALL',
+        'users.get_user' => 'GET_USER',
+        'users.delete_user' => 'DELETE_USER',
+        'users.delete_group' => 'DELETE_USER_GROUP',
+        'users.add_photo_album' => 'ADD_USER_PHOTO_ALBUM',
+        'users.get_albums' => 'GET_USER_ALBUMS',
+        'users.get_uploaded_photos' => 'GET_USER_UPLOADED_PHOTOS',
+        'users.load_user' => 'LOAD_USER',
+        'users.login' => 'USER_LOGIN',
+        'users.logout' => 'USER_LOGOUT',
+        'users.signin' => 'SIGNIN_USER',
+        'users.add_friend' => 'ADD_FRIEND',
+        'users.delete_friend' => 'DELETE_FRIEND',
+        'users.get_wall_posts' => 'GET_WALL_POSTS',
+        'users.get_guest' => 'GET_GUEST',
+        'users.give_award' => 'GIVE_AWARD',
+        'captcha.get' => 'GET_CAPTCHA',
+        'captcha.check' => 'CHECK_CAPTCHA',
+        'bbcode.replace_buttons' => 'REPLACE_BBCODE_BUTTONS',
+        'bbcode.get_button' => 'GET_BBCODE_BUTTON',
+        'smiles.replace' => 'REPLACE_SMILES',
+        'page.print_head' => 'PRINT_PAGE_HEAD',
+        'page.print_body' => 'PRINT_PAGE_BODY',
+        'page.get_pagebar' => 'GET_PAGEBAR',
+        'loginza.auth' => 'LOGINZA_AUTH',
+        'loginza.button' => 'LOGINZA_BUTTON',
+        'core.get_main_components' => 'URL_WITHOUT_COM_NAME',
+        'core.clear_cache' => 'CLEAR_CACHE',
+        'wysiwyg' => 'INSERT_WYSIWYG',
+        'get_index' => 'GET_INDEX',
     ];
+
+    /**
+     * Возвращает старое (InstantCMS 1.10.x) название события для нового названия.
+     * Если событие уже названо по-старому — возвращает его без изменений.
+     *
+     * @param string $event
+     *
+     * @return string
+     */
+    public static function getOldEventName($event) {
+        if (isset(self::$old_events_names[$event])) {
+            return self::$old_events_names[$event];
+        }
+
+        // Служебные события, которые в старом ядре собирались по шаблону
+        if (preg_match('/^core\.get_(.+)_action_(.+)$/i', $event, $matches)) {
+            return 'GET_' . strtoupper($matches[1]) . '_ACTION_' . strtoupper($matches[2]);
+        }
+
+        if (preg_match('/^core\.after_component_(.+)$/i', $event, $matches)) {
+            return 'AFTER_COMPONENT_' . strtoupper($matches[1]);
+        }
+
+        if (preg_match('/^core\.get_route_(.+)$/i', $event, $matches)) {
+            return 'GET_ROUTE_' . strtoupper($matches[1]);
+        }
+
+        if (strpos($event, 'admin.toolmenu') !== false || strpos($event, 'admin.listtable') !== false) {
+            $event = str_replace(['admin.toolmenu', 'admin.listtable'], ['CPTOOLMENU', 'ADMIN_CPLISTTABLE'], $event);
+
+            return strtoupper($event);
+        }
+
+        return $event;
+    }
+
+    /**
+     * Возвращает новое название события по старому (если оно есть).
+     *
+     * @param string $event
+     *
+     * @return string
+     */
+    public static function getNewEventName($event) {
+        $new_event = array_search($event, self::$old_events_names, true);
+
+        return $new_event !== false ? $new_event : $event;
+    }
 
     /**
      * Формирует список слушателей
      */
-    public static function loadListeners()
-    {
-        if ( empty(self::$events) ) {
-            self::$events['plugin']    = [];
+    public static function loadListeners() {
+        if (empty(self::$events)) {
+            self::$events['plugin'] = [];
             self::$events['component'] = [];
+
+            self::migrateOldEventHooks();
 
             $events = db::getInstance()->getRows('events FORCE INDEX (is_enabled)', '`is_enabled` = 1', '*', 'ordering ASC', true);
 
-            foreach ( $events as $event ) {
-                self::$events[$event['type']][$event['event']]   = [];
-                self::$events[$event['type']][$event['event']][] = $event['name'];
+            if (empty($events)) {
+                // Старая база 1.10.x без таблицы cms_events
+                self::loadOldEventHooks();
+            } else {
+                foreach ($events as $event) {
+                    self::$events[$event['type']][$event['event']] = [];
+                    self::$events[$event['type']][$event['event']][] = $event['name'];
+                }
             }
+        }
+    }
+
+    /**
+     * Загружает подписки из старой таблицы cms_event_hooks, если новой таблицы
+     * cms_events ещё нет.
+     *
+     * @return bool
+     */
+    protected static function loadOldEventHooks() {
+        $db = \cmsDatabase::getInstance();
+
+        if (!$db->isTableExists('cms_event_hooks') || !$db->isTableExists('cms_plugins')) {
+            return false;
+        }
+
+        $hooks = $db->get_table('cms_event_hooks');
+        $plugins = $db->get_table('cms_plugins');
+
+        if (empty($hooks) || empty($plugins)) {
+            return false;
+        }
+
+        $plugins_map = [];
+
+        foreach ($plugins as $plugin) {
+            $plugins_map[$plugin['id']] = $plugin['plugin'];
+        }
+
+        foreach ($hooks as $hook) {
+            if (empty($hook['event']) || empty($plugins_map[$hook['plugin_id']])) {
+                continue;
+            }
+
+            self::$events['plugin'][$hook['event']][] = $plugins_map[$hook['plugin_id']];
+        }
+
+        return true;
+    }
+
+    /**
+     * Переносит подписки из таблицы cms_event_hooks (InstantCMS 1.10.x)
+     * в cms_events, если новая таблица ещё пустая.
+     */
+    protected static function migrateOldEventHooks() {
+        $db = \cmsDatabase::getInstance();
+
+        if (!$db->isTableExists('cms_event_hooks') || !$db->isTableExists('cms_events') || !$db->isTableExists('cms_plugins')) {
+            return;
+        }
+
+        if ($db->rows_count('cms_events', '1=1', 1)) {
+            return;
+        }
+
+        $hooks = $db->get_table('cms_event_hooks');
+        $plugins = $db->get_table('cms_plugins');
+
+        if (empty($hooks) || empty($plugins)) {
+            return;
+        }
+
+        $plugins_map = [];
+
+        foreach ($plugins as $plugin) {
+            $plugins_map[$plugin['id']] = $plugin['plugin'];
+        }
+
+        $ordering = 1;
+
+        foreach ($hooks as $hook) {
+            if (empty($hook['event']) || empty($plugins_map[$hook['plugin_id']])) {
+                continue;
+            }
+
+            $db->insert('cms_events', [
+                'type' => 'plugin',
+                'name' => $plugins_map[$hook['plugin_id']],
+                'event' => $hook['event'],
+                'is_enabled' => 1,
+                'ordering' => $ordering++
+            ]);
         }
     }
 
@@ -210,9 +355,8 @@ class events
      *
      * @return array
      */
-    public static function getEventComponents($event)
-    {
-        if ( isset(self::$events['component'][$event]) ) {
+    public static function getEventComponents($event) {
+        if (isset(self::$events['component'][$event])) {
             return self::$events['component'][$event];
         }
 
@@ -226,24 +370,33 @@ class events
      *
      * @return array
      */
-    public static function getEventPlugins($event)
-    {
+    public static function getEventPlugins($event) {
         $plugins = !empty(self::$events['plugin'][$event]) ? self::$events['plugin'][$event] : [];
 
-        if ( isset(self::$old_events_names[$event]) && !empty(self::$events['plugin'][self::$old_events_names[$event]]) ) {
-            $plugins = array_merge($plugins, self::$events['plugin'][self::$old_events_names[$event]]);
+        // Старое название события (для компонентов/плагинов InstantCMS 1.10.x)
+        $old_event = self::getOldEventName($event);
+
+        if ($old_event !== $event && !empty(self::$events['plugin'][$old_event])) {
+            $plugins = array_merge($plugins, self::$events['plugin'][$old_event]);
         }
 
-        if ( mb_strpos($event, 'admin.toolmenu') !== false || mb_strpos($event, 'admin.listtable') !== false || mb_strpos($event, 'core.') !== false ) {
-            $event = str_replace([ 'admin.toolmenu', 'admin.listtable', 'core.' ], [ 'cptoolmenu', 'admin_cplisttable', '' ], $event);
+        // Если вызвали по старому имени, но плагин подписан на новое
+        $new_event = self::getNewEventName($event);
+
+        if ($new_event !== $event && !empty(self::$events['plugin'][$new_event])) {
+            $plugins = array_merge($plugins, self::$events['plugin'][$new_event]);
+        }
+
+        if (strpos($event, 'admin.toolmenu') !== false || strpos($event, 'admin.listtable') !== false || strpos($event, 'core.') !== false) {
+            $event = str_replace(['admin.toolmenu', 'admin.listtable', 'core.'], ['cptoolmenu', 'admin_cplisttable', ''], $event);
             $event = strtoupper($event);
 
-            if ( !empty(self::$events['plugin'][$event]) ) {
+            if (!empty(self::$events['plugin'][$event])) {
                 $plugins = array_merge($plugins, self::$events['plugin'][$event]);
             }
         }
 
-        return $plugins;
+        return array_values(array_unique($plugins));
     }
 
     /**
@@ -255,11 +408,10 @@ class events
      *
      * @return mixed
      */
-    public static function filter($event, $filter, $data = false)
-    {
+    public static function filter($event, $filter, $data = false) {
         $params['filter'] = $filter;
 
-        if ( !empty($data) ) {
+        if (!empty($data)) {
             $params['data'] = $data;
         }
 
@@ -284,18 +436,17 @@ class events
      *
      * @return mixed Данные, после их обработки всеми плагинами или массив всех результатов выполнения плагинов
      */
-    public static function call($event, $data = false, $mode = 'normal')
-    {
+    public static function call($event, $data = false, $mode = 'normal') {
         $called = false;
 
         $results = [];
 
-        if ( $mode == 'filter' ) {
-            if ( !isset($data['filter']) ) {
-                $data = [ 'filter' => $data ];
+        if ($mode == 'filter') {
+            if (!isset($data['filter'])) {
+                $data = ['filter' => $data];
             }
 
-            if ( !isset($data['original']) ) {
+            if (!isset($data['original'])) {
                 $data['original'] = $data['filter'];
             }
         }
@@ -303,27 +454,25 @@ class events
         // Сперва обрабатываем данные компонентами
         self::callComponents($event, $data, $results, $mode, $called);
 
-        if ( !$called || $mode != 'single' ) {
+        if (!$called || $mode != 'single') {
             // Обрабатываем данные плагинами
             self::callPlugins($event, $data, $results, $mode, $called);
         }
 
-        if ( $mode == 'filter' ) {
+        if ($mode == 'filter') {
             return $data['filter'];
-        }
-        else if ( $mode == 'multi' ) {
+        } else if ($mode == 'multi') {
             return $results;
         }
 
         return $data;
     }
 
-    private static function callComponents($event, &$data, &$results, $mode, &$called)
-    {
+    private static function callComponents($event, &$data, &$results, $mode, &$called) {
         $components = self::getEventComponents($event);
 
-        foreach ( $components as $component ) {
-            if ( !controller::enabled($component) ) {
+        foreach ($components as $component) {
+            if (!controller::enabled($component)) {
                 continue;
             }
 
@@ -331,7 +480,7 @@ class events
 
             \cmsCore::includeFile('components/' . $component . '/frontend.php');
 
-            if ( !class_exists($class_name, false) ) {
+            if (!class_exists($class_name, false)) {
                 continue;
             }
 
@@ -339,68 +488,71 @@ class events
         }
     }
 
-    private static function callPlugins($event, &$data, &$results, $mode, &$called)
-    {
+    private static function callPlugins($event, &$data, &$results, $mode, &$called) {
         $enplugins = \cms\plugin::getEnabledPlugins();
 
         $plugins = self::getEventPlugins($event);
 
-        if ( empty($plugins) ) {
+        if (empty($plugins)) {
             return;
         }
 
-        foreach ( $plugins as $plugin_name ) {
-            if ( !isset($enplugins[$plugin_name]) ) {
+        // Старое имя события, которое ожидают плагины InstantCMS 1.10.x
+        $old_event = self::getOldEventName($event);
+        $new_event = self::getNewEventName($event);
+
+        foreach ($plugins as $plugin_name) {
+            if (!isset($enplugins[$plugin_name])) {
                 continue;
             }
 
             $plugin = \cms\plugin::load($plugin_name);
 
-            if ( $plugin !== false ) {
-                if ( \cmsConfig::getConfig('debug') ) {
+            if ($plugin !== false) {
+                if (\cmsConfig::getConfig('debug')) {
                     \cms\debug::startTimer($event);
                 }
 
-                if ( $plugin instanceof \cmsPlugin ) {
-                    $result = $plugin->execute(self::$old_events_names[$event], $data);
-                }
-                else {
-                    $result = $plugin->execute($event, $data);
+                if ($plugin instanceof \cmsPlugin) {
+                    $result = $plugin->execute($old_event, $data);
+                } else {
+                    $result = $plugin->execute($new_event, $data);
                 }
 
-                if ( \cmsConfig::getConfig('debug') ) {
+                if (\cmsConfig::getConfig('debug')) {
                     \cms\debug::setDebugInfo('events', $plugin_name . ': ' . $event, $event);
                 }
 
                 $called = true;
 
-                if ( $mode == 'single' ) {
+                if ($mode == 'single') {
                     $data = $result;
                     break;
                 }
 
-                if ( $mode == 'multi' ) {
-                    if ( $result !== false ) {
-                        if ( $plugin instanceof \cmsPlugin ) {
+                if ($mode == 'multi') {
+                    if ($result !== false) {
+                        if ($plugin instanceof \cmsPlugin) {
                             $results[] = array(
                                 'result' => $result,
-                                'info'   => $plugin->getInfo(),
+                                'info' => $plugin->getInfo(),
                                 'config' => $plugin->getConfig()
                             );
-                        }
-                        else {
+                        } else {
                             $results[] = $result;
                         }
                     }
-                }
-                else if ( $mode == 'filter' ) {
+                } else if ($mode == 'filter') {
                     $data['filter'] = $result;
-                }
-                else {
+                } else {
                     $data = $result;
+
+                    // В старом ядре такие плагины останавливали цепочку
+                    if ($plugin instanceof \cmsPlugin && !empty($plugin->info['plugin_type']) && in_array($plugin->info['plugin_type'], ['wysiwyg', 'captcha'], true)) {
+                        break;
+                    }
                 }
             }
         }
     }
-
 }

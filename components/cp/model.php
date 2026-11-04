@@ -1,9 +1,19 @@
 <?php
 
+/*
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
+ *
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
+ *
+ *                      LICENSED BY GNU/GPL v2
+ */
+
 namespace components\cp;
 
-class model extends \cms\model
-{
+class model extends \cms\model {
 
     /**
      * Возвращает количество материалов добавленных сегодня
@@ -13,13 +23,12 @@ class model extends \cms\model
      *
      * @return int
      */
-    public function getCountNewContent($table, $where = '')
-    {
-        if ( substr($table, 0, 4) == 'cms_' ) {
+    public function getCountNewContent($table, $where = '') {
+        if (substr($table, 0, 4) == 'cms_') {
             $table = substr($table, 5);
         }
 
-        if ( $where ) {
+        if ($where) {
             $where = ' AND ' . $where;
         }
 
@@ -34,20 +43,19 @@ class model extends \cms\model
      *
      * @return array
      */
-    public function getMenuComponents()
-    {
+    public function getMenuComponents() {
         $components = \cms\controller::getAllComponents();
 
         unset($components['cp']);
 
         $items = [];
 
-        foreach ( $components as $name => $component ) {
-            if ( !\cms\controller::enabled($name) ) {
+        foreach ($components as $name => $component) {
+            if (!\cms\controller::enabled($name)) {
                 continue;
             }
 
-            if ( !file_exists(PATH . '/admin/components/' . $name . '/backend.php') && !file_exists(PATH . '/components/' . $name . '/backend.php') ) {
+            if (!file_exists(PATH . '/admin/components/' . $name . '/backend.php') && !file_exists(PATH . '/components/' . $name . '/backend.php')) {
                 continue;
             }
 
@@ -57,14 +65,11 @@ class model extends \cms\model
         return $items;
     }
 
-    public function getModuleContentById($id)
-    {
+    public function getModuleContentById($id) {
         return \cms\db::getInstance()->getField('modules', 'id=' . $id . ' AND is_external = 1', 'content');
     }
 
-    public function getModuleNameById($id)
-    {
+    public function getModuleNameById($id) {
         return \cms\db::getInstance()->getField('modules', 'id=' . $id, 'name');
     }
-
 }

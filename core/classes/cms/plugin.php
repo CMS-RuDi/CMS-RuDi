@@ -1,10 +1,19 @@
 <?php
 
+/*
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
+ *
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
+ *
+ *                      LICENSED BY GNU/GPL v2
+ */
+
 namespace cms;
 
-class plugin
-{
-
+class plugin {
     /**
      * Массив со списком активных плагинов
      *
@@ -102,14 +111,13 @@ class plugin
      */
     protected $default_config = [];
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->inCore = \cmsCore::getInstance();
-        $this->db     = \cms\db::getInstance();
+        $this->db = \cms\db::getInstance();
         $this->inPage = \cmsPage::getInstance();
 
-        $this->name   = get_called_class();
-        $this->config = array_merge($this->default_config, self::loadConfig($this->name));
+        $this->name = get_called_class();
+        $this->config = array_merge($this->default_config, (array) $this->config, self::loadConfig($this->name));
 
         $this->lang = \cms\lang::loadPluginLang(get_called_class());
     }
@@ -119,8 +127,7 @@ class plugin
      *
      * @return string
      */
-    public function getName()
-    {
+    public function getName() {
         return $this->name;
     }
 
@@ -129,8 +136,7 @@ class plugin
      *
      * @return string
      */
-    public function getVersion()
-    {
+    public function getVersion() {
         return $this->version;
     }
 
@@ -139,8 +145,7 @@ class plugin
      *
      * @return string
      */
-    public function getAuthor()
-    {
+    public function getAuthor() {
         return $this->author;
     }
 
@@ -149,8 +154,7 @@ class plugin
      *
      * @return string
      */
-    public function getAuthorEmail()
-    {
+    public function getAuthorEmail() {
         return $this->author_email;
     }
 
@@ -159,8 +163,7 @@ class plugin
      *
      * @return string
      */
-    public function getAuthorUrl()
-    {
+    public function getAuthorUrl() {
         return $this->author_url;
     }
 
@@ -169,8 +172,7 @@ class plugin
      *
      * @return string
      */
-    public function getPluginUrl()
-    {
+    public function getPluginUrl() {
         return $this->url;
     }
 
@@ -179,8 +181,7 @@ class plugin
      *
      * @return string
      */
-    public function getTitle()
-    {
+    public function getTitle() {
         return $this->lang->get($this->name . '_title');
     }
 
@@ -189,8 +190,7 @@ class plugin
      *
      * @return string
      */
-    public function getDescription()
-    {
+    public function getDescription() {
         return $this->lang->get($this->name . '_description');
     }
 
@@ -199,16 +199,15 @@ class plugin
      *
      * @return array
      */
-    public function getInfo()
-    {
+    public function getInfo() {
         return [
-            'plugin'       => $this->getName(),
-            'title'        => $this->getTitle(),
-            'description'  => $this->getDescription(),
-            'version'      => $this->getVersion(),
-            'url'          => $this->getPluginUrl(),
-            'author'       => $this->getAuthor(),
-            'author_url'   => $this->getAuthorUrl(),
+            'plugin' => $this->getName(),
+            'title' => $this->getTitle(),
+            'description' => $this->getDescription(),
+            'version' => $this->getVersion(),
+            'url' => $this->getPluginUrl(),
+            'author' => $this->getAuthor(),
+            'author_url' => $this->getAuthorUrl(),
             'author_email' => $this->getAuthorEmail(),
         ];
     }
@@ -218,13 +217,12 @@ class plugin
      *
      * @return boolean
      */
-    public function install()
-    {
+    public function install() {
         $info = $this->getInfo();
 
         $info['config'] = \cms\model::arrayToYaml($this->config);
 
-        if ( !$info['config'] ) {
+        if (!$info['config']) {
             $info['config'] = '';
         }
 
@@ -232,7 +230,7 @@ class plugin
         $plugin_id = $this->db->insert('plugins', $info);
 
         // возвращаем ложь, если плагин не установился
-        if ( !$plugin_id ) {
+        if (!$plugin_id) {
             return false;
         }
 
@@ -247,27 +245,24 @@ class plugin
      *
      * @return boolean
      */
-    public function upgrade()
-    {
+    public function upgrade() {
         // находим ID установленной версии
         $plugin_id = $this->db->getField('plugins', "plugin='" . $this->name . "'", 'id');
 
         // если плагин еще не был установлен, выходим
-        if ( !$plugin_id ) {
+        if (!$plugin_id) {
             return false;
         }
 
         // загружаем текущие настройки плагина
         $old_config = self::getConfig($this->name);
 
-        // удаляем настройки, которые больше не нужны
-        foreach ( $old_config as $param => $value ) {
-            if ( !isset($this->default_config[$param]) ) {
-                unset($old_config[$param]);
-            }
-        }
-
-        $config = array_merge($this->default_config, $old_config);
+        /*
+         * Раньше из старого конфига удалялись ключи, которых нет в default_config.
+         * Для плагинов InstantCMS 1.10.x default_config пуст, поэтому это стирало
+         * все их настройки. Оставляем объединение: дефолты + текущий конфиг + БД.
+         */
+        $config = array_merge($this->default_config, (array) $this->config, (array) $old_config);
 
         unset($old_config);
 
@@ -285,16 +280,32 @@ class plugin
         return true;
     }
 
-    public function registerEvents()
-    {
+    public function registerEvents() {
+        // Старая база 1.10.x: таблицы cms_events ещё нет
+        if (!$this->db->isTableExists('events')) {
+            $plugin_id = $this->db->getField('plugins', "plugin='" . $this->name . "'", 'id');
+
+            if (!$plugin_id) {
+                return;
+            }
+
+            $this->db->delete('event_hooks', "plugin_id='" . $plugin_id . "'");
+
+            foreach ($this->events as $event) {
+                $this->db->insert('event_hooks', array('event' => $event, 'plugin_id' => $plugin_id));
+            }
+
+            return;
+        }
+
         // Удаляем все события плагина
         $this->db->delete('events', "type='plugin' AND name='" . $this->db->escape($this->name) . "'");
 
         $max_order = $this->db->getField('events', 1, 'ordering', 'ordering DESC');
 
         // добавляем хуки событий для плагина
-        foreach ( $this->events as $event ) {
-            $this->db->insert('events', array( 'type' => 'plugin', 'event' => $event, 'name' => $this->name, 'is_enabled' => 1, 'ordering' => $max_order++ ));
+        foreach ($this->events as $event) {
+            $this->db->insert('events', array('type' => 'plugin', 'event' => $event, 'name' => $this->name, 'is_enabled' => 1, 'ordering' => $max_order++));
         }
     }
 
@@ -305,8 +316,7 @@ class plugin
      *
      * @return type
      */
-    public function getConfig()
-    {
+    public function getConfig() {
         return $this->config;
     }
 
@@ -315,9 +325,21 @@ class plugin
      *
      * @param array $config
      */
-    public function setConfig($config)
-    {
+    public function setConfig($config) {
         $this->config = $config;
+
+        return $this;
+    }
+
+    /**
+     * Выставляет список событий плагина (совместимость с InstantCMS 1.10.x)
+     *
+     * @param array $events
+     *
+     * @return $this
+     */
+    public function setEvents($events) {
+        $this->events = (array) $events;
 
         return $this;
     }
@@ -327,8 +349,7 @@ class plugin
      *
      * @return boolean
      */
-    public function saveConfig()
-    {
+    public function saveConfig() {
         // конвертируем массив настроек в YAML
         $config_yaml = $this->db->escape(\cms\model::arrayToYaml($this->config));
 
@@ -355,11 +376,10 @@ class plugin
     // в конце метод должен вернуть обработанные данные
     //========================================================================//
 
-    public function execute($event, $data = [])
-    {
+    public function execute($event, $data = []) {
         $method_name = \cms\helper\str::toCamel('_', str_replace('.', '_', $event));
 
-        if ( method_exists($this, $method_name) ) {
+        if (method_exists($this, $method_name)) {
             return $this->{$method_name}($data);
         }
 
@@ -375,23 +395,21 @@ class plugin
      *
      * @return array
      */
-    final public static function loadConfig($name)
-    {
-        if ( !isset(self::$configs[$name]) ) {
+    final public static function loadConfig($name) {
+        if (!isset(self::$configs[$name])) {
             self::loadEnabledPlugins();
 
-            if ( isset(self::$plugins[$name]) ) {
+            if (isset(self::$plugins[$name])) {
                 self::$configs[$name] = self::$plugins[$name]['config'];
-            }
-            else {
+            } else {
                 $config = db::getInstance()->getField('plugins', "plugin='" . $name . "'", 'config');
 
-                if ( !empty($config) ) {
+                if (!empty($config)) {
                     self::$configs[$name] = model::yamlToArray($config);
                 }
             }
 
-            if ( empty(self::$configs[$name]) ) {
+            if (empty(self::$configs[$name])) {
                 self::$configs[$name] = [];
             }
         }
@@ -406,9 +424,8 @@ class plugin
      *
      * @return self
      */
-    final public static function load($plugin)
-    {
-        if ( !class_exists($plugin) ) {
+    final public static function load($plugin) {
+        if (!class_exists($plugin)) {
             return false;
         }
 
@@ -423,8 +440,7 @@ class plugin
      *
      * @return array
      */
-    final public static function getEnabledPlugins()
-    {
+    final public static function getEnabledPlugins() {
         self::loadEnabledPlugins();
 
         return self::$plugins;
@@ -433,9 +449,8 @@ class plugin
     /**
      * Загружает список активных плагинов
      */
-    final protected static function loadEnabledPlugins()
-    {
-        if ( empty(self::$plugins) ) {
+    final protected static function loadEnabledPlugins() {
+        if (empty(self::$plugins)) {
             self::$plugins = (new model())->filterEqual('published', 1)->useCache('plugins')->get('plugins', function ($item, $model) {
                 $item['config'] = model::yamlToArray($item['config']);
                 return $item;
@@ -452,8 +467,7 @@ class plugin
      *
      * @return boolean|string
      */
-    public function getConfigFormHtml()
-    {
+    public function getConfigFormHtml() {
         return false;
     }
 
@@ -465,8 +479,7 @@ class plugin
      *
      * @return boolean|array
      */
-    public function getConfigFormFields()
-    {
+    public function getConfigFormFields() {
         return false;
     }
 }
