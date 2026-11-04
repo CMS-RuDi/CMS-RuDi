@@ -1,16 +1,17 @@
 CMS RuDi
 ================================================================================
 
-__Версия__:   1.10.9 
+__Версия__:   1.10.9  
 __Дата__:     2026-11-04  
 __Лицензия__: GNU/GPL v2  
-__Язык__:     русский (UTF-8)
-__Сайт__:     [https://cmsrudi.ru](https://cmsrudi.ru)
+__Язык__:     русский (UTF-8)  
+__Сайт__:     [https://cmsrudi.ru](https://cmsrudi.ru)  
+__На основе__ InstantCMS v1.10.7  
 
 Требования
 --------------------------------------------------------------------------------
 
-* PHP 5.6 | PHP 7 | PHP 8
+* PHP 5.6 - 8.0
 * GD | ImageMagick | Gmagick, iconv, mbstring, simplexml, json, filter
 * MySQL 5.0 +
 * Apache + mod_rewrite + (MultiViews option disabled)
