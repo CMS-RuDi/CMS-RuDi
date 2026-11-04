@@ -1,13 +1,15 @@
 <?php
-
-namespace Requests;
-
 /**
- * Authentication provider interface
+ * Requests for PHP, an HTTP library.
  *
- * @package Requests
- * @subpackage Authentication
+ * @copyright 2012-2023 Requests Contributors
+ * @license   https://github.com/WordPress/Requests/blob/stable/LICENSE ISC
+ * @link      https://github.com/WordPress/Requests
  */
+
+namespace WpOrg\Requests;
+
+use WpOrg\Requests\Hooks;
 
 /**
  * Authentication provider interface
@@ -17,22 +19,20 @@ namespace Requests;
  * Parameters should be passed via the constructor where possible, as this
  * makes it much easier for users to use your provider.
  *
- * @see \Requests\Hooks
- * @package Requests
- * @subpackage Authentication
+ * @see \WpOrg\Requests\Hooks
+ *
+ * @package Requests\Authentication
  */
-interface Auth
-{
-
-    /**
-     * Register hooks as needed
-     *
-     * This method is called in {@see Requests::request} when the user has set
-     * an instance as the 'auth' option. Use this callback to register all the
-     * hooks you'll need.
-     *
-     * @see \Requests\Hooks::register
-     * @param \Requests\Hooks $hooks Hook system
-     */
-    public function register(\Requests\Hooks &$hooks);
+interface Auth {
+	/**
+	 * Register hooks as needed
+	 *
+	 * This method is called in {@see \WpOrg\Requests\Requests::request()} when the user
+	 * has set an instance as the 'auth' option. Use this callback to register all the
+	 * hooks you'll need.
+	 *
+	 * @see \WpOrg\Requests\Hooks::register()
+	 * @param \WpOrg\Requests\Hooks $hooks Hook system
+	 */
+	public function register(Hooks $hooks);
 }

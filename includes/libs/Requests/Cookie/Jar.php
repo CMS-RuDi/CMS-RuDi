@@ -1,194 +1,189 @@
 <?php
+/**
+ * Requests for PHP, an HTTP library.
+ *
+ * @copyright 2012-2023 Requests Contributors
+ * @license   https://github.com/WordPress/Requests/blob/stable/LICENSE ISC
+ * @link      https://github.com/WordPress/Requests
+ */
 
-namespace Requests\Cookie;
+namespace WpOrg\Requests\Cookie;
+
+use ArrayAccess;
+use ArrayIterator;
+use IteratorAggregate;
+use ReturnTypeWillChange;
+use WpOrg\Requests\Cookie;
+use WpOrg\Requests\Exception;
+use WpOrg\Requests\Exception\InvalidArgument;
+use WpOrg\Requests\HookManager;
+use WpOrg\Requests\Iri;
+use WpOrg\Requests\Response;
 
 /**
  * Cookie holder object
  *
- * @package Requests
- * @subpackage Cookies
+ * @package Requests\Cookies
  */
+class Jar implements ArrayAccess, IteratorAggregate {
+	/**
+	 * Actual item data
+	 *
+	 * @var array
+	 */
+	protected $cookies = [];
 
-/**
- * Cookie holder object
- *
- * @package Requests
- * @subpackage Cookies
- */
-class Jar implements \ArrayAccess, \IteratorAggregate
-{
+	/**
+	 * Create a new jar
+	 *
+	 * @param array $cookies Existing cookie values
+	 *
+	 * @throws \WpOrg\Requests\Exception\InvalidArgument When the passed argument is not an array.
+	 */
+	public function __construct($cookies = []) {
+		if (is_array($cookies) === false) {
+			throw InvalidArgument::create(1, '$cookies', 'array', gettype($cookies));
+		}
 
-    /**
-     * Actual item data
-     *
-     * @var array
-     */
-    protected $cookies = array();
+		$this->cookies = $cookies;
+	}
 
-    /**
-     * Create a new jar
-     *
-     * @param array $cookies Existing cookie values
-     */
-    public function __construct($cookies = array())
-    {
-        $this->cookies = $cookies;
-    }
+	/**
+	 * Normalise cookie data into a \WpOrg\Requests\Cookie
+	 *
+	 * @param string|\WpOrg\Requests\Cookie $cookie Cookie header value, possibly pre-parsed (object).
+	 * @param string                        $key    Optional. The name for this cookie.
+	 * @return \WpOrg\Requests\Cookie
+	 */
+	public function normalize_cookie($cookie, $key = '') {
+		if ($cookie instanceof Cookie) {
+			return $cookie;
+		}
 
-    /**
-     * Normalise cookie data into a \Requests\Cookie
-     *
-     * @param string|\Requests\Cookie $cookie
-     * @return \Requests\Cookie
-     */
-    public function normalize_cookie($cookie, $key = null)
-    {
-        if ( $cookie instanceof \Requests\Cookie ) {
-            return $cookie;
-        }
+		return Cookie::parse($cookie, $key);
+	}
 
-        return \Requests\Cookie::parse($cookie, $key);
-    }
+	/**
+	 * Check if the given item exists
+	 *
+	 * @param string $offset Item key
+	 * @return bool Does the item exist?
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetExists($offset) {
+		return isset($this->cookies[$offset]);
+	}
 
-    /**
-     * Normalise cookie data into a \Requests\Cookie
-     *
-     * @codeCoverageIgnore
-     * @deprecated Use {@see \Requests\Cookie\Jar::normalize_cookie}
-     * @return \Requests\Cookie
-     */
-    public function normalizeCookie($cookie, $key = null)
-    {
-        return $this->normalize_cookie($cookie, $key);
-    }
+	/**
+	 * Get the value for the item
+	 *
+	 * @param string $offset Item key
+	 * @return string|null Item value (null if offsetExists is false)
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetGet($offset) {
+		if (!isset($this->cookies[$offset])) {
+			return null;
+		}
 
-    /**
-     * Check if the given item exists
-     *
-     * @param string $key Item key
-     * @return boolean Does the item exist?
-     */
-    public function offsetExists($key)
-    {
-        return isset($this->cookies[$key]);
-    }
+		return $this->cookies[$offset];
+	}
 
-    /**
-     * Get the value for the item
-     *
-     * @param string $key Item key
-     * @return string|null Item value (null if offsetExists is false)
-     */
-    public function offsetGet($key)
-    {
-        if ( !isset($this->cookies[$key]) ) {
-            return null;
-        }
+	/**
+	 * Set the given item
+	 *
+	 * @param string $offset Item name
+	 * @param string $value  Item value
+	 *
+	 * @throws \WpOrg\Requests\Exception On attempting to use dictionary as list (`invalidset`).
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetSet($offset, $value) {
+		if ($offset === null) {
+			throw new Exception('Object is a dictionary, not a list', 'invalidset');
+		}
 
-        return $this->cookies[$key];
-    }
+		$this->cookies[$offset] = $value;
+	}
 
-    /**
-     * Set the given item
-     *
-     * @throws \Requests\Exception On attempting to use dictionary as list (`invalidset`)
-     *
-     * @param string $key Item name
-     * @param string $value Item value
-     */
-    public function offsetSet($key, $value)
-    {
-        if ( $key === null ) {
-            throw new \Requests\Exception('Object is a dictionary, not a list', 'invalidset');
-        }
+	/**
+	 * Unset the given header
+	 *
+	 * @param string $offset The key for the item to unset.
+	 */
+	#[ReturnTypeWillChange]
+	public function offsetUnset($offset) {
+		unset($this->cookies[$offset]);
+	}
 
-        $this->cookies[$key] = $value;
-    }
+	/**
+	 * Get an iterator for the data
+	 *
+	 * @return \ArrayIterator
+	 */
+	#[ReturnTypeWillChange]
+	public function getIterator() {
+		return new ArrayIterator($this->cookies);
+	}
 
-    /**
-     * Unset the given header
-     *
-     * @param string $key
-     */
-    public function offsetUnset($key)
-    {
-        unset($this->cookies[$key]);
-    }
+	/**
+	 * Register the cookie handler with the request's hooking system
+	 *
+	 * @param \WpOrg\Requests\HookManager $hooks Hooking system
+	 */
+	public function register(HookManager $hooks) {
+		$hooks->register('requests.before_request', [$this, 'before_request']);
+		$hooks->register('requests.before_redirect_check', [$this, 'before_redirect_check']);
+	}
 
-    /**
-     * Get an iterator for the data
-     *
-     * @return \ArrayIterator
-     */
-    public function getIterator()
-    {
-        return new \ArrayIterator($this->cookies);
-    }
+	/**
+	 * Add Cookie header to a request if we have any
+	 *
+	 * As per RFC 6265, cookies are separated by '; '
+	 *
+	 * @param string $url
+	 * @param array  $headers
+	 * @param array  $data
+	 * @param string $type
+	 * @param array  $options
+	 */
+	public function before_request($url, &$headers, &$data, &$type, &$options) {
+		if (!$url instanceof Iri) {
+			$url = new Iri($url);
+		}
 
-    /**
-     * Register the cookie handler with the request's hooking system
-     *
-     * @param \Requests\Hooker $hooks Hooking system
-     */
-    public function register(\Requests\Hooker $hooks)
-    {
-        $hooks->register('requests.before_request', array( $this, 'before_request' ));
-        $hooks->register('requests.before_redirect_check', array( $this, 'before_redirect_check' ));
-    }
+		if (!empty($this->cookies)) {
+			$cookies = [];
+			foreach ($this->cookies as $key => $cookie) {
+				$cookie = $this->normalize_cookie($cookie, $key);
 
-    /**
-     * Add Cookie header to a request if we have any
-     *
-     * As per RFC 6265, cookies are separated by '; '
-     *
-     * @param string $url
-     * @param array $headers
-     * @param array $data
-     * @param string $type
-     * @param array $options
-     */
-    public function before_request($url, &$headers, &$data, &$type, &$options)
-    {
-        if ( !$url instanceof \Requests\IRI ) {
-            $url = new \Requests\IRI($url);
-        }
+				// Skip expired cookies
+				if ($cookie->is_expired()) {
+					continue;
+				}
 
-        if ( !empty($this->cookies) ) {
-            $cookies = array();
+				if ($cookie->domain_matches($url->host)) {
+					$cookies[] = $cookie->format_for_header();
+				}
+			}
 
-            foreach ( $this->cookies as $key => $cookie ) {
-                $cookie = $this->normalize_cookie($cookie, $key);
+			$headers['Cookie'] = implode('; ', $cookies);
+		}
+	}
 
-                // Skip expired cookies
-                if ( $cookie->is_expired() ) {
-                    continue;
-                }
+	/**
+	 * Parse all cookies from a response and attach them to the response
+	 *
+	 * @param \WpOrg\Requests\Response $response Response as received.
+	 */
+	public function before_redirect_check(Response $response) {
+		$url = $response->url;
+		if (!$url instanceof Iri) {
+			$url = new Iri($url);
+		}
 
-                if ( $cookie->domain_matches($url->host) ) {
-                    $cookies[] = $cookie->format_for_header();
-                }
-            }
-
-            $headers['Cookie'] = implode('; ', $cookies);
-        }
-    }
-
-    /**
-     * Parse all cookies from a response and attach them to the response
-     *
-     * @var \Requests\Response $response
-     */
-    public function before_redirect_check(\Requests\Response &$return)
-    {
-        $url = $return->url;
-
-        if ( !$url instanceof \Requests\IRI ) {
-            $url = new \Requests\IRI($url);
-        }
-
-        $cookies         = \Requests\Cookie::parse_from_headers($return->headers, $url);
-        $this->cookies   = array_merge($this->cookies, $cookies);
-        $return->cookies = $this;
-    }
-
+		$cookies           = Cookie::parse_from_headers($response->headers, $url);
+		$this->cookies     = array_merge($this->cookies, $cookies);
+		$response->cookies = $this;
+	}
 }
