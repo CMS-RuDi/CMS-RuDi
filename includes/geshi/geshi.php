@@ -594,6 +594,10 @@ class GeSHi {
      *               {@link GeSHi->set_language_path()}
      * @since 1.0.0
      */
+    function __construct($source = '', $language = '', $path = '') {
+        $this->GeSHi($source, $language, $path);
+    }
+
     function GeSHi($source = '', $language = '', $path = '') {
         if (!empty($source)) {
             $this->set_source($source);
@@ -2036,7 +2040,8 @@ class GeSHi {
         // cache optimized regexp for keyword matching
         // remove old cache
         $this->language_data['CACHED_KEYWORD_LISTS'] = array();
-        foreach (array_keys($this->language_data['KEYWORDS']) as $key) {
+        $keywords = isset($this->language_data['KEYWORDS']) && is_array($this->language_data['KEYWORDS']) ? $this->language_data['KEYWORDS'] : array();
+        foreach (array_keys($keywords) as $key) {
             if (!isset($this->lexic_permissions['KEYWORDS'][$key]) ||
                     $this->lexic_permissions['KEYWORDS'][$key]) {
                 $this->optimize_keyword_group($key);
@@ -2388,7 +2393,7 @@ class GeSHi {
             !empty($this->highlight_extra_lines) || !$this->allow_multiline_span;
 
         //preload the escape char for faster checking ...
-        $escaped_escape_char = $this->hsc($this->language_data['ESCAPE_CHAR']);
+        $escaped_escape_char = $this->hsc(isset($this->language_data['ESCAPE_CHAR']) ? $this->language_data['ESCAPE_CHAR'] : '');
 
         // this is used for single-line comments
         $sc_disallowed_before = "";
@@ -2408,7 +2413,8 @@ class GeSHi {
         //Fix for SF#1932083: Multichar Quotemarks unsupported
         $is_string_starter = array();
         if ($this->lexic_permissions['STRINGS']) {
-            foreach ($this->language_data['QUOTEMARKS'] as $quotemark) {
+            $quotemarks = isset($this->language_data['QUOTEMARKS']) && is_array($this->language_data['QUOTEMARKS']) ? $this->language_data['QUOTEMARKS'] : array();
+            foreach ($quotemarks as $quotemark) {
                 if (!isset($is_string_starter[$quotemark[0]])) {
                     $is_string_starter[$quotemark[0]] = (string)$quotemark;
                 } elseif (is_string($is_string_starter[$quotemark[0]])) {
@@ -3362,7 +3368,8 @@ class GeSHi {
         $disallowed_before = "(?<![a-zA-Z0-9\$_\|\#|^&";
         $disallowed_after = "(?![a-zA-Z0-9_\|%\\-&;";
         if ($this->lexic_permissions['STRINGS']) {
-            $quotemarks = preg_quote(implode($this->language_data['QUOTEMARKS']), '/');
+            $quotemarks_list = isset($this->language_data['QUOTEMARKS']) && is_array($this->language_data['QUOTEMARKS']) ? $this->language_data['QUOTEMARKS'] : array();
+            $quotemarks = preg_quote(implode($quotemarks_list), '/');
             $disallowed_before .= $quotemarks;
             $disallowed_after .= $quotemarks;
         }
@@ -3385,11 +3392,12 @@ class GeSHi {
             }
         }
 
-        foreach (array_keys($this->language_data['KEYWORDS']) as $k) {
+        $keywords = isset($this->language_data['KEYWORDS']) && is_array($this->language_data['KEYWORDS']) ? $this->language_data['KEYWORDS'] : array();
+        foreach (array_keys($keywords) as $k) {
             if (!isset($this->lexic_permissions['KEYWORDS'][$k]) ||
                 $this->lexic_permissions['KEYWORDS'][$k]) {
 
-                $case_sensitive = $this->language_data['CASE_SENSITIVE'][$k];
+                $case_sensitive = isset($this->language_data['CASE_SENSITIVE'][$k]) ? $this->language_data['CASE_SENSITIVE'][$k] : true;
                 $modifiers = $case_sensitive ? '' : 'i';
 
                 // NEW in 1.0.8 - per-keyword-group parser control
@@ -4733,7 +4741,9 @@ class GeSHi {
             // TODO: a|bb|c => [ac]|bb
             static $callback_2;
             if (!isset($callback_2)) {
-                $callback_2 = create_function('$matches', 'return "[" . str_replace("|", "", $matches[1]) . "]";');
+                $callback_2 = function ($matches) {
+                    return '[' . str_replace('|', '', $matches[1]) . ']';
+                };
             }
             $list = preg_replace_callback('#\(\?\:((?:.\|)+.)\)#', $callback_2, $list);
         }

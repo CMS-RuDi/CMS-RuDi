@@ -726,7 +726,8 @@ class bbcode
                     }
                     if ( !$val['name'] ) {
                         end($open_tags);
-                        list($ult_key, $ultimate) = each($open_tags);
+                        $ult_key  = key($open_tags);
+                        $ultimate = current($open_tags);
                         $val['name']                        = $ultimate;
                         $structure[++$structure_key]        = $val;
                         $structure[$structure_key]['level'] = --$level;
@@ -945,7 +946,7 @@ class bbcode
         $search = array(
             "~(\s|^)((?:http|https|ftp)://[^<\s]+[^<\.,:;?!\"»'+\-\s])~uim",
             "~(\s|^)(www\.[^<\s]+[^<\.,:;?!\"»'+\-\s])~uim",
-            "'([^\w\d-\.]|^)([\w\d-\.]+@[\w\d-\.]+\.[\w]+[^.,;\s<\"\'\)]+)'usi"
+            "'([^\w\d\-\.]|^)([\w\d\-\.]+@[\w\d\-\.]+\.[\w]+[^.,;\s<\"\'\)]+)'usi"
         );
 
         $replace = array(
@@ -957,9 +958,15 @@ class bbcode
         $text = preg_replace($search, $replace, $text);
 
         return preg_replace_callback(
-                '#<a href="/go/url=([^"]+)"#', create_function(
-                        '$matches', 'if (!strstr($matches[1], $_SERVER[\'HTTP_HOST\'])){ return "<a rel=\"nofollow\" title=\"".htmlspecialchars($matches[1])."\" href=\"/go/url=-".base64_encode($matches[1])."\""; } else { return "<a href=\"".htmlspecialchars($matches[1])."\""; }'
-                ), $text
+                '#<a href="/go/url=([^"]+)"#', function ($matches) {
+                    $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+
+                    if ( empty($host) || !strstr($matches[1], $host) ) {
+                        return '<a rel="nofollow" title="' . htmlspecialchars($matches[1]) . '" href="/go/url=-' . base64_encode($matches[1]) . '"';
+                    }
+
+                    return '<a href="' . htmlspecialchars($matches[1]) . '"';
+                }, $text
         );
     }
 

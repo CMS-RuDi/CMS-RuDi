@@ -18,7 +18,9 @@
             return '<input type="text" value="'.htmlspecialchars($params['value']).'" name="'.htmlspecialchars($params['name']).'" class="text-input" style="width:300px"/>';
         }
 
-        array_walk($params, create_function('&$value', 'return htmlspecialchars($value);'));
+        array_walk($params, function (&$value) {
+            return htmlspecialchars($value);
+        });
 
         if (!isset($params['placeholder'])) {
             $params['placeholder'] = $_LANG['SELECT_CITY'];
