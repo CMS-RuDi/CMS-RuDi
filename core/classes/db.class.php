@@ -44,8 +44,27 @@ class cmsDatabase {
         return self::getInstance()->reconnect();
     }
 
-    public function reconnect() {
-        return $this->db->reconnect();
+    public function reconnect($is_force = false) {
+        $this->db->setOptions(cmsConfig::getInstance()->getConfig());
+        $this->prefix = cmsConfig::getConfig('db_prefix') . '_';
+
+        return $this->db->reconnect($is_force);
+    }
+
+    public function ready() {
+        return $this->db->ready();
+    }
+
+    public function connectError() {
+        return $this->db->connectError();
+    }
+
+    public function connectErrno() {
+        return $this->db->connectErrno();
+    }
+
+    public function createDatabase($db_name) {
+        return $this->db->createDatabase($db_name);
     }
 
     /**

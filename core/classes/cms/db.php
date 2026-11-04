@@ -45,6 +45,12 @@ class db
     protected $connect_error = false;
 
     /**
+     * Код ошибки подключения к базе данных
+     * @var int
+     */
+    protected $connect_errno = 0;
+
+    /**
      * Настройки базы данных
      * @var array
      */
@@ -89,13 +95,20 @@ class db
             debug::startTimer('db');
         }
 
+        $this->connect_error = false;
+        $this->connect_errno = 0;
+        $this->mysqli = null;
+
         mysqli_report(MYSQLI_REPORT_STRICT);
 
         try {
             $this->mysqli = new \mysqli($this->options['db_host'], $this->options['db_user'], $this->options['db_pass'], $this->options['db_base']);
+            $this->connect_error = false;
         }
         catch ( \Exception $e ) {
+            $this->mysqli = null;
             $this->connect_error = $e->getMessage();
+            $this->connect_errno = (int) $e->getCode();
             return false;
         }
 
@@ -121,7 +134,7 @@ class db
 
     public function ready()
     {
-        return $this->connect_error === false;
+        return $this->connect_error === false && $this->mysqli instanceof \mysqli;
     }
 
     public function connectError()
@@ -129,10 +142,83 @@ class db
         return $this->connect_error;
     }
 
+    public function connectErrno()
+    {
+        return $this->connect_errno;
+    }
+
+    /**
+     * Создаёт базу данных, если её нет. Используется только установщиком.
+     *
+     * @param string $db_name
+     *
+     * @return bool
+     */
+    public function createDatabase($db_name)
+    {
+        if ( !preg_match('/^[A-Za-z0-9_\-]+$/', $db_name) ) {
+            $this->connect_error = 'Invalid database name';
+            $this->connect_errno = 0;
+
+            return false;
+        }
+
+        $this->connect_error = false;
+        $this->connect_errno = 0;
+
+        mysqli_report(MYSQLI_REPORT_STRICT);
+
+        try {
+            $link = new \mysqli($this->options['db_host'], $this->options['db_user'], $this->options['db_pass']);
+        }
+        catch ( \Exception $e ) {
+            $this->connect_error = $e->getMessage();
+            $this->connect_errno = (int) $e->getCode();
+
+            return false;
+        }
+
+        if ( $link->connect_errno ) {
+            $this->connect_error = $link->connect_error;
+            $this->connect_errno = $link->connect_errno;
+            $link->close();
+
+            return false;
+        }
+
+        $sql = 'CREATE DATABASE IF NOT EXISTS `' . str_replace('`', '``', $db_name) . '` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci';
+
+        try {
+            $result = $link->query($sql);
+        }
+        catch ( \Exception $e ) {
+            $this->connect_error = $e->getMessage();
+            $this->connect_errno = (int) $e->getCode();
+            $link->close();
+
+            return false;
+        }
+
+        if ( !$result ) {
+            $this->connect_error = $link->error;
+            $this->connect_errno = $link->errno;
+            $link->close();
+
+            return false;
+        }
+
+        $link->close();
+
+        return true;
+    }
+
     public function reconnect($is_force = false)
     {
-        if ( $is_force || !$this->mysqli->ping() ) {
-            $this->mysqli->close();
+        if ( $is_force || !$this->mysqli || !$this->mysqli->ping() ) {
+            if ( $this->mysqli ) {
+                $this->mysqli->close();
+            }
+
             return $this->connect();
         }
 
@@ -206,6 +292,18 @@ class db
             }
 
             $sql = vsprintf($sql, $params);
+        }
+
+        if ( !$this->mysqli && $this->connect_error === false ) {
+            $this->connect();
+        }
+
+        if ( !$this->mysqli ) {
+            if ( $quiet ) {
+                return false;
+            }
+
+            die('Database connection error: ' . ($this->connect_error ? $this->connect_error : 'not connected'));
         }
 
         if ( PHP_SAPI == 'cli' && (time() - $this->init_start_time) >= $this->reconnect_time ) {

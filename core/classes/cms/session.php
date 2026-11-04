@@ -5,9 +5,7 @@ namespace cms;
 /**
  * @package Classes
  */
-class session
-{
-
+class session {
     /**
      * Название ключа для хранения данных в массиве $_SESSION
      */
@@ -20,12 +18,10 @@ class session
      * @param string $value Значение переменной
      * @param string $namespace Пространство имен
      */
-    public static function set($name, $value, $namespace = self::NAME_SPACE)
-    {
-        if ( strpos($name, ':') === false ) {
+    public static function set($name, $value, $namespace = self::NAME_SPACE) {
+        if (strpos($name, ':') === false) {
             $_SESSION[$namespace][$name] = $value;
-        }
-        else {
+        } else {
             helper\arrs::setValueRecursive($name, $_SESSION[$namespace], $value);
         }
 
@@ -40,14 +36,12 @@ class session
      *
      * @return mixed
      */
-    public static function get($name, $namespace = self::NAME_SPACE)
-    {
-        if ( strpos($name, ':') === false ) {
-            if ( self::has($name, $namespace) ) {
+    public static function get($name, $namespace = self::NAME_SPACE) {
+        if (strpos($name, ':') === false) {
+            if (self::has($name, $namespace)) {
                 return $_SESSION[$namespace][$name];
             }
-        }
-        else {
+        } else {
             return helper\arrs::getValueRecursive($name, $_SESSION[$namespace]);
         }
 
@@ -62,16 +56,14 @@ class session
      *
      * @return bool
      */
-    public static function has($name, $namespace = self::NAME_SPACE)
-    {
-        if ( is_array($_SESSION[$namespace]) ) {
-            if ( strpos($name, ':') === false ) {
+    public static function has($name, $namespace = self::NAME_SPACE) {
+        if (!empty($_SESSION[$namespace]) && is_array($_SESSION[$namespace])) {
+            if (strpos($name, ':') === false) {
                 return array_key_exists($name, $_SESSION[$namespace]);
-            }
-            else {
+            } else {
                 $value = helper\arrs::getValueRecursive($name, $_SESSION[$namespace]);
 
-                if ( $value !== null ) {
+                if ($value !== null) {
                     return true;
                 }
             }
@@ -86,14 +78,12 @@ class session
      * @param string $name Название переменной
      * @param string $namespace Пространство имен
      */
-    public static function delete($name, $namespace = self::NAME_SPACE)
-    {
-        if ( strpos($name, ':') === false ) {
-            if ( self::has($name, $namespace) ) {
+    public static function delete($name, $namespace = self::NAME_SPACE) {
+        if (strpos($name, ':') === false) {
+            if (self::has($name, $namespace)) {
                 unset($_SESSION[$namespace][$name]);
             }
-        }
-        else {
+        } else {
             helper\arrs::unsetKeysListValue(explode(':', $name), $_SESSION[$namespace]);
         }
     }
@@ -103,9 +93,7 @@ class session
      *
      * @param string $namespace Пространство имен
      */
-    public static function clear($namespace = self::NAME_SPACE)
-    {
+    public static function clear($namespace = self::NAME_SPACE) {
         $_SESSION[$namespace] = [];
     }
-
 }

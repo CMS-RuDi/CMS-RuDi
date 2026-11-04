@@ -117,6 +117,24 @@ if ($request->has('install')) {
 
     $inDB = cmsDatabase::getInstance();
 
+    // Принудительно переподключаемся с только что введёнными настройками БД
+    $inDB->reconnect(true);
+
+    // Если базы нет — пробуем создать её автоматически
+    if (!$inDB->ready() && $inDB->connectErrno() === 1049) {
+        if ($inDB->createDatabase($_CFG['db_base'])) {
+            $inDB->reconnect(true);
+        }
+    }
+
+    if (!$inDB->ready()) {
+        cmsCore::addSessionMessage(
+                $l->ins_db_connect_error . ' ' . htmlspecialchars((string) $inDB->connectError(), ENT_QUOTES, 'UTF-8'),
+                'error'
+        );
+        cmsCore::redirect('/install/');
+    }
+
     $inDB->importFromFile($sql_file);
 
     $d_cfg = $inConf->getConfig();
@@ -276,6 +294,9 @@ $php_path = get_program_path('php');
                             <tr>
                                 <td><?php echo $l->ins_form_bdname; ?></td>
                                 <td><input name="db_base" type="text" class="txt"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2"><span class="hinttext"><?php echo $l->ins_db_auto_create; ?></span></td>
                             </tr>
                             <tr>
                                 <td><?php echo $l->ins_form_bduser; ?></td>

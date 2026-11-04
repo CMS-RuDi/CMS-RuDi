@@ -2,9 +2,7 @@
 
 namespace cms;
 
-class model
-{
-
+class model {
     protected $name;
 
     /**
@@ -12,181 +10,178 @@ class model
      */
     public $db;
 
-    const LEFT_JOIN                = 'LEFT JOIN';
-    const RIGHT_JOIN               = 'RIGHT JOIN';
-    const INNER_JOIN               = 'INNER JOIN';
-    const STRAIGHT_JOIN            = 'STRAIGHT_JOIN';
-    const LEFT_OUTER_JOIN          = 'LEFT OUTER JOIN';
-    const RIGHT_OUTER_JOIN         = 'RIGHT OUTER JOIN';
-    const NATURAL_LEFT_JOIN        = 'NATURAL LEFT JOIN';
-    const NATURAL_LEFT_OUTER_JOIN  = 'NATURAL LEFT OUTER JOIN';
-    const NATURAL_RIGHT_JOIN       = 'NATURAL RIGHT JOIN';
+    const LEFT_JOIN = 'LEFT JOIN';
+    const RIGHT_JOIN = 'RIGHT JOIN';
+    const INNER_JOIN = 'INNER JOIN';
+    const STRAIGHT_JOIN = 'STRAIGHT_JOIN';
+    const LEFT_OUTER_JOIN = 'LEFT OUTER JOIN';
+    const RIGHT_OUTER_JOIN = 'RIGHT OUTER JOIN';
+    const NATURAL_LEFT_JOIN = 'NATURAL LEFT JOIN';
+    const NATURAL_LEFT_OUTER_JOIN = 'NATURAL LEFT OUTER JOIN';
+    const NATURAL_RIGHT_JOIN = 'NATURAL RIGHT JOIN';
     const NATURAL_RIGHT_OUTER_JOIN = 'NATURAL RIGHT OUTER JOIN';
 
     // условия для выборок
-    public $table                       = '';
-    public $select                      = [ 'i.*' ];
-    public $distinct                    = '';
-    public $straight_join               = '';
-    public $join                        = '';
-    public $where                       = '';
-    public $where_separator             = 'AND';
-    public $group_by                    = '';
-    public $order_by                    = '';
-    public $index_action                = '';
-    public $limit                       = 1000;
-    public $perpage                     = 50;
+    public $table = '';
+    public $select = ['i.*'];
+    public $distinct = '';
+    public $straight_join = '';
+    public $join = '';
+    public $where = '';
+    public $where_separator = 'AND';
+    public $group_by = '';
+    public $order_by = '';
+    public $index_action = '';
+    public $limit = 1000;
+    public $perpage = 50;
     //
-    public $keep_filters                = false;
-    public $filter_on                   = false;
+    public $keep_filters = false;
+    public $filter_on = false;
     //
-    protected $privacy_filter_disabled  = false;
-    protected $privacy_filtered         = false;
+    protected $privacy_filter_disabled = false;
+    protected $privacy_filtered = false;
     protected $approved_filter_disabled = false;
-    protected $delete_filter_disabled   = false;
-    protected $approved_filtered        = false;
-    protected $available_filtered       = false;
+    protected $delete_filter_disabled = false;
+    protected $approved_filtered = false;
+    protected $available_filtered = false;
     //
-    protected static $cached            = [];
-    private $cache_key                  = false;
+    protected static $cached = [];
+    private $cache_key = false;
 
     //
     const CATEGORY_TABLE = '';
 
-    public function __construct()
-    {
+    public function __construct() {
         // components\Название_Компонента\model;
-        $part       = explode('\\', get_called_class());
-        $this->name = isset($part[1]) ? $part[1] : null;
+        $part = explode('\\', get_called_class());
+
+        if (!empty($part)) {
+            if (count($part) == 1 && strpos($part[0], 'cms_model_') !== false) {
+                $this->name = str_replace('cms_model_', '', $part[0]);
+            } else if ($part[0] == "components") {
+                $this->name = $part[1];
+            }
+        }
 
         $this->db = db::getInstance();
     }
 
 //============================================================================//
 
-    public function useCache($key)
-    {
+    public function useCache($key) {
         $this->cache_key = $key;
         return $this;
     }
 
-    protected function stopCache()
-    {
+    protected function stopCache() {
         $this->cache_key = false;
         return $this;
     }
 
 //============================================================================//
 
-    public function getContentTableStruct()
-    {
+    public function getContentTableStruct() {
         return [
-            'id'                 => [ 'type' => 'primary' ],
-            'title'              => [ 'type' => 'varchar', 'size' => 100, 'fulltext' => true ],
-            'content'            => [ 'type' => 'text' ],
-            'photo'              => [ 'type' => 'text' ],
-            'slug'               => [ 'type' => 'varchar', 'index' => true, 'size' => 100 ],
-            'seo_keys'           => [ 'type' => 'varchar', 'size' => 256 ],
-            'seo_desc'           => [ 'type' => 'varchar', 'size' => 256 ],
-            'seo_title'          => [ 'type' => 'varchar', 'size' => 256 ],
-            'tags'               => [ 'type' => 'varchar', 'size' => 1000 ],
-            'date_pub'           => [ 'type' => 'timestamp', 'index' => [ 'date_pub', 'parent_id', 'user_id' ], 'composite_index' => [ 3, 2, 1 ], 'default_current' => true ],
-            'date_last_modified' => [ 'type' => 'timestamp' ],
-            'date_pub_end'       => [ 'type' => 'timestamp', 'index' => true ],
-            'is_pub'             => [ 'type' => 'bool', 'index' => 'date_pub', 'composite_index' => 0, 'default' => 1 ],
-            'hits_count'         => [ 'type' => 'int', 'default' => 0, 'unsigned' => true ],
-            'user_id'            => [ 'type' => 'int', 'index' => 'user_id', 'composite_index' => 0, 'unsigned' => true ],
-            'parent_id'          => [ 'type' => 'int', 'index' => 'parent_id', 'composite_index' => 0, 'unsigned' => true ],
-            'parent_type'        => [ 'type' => 'varchar', 'size' => 32, 'index' => 'parent_id', 'composite_index' => 1 ],
-            'parent_title'       => [ 'type' => 'varchar', 'size' => 100 ],
-            'parent_url'         => [ 'type' => 'varchar', 'size' => 255 ],
-            'is_parent_hidden'   => [ 'type' => 'bool', 'index' => 'date_pub', 'composite_index' => 1 ],
-            'category_id'        => [ 'type' => 'int', 'index' => true, 'default' => 1, 'unsigned' => true ],
-            'folder_id'          => [ 'type' => 'int', 'index' => true, 'unsigned' => true ],
-            'is_comments_on'     => [ 'type' => 'bool', 'default' => 1 ],
-            'comments'           => [ 'type' => 'int', 'default' => 0, 'unsigned' => true ],
-            'rating'             => [ 'type' => 'int', 'default' => 0 ],
-            'is_approved'        => [ 'type' => 'bool', 'index' => 'date_pub', 'composite_index' => 2, 'default' => 1 ],
-            'approved_by'        => [ 'type' => 'int', 'index' => true, 'unsigned' => true ],
-            'date_approved'      => [ 'type' => 'timestamp' ],
-            'is_private'         => [ 'type' => 'bool', 'default' => 0 ]
+            'id' => ['type' => 'primary'],
+            'title' => ['type' => 'varchar', 'size' => 100, 'fulltext' => true],
+            'content' => ['type' => 'text'],
+            'photo' => ['type' => 'text'],
+            'slug' => ['type' => 'varchar', 'index' => true, 'size' => 100],
+            'seo_keys' => ['type' => 'varchar', 'size' => 256],
+            'seo_desc' => ['type' => 'varchar', 'size' => 256],
+            'seo_title' => ['type' => 'varchar', 'size' => 256],
+            'tags' => ['type' => 'varchar', 'size' => 1000],
+            'date_pub' => ['type' => 'timestamp', 'index' => ['date_pub', 'parent_id', 'user_id'], 'composite_index' => [3, 2, 1], 'default_current' => true],
+            'date_last_modified' => ['type' => 'timestamp'],
+            'date_pub_end' => ['type' => 'timestamp', 'index' => true],
+            'is_pub' => ['type' => 'bool', 'index' => 'date_pub', 'composite_index' => 0, 'default' => 1],
+            'hits_count' => ['type' => 'int', 'default' => 0, 'unsigned' => true],
+            'user_id' => ['type' => 'int', 'index' => 'user_id', 'composite_index' => 0, 'unsigned' => true],
+            'parent_id' => ['type' => 'int', 'index' => 'parent_id', 'composite_index' => 0, 'unsigned' => true],
+            'parent_type' => ['type' => 'varchar', 'size' => 32, 'index' => 'parent_id', 'composite_index' => 1],
+            'parent_title' => ['type' => 'varchar', 'size' => 100],
+            'parent_url' => ['type' => 'varchar', 'size' => 255],
+            'is_parent_hidden' => ['type' => 'bool', 'index' => 'date_pub', 'composite_index' => 1],
+            'category_id' => ['type' => 'int', 'index' => true, 'default' => 1, 'unsigned' => true],
+            'folder_id' => ['type' => 'int', 'index' => true, 'unsigned' => true],
+            'is_comments_on' => ['type' => 'bool', 'default' => 1],
+            'comments' => ['type' => 'int', 'default' => 0, 'unsigned' => true],
+            'rating' => ['type' => 'int', 'default' => 0],
+            'is_approved' => ['type' => 'bool', 'index' => 'date_pub', 'composite_index' => 2, 'default' => 1],
+            'approved_by' => ['type' => 'int', 'index' => true, 'unsigned' => true],
+            'date_approved' => ['type' => 'timestamp'],
+            'is_private' => ['type' => 'bool', 'default' => 0]
         ];
     }
 
-    public function getFieldsTableStruct()
-    {
+    public function getFieldsTableStruct() {
 
         return [
-            'id'            => [ 'type' => 'primary' ],
-            'ctype_id'      => [ 'type' => 'int', 'unsigned' => true ],
-            'name'          => [ 'type' => 'varchar', 'size' => 40 ],
-            'title'         => [ 'type' => 'varchar', 'size' => 100 ],
-            'hint'          => [ 'type' => 'varchar', 'size' => 200 ],
-            'ordering'      => [ 'type' => 'int', 'index' => true, 'unsigned' => true ],
-            'fieldset'      => [ 'type' => 'varchar', 'size' => 32 ],
-            'type'          => [ 'type' => 'varchar', 'size' => 16 ],
-            'is_in_list'    => [ 'type' => 'bool' ],
-            'is_in_item'    => [ 'type' => 'bool' ],
-            'is_in_filter'  => [ 'type' => 'bool' ],
-            'is_private'    => [ 'type' => 'bool' ],
-            'is_fixed'      => [ 'type' => 'bool' ],
-            'is_fixed_type' => [ 'type' => 'bool' ],
-            'is_system'     => [ 'type' => 'bool' ],
-            'values'        => [ 'type' => 'text' ],
-            'options'       => [ 'type' => 'text' ],
-            'groups_read'   => [ 'type' => 'text' ],
-            'groups_edit'   => [ 'type' => 'text' ],
-            'filter_view'   => [ 'type' => 'text' ]
+            'id' => ['type' => 'primary'],
+            'ctype_id' => ['type' => 'int', 'unsigned' => true],
+            'name' => ['type' => 'varchar', 'size' => 40],
+            'title' => ['type' => 'varchar', 'size' => 100],
+            'hint' => ['type' => 'varchar', 'size' => 200],
+            'ordering' => ['type' => 'int', 'index' => true, 'unsigned' => true],
+            'fieldset' => ['type' => 'varchar', 'size' => 32],
+            'type' => ['type' => 'varchar', 'size' => 16],
+            'is_in_list' => ['type' => 'bool'],
+            'is_in_item' => ['type' => 'bool'],
+            'is_in_filter' => ['type' => 'bool'],
+            'is_private' => ['type' => 'bool'],
+            'is_fixed' => ['type' => 'bool'],
+            'is_fixed_type' => ['type' => 'bool'],
+            'is_system' => ['type' => 'bool'],
+            'values' => ['type' => 'text'],
+            'options' => ['type' => 'text'],
+            'groups_read' => ['type' => 'text'],
+            'groups_edit' => ['type' => 'text'],
+            'filter_view' => ['type' => 'text']
         ];
     }
 
-    public function getPropsTableStruct()
-    {
+    public function getPropsTableStruct() {
 
         return [
-            'id'           => [ 'type' => 'primary' ],
-            'ctype_id'     => [ 'type' => 'int', 'unsigned' => true ],
-            'title'        => [ 'type' => 'varchar', 'size' => 100 ],
-            'fieldset'     => [ 'type' => 'varchar', 'size' => 32 ],
-            'type'         => [ 'type' => 'varchar', 'size' => 16 ],
-            'is_in_filter' => [ 'type' => 'bool', 'index' => true ],
-            'values'       => [ 'type' => 'text' ],
-            'options'      => [ 'type' => 'text' ]
+            'id' => ['type' => 'primary'],
+            'ctype_id' => ['type' => 'int', 'unsigned' => true],
+            'title' => ['type' => 'varchar', 'size' => 100],
+            'fieldset' => ['type' => 'varchar', 'size' => 32],
+            'type' => ['type' => 'varchar', 'size' => 16],
+            'is_in_filter' => ['type' => 'bool', 'index' => true],
+            'values' => ['type' => 'text'],
+            'options' => ['type' => 'text']
         ];
     }
 
-    public function getPropsBindTableStruct()
-    {
+    public function getPropsBindTableStruct() {
 
         return [
-            'id'       => [ 'type' => 'primary' ],
-            'prop_id'  => [ 'type' => 'int', 'index' => true, 'unsigned' => true ],
-            'cat_id'   => [ 'type' => 'int', 'index' => true, 'unsigned' => true ],
-            'ordering' => [ 'type' => 'int', 'index' => true, 'unsigned' => true ],
+            'id' => ['type' => 'primary'],
+            'prop_id' => ['type' => 'int', 'index' => true, 'unsigned' => true],
+            'cat_id' => ['type' => 'int', 'index' => true, 'unsigned' => true],
+            'ordering' => ['type' => 'int', 'index' => true, 'unsigned' => true],
         ];
     }
 
-    public function getPropsValuesTableStruct()
-    {
+    public function getPropsValuesTableStruct() {
 
         return [
-            'prop_id' => [ 'type' => 'int', 'index' => true, 'unsigned' => true ],
-            'item_id' => [ 'type' => 'int', 'index' => true, 'unsigned' => true ],
-            'value'   => [ 'type' => 'varchar', 'size' => 255 ],
+            'prop_id' => ['type' => 'int', 'index' => true, 'unsigned' => true],
+            'item_id' => ['type' => 'int', 'index' => true, 'unsigned' => true],
+            'value' => ['type' => 'varchar', 'size' => 255],
         ];
     }
 
 //============================================================================//
 //============================================================================//
 
-    public function getRootCategory($ctype_name)
-    {
-        if ( empty($this::CATEGORY_TABLE) ) {
+    public function getRootCategory($ctype_name) {
+        if (empty($this::CATEGORY_TABLE)) {
             $table_name = $this->table_prefix . $ctype_name . '_cats';
 
             $this->useCache($this->name . '.' . $ctype_name . '_categories');
-        }
-        else {
+        } else {
             $table_name = $this::CATEGORY_TABLE;
 
             $this->useCache($this->name . '.' . $table_name);
@@ -195,14 +190,12 @@ class model
         return $this->db->getFields($table_name, 'parent_id=0');
     }
 
-    public function getCategory($ctype_name, $id, $by_field = 'id')
-    {
-        if ( empty($this::CATEGORY_TABLE) ) {
+    public function getCategory($ctype_name, $id, $by_field = 'id') {
+        if (empty($this::CATEGORY_TABLE)) {
             $table_name = $this->table_prefix . $ctype_name . '_cats';
 
             $this->useCache($this->name . '.' . $ctype_name . '_categories');
-        }
-        else {
+        } else {
             $table_name = $this::CATEGORY_TABLE;
 
             $this->useCache($this->name . '.' . $table_name);
@@ -210,34 +203,32 @@ class model
 
         $category = $this->getItemByField($table_name, $by_field, $id);
 
-        if ( !$category ) {
+        if (!$category) {
             return false;
         }
 
         $category['path'] = $this->getCategoryPath($ctype_name, $category);
 
-        if ( !empty($category['allow_add']) ) {
+        if (!empty($category['allow_add'])) {
             $category['allow_add'] = self::yamlToArray($category['allow_add']);
         }
 
         return $category;
     }
 
-    public function getCategoryBySLUG($ctype_name, $slug)
-    {
+    public function getCategoryBySLUG($ctype_name, $slug) {
         return $this->getCategory($ctype_name, $slug, 'slug');
     }
 
-    public function getCategorySLUG($category)
-    {
+    public function getCategorySLUG($category) {
         $slug = '';
 
-        foreach ( $category['path'] as $c ) {
-            if ( $c['id'] == 1 ) {
+        foreach ($category['path'] as $c) {
+            if ($c['id'] == 1) {
                 continue;
             }
 
-            if ( $slug ) {
+            if ($slug) {
                 $slug .= '/';
             }
 
@@ -249,31 +240,29 @@ class model
 
 //============================================================================//
 
-    public function getCategoriesTree($ctype_name, $is_show_root = true)
-    {
-        if ( empty($this::CATEGORY_TABLE) ) {
+    public function getCategoriesTree($ctype_name, $is_show_root = true) {
+        if (empty($this::CATEGORY_TABLE)) {
             $table_name = $this->table_prefix . $ctype_name . '_cats';
 
             $this->useCache($this->name . '.' . $ctype_name . '_categories');
-        }
-        else {
+        } else {
             $table_name = $this::CATEGORY_TABLE;
 
             $this->useCache($this->name . '.' . $table_name);
         }
 
-        if ( !$is_show_root ) {
+        if (!$is_show_root) {
             $this->filterGt('parent_id', 0);
         }
 
         $this->orderBy('ns_left');
 
-        return $this->get($table_name, function($node, $model) {
-                    if ( $node['ns_level'] == 0 ) {
+        return $this->get($table_name, function ($node, $model) {
+                    if ($node['ns_level'] == 0) {
                         $node['title'] = \cms\lang::getInstance()->root_category;
                     }
 
-                    if ( !empty($node['allow_add']) ) {
+                    if (!empty($node['allow_add'])) {
                         $node['allow_add'] = self::yamlToArray($node['allow_add']);
                     }
 
@@ -283,14 +272,12 @@ class model
 
 //============================================================================//
 
-    public function getSubCategories($ctype_name, $parent_id = 1)
-    {
-        if ( empty($this::CATEGORY_TABLE) ) {
+    public function getSubCategories($ctype_name, $parent_id = 1) {
+        if (empty($this::CATEGORY_TABLE)) {
             $table_name = $this->table_prefix . $ctype_name . '_cats';
 
             $this->useCache($this->name . '.' . $ctype_name . '_categories');
-        }
-        else {
+        } else {
             $table_name = $this::CATEGORY_TABLE;
 
             $this->useCache($this->name . '.' . $table_name);
@@ -302,14 +289,12 @@ class model
         return $this->get($table_name);
     }
 
-    public function getSubCategoriesTree($ctype_name, $parent_id = 1, $level = 1)
-    {
-        if ( empty($this::CATEGORY_TABLE) ) {
+    public function getSubCategoriesTree($ctype_name, $parent_id = 1, $level = 1) {
+        if (empty($this::CATEGORY_TABLE)) {
             $table_name = $this->table_prefix . $ctype_name . '_cats';
 
             $this->useCache($this->name . '.' . $ctype_name . '_categories');
-        }
-        else {
+        } else {
             $table_name = $this::CATEGORY_TABLE;
 
             $this->useCache($this->name . '.' . $table_name);
@@ -320,7 +305,7 @@ class model
         $this->filterGt('ns_left', $parent['ns_left'])->
                 filterLt('ns_right', $parent['ns_right']);
 
-        if ( $level ) {
+        if ($level) {
             $this->filterLtEqual('ns_level', $parent['ns_level'] + $level);
         }
 
@@ -331,20 +316,18 @@ class model
 
 //============================================================================//
 
-    public function getCategoryPath($ctype_name, $category)
-    {
-        if ( empty($this::CATEGORY_TABLE) ) {
+    public function getCategoryPath($ctype_name, $category) {
+        if (empty($this::CATEGORY_TABLE)) {
             $table_name = $this->table_prefix . $ctype_name . '_cats';
 
             $this->useCache($this->name . '.' . $ctype_name . '_categories');
-        }
-        else {
+        } else {
             $table_name = $this::CATEGORY_TABLE;
 
             $this->useCache($this->name . '.' . $table_name);
         }
 
-        if ( !isset($category['ns_left']) ) {
+        if (!isset($category['ns_left'])) {
             $category = $this->getCategory($ctype_name, $category['id']);
         }
 
@@ -359,12 +342,10 @@ class model
 
 //============================================================================//
 
-    public function addCategory($ctype_name, $category)
-    {
-        if ( empty($this::CATEGORY_TABLE) ) {
+    public function addCategory($ctype_name, $category) {
+        if (empty($this::CATEGORY_TABLE)) {
             $table_name = $this->table_prefix . $ctype_name . '_cats';
-        }
-        else {
+        } else {
             $table_name = $this::CATEGORY_TABLE;
         }
 
@@ -372,7 +353,7 @@ class model
 
         $category['id'] = $this->db->nestedSets->addNode($category['parent_id']);
 
-        if ( !$category['id'] ) {
+        if (!$category['id']) {
             return false;
         }
 
@@ -388,10 +369,9 @@ class model
             'slug' => $category['slug']
         ]);
 
-        if ( empty($this::CATEGORY_TABLE) ) {
+        if (empty($this::CATEGORY_TABLE)) {
             cache::getInstance()->clean($this->name . '.' . $ctype_name . '_categories');
-        }
-        else {
+        } else {
             cache::getInstance()->clean($this->name . '.' . $table_name);
         }
 
@@ -400,14 +380,12 @@ class model
 
 //============================================================================//
 
-    public function updateCategory($ctype_name, $id, $category)
-    {
-        if ( empty($this::CATEGORY_TABLE) ) {
+    public function updateCategory($ctype_name, $id, $category) {
+        if (empty($this::CATEGORY_TABLE)) {
             $table_name = $this->table_prefix . $ctype_name . '_cats';
 
             cache::getInstance()->clean($this->name . '.' . $ctype_name . '_categories');
-        }
-        else {
+        } else {
             $table_name = $this::CATEGORY_TABLE;
 
             cache::getInstance()->clean($this->name . '.' . $table_name);
@@ -415,15 +393,15 @@ class model
 
         $category_old = $this->getCategory($ctype_name, $id);
 
-        if ( $category_old['parent_id'] != $category['parent_id'] ) {
+        if ($category_old['parent_id'] != $category['parent_id']) {
             $this->db->nestedSets->setTable($table_name);
             $this->db->nestedSets->moveNode($id, $category['parent_id']);
         }
 
         $this->update($table_name, $id, $category);
 
-        $category['id']   = $id;
-        $category['path'] = $this->getCategoryPath($ctype_name, [ 'id' => $id ]);
+        $category['id'] = $id;
+        $category['path'] = $this->getCategoryPath($ctype_name, ['id' => $id]);
         $category['slug'] = $this->getCategorySLUG($category);
 
         $this->update($table_name, $id, [
@@ -432,11 +410,11 @@ class model
 
         $subcats = $this->getSubCategoriesTree($ctype_name, $id, false);
 
-        if ( $subcats ) {
-            foreach ( $subcats as $subcat ) {
-                $subcat['path'] = $this->getCategoryPath($ctype_name, [ 'id' => $subcat['id'] ]);
+        if ($subcats) {
+            foreach ($subcats as $subcat) {
+                $subcat['path'] = $this->getCategoryPath($ctype_name, ['id' => $subcat['id']]);
                 $subcat['slug'] = $this->getCategorySLUG($subcat);
-                $this->update($table_name, $subcat['id'], [ 'slug' => $subcat['slug'] ]);
+                $this->update($table_name, $subcat['id'], ['slug' => $subcat['slug']]);
             }
         }
 
@@ -445,14 +423,12 @@ class model
 
 //============================================================================//
 
-    public function updateCategoryTree($ctype_name, $tree, $categories_count)
-    {
-        if ( empty($this::CATEGORY_TABLE) ) {
+    public function updateCategoryTree($ctype_name, $tree, $categories_count) {
+        if (empty($this::CATEGORY_TABLE)) {
             $table_name = $this->table_prefix . $ctype_name . '_cats';
 
             cache::getInstance()->clean($this->name . '.' . $ctype_name . '_categories');
-        }
-        else {
+        } else {
             $table_name = $this::CATEGORY_TABLE;
 
             cache::getInstance()->clean($this->name . '.' . $table_name);
@@ -462,7 +438,7 @@ class model
         $this->updateCategoryTreeNodeSlugs($ctype_name, $tree);
 
         $root_keys = [
-            'ns_left'  => 1,
+            'ns_left' => 1,
             'ns_right' => 1 + ($categories_count * 2) + 1
         ];
 
@@ -471,24 +447,22 @@ class model
         return true;
     }
 
-    public function updateCategoryTreeNode($ctype_name, $tree)
-    {
-        if ( empty($this::CATEGORY_TABLE) ) {
+    public function updateCategoryTreeNode($ctype_name, $tree) {
+        if (empty($this::CATEGORY_TABLE)) {
             $table_name = $this->table_prefix . $ctype_name . '_cats';
-        }
-        else {
+        } else {
             $table_name = $this::CATEGORY_TABLE;
         }
 
-        foreach ( $tree as $node ) {
+        foreach ($tree as $node) {
             $this->update($table_name, $node['key'], [
                 'parent_id' => $node['parent_key'],
-                'ns_left'   => $node['left'],
-                'ns_right'  => $node['right'],
-                'ns_level'  => $node['level'],
+                'ns_left' => $node['left'],
+                'ns_right' => $node['right'],
+                'ns_level' => $node['level'],
             ]);
 
-            if ( !empty($node['children']) ) {
+            if (!empty($node['children'])) {
                 $this->updateCategoryTreeNode($ctype_name, $node['children']);
             }
         }
@@ -496,26 +470,24 @@ class model
         return true;
     }
 
-    public function updateCategoryTreeNodeSlugs($ctype_name, $tree)
-    {
-        if ( empty($this::CATEGORY_TABLE) ) {
+    public function updateCategoryTreeNodeSlugs($ctype_name, $tree) {
+        if (empty($this::CATEGORY_TABLE)) {
             $table_name = $this->table_prefix . $ctype_name . '_cats';
-        }
-        else {
+        } else {
             $table_name = $this::CATEGORY_TABLE;
         }
 
-        foreach ( $tree as $node ) {
+        foreach ($tree as $node) {
             $path = $this->getCategoryPath($ctype_name, [
-                'id'        => $node['key'],
+                'id' => $node['key'],
                 'parent_id' => $node['parent_key'],
-                'ns_left'   => $node['left'],
-                'ns_right'  => $node['right'],
-                'ns_level'  => $node['level']
+                'ns_left' => $node['left'],
+                'ns_right' => $node['right'],
+                'ns_level' => $node['level']
             ]);
 
             $slug = $this->getCategorySLUG([
-                'path'  => $path,
+                'path' => $path,
                 'title' => $node['title']
             ]);
 
@@ -523,7 +495,7 @@ class model
                 'slug' => $slug
             ]);
 
-            if ( !empty($node['children']) ) {
+            if (!empty($node['children'])) {
                 $this->updateCategoryTreeNodeSlugs($ctype_name, $node['children']);
             }
         }
@@ -533,20 +505,18 @@ class model
 
 //============================================================================//
 
-    public function deleteCategory($ctype_name, $id)
-    {
+    public function deleteCategory($ctype_name, $id) {
         //
         // Эта функция должна быть переопределена и вызываться
         // из дочернего класса чтобы после нее удалять все записи
         // из категории
         //
 
-        if ( empty($this::CATEGORY_TABLE) ) {
+        if (empty($this::CATEGORY_TABLE)) {
             $table_name = $this->table_prefix . $ctype_name . '_cats';
 
             cache::getInstance()->clean($this->name . '.' . $ctype_name . '_categories');
-        }
-        else {
+        } else {
             $table_name = $this::CATEGORY_TABLE;
 
             cache::getInstance()->clean($this->name . '.' . $table_name);
@@ -561,14 +531,12 @@ class model
 
 //============================================================================//
 
-    public function delete($table_name, $id, $by_field = 'id')
-    {
+    public function delete($table_name, $id, $by_field = 'id') {
         $this->filterEqual($by_field, $id);
         return $this->deleteFiltered($table_name);
     }
 
-    public function deleteFiltered($table_name)
-    {
+    public function deleteFiltered($table_name) {
         $where = $this->where;
         $this->resetFilters();
         return $this->db->delete($table_name, $where);
@@ -576,14 +544,12 @@ class model
 
 //============================================================================//
 
-    public function update($table_name, $id, $data, $skip_check_fields = false)
-    {
+    public function update($table_name, $id, $data, $skip_check_fields = false) {
         $this->filterEqual('id', $id);
         return $this->updateFiltered($table_name, $data, $skip_check_fields);
     }
 
-    public function updateFiltered($table_name, $data, $skip_check_fields = false)
-    {
+    public function updateFiltered($table_name, $data, $skip_check_fields = false) {
         $where = $this->where;
         $this->resetFilters();
         return $this->db->update($table_name, $where, $data, $skip_check_fields);
@@ -591,72 +557,63 @@ class model
 
 //============================================================================//
 
-    public function insert($table_name, $data)
-    {
+    public function insert($table_name, $data) {
         return $this->db->insert($table_name, $data);
     }
 
-    public function insertOrUpdate($table_name, $insert_data, $update_data = false)
-    {
+    public function insertOrUpdate($table_name, $insert_data, $update_data = false) {
         return $this->db->insertOrUpdate($table_name, $insert_data, $update_data);
     }
 
 //============================================================================//
 
-    public function lockFilters()
-    {
+    public function lockFilters() {
         $this->keep_filters = true;
         return $this;
     }
 
-    public function unlockFilters()
-    {
+    public function unlockFilters() {
         $this->keep_filters = false;
         return $this;
     }
 
-    public function resetFilters()
-    {
-        $this->select        = [ 'i.*' ];
-        $this->group_by      = '';
-        $this->order_by      = '';
-        $this->index_action  = '';
-        $this->limit         = '';
-        $this->join          = '';
-        $this->distinct      = '';
+    public function resetFilters() {
+        $this->select = ['i.*'];
+        $this->group_by = '';
+        $this->order_by = '';
+        $this->index_action = '';
+        $this->limit = '';
+        $this->join = '';
+        $this->distinct = '';
         $this->straight_join = '';
 
-        if ( $this->keep_filters ) {
+        if ($this->keep_filters) {
             return $this;
         }
 
-        $this->filter_on         = false;
-        $this->where             = '';
-        $this->privacy_filtered  = false;
+        $this->filter_on = false;
+        $this->where = '';
+        $this->privacy_filtered = false;
         $this->approved_filtered = false;
 
         return $this;
     }
 
-    public function setStraightJoin()
-    {
+    public function setStraightJoin() {
         $this->straight_join = self::STRAIGHT_JOIN;
         return $this;
     }
 
-    public function distinctSelect()
-    {
+    public function distinctSelect() {
         $this->distinct = 'DISTINCT';
         return $this;
     }
 
-    public function filter($condition)
-    {
-        if ( $this->filter_on ) {
+    public function filter($condition) {
+        if ($this->filter_on) {
             $this->where .= ' ' . $this->where_separator . ' (' . $condition . ')';
-        }
-        else {
-            $this->where     .= '(' . $condition . ')';
+        } else {
+            $this->where .= '(' . $condition . ')';
             $this->filter_on = true;
         }
 
@@ -665,12 +622,10 @@ class model
         return $this;
     }
 
-    public function filterStart()
-    {
-        if ( $this->filter_on ) {
+    public function filterStart() {
+        if ($this->filter_on) {
             $this->where .= ' ' . $this->where_separator . ' (';
-        }
-        else {
+        } else {
             $this->where .= '(';
         }
 
@@ -679,27 +634,23 @@ class model
         return $this;
     }
 
-    public function filterEnd()
-    {
+    public function filterEnd() {
         $this->where .= ' ) ';
         return $this;
     }
 
-    public function filterAnd()
-    {
+    public function filterAnd() {
         $this->where_separator = ' AND ';
         return $this;
     }
 
-    public function filterOr()
-    {
+    public function filterOr() {
         $this->where_separator = ' OR ';
         return $this;
     }
 
-    public function filterNotNull($field)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterNotNull($field) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
@@ -708,9 +659,8 @@ class model
         return $this;
     }
 
-    public function filterIsNull($field)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterIsNull($field) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
@@ -719,16 +669,14 @@ class model
         return $this;
     }
 
-    public function filterEqual($field, $value)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterEqual($field, $value) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
-        if ( is_null($value) ) {
+        if (is_null($value)) {
             $this->filter($field . ' IS NULL');
-        }
-        else {
+        } else {
             $value = $this->db->escape($value);
             $this->filter($field . " = '" . $value . "'");
         }
@@ -736,9 +684,8 @@ class model
         return $this;
     }
 
-    public function filterFunc($field, $value, $sign = '=')
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterFunc($field, $value, $sign = '=') {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
@@ -747,16 +694,14 @@ class model
         return $this;
     }
 
-    public function filterNotEqual($field, $value)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterNotEqual($field, $value) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
-        if ( is_null($value) ) {
+        if (is_null($value)) {
             $this->filter($field . ' IS NOT NULL');
-        }
-        else {
+        } else {
             $value = $this->db->escape($value);
             $this->filter($field . " <> '" . $value . "'");
         }
@@ -764,9 +709,8 @@ class model
         return $this;
     }
 
-    public function filterGt($field, $value)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterGt($field, $value) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
@@ -777,9 +721,8 @@ class model
         return $this;
     }
 
-    public function filterLt($field, $value)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterLt($field, $value) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
@@ -790,9 +733,8 @@ class model
         return $this;
     }
 
-    public function filterGtEqual($field, $value)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterGtEqual($field, $value) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
@@ -803,9 +745,8 @@ class model
         return $this;
     }
 
-    public function filterLtEqual($field, $value)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterLtEqual($field, $value) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
@@ -816,9 +757,8 @@ class model
         return $this;
     }
 
-    public function filterLike($field, $value)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterLike($field, $value) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
@@ -829,27 +769,25 @@ class model
         return $this;
     }
 
-    public function filterBetween($field, $start, $end)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterBetween($field, $start, $end) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
         $start = $this->db->escape($start);
-        $end   = $this->db->escape($end);
+        $end = $this->db->escape($end);
 
         $this->filter($field . " BETWEEN '" . $start . "' AND '" . $end . "'");
 
         return $this;
     }
 
-    public function filterDateYounger($field, $value, $interval = 'DAY')
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterDateYounger($field, $value, $interval = 'DAY') {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
-        $value    = $this->db->escape($value);
+        $value = $this->db->escape($value);
         $interval = $this->db->escape($interval);
 
         $this->filter($field . ' >= DATE_SUB(NOW(), INTERVAL ' . $value . ' ' . $interval . ')');
@@ -857,13 +795,12 @@ class model
         return $this;
     }
 
-    public function filterDateOlder($field, $value, $interval = 'DAY')
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterDateOlder($field, $value, $interval = 'DAY') {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
-        $value    = $this->db->escape($value);
+        $value = $this->db->escape($value);
         $interval = $this->db->escape($interval);
 
         $this->filter($field . ' < DATE_SUB(NOW(), INTERVAL ' . $value . ' ' . $interval . ')');
@@ -871,9 +808,8 @@ class model
         return $this;
     }
 
-    public function filterTimestampGt($field, $value)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterTimestampGt($field, $value) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
@@ -885,9 +821,8 @@ class model
         return $this;
     }
 
-    public function filterTimestampLt($field, $value)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterTimestampLt($field, $value) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
@@ -899,21 +834,19 @@ class model
         return $this;
     }
 
-    public function filterIn($field, $value)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterIn($field, $value) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
-        if ( is_array($value) ) {
-            foreach ( $value as $k => $v ) {
-                $v         = $this->db->escape($v);
+        if (is_array($value)) {
+            foreach ($value as $k => $v) {
+                $v = $this->db->escape($v);
                 $value[$k] = "'" . $v . "'";
             }
 
             $value = implode(',', $value);
-        }
-        else {
+        } else {
             $value = $this->db->escape($value);
             $value = "'" . $value . "'";
         }
@@ -923,21 +856,19 @@ class model
         return $this;
     }
 
-    public function filterNotIn($field, $value)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function filterNotIn($field, $value) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
-        if ( is_array($value) ) {
-            foreach ( $value as $k => $v ) {
-                $v         = $this->db->escape($v);
+        if (is_array($value)) {
+            foreach ($value as $k => $v) {
+                $v = $this->db->escape($v);
                 $value[$k] = "'" . $v . "'";
             }
 
             $value = implode(',', $value);
-        }
-        else {
+        } else {
             $value = $this->db->escape($value);
             $value = "'" . $value . "'";
         }
@@ -947,52 +878,48 @@ class model
         return $this;
     }
 
-    public function filterRelated($field, $value, $lang = false)
-    {
+    public function filterRelated($field, $value, $lang = false) {
 
-        if ( mb_strlen($value) <= 3 ) {
+        if (mb_strlen($value) <= 3) {
             return $this->filterLike($field, $this->db->escape($value) . '%');
         }
 
         $query = [];
 
-        $words = explode(' ', str_replace([ '"', '\'', '+', '*', '-', '%', ')', '(', '.', ',', '!', '?' ], ' ', $value));
+        $words = explode(' ', str_replace(['"', '\'', '+', '*', '-', '%', ')', '(', '.', ',', '!', '?'], ' ', $value));
 
         $stopwords = string_get_stopwords($lang ? $lang : \cmsConfig::getConfig('lang'));
 
-        foreach ( $words as $word ) {
+        foreach ($words as $word) {
             $word = mb_strtolower(trim($word));
 
-            if ( mb_strlen($word) < 3 || is_numeric($word) ) {
+            if (mb_strlen($word) < 3 || is_numeric($word)) {
                 continue;
             }
 
-            if ( $stopwords && in_array($word, $stopwords) ) {
+            if ($stopwords && in_array($word, $stopwords)) {
                 continue;
             }
 
-            if ( mb_strlen($word) == 3 ) {
+            if (mb_strlen($word) == 3) {
                 $query[] = $this->db->escape($word);
                 continue;
             }
 
-            if ( mb_strlen($word) >= 12 ) {
+            if (mb_strlen($word) >= 12) {
                 $word = mb_substr($word, 0, mb_strlen($word) - 3) . '*';
-            }
-            else if ( mb_strlen($word) >= 10 ) {
+            } else if (mb_strlen($word) >= 10) {
                 $word = mb_substr($word, 0, mb_strlen($word) - 2) . '*';
-            }
-            else if ( mb_strlen($word) >= 6 ) {
+            } else if (mb_strlen($word) >= 6) {
                 $word = mb_substr($word, 0, mb_strlen($word) - 1) . '*';
             }
 
             $query[] = $this->db->escape($word);
         }
 
-        if ( empty($query) ) {
+        if (empty($query)) {
             $ft_query = '\"' . $this->db->escape($value) . '\"';
-        }
-        else {
+        } else {
 
             usort($query, function ($a, $b) {
                 return mb_strlen($b) - mb_strlen($a);
@@ -1004,7 +931,7 @@ class model
             $ft_query .= implode(' ', $query);
         }
 
-        if ( strpos($field, '.') === false ) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
@@ -1017,23 +944,20 @@ class model
         return $this->filter($search_param);
     }
 
-    public function filterCategory($ctype_name, $category, $is_recursive = false)
-    {
-        if ( empty($this::CATEGORY_TABLE) ) {
+    public function filterCategory($ctype_name, $category, $is_recursive = false) {
+        if (empty($this::CATEGORY_TABLE)) {
             $table_name = $this->table_prefix . $ctype_name . '_cats';
-        }
-        else {
+        } else {
             $table_name = $this::CATEGORY_TABLE;
         }
 
         $bind_table_name = $table_name . '_bind';
 
-        if ( !$is_recursive ) {
+        if (!$is_recursive) {
             $this->joinInner($bind_table_name, 'b FORCE INDEX (item_id)', 'b.item_id = i.id')->filterEqual('b.category_id', $category['id']);
-        }
-        else {
+        } else {
             // для корневой категории фильтрация не нужна
-            if ( !$category['parent_id'] ) {
+            if (!$category['parent_id']) {
                 return $this;
             }
 
@@ -1056,17 +980,15 @@ class model
         return $this;
     }
 
-    public function filterCategoryId($ctype_name, $category_id, $is_recursive = false)
-    {
-        if ( !$is_recursive ) {
-            if ( $category_id ) {
-                return $this->filterCategory($ctype_name, [ 'id' => $category_id ]);
+    public function filterCategoryId($ctype_name, $category_id, $is_recursive = false) {
+        if (!$is_recursive) {
+            if ($category_id) {
+                return $this->filterCategory($ctype_name, ['id' => $category_id]);
             }
-        }
-        else {
+        } else {
             $category = $this->getCategory($ctype_name, $category_id);
 
-            if ( $category ) {
+            if ($category) {
                 return $this->filterCategory($ctype_name, $category, true);
             }
         }
@@ -1074,26 +996,22 @@ class model
         return $this;
     }
 
-    public function disablePrivacyFilter()
-    {
+    public function disablePrivacyFilter() {
         $this->privacy_filter_disabled = true;
         return $this;
     }
 
-    public function enablePrivacyFilter()
-    {
+    public function enablePrivacyFilter() {
         $this->privacy_filter_disabled = false;
         return $this;
     }
 
-    public function isEnablePrivacyFilter()
-    {
+    public function isEnablePrivacyFilter() {
         return $this->privacy_filter_disabled === false;
     }
 
-    public function filterPrivacy()
-    {
-        if ( $this->privacy_filtered ) {
+    public function filterPrivacy() {
+        if ($this->privacy_filtered) {
             return $this;
         }
 
@@ -1105,33 +1023,28 @@ class model
         return $this->filterEqual('i.is_private', 0);
     }
 
-    public function enableDeleteFilter()
-    {
+    public function enableDeleteFilter() {
         $this->delete_filter_disabled = false;
         return $this;
     }
 
-    public function disableDeleteFilter()
-    {
+    public function disableDeleteFilter() {
         $this->delete_filter_disabled = true;
         return $this;
     }
 
-    public function enableApprovedFilter()
-    {
+    public function enableApprovedFilter() {
         $this->approved_filter_disabled = false;
         return $this;
     }
 
-    public function disableApprovedFilter()
-    {
+    public function disableApprovedFilter() {
         $this->approved_filter_disabled = true;
         return $this;
     }
 
-    public function filterAvailableOnly()
-    {
-        if ( $this->available_filtered ) {
+    public function filterAvailableOnly() {
+        if ($this->available_filtered) {
             return $this;
         }
 
@@ -1140,14 +1053,12 @@ class model
         return $this->filterIsNull('is_deleted');
     }
 
-    public function filterDeleteOnly()
-    {
+    public function filterDeleteOnly() {
         return $this->filterEqual('is_deleted', 1);
     }
 
-    public function filterApprovedOnly()
-    {
-        if ( $this->approved_filtered ) {
+    public function filterApprovedOnly() {
+        if ($this->approved_filtered) {
             return $this;
         }
 
@@ -1159,13 +1070,11 @@ class model
         return $this->filterEqual('is_approved', 1);
     }
 
-    public function filterHiddenParents()
-    {
+    public function filterHiddenParents() {
         return $this->filterIsNull('is_parent_hidden');
     }
 
-    public function filterFriends($user_id)
-    {
+    public function filterFriends($user_id) {
         $this->joinInner('{users}_friends', 'fr', 'fr.friend_id = i.user_id');
 
         $this->filterEqual('fr.user_id', intval($user_id));
@@ -1174,31 +1083,29 @@ class model
         return $this;
     }
 
-    public function filterFriendsPrivateOnly($user_id)
-    {
+    public function filterFriendsPrivateOnly($user_id) {
         // фильтр приватности при этом не нужен
         $this->privacy_filtered = true;
 
         return $this->filterEqual('i.is_private', 1)->filterFriends($user_id);
     }
 
-    public function applyDatasetFilters($dataset, $ignore_sorting = false)
-    {
-        if ( !empty($dataset['filters']) ) {
-            foreach ( $dataset['filters'] as $filter ) {
-                if ( ($filter['value'] === '') && !in_array($filter['condition'], [ 'nn', 'ni' ]) ) {
+    public function applyDatasetFilters($dataset, $ignore_sorting = false) {
+        if (!empty($dataset['filters'])) {
+            foreach ($dataset['filters'] as $filter) {
+                if (($filter['value'] === '') && !in_array($filter['condition'], ['nn', 'ni'])) {
                     continue;
                 }
 
-                if ( empty($filter['condition']) ) {
+                if (empty($filter['condition'])) {
                     continue;
                 }
 
-                if ( $filter['value'] !== '' ) {
+                if ($filter['value'] !== '') {
                     $filter['value'] = string_replace_user_properties($filter['value']);
                 }
 
-                switch ( $filter['condition'] ) {
+                switch ($filter['condition']) {
                     // общие условия
                     case 'eq': $this->filterEqual($filter['field'], $filter['value']);
                         break;
@@ -1232,28 +1139,26 @@ class model
             }
         }
 
-        if ( !empty($dataset['sorting']) && !$ignore_sorting ) {
+        if (!empty($dataset['sorting']) && !$ignore_sorting) {
             $this->orderByList($dataset['sorting']);
         }
 
-        if ( !empty($dataset['index']) ) {
+        if (!empty($dataset['index'])) {
             $this->forceIndex($dataset['index']);
         }
 
         return true;
     }
 
-    public function selectList($fields, $is_this_only = false)
-    {
-        if ( $is_this_only ) {
+    public function selectList($fields, $is_this_only = false) {
+        if ($is_this_only) {
             $this->select = [];
         }
 
-        foreach ( $fields as $field => $alias ) {
-            if ( is_int($field) ) {
+        foreach ($fields as $field => $alias) {
+            if (is_int($field)) {
                 $this->select($alias);
-            }
-            else {
+            } else {
                 $this->select($field, $alias);
             }
         }
@@ -1261,81 +1166,70 @@ class model
         return $this;
     }
 
-    public function select($field, $as = false)
-    {
+    public function select($field, $as = false) {
         $this->select[] = $as ? $field . ' as ' . $as : $field;
         return $this;
     }
 
-    public function selectOnly($field, $as = false)
-    {
-        $this->select = [ $as ? $field . ' as ' . $as : $field ];
+    public function selectOnly($field, $as = false) {
+        $this->select = [$as ? $field . ' as ' . $as : $field];
         return $this;
     }
 
-    public function join($table_name, $as, $on)
-    {
+    public function join($table_name, $as, $on) {
         return $this->joinInner($table_name, $as, $on);
     }
 
-    public function joinInner($table_name, $as, $on)
-    {
+    public function joinInner($table_name, $as, $on) {
         $this->join .= self::INNER_JOIN . ' {#}' . $table_name . ' as ' . $as . ' ON ' . $on . PHP_EOL;
         return $this;
     }
 
-    public function joinLeft($table_name, $as, $on)
-    {
+    public function joinLeft($table_name, $as, $on) {
         $this->join .= self::LEFT_JOIN . ' {#}' . $table_name . ' as ' . $as . ' ON ' . $on . PHP_EOL;
         return $this;
     }
 
-    public function joinExcludingLeft($table_name, $as, $right_key, $left_key, $join_where = '')
-    {
+    public function joinExcludingLeft($table_name, $as, $right_key, $left_key, $join_where = '') {
         $this->join .= self::LEFT_JOIN . ' {#}' . $table_name . ' as ' . $as . ' ON ' . $left_key . '=' . $right_key . ($join_where ? ' AND ' . $join_where : '') . PHP_EOL;
         $this->filter($right_key . ' IS NULL');
         return $this;
     }
 
-    public function joinRight($table_name, $as, $on)
-    {
+    public function joinRight($table_name, $as, $on) {
         $this->join .= self::RIGHT_JOIN . ' {#}' . $table_name . ' as ' . $as . ' ON ' . $on . PHP_EOL;
         return $this;
     }
 
-    public function joinExcludingRight($table_name, $as, $right_key, $left_key, $join_where = '')
-    {
+    public function joinExcludingRight($table_name, $as, $right_key, $left_key, $join_where = '') {
         $this->join .= self::RIGHT_JOIN . ' {#}' . $table_name . ' as ' . $as . ' ON ' . $left_key . '=' . $right_key . ($join_where ? ' AND ' . $join_where : '') . PHP_EOL;
         $this->filter($left_key . ' IS NULL');
         return $this;
     }
 
-    public function joinLeftOuter($table_name, $as, $on)
-    {
+    public function joinLeftOuter($table_name, $as, $on) {
         $this->join .= self::LEFT_OUTER_JOIN . ' {#}' . $table_name . ' as ' . $as . ' ON ' . $on . PHP_EOL;
         return $this;
     }
 
-    public function joinRightOuter($table_name, $as, $on)
-    {
+    public function joinRightOuter($table_name, $as, $on) {
         $this->join .= self::RIGHT_OUTER_JOIN . ' {#}' . $table_name . ' as ' . $as . ' ON ' . $on . PHP_EOL;
         return $this;
     }
 
-    public function joinUser($on_field = 'user_id', $user_fields = [], $join_direction = false)
-    {
-        if ( !$user_fields ) {
+    public function joinUser($on_field = 'user_id', $user_fields = [], $join_direction = false) {
+        if (!$user_fields) {
             $user_fields = [
                 'u.nickname' => 'user_nickname',
-                'u.avatar'   => 'user_avatar'
+                'u.avatar' => 'user_avatar'
             ];
         }
 
-        foreach ( $user_fields as $field => $alias ) {
+        foreach ($user_fields as $field => $alias) {
             $this->select($field, $alias);
         }
 
-        switch ( $join_direction ) {
+        switch ($join_direction) {
             case 'left':
                 $this->joinLeft('{users}', 'u', 'u.id = i.' . $on_field);
                 break;
@@ -1350,19 +1244,16 @@ class model
         return $this;
     }
 
-    public function joinUserLeft($on_field = 'user_id', $user_fields = [])
-    {
+    public function joinUserLeft($on_field = 'user_id', $user_fields = []) {
         return $this->joinUser($on_field, $user_fields, 'left');
     }
 
-    public function joinUserRight($on_field = 'user_id', $user_fields = [])
-    {
+    public function joinUserRight($on_field = 'user_id', $user_fields = []) {
         return $this->joinUser($on_field, $user_fields, 'right');
     }
 
-    public function groupBy($field)
-    {
-        if ( strpos($field, '.') === false ) {
+    public function groupBy($field) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
@@ -1380,9 +1271,8 @@ class model
      *
      * @return self
      */
-    protected function indexHint($index_name, $action, $for = '')
-    {
-        switch ( $for ) {
+    protected function indexHint($index_name, $action, $for = '') {
+        switch ($for) {
             case 1:
                 $for_action = 'FOR JOIN';
                 break;
@@ -1402,32 +1292,28 @@ class model
         return $this;
     }
 
-    public function forceIndex($index_name, $for = '')
-    {
+    public function forceIndex($index_name, $for = '') {
         return $this->indexHint($index_name, 'FORCE', $for);
     }
 
-    public function ignoreIndex($index_name, $for = '')
-    {
+    public function ignoreIndex($index_name, $for = '') {
         return $this->indexHint($index_name, 'IGNORE', $for);
     }
 
-    public function useIndex($index_name, $for = '')
-    {
+    public function useIndex($index_name, $for = '') {
         return $this->indexHint($index_name, 'USE', $for);
     }
 
-    public function orderBy($field, $direction = '', $is_force_index_by_field = false)
-    {
-        if ( strpos($field, '(') !== false ) {
+    public function orderBy($field, $direction = '', $is_force_index_by_field = false) {
+        if (strpos($field, '(') !== false) {
             return $this;
         } // в названии поля не может быть функции
 
-        if ( $direction ) {
+        if ($direction) {
             $direction = strtolower($direction) === 'desc' ? 'desc' : 'asc';
         }
 
-        if ( strpos($field, '.') === false ) {
+        if (strpos($field, '.') === false) {
             $field = 'i.' . $field;
         }
 
@@ -1436,24 +1322,23 @@ class model
         return $this;
     }
 
-    public function orderByList($list)
-    {
+    public function orderByList($list) {
         $this->order_by = '';
 
-        if ( is_array($list) ) {
-            foreach ( $list as $o ) {
-                if ( strpos($o['by'], '(') !== false ) {
+        if (is_array($list)) {
+            foreach ($list as $o) {
+                if (strpos($o['by'], '(') !== false) {
                     continue;
                 }
 
-                $field     = $o['by'];
+                $field = $o['by'];
                 $direction = strtolower($o['to']) === 'desc' ? 'desc' : 'asc';
 
-                if ( strpos($field, '.') === false ) {
+                if (strpos($field, '.') === false) {
                     $field = 'i.' . $field;
                 }
 
-                if ( $this->order_by ) {
+                if ($this->order_by) {
                     $this->order_by .= ', ';
                 }
 
@@ -1464,17 +1349,16 @@ class model
         return $this;
     }
 
-    public function limit($from, $howmany = 0)
-    {
+    public function limit($from, $howmany = 0) {
         $this->limit = (int) $from;
-        $howmany     = (int) $howmany;
+        $howmany = (int) $howmany;
 
-        if ( $this->limit < 0 ) {
+        if ($this->limit < 0) {
             $this->limit = 0;
         }
 
-        if ( $howmany ) {
-            if ( $howmany <= 0 ) {
+        if ($howmany) {
+            if ($howmany <= 0) {
                 $howmany = 15;
             }
 
@@ -1484,12 +1368,11 @@ class model
         return $this;
     }
 
-    public function limitPage($page, $perpage = 0)
-    {
-        $page    = (int) $page;
+    public function limitPage($page, $perpage = 0) {
+        $page = (int) $page;
         $perpage = (int) $perpage;
 
-        if ( $perpage <= 0 ) {
+        if ($perpage <= 0) {
             $perpage = $this->perpage;
         }
 
@@ -1498,12 +1381,11 @@ class model
         return $this;
     }
 
-    public function limitPagePlus($page, $perpage = 0)
-    {
-        $page    = (int) $page;
+    public function limitPagePlus($page, $perpage = 0) {
+        $page = (int) $page;
         $perpage = (int) $perpage;
 
-        if ( $perpage <= 0 ) {
+        if ($perpage <= 0) {
             $perpage = $this->perpage;
         }
 
@@ -1512,23 +1394,20 @@ class model
         return $this;
     }
 
-    public function setPerPage($perpage)
-    {
+    public function setPerPage($perpage) {
         $this->perpage = (int) $perpage;
         return $this;
     }
 
 //============================================================================//
 
-    public function getField($table_name, $row_id, $field_name)
-    {
+    public function getField($table_name, $row_id, $field_name) {
         $this->filterEqual('id', $row_id);
         return $this->getFieldFiltered($table_name, $field_name);
     }
 
-    public function getFieldFiltered($table_name, $field_name)
-    {
-        $this->select = [ 'i.' . $field_name . ' as ' . $field_name ];
+    public function getFieldFiltered($table_name, $field_name) {
+        $this->select = ['i.' . $field_name . ' as ' . $field_name];
 
         $this->table = $table_name;
 
@@ -1540,7 +1419,7 @@ class model
 
         $result = $this->db->query($sql);
 
-        if ( !$this->db->numRows($result) ) {
+        if (!$this->db->numRows($result)) {
             return false;
         }
 
@@ -1553,23 +1432,22 @@ class model
 
 //============================================================================//
 
-    public function getItem($table_name, $item_callback = false)
-    {
+    public function getItem($table_name, $item_callback = false) {
         $select = implode(', ', $this->select);
 
         $sql = "SELECT " . $select . "
                 FROM {#}" . $table_name . " i
                 " . $this->index_action;
 
-        if ( $this->join ) {
+        if ($this->join) {
             $sql .= $this->join;
         }
 
-        if ( $this->where ) {
+        if ($this->where) {
             $sql .= 'WHERE ' . $this->where . PHP_EOL;
         }
 
-        if ( $this->order_by ) {
+        if ($this->order_by) {
             $sql .= 'ORDER BY ' . $this->order_by . PHP_EOL;
         }
 
@@ -1579,11 +1457,11 @@ class model
 
         // если указан ключ кеша для этого запроса
         // то пробуем получить результаты из кеша
-        if ( $this->cache_key ) {
+        if ($this->cache_key) {
             $cache_key = $this->cache_key . '.' . md5($sql);
-            $cache     = cache::getInstance();
+            $cache = cache::getInstance();
 
-            if ( false !== ($item = $cache->get($cache_key)) ) {
+            if (false !== ($item = $cache->get($cache_key))) {
                 $this->stopCache();
                 return $item;
             }
@@ -1591,19 +1469,19 @@ class model
 
         $result = $this->db->query($sql);
 
-        if ( !$this->db->numRows($result) ) {
+        if (!$this->db->numRows($result)) {
             return false;
         }
 
         $item = $this->db->fetchAssoc($result);
 
-        if ( is_callable($item_callback) ) {
-            $item = call_user_func_array($item_callback, [ $item, $this ]);
+        if (is_callable($item_callback)) {
+            $item = call_user_func_array($item_callback, [$item, $this]);
         }
 
         // если указан ключ кеша для этого запроса
         // то сохраняем результаты в кеше
-        if ( $this->cache_key ) {
+        if ($this->cache_key) {
             $cache->set($cache_key, $item);
             $this->stopCache();
         }
@@ -1613,45 +1491,42 @@ class model
         return $item;
     }
 
-    public function getItemById($table_name, $id, $item_callback = false)
-    {
+    public function getItemById($table_name, $id, $item_callback = false) {
         $this->filterEqual('id', $id);
         return $this->getItem($table_name, $item_callback);
     }
 
-    public function getItemByField($table_name, $field_name, $field_value, $item_callback = false)
-    {
+    public function getItemByField($table_name, $field_name, $field_value, $item_callback = false) {
         $this->filterEqual($field_name, $field_value);
         return $this->getItem($table_name, $item_callback);
     }
 
 //============================================================================//
 
-    public function getCount($table_name, $by_field = 'id')
-    {
+    public function getCount($table_name, $by_field = 'id') {
         $sql = "SELECT " . $this->distinct . " " . $this->straight_join . " COUNT(i." . $by_field . ") as count
                 FROM {#}" . $table_name . " i
                 " . $this->index_action;
 
-        if ( $this->join ) {
+        if ($this->join) {
             $sql .= $this->join;
         }
 
-        if ( $this->where ) {
+        if ($this->where) {
             $sql .= 'WHERE ' . $this->where . PHP_EOL;
         }
 
-        if ( $this->group_by ) {
+        if ($this->group_by) {
             $sql .= 'GROUP BY ' . $this->group_by . PHP_EOL;
         }
 
         // если указан ключ кеша для этого запроса
         // то пробуем получить результаты из кеша
-        if ( $this->cache_key ) {
+        if ($this->cache_key) {
             $cache_key = $this->cache_key . '.' . md5($sql);
-            $cache     = cache::getInstance();
+            $cache = cache::getInstance();
 
-            if ( false !== ($result = $cache->get($cache_key)) ) {
+            if (false !== ($result = $cache->get($cache_key))) {
                 $this->stopCache();
                 return $result;
             }
@@ -1659,17 +1534,16 @@ class model
 
         $result = $this->db->query($sql);
 
-        if ( !$this->db->numRows($result) ) {
+        if (!$this->db->numRows($result)) {
             $count = 0;
-        }
-        else {
-            $item  = $this->db->fetchAssoc($result);
+        } else {
+            $item = $this->db->fetchAssoc($result);
             $count = (int) $item['count'];
         }
 
         // если указан ключ кеша для этого запроса
         // то сохраняем результаты в кеше
-        if ( $this->cache_key ) {
+        if ($this->cache_key) {
             $cache->set($cache_key, $count);
             $this->stopCache();
         }
@@ -1685,11 +1559,10 @@ class model
      * Возвращает записи из базы, применяя все наложенные ранее фильтры
      * @return array
      */
-    public function get($table_name, $item_callback = false, $key_field = 'id')
-    {
+    public function get($table_name, $item_callback = false, $key_field = 'id') {
         $this->table = $table_name;
 
-        $items  = $_items = [];
+        $items = $_items = [];
 
         $sql = $this->getSQL();
 
@@ -1698,29 +1571,28 @@ class model
 
         // если указан ключ кеша для этого запроса
         // то пробуем получить результаты из кеша
-        if ( $this->cache_key ) {
+        if ($this->cache_key) {
             $cache_key = $this->cache_key . '.' . md5($sql);
 
             $cache = cache::getInstance();
 
             $_items = $cache->get($cache_key);
 
-            if ( $_items !== false ) {
+            if ($_items !== false) {
                 $this->stopCache();
 
                 // обрабатываем коллбэком
-                if ( is_callable($item_callback) ) {
-                    foreach ( $_items as $key => $item ) {
-                        $item = call_user_func_array($item_callback, [ $item, $this ]);
+                if (is_callable($item_callback)) {
+                    foreach ($_items as $key => $item) {
+                        $item = call_user_func_array($item_callback, [$item, $this]);
 
-                        if ( $item === false ) {
+                        if ($item === false) {
                             continue;
                         }
 
                         $items[$key] = $item;
                     }
-                }
-                else {
+                } else {
                     return $_items;
                 }
 
@@ -1731,39 +1603,37 @@ class model
         $result = $this->db->query($sql);
 
         // если запрос ничего не вернул, возвращаем ложь
-        if ( !$this->db->numRows($result) ) {
+        if (!$this->db->numRows($result)) {
             return false;
         }
 
         // перебираем все вернувшиеся строки
-        while ( $item = $this->db->fetchAssoc($result) ) {
+        while ($item = $this->db->fetchAssoc($result)) {
             $key = $key_field ? $item[$key_field] : false;
 
             // для кеша формируем массив без обработки коллбэком
-            if ( $this->cache_key ) {
-                if ( $key ) {
+            if ($this->cache_key) {
+                if ($key) {
                     $_items[$key] = $item;
-                }
-                else {
+                } else {
                     $_items[] = $item;
                 }
             }
 
             // если задан коллбек для обработки строк,
             // то пропускаем строку через него
-            if ( is_callable($item_callback) ) {
-                $item = call_user_func_array($item_callback, [ $item, $this ]);
+            if (is_callable($item_callback)) {
+                $item = call_user_func_array($item_callback, [$item, $this]);
 
-                if ( $item === false ) {
+                if ($item === false) {
                     continue;
                 }
             }
 
             // добавляем обработанную строку в результирующий массив
-            if ( $key ) {
+            if ($key) {
                 $items[$key] = $item;
-            }
-            else {
+            } else {
                 $items[] = $item;
             }
         }
@@ -1771,7 +1641,7 @@ class model
         // если указан ключ кеша для этого запроса
         // то сохраняем результаты в кеше
         // сохраняем не обработанный коллбэком массив
-        if ( $this->cache_key ) {
+        if ($this->cache_key) {
             $cache->set($cache_key, $_items);
             $this->stopCache();
         }
@@ -1784,31 +1654,30 @@ class model
 
 //============================================================================//
 
-    public function getSQL()
-    {
+    public function getSQL() {
         $select = implode(', ', $this->select);
 
         $sql = "SELECT " . $this->distinct . " " . $this->straight_join . " " . $select . "
                 FROM {#}" . $this->table . " i
                 " . $this->index_action;
 
-        if ( $this->join ) {
+        if ($this->join) {
             $sql .= $this->join;
         }
 
-        if ( $this->where ) {
+        if ($this->where) {
             $sql .= 'WHERE ' . $this->where . PHP_EOL;
         }
 
-        if ( $this->group_by ) {
+        if ($this->group_by) {
             $sql .= 'GROUP BY ' . $this->group_by . PHP_EOL;
         }
 
-        if ( $this->order_by ) {
+        if ($this->order_by) {
             $sql .= 'ORDER BY ' . $this->order_by . PHP_EOL;
         }
 
-        if ( $this->limit ) {
+        if ($this->limit) {
             $sql .= 'LIMIT ' . $this->limit . PHP_EOL;
         }
 
@@ -1817,13 +1686,12 @@ class model
 
 //============================================================================//
 
-    public function getMax($table, $field, $default = 0)
-    {
+    public function getMax($table, $field, $default = 0) {
         $sql = "SELECT i." . $field . " as " . $field . "
                 FROM {#}" . $table . " i
                 ";
 
-        if ( $this->where ) {
+        if ($this->where) {
             $sql .= 'WHERE ' . $this->where . PHP_EOL;
         }
 
@@ -1834,7 +1702,7 @@ class model
 
         $this->resetFilters();
 
-        if ( !$this->db->numRows($result) ) {
+        if (!$this->db->numRows($result)) {
             return $default;
         }
 
@@ -1851,8 +1719,7 @@ class model
      * @param string $where
      * @return int
      */
-    public function getMaxOrdering($table)
-    {
+    public function getMaxOrdering($table) {
         return $this->getMax($table, 'ordering');
     }
 
@@ -1862,8 +1729,7 @@ class model
      * @param string $where
      * @return int
      */
-    public function getNextOrdering($table)
-    {
+    public function getNextOrdering($table) {
         return $this->getMaxOrdering($table) + 1;
     }
 
@@ -1873,13 +1739,12 @@ class model
      * @param string $where
      * @return bool
      */
-    public function reorder($table_name)
-    {
+    public function reorder($table_name) {
         $sql = "SELECT i.id as id, i.ordering as ordering
                 FROM {#}" . $table_name . " i
                 ";
 
-        if ( $this->where ) {
+        if ($this->where) {
             $sql .= 'WHERE ' . $this->where . PHP_EOL;
         }
 
@@ -1889,14 +1754,14 @@ class model
 
         $this->resetFilters();
 
-        if ( !$this->db->numRows($result) ) {
+        if (!$this->db->numRows($result)) {
             $this->db->freeResult($result);
             return false;
         }
 
         $ordering = 0;
 
-        while ( $item = $this->db->fetchAssoc($result) ) {
+        while ($item = $this->db->fetchAssoc($result)) {
             $ordering += 1;
             $this->db->query('UPDATE {#}' . $table_name . ' SET ordering = ' . $ordering . ' WHERE id = ' . $item['id']);
         }
@@ -1913,27 +1778,25 @@ class model
      * @param array $additional_fields Список дополнительных полей и их значений, которые нужно обновлять вместе с ordering
      * @return bool
      */
-    public function reorderByList($table_name, $list, $additional_fields = false)
-    {
+    public function reorderByList($table_name, $list, $additional_fields = false) {
         $ordering = 0;
 
         $additional_set = [];
 
-        if ( is_array($additional_fields) ) {
-            foreach ( $additional_fields as $field => $value ) {
-                $value            = $this->db->escape($value);
+        if (is_array($additional_fields)) {
+            foreach ($additional_fields as $field => $value) {
+                $value = $this->db->escape($value);
                 $additional_set[] = $field . " = '" . $value . "'";
             }
         }
 
-        if ( $additional_set ) {
+        if ($additional_set) {
             $additional_set = ', ' . implode(', ', $additional_set);
-        }
-        else {
+        } else {
             $additional_set = '';
         }
 
-        foreach ( $list as $id ) {
+        foreach ($list as $id) {
             $ordering += 1;
 
             $id = $this->db->escape($id);
@@ -1957,11 +1820,10 @@ class model
      * @param array $filter
      * @return bool
      */
-    public function applyGridFilter($grid, $filter)
-    {
+    public function applyGridFilter($grid, $filter) {
         // применяем сортировку
-        if ( !empty($filter['order_by']) ) {
-            if ( !empty($grid['columns'][$filter['order_by']]['order_by']) ) {
+        if (!empty($filter['order_by'])) {
+            if (!empty($grid['columns'][$filter['order_by']]['order_by'])) {
                 $filter['order_by'] = $grid['columns'][$filter['order_by']]['order_by'];
             }
 
@@ -1969,7 +1831,7 @@ class model
         }
 
         // устанавливаем страницу
-        if ( !empty($filter['page']) ) {
+        if (!empty($filter['page'])) {
             $perpage = !empty($filter['perpage']) ? intval($filter['perpage']) : $this->perpage;
             $this->limitPage(intval($filter['page']), $perpage);
         }
@@ -1978,17 +1840,16 @@ class model
         // проходим по каждой колонке таблицы
         // и проверяем не передан ли фильтр для нее
         //
-        foreach ( $grid['columns'] as $field => $column ) {
-            if ( !empty($column['filter']) && $column['filter'] != 'none' && isset($filter[$field]) ) {
-                if ( $filter[$field] || (string) $filter[$field] === '0' ) {
-                    if ( !empty($column['filter_by']) ) {
+        foreach ($grid['columns'] as $field => $column) {
+            if (!empty($column['filter']) && $column['filter'] != 'none' && isset($filter[$field])) {
+                if ($filter[$field] || (string) $filter[$field] === '0') {
+                    if (!empty($column['filter_by'])) {
                         $filter_field = $column['filter_by'];
-                    }
-                    else {
+                    } else {
                         $filter_field = $field;
                     }
 
-                    switch ( $column['filter'] ) {
+                    switch ($column['filter']) {
                         case 'exact': $this->filterEqual($filter_field, $filter[$field]);
                             break;
                         case 'like': $this->filterLike($filter_field, "%" . $filter[$field] . "%");
@@ -2007,8 +1868,7 @@ class model
 
 //============================================================================//
 
-    public function increment($table, $field, $step = 1)
-    {
+    public function increment($table, $field, $step = 1) {
         $sign = $step > 0 ? '+' : '-';
         $step = abs($step);
 
@@ -2016,7 +1876,7 @@ class model
                 SET i." . $field . " = i." . $field . " " . $sign . " " . $step . "
                 ";
 
-        if ( $this->where ) {
+        if ($this->where) {
             $sql .= 'WHERE ' . $this->where;
         }
 
@@ -2025,17 +1885,14 @@ class model
         return $this->db->query($sql);
     }
 
-    public function decrement($table, $field, $step = 1)
-    {
+    public function decrement($table, $field, $step = 1) {
         return $this->increment($table, $field, $step * -1);
     }
 
-    public function deleteController($id)
-    {
-        if ( is_numeric($id) ) {
+    public function deleteController($id) {
+        if (is_numeric($id)) {
             $field = 'id';
-        }
-        else {
+        } else {
             $field = 'name';
         }
 
@@ -2052,15 +1909,14 @@ class model
      * @param int $parent_id
      * @param int $level
      */
-    public static function buildTreeRecursive($items, &$result_tree, $parent_id = 0, $level = 1)
-    {
+    public static function buildTreeRecursive($items, &$result_tree, $parent_id = 0, $level = 1) {
         $level++;
 
-        foreach ( $items as $item ) {
-            if ( $item['parent_id'] == $parent_id ) {
+        foreach ($items as $item) {
+            if ($item['parent_id'] == $parent_id) {
                 $item['level'] = $level - 1;
 
-                if ( !isset($result_tree[$item['id']]) ) {
+                if (!isset($result_tree[$item['id']])) {
                     $result_tree[$item['id']] = $item;
                 }
                 self::buildTreeRecursive($items, $result_tree, $item['id'], $level);
@@ -2075,15 +1931,13 @@ class model
      * @param array $array
      * @return string
      */
-    public static function arrayToYaml($input_array, $indent = 2, $word_wrap = 40)
-    {
-        if ( !empty($input_array) ) {
-            foreach ( $input_array as $key => $value ) {
-                $_k         = str_replace([ '[', ']' ], '', $key); // был фатальный баг, если в ключах эти символы
+    public static function arrayToYaml($input_array, $indent = 2, $word_wrap = 40) {
+        if (!empty($input_array)) {
+            foreach ($input_array as $key => $value) {
+                $_k = str_replace(['[', ']'], '', $key); // был фатальный баг, если в ключах эти символы
                 $array[$_k] = $value;
             }
-        }
-        else {
+        } else {
             $array = [];
         }
 
@@ -2095,8 +1949,7 @@ class model
      * @param string $yaml
      * @return array
      */
-    public static function yamlToArray($yaml)
-    {
+    public static function yamlToArray($yaml) {
         return \Spyc::YAMLLoadString($yaml);
     }
 
@@ -2105,18 +1958,15 @@ class model
      * @param string $key Ключ
      * @param mixed $data Данные
      */
-    public static function cacheResult($key, $data)
-    {
+    public static function cacheResult($key, $data) {
         self::$cached[$key] = $data;
     }
 
-    public static function getCachedResult($key)
-    {
-        if ( isset(self::$cached[$key]) ) {
+    public static function getCachedResult($key) {
+        if (isset(self::$cached[$key])) {
             return self::$cached[$key];
         }
 
         return null;
     }
-
 }

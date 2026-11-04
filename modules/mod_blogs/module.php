@@ -10,13 +10,12 @@
  *                        LICENSED BY GNU/GPL v2
  */
 
-function mod_blogs($mod, $cfg)
-{
+function mod_blogs($mod, $cfg) {
     $inDB = cmsDatabase::getInstance();
 
     $default_cfg = array(
-        'sort'    => 'pubdate',
-        'owner'   => 'user',
+        'sort' => 'pubdate',
+        'owner' => 'user',
         'shownum' => 5,
         'minrate' => 0,
         'blog_id' => 0,
@@ -25,29 +24,28 @@ function mod_blogs($mod, $cfg)
 
     $cfg = array_merge($default_cfg, $cfg);
 
-    $inBlog        = cmsBlogs::getInstance();
+    $inBlog = cmsBlogs::getInstance();
     $inBlog->owner = $cfg['owner'];
 
-    if ( $cfg['owner'] == 'club' ) {
+    if ($cfg['owner'] == 'club') {
         $model = new cms_model_clubs();
         $inDB->addSelect('b.user_id as bloglink');
-    }
-    else {
+    } else {
         $model = new cms_model_blogs();
     }
 
     // получаем аватары владельцев
-    $inDB->addSelect('up.imageurl, img.fileurl');
+    $inDB->addSelect('ANY_VALUE(up.imageurl) as imageurl, ANY_VALUE(img.fileurl) as fileurl');
     $inDB->addJoin('LEFT JOIN cms_user_profiles up ON up.user_id = u.id');
     $inDB->addJoin("LEFT JOIN cms_upload_images img ON img.target_id = p.id AND img.target = 'blog_post' AND img.component = 'blogs'");
 
     $inBlog->whereOnlyPublic();
 
-    if ( $cfg['minrate'] ) {
+    if ($cfg['minrate']) {
         $inBlog->ratingGreaterThan($cfg['minrate']);
     }
 
-    if ( $cfg['blog_id'] ) {
+    if ($cfg['blog_id']) {
         $inBlog->whereBlogIs($cfg['blog_id']);
     }
 
@@ -55,7 +53,7 @@ function mod_blogs($mod, $cfg)
     $inDB->limit($cfg['shownum']);
 
     $posts = $model->getPosts(false);
-    if ( !$posts ) {
+    if (!$posts) {
         return false;
     }
 

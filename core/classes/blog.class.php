@@ -10,35 +10,30 @@
  *                        LICENSED BY GNU/GPL v2
  */
 
-class cmsBlogs
-{
-
+class cmsBlogs {
     private static $instance;
     public $owner;
     private $targets = array(
-        'tags'         => 'blogpost',
-        'rating'       => 'blogpost',
-        'comments'     => 'blog',
+        'tags' => 'blogpost',
+        'rating' => 'blogpost',
+        'comments' => 'blog',
         'actions_post' => 'add_post',
         'actions_blog' => 'add_blog'
     );
 
-    private function __construct()
-    {
+    private function __construct() {
         $this->inDB = cmsDatabase::getInstance();
         cmsCore::loadLanguage('components/blogs');
         cmsCore::loadLib('tags');
         cmsCore::loadLib('karma');
     }
 
-    private function __clone()
-    {
+    private function __clone() {
 
     }
 
-    public static function getInstance()
-    {
-        if ( self::$instance === null ) {
+    public static function getInstance() {
+        if (self::$instance === null) {
             self::$instance = new self;
         }
 
@@ -50,14 +45,12 @@ class cmsBlogs
      * @param array $targets
      * @return bool
      */
-    public function setTargets($targets = array())
-    {
+    public function setTargets($targets = array()) {
         $this->targets = $targets;
         return true;
     }
 
-    public function getTarget($target = '')
-    {
+    public function getTarget($target = '') {
         return isset($this->targets[$target]) ? $this->targets[$target] : '';
     }
 
@@ -66,8 +59,7 @@ class cmsBlogs
      * @param int $blog_id
      * @return array $cats
      */
-    public function getBlogCats($blog_id)
-    {
+    public function getBlogCats($blog_id) {
         $sql = "SELECT cat.*, IFNULL(COUNT(p.id), 0) as post_count
 				FROM cms_blog_cats cat
 				LEFT JOIN cms_blog_posts p ON p.cat_id = cat.id AND p.published = 1
@@ -76,13 +68,13 @@ class cmsBlogs
 
         $result = $this->inDB->query($sql);
 
-        if ( !$this->inDB->num_rows($result) ) {
+        if (!$this->inDB->num_rows($result)) {
             return false;
         }
 
         $cats = array();
 
-        while ( $cat = $this->inDB->fetch_assoc($result) ) {
+        while ($cat = $this->inDB->fetch_assoc($result)) {
             $cats[] = $cat;
         }
 
@@ -94,8 +86,7 @@ class cmsBlogs
      * @param int $cat_id
      * @return array $cat
      */
-    public function getBlogCategory($cat_id)
-    {
+    public function getBlogCategory($cat_id) {
         $cat = $this->inDB->get_fields('cms_blog_cats', "id = '" . $cat_id . "'", '*');
 
         return $cat ? \cms\events::call('blog.get_category', $cat) : false;
@@ -106,8 +97,7 @@ class cmsBlogs
      * @param array $item
      * @return int
      */
-    public function addBlogCategory($item)
-    {
+    public function addBlogCategory($item) {
         return $this->inDB->insert('cms_blog_cats', \cms\events::call('blog.add_category', $item));
     }
 
@@ -117,8 +107,7 @@ class cmsBlogs
      * @param array $item
      * @return bool
      */
-    public function updateBlogCategory($cat_id, $item)
-    {
+    public function updateBlogCategory($cat_id, $item) {
         return $this->inDB->update('cms_blog_cats', \cms\events::call('blog.update_category', $item), $cat_id);
     }
 
@@ -127,8 +116,7 @@ class cmsBlogs
      * @param int $cat_id
      * @return bool
      */
-    public function deleteBlogCategory($cat_id)
-    {
+    public function deleteBlogCategory($cat_id) {
         \cms\events::call('blog.delete_category', $cat_id);
 
         $this->inDB->query("UPDATE cms_blog_posts SET cat_id=0 WHERE cat_id = '" . $cat_id . "'");
@@ -141,14 +129,13 @@ class cmsBlogs
      * @param int $blog_id
      * @return array $authors
      */
-    public function getBlogAuthors($blog_id)
-    {
+    public function getBlogAuthors($blog_id) {
         $authors = array();
 
         $rs = $this->inDB->query("SELECT user_id FROM cms_blog_authors WHERE blog_id = '" . $blog_id . "'");
 
-        if ( $this->inDB->num_rows($rs) ) {
-            while ( $u = $this->inDB->fetch_assoc($rs) ) {
+        if ($this->inDB->num_rows($rs)) {
+            while ($u = $this->inDB->fetch_assoc($rs)) {
                 $authors[] = $u['user_id'];
             }
         }
@@ -161,21 +148,20 @@ class cmsBlogs
      * @param int $post_id
      * @return array $navigation
      */
-    public function getPostNavigation($post_id, $blog_id, $ownerModel, $blog_link)
-    {
+    public function getPostNavigation($post_id, $blog_id, $ownerModel, $blog_link) {
         $blog_where = isset($blog_id) ? "AND blog_id = '" . $blog_id . "'" : '';
 
         $navigation = array();
 
         $navigation['next'] = $this->inDB->get_fields('cms_blog_posts', "id < '" . $post_id . "' " . $blog_where, 'seolink, title', "id DESC");
 
-        if ( $navigation['next'] ) {
+        if ($navigation['next']) {
             $navigation['next']['url'] = $ownerModel->getPostURL($blog_link, $navigation['next']['seolink']);
         }
 
         $navigation['prev'] = $this->inDB->get_fields('cms_blog_posts', "id > '" . $post_id . "' " . $blog_where, 'seolink, title', "id ASC");
 
-        if ( $navigation['prev'] ) {
+        if ($navigation['prev']) {
             $navigation['prev']['url'] = $ownerModel->getPostURL($blog_link, $navigation['prev']['seolink']);
         }
 
@@ -187,12 +173,10 @@ class cmsBlogs
      * @param int or string $id_or_link
      * @return array $blog
      */
-    public function getBlog($id_or_link = 0)
-    {
-        if ( is_numeric($id_or_link) ) {
+    public function getBlog($id_or_link = 0) {
+        if (is_numeric($id_or_link)) {
             $where = "id = '" . $id_or_link . "'";
-        }
-        else {
+        } else {
             $where = "seolink = '" . $id_or_link . "'";
         }
 
@@ -204,8 +188,7 @@ class cmsBlogs
      * @param int $user_id
      * @return array $blog
      */
-    public function getBlogByUserId($user_id)
-    {
+    public function getBlogByUserId($user_id) {
         return $this->getBlogItem("user_id = '" . $user_id . "'");
     }
 
@@ -214,15 +197,14 @@ class cmsBlogs
      * @param str $where
      * @return array $blog
      */
-    private function getBlogItem($where)
-    {
-        if ( isset($this->owner) ) {
+    private function getBlogItem($where) {
+        if (isset($this->owner)) {
             $where .= " AND owner = '" . $this->owner . "'";
         }
 
         $blog = $this->inDB->get_fields('cms_blogs', $where, '*');
 
-        if ( !$blog ) {
+        if (!$blog) {
             return false;
         }
 
@@ -235,8 +217,7 @@ class cmsBlogs
      * Получает количество блогов по условиям
      * @return int
      */
-    public function getBlogsCount()
-    {
+    public function getBlogsCount() {
         $pub_where = (isset($this->owner) ? "b.owner = '" . $this->owner . "'" : '1=1');
 
         $sql = "SELECT 1
@@ -255,8 +236,7 @@ class cmsBlogs
      * @param obj $ownerModel
      * @return array $blogs
      */
-    public function getBlogs($ownerModel)
-    {
+    public function getBlogs($ownerModel) {
         $pub_where = (isset($this->owner) ? "b.owner = '" . $this->owner . "'" : '1=1');
 
         $sql = "SELECT b.*, COUNT(p.id) as records,
@@ -270,7 +250,7 @@ class cmsBlogs
                 GROUP BY b.id
                 " . $this->inDB->order_by . "\n";
 
-        if ( $this->inDB->limit ) {
+        if ($this->inDB->limit) {
             $sql .= "LIMIT " . $this->inDB->limit;
         }
 
@@ -278,16 +258,16 @@ class cmsBlogs
 
         $this->inDB->resetConditions();
 
-        if ( !$this->inDB->num_rows($result) ) {
+        if (!$this->inDB->num_rows($result)) {
             return false;
         }
 
         $blogs = array();
 
-        while ( $blog = $this->inDB->fetch_assoc($result) ) {
+        while ($blog = $this->inDB->fetch_assoc($result)) {
             $blog['pubdate'] = cmsCore::dateFormat($blog['pubdate']);
-            $blog['url']     = $ownerModel->getBlogURL($blog['seolink']);
-            $blogs[]         = $blog;
+            $blog['url'] = $ownerModel->getBlogURL($blog['seolink']);
+            $blogs[] = $blog;
         }
 
         return \cms\events::call('blog.get_blogs', $blogs);
@@ -298,20 +278,18 @@ class cmsBlogs
      * @param array $post
      * @return str $seolink
      */
-    public function generatePostSeoLink($post)
-    {
+    public function generatePostSeoLink($post) {
         $seolink = cmsCore::strToURL($post['title']);
 
-        if ( @$post['id'] ) {
+        if (@$post['id']) {
             $where = ' AND id<>' . $post['id'];
-        }
-        else {
+        } else {
             $where = '';
         }
 
         $is_exists = $this->inDB->rows_count('cms_blog_posts', "seolink='" . $seolink . "'" . $where, 1);
 
-        if ( $is_exists ) {
+        if ($is_exists) {
             $seolink .= '-' . (@$post['id'] ? $post['id'] : date("d-i"));
         }
 
@@ -323,19 +301,17 @@ class cmsBlogs
      * @param array $blog
      * @return str $seolink
      */
-    public function generateBlogSeoLink($blog)
-    {
+    public function generateBlogSeoLink($blog) {
         $seolink = cmsCore::strToURL($blog['title']);
 
-        if ( @$blog['id'] ) {
+        if (@$blog['id']) {
             $where = ' AND id<>' . $blog['id'];
-        }
-        else {
+        } else {
             $where = '';
         }
 
         $is_exists = $this->inDB->rows_count('cms_blogs', "seolink='" . $seolink . "'" . $where, 1);
-        if ( $is_exists ) {
+        if ($is_exists) {
             $seolink .= '-' . (@$blog['id'] ? $blog['id'] : date("d-i"));
         }
 
@@ -347,8 +323,7 @@ class cmsBlogs
      * @param int $blog_id
      * @return int
      */
-    public function getModerationCount($blog_id = 0)
-    {
+    public function getModerationCount($blog_id = 0) {
         $where = $blog_id ? "blog_id = '" . $blog_id . "'" : '1=1';
 
         return $this->inDB->rows_count('cms_blog_posts', $where . " AND published = 0");
@@ -359,11 +334,10 @@ class cmsBlogs
      * @param array $item
      * @return int $blog_id
      */
-    public function addBlog($item)
-    {
+    public function addBlog($item) {
         $item['id'] = $this->inDB->insert('cms_blogs', \cms\events::call('blog.add', $item));
 
-        if ( $item['id'] ) {
+        if ($item['id']) {
             $item['seolink'] = $this->generateBlogSeoLink($item);
 
             $this->inDB->query("UPDATE cms_blogs SET seolink='" . $item['seolink'] . "' WHERE id = '" . $item['id'] . "'");
@@ -379,11 +353,10 @@ class cmsBlogs
      * @param bool $update_seo_link
      * @return str $seolink
      */
-    public function updateBlog($id, $item, $update_seo_link = false)
-    {
+    public function updateBlog($id, $item, $update_seo_link = false) {
         $item['id'] = $id;
 
-        if ( $update_seo_link ) {
+        if ($update_seo_link) {
             $item['seolink'] = $this->generateBlogSeoLink($item);
         }
 
@@ -399,8 +372,7 @@ class cmsBlogs
      * @param int $blog_id
      * @return bool
      */
-    public function deleteBlog($blog_id)
-    {
+    public function deleteBlog($blog_id) {
         \cms\events::call('blog.delete', $blog_id);
 
         // удаляем сам блог
@@ -410,24 +382,23 @@ class cmsBlogs
         // удаляем посты в нем
         $posts = $this->inDB->get_table('cms_blog_posts', "blog_id = '" . $blog_id . "'", 'id');
 
-        if ( !$posts ) {
+        if (!$posts) {
             return true;
         }
 
-        foreach ( $posts as $post ) {
+        foreach ($posts as $post) {
             $this->deletePost($post['id']);
         }
 
         return true;
     }
 
-    public function deleteBlogs($id_list)
-    {
-        if ( !$id_list || !is_array($id_list) ) {
+    public function deleteBlogs($id_list) {
+        if (!$id_list || !is_array($id_list)) {
             return false;
         }
 
-        foreach ( $id_list as $key => $id ) {
+        foreach ($id_list as $key => $id) {
             $this->deleteBlog($id);
         }
 
@@ -440,15 +411,14 @@ class cmsBlogs
      * @param array $authors
      * @return bool
      */
-    public function updateBlogAuthors($id, $authors)
-    {
+    public function updateBlogAuthors($id, $authors) {
         //Удаляем прежний набор авторов
         $this->inDB->query("DELETE FROM cms_blog_authors WHERE blog_id = '" . $id . "'");
 
         $authors = \cms\events::call('blog.update_authors', $authors);
 
-        if ( $authors ) {
-            foreach ( $authors as $key => $author_id ) {
+        if ($authors) {
+            foreach ($authors as $key => $author_id) {
                 $sql = "INSERT INTO cms_blog_authors (user_id, blog_id, description, startdate)
 						VALUES ('" . (int) $author_id . "', '" . $id . "', '', NOW())";
                 $this->inDB->query($sql);
@@ -461,51 +431,43 @@ class cmsBlogs
     /**
      * Условия выборки
      */
-    public function whereOwnerIs($owner)
-    {
+    public function whereOwnerIs($owner) {
         $this->inDB->where("b.owner = '" . $owner . "'");
         return;
     }
 
-    public function whereNotPublished()
-    {
+    public function whereNotPublished() {
         $this->inDB->where("p.published = 0");
         return;
     }
 
-    public function whereOnlyPublic()
-    {
+    public function whereOnlyPublic() {
         $this->inDB->where("b.allow_who = 'all'");
         $this->inDB->where("p.allow_who = 'all'");
         return;
     }
 
-    public function whereBlogIs($blog_id)
-    {
+    public function whereBlogIs($blog_id) {
         $this->inDB->where("p.blog_id = '" . $blog_id . "'");
         return;
     }
 
-    public function whereCatIs($cat_id)
-    {
+    public function whereCatIs($cat_id) {
         $this->inDB->where("p.cat_id = '" . $cat_id . "'");
         return;
     }
 
-    public function whereBlogUserIs($user_id)
-    {
+    public function whereBlogUserIs($user_id) {
         $this->inDB->where("b.user_id = '" . $user_id . "'");
         return;
     }
 
-    public function whereOwnerTypeIs($ownertype)
-    {
+    public function whereOwnerTypeIs($ownertype) {
         $this->inDB->where("b.ownertype = '" . $ownertype . "'");
         return;
     }
 
-    public function ratingGreaterThan($rating)
-    {
+    public function ratingGreaterThan($rating) {
         $this->inDB->where("p.rating > '" . $rating . "'");
         return;
     }
@@ -516,20 +478,25 @@ class cmsBlogs
      * @param obj $ownerModel
      * @return array $posts
      */
-    public function getPosts($show_all = false, $ownerModel, $is_short = false)
-    {
+    public function getPosts($show_all = false, $ownerModel = null, $is_short = false) {
+        if ($ownerModel === null) {
+            return false;
+        }
+
         $pub_where = ($show_all ? '1=1' : 'p.published = 1');
 
-        if ( isset($this->owner) ) {
+        if (isset($this->owner)) {
             $pub_where .= " AND b.owner = '" . $this->owner . "'";
         }
 
         $sql = "SELECT p.*,
-                       u.nickname as author, u.login, u.is_deleted,
-                       b.allow_who as blog_allow_who,
-                       b.seolink as bloglink,
-                       b.title as blog_title,
-                       b.owner as owner " . $this->inDB->select . "
+                       ANY_VALUE(u.nickname) as author,
+                       ANY_VALUE(u.login) as login,
+                       ANY_VALUE(u.is_deleted) as is_deleted,
+                       ANY_VALUE(b.allow_who) as blog_allow_who,
+                       ANY_VALUE(b.seolink) as bloglink,
+                       ANY_VALUE(b.title) as blog_title,
+                       ANY_VALUE(b.owner) as owner " . $this->inDB->select . "
                 FROM cms_blog_posts p
 				INNER JOIN cms_blogs b ON b.id = p.blog_id
 				LEFT JOIN cms_users u ON u.id = p.user_id
@@ -539,7 +506,7 @@ class cmsBlogs
                 " . $this->inDB->group_by . "
                 " . $this->inDB->order_by . "\n";
 
-        if ( $this->inDB->limit ) {
+        if ($this->inDB->limit) {
             $sql .= "LIMIT " . $this->inDB->limit;
         }
 
@@ -547,28 +514,28 @@ class cmsBlogs
 
         $this->inDB->resetConditions();
 
-        if ( !$this->inDB->num_rows($result) ) {
+        if (!$this->inDB->num_rows($result)) {
             return false;
         }
 
         $posts = array();
 
-        while ( $post = $this->inDB->fetch_assoc($result) ) {
+        while ($post = $this->inDB->fetch_assoc($result)) {
             $post['fpubdate'] = cmsCore::dateFormat($post['pubdate']);
-            $post['url']      = $ownerModel->getPostURL($post['bloglink'], $post['seolink']);
+            $post['url'] = $ownerModel->getPostURL($post['bloglink'], $post['seolink']);
             $post['blog_url'] = $ownerModel->getBlogURL($post['bloglink']);
 
             //Разбиваем текст поста на 2 части по тегу [cut=...] и оставляем только первую из них
-            if ( mb_strstr($post['content_html'], '[cut') ) {
+            if (mb_strstr($post['content_html'], '[cut')) {
                 $post['content_html'] = $this->getPostShort($post['content_html'], $post['url']);
             }
 
-            if ( !$is_short ) {
+            if (!$is_short) {
                 $post['tagline'] = cmsTagLine($this->getTarget('tags'), $post['id']);
             }
 
             // если захотим получать аватар владельца
-            if ( isset($post['imageurl']) ) {
+            if (isset($post['imageurl'])) {
                 $post['author_avatar'] = cmsUser::getUserAvatarUrl($post['user_id'], 'small', $post['imageurl'], $post['is_deleted']);
             }
 
@@ -583,11 +550,10 @@ class cmsBlogs
      * @param bool $show_all
      * @return int
      */
-    public function getPostsCount($show_all = false)
-    {
+    public function getPostsCount($show_all = false) {
         $pub_where = ($show_all ? '1=1' : 'p.published = 1');
 
-        if ( isset($this->owner) ) {
+        if (isset($this->owner)) {
             $pub_where .= " AND b.owner = '" . $this->owner . "'";
         }
 
@@ -604,9 +570,8 @@ class cmsBlogs
         return $this->inDB->num_rows($result);
     }
 
-    public function getUserBlogId($user_id)
-    {
-        if ( isset($this->owner) ) {
+    public function getUserBlogId($user_id) {
+        if (isset($this->owner)) {
             $where = " AND owner = '" . $this->owner . "'";
         }
 
@@ -619,16 +584,15 @@ class cmsBlogs
      * @param int $user_id
      * @return int
      */
-    public function isUserBlogWriter($blog, $user_id)
-    {
+    public function isUserBlogWriter($blog, $user_id) {
         \cms\events::call('blog.is_writer', $blog);
 
         // в персональные блоги может писать только автор
-        if ( $blog['ownertype'] == 'single' ) {
+        if ($blog['ownertype'] == 'single') {
             return false;
         }
 
-        if ( $blog['ownertype'] == 'multi' && $blog['forall'] ) {
+        if ($blog['ownertype'] == 'multi' && $blog['forall']) {
             return true;
         }
 
@@ -640,12 +604,10 @@ class cmsBlogs
      * @param int or string $id_or_link
      * @return array $blog
      */
-    public function getPost($id_or_link = 0)
-    {
-        if ( is_numeric($id_or_link) ) {
+    public function getPost($id_or_link = 0) {
+        if (is_numeric($id_or_link)) {
             $where = "p.id = '" . $id_or_link . "'";
-        }
-        else {
+        } else {
             $where = "p.seolink = '" . $id_or_link . "'";
         }
 
@@ -661,7 +623,7 @@ class cmsBlogs
 
         $result = $this->inDB->query($sql);
 
-        if ( !$this->inDB->num_rows($result) ) {
+        if (!$this->inDB->num_rows($result)) {
             return false;
         }
 
@@ -669,10 +631,10 @@ class cmsBlogs
 
         $post = $this->inDB->fetch_assoc($result);
 
-        $post['feditdate']     = cmsCore::dateFormat($post['edit_date']);
-        $post['fpubdate']      = cmsCore::dateDiffNow($post['pubdate']) . ' ' . $_LANG['BACK'] . ' (' . cmsCore::dateFormat($post['pubdate']) . ')';
+        $post['feditdate'] = cmsCore::dateFormat($post['edit_date']);
+        $post['fpubdate'] = cmsCore::dateDiffNow($post['pubdate']) . ' ' . $_LANG['BACK'] . ' (' . cmsCore::dateFormat($post['pubdate']) . ')';
         //Убираем тег [cut]
-        $post['content_html']  = preg_replace('/\[(cut=)\s*(.*?)\]/ui', '', $post['content_html']);
+        $post['content_html'] = preg_replace('/\[(cut=)\s*(.*?)\]/ui', '', $post['content_html']);
         $post['author_avatar'] = cmsUser::getUserAvatarUrl($post['user_id'], 'small', $post['author_image'], $post['author_deleted']);
 
         return \cms\events::call('blog.get_post', $post);
@@ -683,48 +645,46 @@ class cmsBlogs
      * @param array $item
      * @return array $post_id, $seolink
      */
-    public function addPost($item)
-    {
+    public function addPost($item) {
         $item = \cms\events::call('blog.add_post', $item);
 
         //парсим bb-код перед записью в базу
         // Парсим по отдельности части текста, если есть тег [cut
-        if ( mb_strstr($item['content'], '[cut') ) {
-            $msg_to               = $this->getPostShort($item['content']);
-            $msg_to               = cmsCore::parseSmiles($msg_to, true);
-            $msg_after            = $this->getPostShort($item['content'], false, true);
-            $msg_after            = cmsCore::parseSmiles($msg_after, true);
-            $cut                  = $this->getPostCut($item['content']);
+        if (mb_strstr($item['content'], '[cut')) {
+            $msg_to = $this->getPostShort($item['content']);
+            $msg_to = cmsCore::parseSmiles($msg_to, true);
+            $msg_after = $this->getPostShort($item['content'], false, true);
+            $msg_after = cmsCore::parseSmiles($msg_after, true);
+            $cut = $this->getPostCut($item['content']);
             $item['content_html'] = $msg_to . $cut . $msg_after;
-        }
-        else {
+        } else {
             $item['content_html'] = cmsCore::parseSmiles($item['content'], true);
         }
 
         // Экранируем специальные символы
-        $item['content']      = $this->inDB->escape_string($item['content']);
+        $item['content'] = $this->inDB->escape_string($item['content']);
         $item['content_html'] = $this->inDB->escape_string($item['content_html']);
 
         $post_id = $this->inDB->insert('cms_blog_posts', $item);
 
-        if ( !$post_id ) {
+        if (!$post_id) {
             return false;
         }
 
         cmsInsertTags($item['tags'], $this->getTarget('tags'), $post_id);
 
-        $item['id']      = $post_id;
+        $item['id'] = $post_id;
         $item['seolink'] = $this->generatePostSeoLink($item);
 
         $this->inDB->query("UPDATE cms_blog_posts SET seolink='" . $item['seolink'] . "' WHERE id = '" . $post_id . "'");
 
-        if ( $item['published'] ) {
+        if ($item['published']) {
             cmsUser::checkAwards($item['user_id']);
         }
 
         cmsCore::setIdUploadImage('blog_post', $post_id);
 
-        return array( 'id' => $post_id, 'seolink' => $item['seolink'] );
+        return array('id' => $post_id, 'seolink' => $item['seolink']);
     }
 
     /**
@@ -734,29 +694,27 @@ class cmsBlogs
      * @param bool $update_seo_link
      * @return bool
      */
-    public function updatePost($post_id, $item, $update_seo_link = false)
-    {
+    public function updatePost($post_id, $item, $update_seo_link = false) {
         $item['id'] = $post_id;
 
         $item = \cms\events::call('blog.update_post', $item);
 
-        if ( $update_seo_link ) {
+        if ($update_seo_link) {
             $item['seolink'] = $this->generatePostSeoLink($item);
         }
 
-        if ( mb_strstr($item['content'], '[cut') ) {
-            $msg_to               = $this->getPostShort($item['content']);
-            $msg_to               = cmsCore::parseSmiles($msg_to, true);
-            $msg_after            = $this->getPostShort($item['content'], false, true);
-            $msg_after            = cmsCore::parseSmiles($msg_after, true);
-            $cut                  = $this->getPostCut($item['content']);
+        if (mb_strstr($item['content'], '[cut')) {
+            $msg_to = $this->getPostShort($item['content']);
+            $msg_to = cmsCore::parseSmiles($msg_to, true);
+            $msg_after = $this->getPostShort($item['content'], false, true);
+            $msg_after = cmsCore::parseSmiles($msg_after, true);
+            $cut = $this->getPostCut($item['content']);
             $item['content_html'] = $msg_to . $cut . $msg_after;
-        }
-        else {
+        } else {
             $item['content_html'] = cmsCore::parseSmiles($item['content'], true);
         }
 
-        $item['content']      = $this->inDB->escape_string($item['content']);
+        $item['content'] = $this->inDB->escape_string($item['content']);
         $item['content_html'] = $this->inDB->escape_string($item['content_html']);
 
         $this->inDB->update('cms_blog_posts', $item, $post_id);
@@ -771,13 +729,12 @@ class cmsBlogs
      * @param int $post_id
      * @return bool
      */
-    public function deletePost($post_id)
-    {
+    public function deletePost($post_id) {
         \cms\events::call('blog.delete_post', $post_id);
 
         $post = $this->getPost($post_id);
 
-        if ( !$post ) {
+        if (!$post) {
             return false;
         }
 
@@ -803,19 +760,17 @@ class cmsBlogs
      * @param int $flag
      * @return bool
      */
-    public function publishPost($post_id, $flag = 1)
-    {
+    public function publishPost($post_id, $flag = 1) {
         return $this->inDB->query("UPDATE cms_blog_posts SET published = " . $flag . ", pubdate = NOW() WHERE id = '" . $post_id . "'");
     }
 
-    public static function updateCommentsCount($target, $target_id)
-    {
+    public static function updateCommentsCount($target, $target_id) {
         $inDB = cmsDatabase::getInstance();
 
         // получаем данные о записи
         $post = $inDB->get_fields('cms_blog_posts', "id='" . $target_id . "'", 'id, blog_id');
 
-        if ( !$post ) {
+        if (!$post) {
             return false;
         }
 
@@ -830,7 +785,7 @@ class cmsBlogs
 
         $result = $inDB->query($sql);
 
-        if ( $inDB->num_rows($result) ) {
+        if ($inDB->num_rows($result)) {
             $com = $inDB->fetch_assoc($result);
             $inDB->query("UPDATE cms_blogs SET comments_count = '" . $com['blog_comments_count'] . "' WHERE id = '" . $post['blog_id'] . "'");
         }
@@ -838,15 +793,14 @@ class cmsBlogs
         return true;
     }
 
-    public function getPostShort($post_content, $post_url = false, $is_after = false)
-    {
-        $regex   = '/\[(cut=)\s*(.*?)\]/ui';
+    public function getPostShort($post_content, $post_url = false, $is_after = false) {
+        $regex = '/\[(cut=)\s*(.*?)\]/ui';
         $matches = array();
 
         preg_match_all($regex, $post_content, $matches, PREG_SET_ORDER);
 
-        if ( is_array($matches) ) {
-            $elm    = $matches[0];
+        if (is_array($matches)) {
+            $elm = $matches[0];
             $elm[0] = str_replace('[', '', $elm[0]);
             $elm[0] = str_replace(']', '', $elm[0]);
 
@@ -856,11 +810,11 @@ class cmsBlogs
 
             $pages = preg_split($regex, $post_content);
 
-            if ( $pages ) {
+            if ($pages) {
                 $post_content = $is_after ? $pages[1] : $pages[0];
             }
 
-            if ( $post_url && !$is_after ) {
+            if ($post_url && !$is_after) {
                 $post_content .= '<div class="blog_cut_link">
                                     <a href="' . $post_url . '">' . $cut_title . '</a>
                               </div>';
@@ -870,15 +824,14 @@ class cmsBlogs
         return $post_content;
     }
 
-    public function getPostCut($post_content)
-    {
-        $regex   = '/\[(cut=)\s*(.*?)\]/ui';
+    public function getPostCut($post_content) {
+        $regex = '/\[(cut=)\s*(.*?)\]/ui';
         $matches = array();
 
         preg_match_all($regex, $post_content, $matches, PREG_SET_ORDER);
 
-        if ( is_array($matches) ) {
-            $elm    = $matches[0];
+        if (is_array($matches)) {
+            $elm = $matches[0];
             $elm[0] = str_replace('[', '', $elm[0]);
             $elm[0] = str_replace(']', '', $elm[0]);
 
@@ -889,5 +842,4 @@ class cmsBlogs
 
         return $cut;
     }
-
 }
