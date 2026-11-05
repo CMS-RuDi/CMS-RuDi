@@ -285,7 +285,7 @@ DROP TABLE IF EXISTS `#__comments`;
 CREATE TABLE `#__comments` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `parent_id` int(11) NOT NULL,
-  `pid` int(11) NOT NULL,
+  `pid` int(11) NOT NULL DEFAULT 0,
   `user_id` int(11) NOT NULL,
   `target` varchar(20) NOT NULL,
   `target_id` int(11) NOT NULL,

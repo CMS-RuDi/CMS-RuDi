@@ -118,7 +118,7 @@
                             <th class="lt_header" width="" colspan="2">{$lang->title}</th>
                             <th class="lt_header" width="80">{$lang->date}</th>
                             <th class="lt_header" width="50">{$lang->ad_is_published}</th>
-                            {if $category_id && count($items) > 1}
+                            {if $category_id && $items && count($items) > 1}
                                 <th class="lt_header" width="50">{$lang->ad_order}</th>
                                 <th class="lt_header" width="24">&darr;&uarr;</th>
                             {/if}
@@ -150,7 +150,7 @@
                                             </a>
                                         {/if}
                                     </td>
-                                    {if $category_id && count($items) > 1}
+                                    {if $category_id && $items && count($items) > 1}
                                         <td class="ordering">{$item.ordering}</td>
                                         <td>
                                             {if $num < count($items)}

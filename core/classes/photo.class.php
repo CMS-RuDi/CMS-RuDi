@@ -10,33 +10,28 @@
  *                        LICENSED BY GNU/GPL v2
  */
 
-class cmsPhoto
-{
-
+class cmsPhoto {
     private static $instance;
     private $targets = array(
-        'tags'           => 'photo',
-        'rating'         => 'photo',
+        'tags' => 'photo',
+        'rating' => 'photo',
         'comments_photo' => 'photo',
         'comments_album' => 'palbum',
-        'actions_photo'  => 'add_photo'
+        'actions_photo' => 'add_photo'
     );
 
-    private function __construct()
-    {
+    private function __construct() {
         $this->inDB = cmsDatabase::getInstance();
         cmsCore::loadLib('tags');
         cmsCore::loadLanguage('components/photos');
     }
 
-    private function __clone()
-    {
+    private function __clone() {
 
     }
 
-    public static function getInstance()
-    {
-        if ( self::$instance === null ) {
+    public static function getInstance() {
+        if (self::$instance === null) {
             self::$instance = new self;
         }
 
@@ -48,33 +43,28 @@ class cmsPhoto
      * @param array $targets
      * @return bool
      */
-    public function setTargets($targets = array())
-    {
+    public function setTargets($targets = array()) {
         $this->targets = $targets;
         return true;
     }
 
-    public function getTarget($target = '')
-    {
+    public function getTarget($target = '') {
         return isset($this->targets[$target]) ? $this->targets[$target] : '';
     }
 
-    public function whereAlbumIs($album_id)
-    {
+    public function whereAlbumIs($album_id) {
         $this->inDB->where("f.album_id = '" . $album_id . "'");
         return;
     }
 
-    public function whereThisAndNestedCats($left_key, $right_key)
-    {
+    public function whereThisAndNestedCats($left_key, $right_key) {
         $this->inDB->where("a.NSLeft >= " . $left_key . " AND a.NSRight <= " . $right_key . " AND a.parent_id > 0");
     }
 
-    public function wherePeriodIs($period)
-    {
+    public function wherePeriodIs($period) {
         $today = date("d-m-Y");
 
-        switch ( $period ) {
+        switch ($period) {
             case 'today': $this->inDB->where("DATE_FORMAT(f.pubdate, '%d-%m-%Y')='" . $today . "'");
                 break;
             case 'week': $this->inDB->where("DATEDIFF(NOW(), f.pubdate) <= 7");
@@ -92,11 +82,10 @@ class cmsPhoto
      * @param array $photo
      * @return int
      */
-    public function addPhoto($photo)
-    {
+    public function addPhoto($photo) {
         $photo_id = $this->inDB->insert('cms_photo_files', \cms\events::call('photos.add_photo', $photo));
 
-        if ( $photo['tags'] ) {
+        if ($photo['tags']) {
             cmsInsertTags($photo['tags'], $this->getTarget('tags'), $photo_id);
         }
 
@@ -109,11 +98,10 @@ class cmsPhoto
      * Обновляет данные фото
      * @return bool
      */
-    public function updatePhoto($photo, $id)
-    {
+    public function updatePhoto($photo, $id) {
         $this->inDB->update('cms_photo_files', \cms\events::call('photos.update_photo', $photo), $id);
 
-        if ( $photo['tags'] ) {
+        if ($photo['tags']) {
             cmsInsertTags($photo['tags'], $this->getTarget('tags'), $id);
         }
 
@@ -126,8 +114,7 @@ class cmsPhoto
      * @param bool $is_full
      * @return array $photo
      */
-    public function getPhoto($photo_id)
-    {
+    public function getPhoto($photo_id) {
         $sql = "SELECT f.*, a.user_id as auser_id, a.title cat_title, a.NSLeft, a.NSRight, a.NSDiffer, a.nav album_nav, a.public, a.showtags a_tags, a.bbcode a_bbcode, a.orderby, a.orderto, u.nickname, u.login, p.gender, p.imageurl
 				FROM cms_photo_files f
 				INNER JOIN cms_photo_albums a ON a.id = f.album_id
@@ -137,7 +124,7 @@ class cmsPhoto
 
         $result = $this->inDB->query($sql);
 
-        if ( !$this->inDB->num_rows($result) ) {
+        if (!$this->inDB->num_rows($result)) {
             return false;
         }
 
@@ -154,11 +141,10 @@ class cmsPhoto
      * @param obj $inUploadPhoto
      * @return bool
      */
-    public function deletePhoto($photo, $inUploadPhoto)
-    {
+    public function deletePhoto($photo, $inUploadPhoto) {
         $photo = \cms\events::call('photos.delete_photo', $photo);
 
-        if ( !$this->deletePhotoFile($photo['file'], $inUploadPhoto) ) {
+        if (!$this->deletePhotoFile($photo['file'], $inUploadPhoto)) {
             return false;
         }
 
@@ -178,8 +164,7 @@ class cmsPhoto
      * @param int $photo_id
      * @return bool
      */
-    public function publishPhoto($photo_id)
-    {
+    public function publishPhoto($photo_id) {
         \cms\events::call('photos.publish_photo', $photo_id);
 
         return $this->inDB->query("UPDATE cms_photo_files SET published = 1 WHERE id = '" . $photo_id . "'");
@@ -191,9 +176,8 @@ class cmsPhoto
      * @param obj $inUploadPhoto
      * @return bool
      */
-    public function deletePhotos($id_list, $inUploadPhoto)
-    {
-        foreach ( $id_list as $key => $id ) {
+    public function deletePhotos($id_list, $inUploadPhoto) {
+        foreach ($id_list as $key => $id) {
             $this->deletePhoto($id, $inUploadPhoto);
         }
 
@@ -204,9 +188,8 @@ class cmsPhoto
      * Удаляет файл фото с папок загрузки
      * @return bool
      */
-    public function deletePhotoFile($file = '', $inUploadPhoto)
-    {
-        if ( !($file && is_object($inUploadPhoto)) ) {
+    public function deletePhotoFile($file = '', $inUploadPhoto = null) {
+        if (!($file && is_object($inUploadPhoto))) {
             return false;
         }
 
@@ -218,8 +201,7 @@ class cmsPhoto
      * @param str $differ
      * @return int
      */
-    public function getAlbumsCount($differ)
-    {
+    public function getAlbumsCount($differ) {
         return (int) $this->inDB->rows_count('cms_photo_albums', "NSDiffer = '" . $differ . "' AND parent_id > 0 AND published = 1");
     }
 
@@ -227,30 +209,28 @@ class cmsPhoto
      * Возвращает альбомы
      * @return array $albums
      */
-    public function getAlbums($parent_id = 0, $differ = '', $recurse = false)
-    {
-        if ( !$parent_id ) {
+    public function getAlbums($parent_id = 0, $differ = '', $recurse = false) {
+        if (!$parent_id) {
             $parent_where = 'a.parent_id > 0';
         }
 
-        if ( $parent_id ) {
-            if ( $recurse ) {
-                $parent       = $this->inDB->getNsCategory('cms_photo_albums', $parent_id, $differ);
+        if ($parent_id) {
+            if ($recurse) {
+                $parent = $this->inDB->getNsCategory('cms_photo_albums', $parent_id, $differ);
                 $parent_where = "a.NSLeft > " . $parent['NSLeft'] . " AND a.NSRight < '" . $parent['NSRight'] . "'";
-            }
-            else {
+            } else {
                 $parent_where = "a.parent_id = '" . $parent_id . "'";
             }
         }
 
-        $sql = "SELECT a.id, a.title, a.description, a.pubdate, a.iconurl, a.thumb1,  f.file, IFNULL(COUNT(f.id), 0) as content_count
+        $sql = "SELECT a.id, a.title, a.description, a.pubdate, a.iconurl, a.thumb1,  ANY_VALUE(f.file), IFNULL(COUNT(f.id), 0) as content_count
 				FROM cms_photo_albums a
 				LEFT JOIN cms_photo_files f ON f.album_id = a.id AND f.published = 1
 				WHERE a.NSDiffer='" . $differ . "' AND " . $parent_where . " AND a.published = 1
 				GROUP BY a.id
                 " . $this->inDB->order_by . "\n";
 
-        if ( $this->inDB->limit ) {
+        if ($this->inDB->limit) {
             $sql .= "LIMIT " . $this->inDB->limit;
         }
 
@@ -260,15 +240,15 @@ class cmsPhoto
 
         $this->inDB->resetConditions();
 
-        if ( !$this->inDB->num_rows($result) ) {
+        if (!$this->inDB->num_rows($result)) {
             return false;
         }
 
-        while ( $album = $this->inDB->fetch_assoc($result) ) {
-            $album['file']    = ($album['iconurl'] && file_exists(PATH . '/images/photos/small/' . $album['iconurl'])) ?
+        while ($album = $this->inDB->fetch_assoc($result)) {
+            $album['file'] = ($album['iconurl'] && file_exists(PATH . '/images/photos/small/' . $album['iconurl'])) ?
                     $album['iconurl'] : ($album['file'] ? $album['file'] : 'no_image.png');
             $album['pubdate'] = cmsCore::dateFormat($album['pubdate']);
-            $albums[]         = $album;
+            $albums[] = $album;
         }
 
         return \cms\events::call('photos.get_albums', $albums);
@@ -281,11 +261,10 @@ class cmsPhoto
      * @param obj $inUploadPhoto
      * @return bool
      */
-    public function deleteAlbum($album_id, $differ = '', $inUploadPhoto)
-    {
+    public function deleteAlbum($album_id, $differ = '', $inUploadPhoto = null) {
         $album = $this->inDB->getNsCategory('cms_photo_albums', $album_id, $differ);
 
-        if ( !$album ) {
+        if (!$album) {
             return false;
         }
 
@@ -298,8 +277,8 @@ class cmsPhoto
 
         $photos = $this->getPhotos(true);
 
-        if ( $photos ) {
-            foreach ( $photos as $photo ) {
+        if ($photos) {
+            foreach ($photos as $photo) {
                 $this->deletePhoto($photo, $inUploadPhoto);
             }
         }
@@ -317,8 +296,7 @@ class cmsPhoto
      * @param str $selected
      * @return str
      */
-    public function getAlbumsOption($differ, $selected = '')
-    {
+    public function getAlbumsOption($differ, $selected = '') {
         return cmsCore::getInstance()->getListItems('cms_photo_albums', $selected, 'id', 'ASC', "parent_id > 0 AND NSDiffer='" . $differ . "' AND published = 1");
     }
 
@@ -328,8 +306,7 @@ class cmsPhoto
      * @param bool $is_rating
      * @return array $photos
      */
-    public function getPhotos($show_all = false, $is_comments_count = false)
-    {
+    public function getPhotos($show_all = false, $is_comments_count = false) {
         $pub_where = ($show_all ? '1=1' : 'f.published = 1');
 
         $sql = "SELECT f.* " . $this->inDB->select . "
@@ -342,7 +319,7 @@ class cmsPhoto
 
                 " . $this->inDB->order_by . "\n";
 
-        if ( $this->inDB->limit ) {
+        if ($this->inDB->limit) {
             $sql .= "LIMIT " . $this->inDB->limit;
         }
 
@@ -350,19 +327,19 @@ class cmsPhoto
 
         $this->inDB->resetConditions();
 
-        if ( !$this->inDB->num_rows($result) ) {
+        if (!$this->inDB->num_rows($result)) {
             return false;
         }
 
         $photos = array();
 
-        while ( $photo = $this->inDB->fetch_assoc($result) ) {
-            if ( $is_comments_count ) {
+        while ($photo = $this->inDB->fetch_assoc($result)) {
+            if ($is_comments_count) {
                 $photo['comments'] = cmsCore::getCommentsCount(($photo['owner'] == 'photos' ? 'photo' : 'club_photo'), $photo['id']);
             }
 
             $photo['pubdate'] = cmsCore::dateFormat($photo['pubdate'], false, false, false);
-            $photos[]         = $photo;
+            $photos[] = $photo;
         }
 
         return \cms\events::call('photos.get_photos', $photos);
@@ -373,8 +350,7 @@ class cmsPhoto
      * @param bool $show_all
      * @return int
      */
-    public function getPhotosCount($show_all = false)
-    {
+    public function getPhotosCount($show_all = false) {
         //подготовим условия
         $pub_where = ($show_all ? '1=1' : 'f.published = 1');
 
@@ -391,5 +367,4 @@ class cmsPhoto
 
         return $this->inDB->num_rows($result);
     }
-
 }

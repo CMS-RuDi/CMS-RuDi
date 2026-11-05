@@ -441,10 +441,14 @@ class db
         }
         else
 
-        // если значение поля не задано,
-        // то запишем в базу NULL
-        if ( $value === '' || is_null($value) ) {
+        // NULL пишем только для действительно null.
+        // Пустая строка должна оставаться пустой строкой: в старых схемах CMS
+        // многие текстовые поля объявлены как NOT NULL без DEFAULT.
+        if ( is_null($value) ) {
             $value = 'NULL';
+        }
+        else if ( $value === '' ) {
+            $value = "''";
         }
         else {
             $value = $this->escape(trim($value));

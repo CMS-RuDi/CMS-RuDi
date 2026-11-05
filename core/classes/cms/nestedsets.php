@@ -320,6 +320,13 @@ class nestedsets
 
     public function MoveNode($IDNode = -1, $IDParent = -1, $Order = -1, $Differ = "")
     {
+        $IDNode   = (int) $IDNode;
+        $IDParent = (int) $IDParent;
+
+        if ( !$IDNode ) {
+            return false;
+        }
+
         $sql_select = "SELECT * FROM " . $this->TableName .
                 " WHERE " . $this->FieldID . " = " . $IDNode .
                 " AND " . $this->FieldDiffer . " = '" . $Differ . "'";

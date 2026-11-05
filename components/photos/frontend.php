@@ -10,11 +10,10 @@
  *                        LICENSED BY GNU/GPL v2
  */
 
-function photos()
-{
+function photos() {
     $inCore = cmsCore::getInstance();
     $inPage = cmsPage::getInstance();
-    $inDB   = cmsDatabase::getInstance();
+    $inDB = cmsDatabase::getInstance();
     $inUser = cmsUser::getInstance();
 
     $inPhoto = cmsPhoto::getInstance();
@@ -27,16 +26,16 @@ function photos()
 
     $root_album_id = $inDB->getNsRootCatId('cms_photo_albums');
 
-    $id   = cmsCore::request('id', 'int', $root_album_id);
-    $do   = $inCore->do;
+    $id = cmsCore::request('id', 'int', $root_album_id);
+    $do = $inCore->do;
     $page = cmsCore::request('page', 'int', 1);
 
     $inPage->addPathway($inCore->getComponentTitle(), '/photos');
 
     // только авторизованные пользуются js
-    if ( $inUser->id ) {
+    if ($inUser->id) {
         $inPage->addHeadJS('components/photos/js/photos.js');
-        $inPage->addHeadJsLang(array( 'NO_PUBLISH', 'EDIT_PHOTO', 'YOU_REALLY_DELETE_PHOTO', 'MOVE_PHOTO' ));
+        $inPage->addHeadJsLang(array('NO_PUBLISH', 'EDIT_PHOTO', 'YOU_REALLY_DELETE_PHOTO', 'MOVE_PHOTO'));
     }
 
     $inPage->setDescription($model->config['meta_desc'] ? $model->config['meta_desc'] : $pagetitle);
@@ -44,50 +43,49 @@ function photos()
 
 //=========================== Просмотр альбома ===============================//
 
-    if ( $do == 'view' ) {
+    if ($do == 'view') {
         $album = $inDB->getNsCategory('cms_photo_albums', $id, null);
 
-        if ( !$album && $inCore->menuId() !== 1 ) {
+        if (!$album && $inCore->menuId() !== 1) {
             cmsCore::error404();
         }
 
         // Неопубликованные альбомы показываем только админам
-        if ( !$album['published'] && !$inUser->is_admin ) {
+        if (!$album['published'] && !$inUser->is_admin) {
             cmsCore::error404();
         }
 
         $album = \cms\events::call('photos.get_album', $album);
 
         // если не корневой альбом
-        if ( $album['id'] != $root_album_id ) {
+        if ($album['id'] != $root_album_id) {
             $path_list = $inDB->getNsCategoryPath('cms_photo_albums', $album['NSLeft'], $album['NSRight'], 'id, title, NSLevel');
 
-            if ( $path_list ) {
-                foreach ( $path_list as $pcat ) {
+            if ($path_list) {
+                foreach ($path_list as $pcat) {
                     $inPage->addPathway($pcat['title'], '/photos/' . $pcat['id']);
                 }
             }
 
             $pagetitle = ($pagetitle && $inCore->isMenuIdStrict()) ? $pagetitle : ($album['title'] . ' - ' . $_LANG['PHOTOGALLERY']);
             $inPage->setTitle($album['pagetitle'] ? $album['pagetitle'] : $pagetitle);
-        }
-        else {
-            $pagetitle      = ($pagetitle && $inCore->isMenuIdStrict()) ? $pagetitle : $_LANG['PHOTOGALLERY'];
+        } else {
+            $pagetitle = ($pagetitle && $inCore->isMenuIdStrict()) ? $pagetitle : $_LANG['PHOTOGALLERY'];
             $inPage->setTitle($pagetitle);
             $album['title'] = $pagetitle;
         }
 
         //Формируем подкатегории альбома
-        $inDB->orderBy('f.' . $model->config['orderby'], $model->config['orderto']);
+        $inDB->orderBy('ANY_VALUE(f.' . $model->config['orderby'] . ')', $model->config['orderto']);
         $subcats = $inPhoto->getAlbums($album['id']);
 
         // Сортировка фотографий
         $orderby = cmsCore::getSearchVar('orderby', $album['orderby']);
         $orderto = cmsCore::getSearchVar('orderto', $album['orderto']);
-        if ( !in_array($orderby, array( 'title', 'pubdate', 'rating', 'hits' )) ) {
+        if (!in_array($orderby, array('title', 'pubdate', 'rating', 'hits'))) {
             $orderby = $album['orderby'];
         }
-        if ( !in_array($orderto, array( 'desc', 'asc' )) ) {
+        if (!in_array($orderto, array('desc', 'asc'))) {
             $orderto = $album['orderto'];
         }
 
@@ -104,34 +102,30 @@ function photos()
         $inDB->limitPage($page, $album['perpage']);
 
         $photos = $inPhoto->getPhotos($inUser->is_admin, $album['showdate']);
-        if ( !$photos && $page > 1 ) {
+        if (!$photos && $page > 1) {
             cmsCore::error404();
         }
 
-        if ( $album['id'] != $root_album_id ) {
+        if ($album['id'] != $root_album_id) {
             // meta description
-            if ( $album['meta_desc'] ) {
+            if ($album['meta_desc']) {
                 $meta_desc = $album['meta_desc'];
-            }
-            elseif ( mb_strlen(strip_tags($album['description'])) >= 250 ) {
+            } elseif (mb_strlen(strip_tags($album['description'])) >= 250) {
                 $meta_desc = crop($album['description']);
-            }
-            else {
+            } else {
                 $meta_desc = $album['title'];
             }
 
             $inPage->setDescription($meta_desc);
             // meta keywords
-            if ( $album['meta_keys'] ) {
+            if ($album['meta_keys']) {
                 $meta_keys = $album['meta_keys'];
-            }
-            elseif ( $photos ) {
-                foreach ( $photos as $p ) {
+            } elseif ($photos) {
+                foreach ($photos as $p) {
                     $k[] = $p['title'];
                 }
                 $meta_keys = implode(', ', $k);
-            }
-            else {
+            } else {
                 $meta_keys = $album['title'];
             }
 
@@ -152,7 +146,7 @@ function photos()
                 display('com_photos_view.tpl');
 
         // если есть фотограйии в альбоме и включены комментарии в альбоме, то показываем их
-        if ( $album['is_comments'] && $photos && $inCore->isComponentInstalled('comments') ) {
+        if ($album['is_comments'] && $photos && $inCore->isComponentInstalled('comments')) {
             cmsCore::includeComments();
             comments('palbum', $album['id']);
         }
@@ -160,30 +154,30 @@ function photos()
 
 //============================== VIEW PHOTO ==================================//
 
-    if ( $do == 'viewphoto' ) {
+    if ($do == 'viewphoto') {
         // получаем фото
         $photo = \cms\events::call('photos.get_photo', $inPhoto->getPhoto($id));
 
-        if ( !$photo ) {
+        if (!$photo) {
             cmsCore::error404();
         }
 
         // Если фото клуба редиректим на новый алрес
-        if ( mb_strstr($photo['NSDiffer'], 'club') ) {
+        if (mb_strstr($photo['NSDiffer'], 'club')) {
             cmsCore::redirect('/clubs/photo' . $photo['id'] . '.html', '301');
         }
 
         $is_author = (($photo['user_id'] == $inUser->id) && $inUser->id);
 
         // неопубликованное фото видно админам и автору
-        if ( !$photo['published'] && !$inUser->is_admin && !$is_author ) {
+        if (!$photo['published'] && !$inUser->is_admin && !$is_author) {
             cmsCore::error404();
         }
 
         $path_list = $inDB->getNsCategoryPath('cms_photo_albums', $photo['NSLeft'], $photo['NSRight'], 'id, title, NSLevel');
 
-        if ( $path_list ) {
-            foreach ( $path_list as $pcat ) {
+        if ($path_list) {
+            foreach ($path_list as $pcat) {
                 $inPage->addPathway($pcat['title'], '/photos/' . $pcat['id']);
             }
         }
@@ -192,29 +186,26 @@ function photos()
         $inPage->setTitle($photo['pagetitle'] ? $photo['pagetitle'] : $photo['title']);
         $inPage->setKeywords($photo['meta_keys'] ? $photo['meta_keys'] : $photo['title']);
 
-        if ( !$photo['meta_desc'] ) {
-            if ( $photo['description'] ) {
+        if (!$photo['meta_desc']) {
+            if ($photo['description']) {
                 $inPage->setDescription(crop($photo['description']));
-            }
-            else {
+            } else {
                 $inPage->setDescription($photo['title']);
             }
-        }
-        else {
+        } else {
             $inPage->setDescription($photo['meta_desc']);
         }
 
         // Обновляем количество просмотров фотографии
-        if ( !$is_author ) {
+        if (!$is_author) {
             $inDB->setFlag('cms_photo_files', $photo['id'], 'hits', $photo['hits'] + 1);
         }
 
         //навигация
-        if ( $photo['album_nav'] ) {
+        if ($photo['album_nav']) {
             $nextid = $inDB->get_fields('cms_photo_files', 'id<' . $photo['id'] . ' AND album_id = ' . $photo['album_id'] . ' AND published=1', 'id, file', 'id DESC');
             $previd = $inDB->get_fields('cms_photo_files', 'id>' . $photo['id'] . ' AND album_id = ' . $photo['album_id'] . ' AND published=1', 'id, file', 'id ASC');
-        }
-        else {
+        } else {
             $previd = false;
             $nextid = false;
         }
@@ -235,7 +226,7 @@ function photos()
                 display('com_photos_view_photo.tpl');
 
         //выводим комментарии, если они разрешены и фото опубликовано
-        if ( $photo['comments'] && $inCore->isComponentInstalled('comments') ) {
+        if ($photo['comments'] && $inCore->isComponentInstalled('comments')) {
             cmsCore::includeComments();
             comments('photo', $photo['id'], array(), $is_author);
         }
@@ -243,9 +234,9 @@ function photos()
 
 //============================= PHOTO UPLOAD  ================================//
 
-    if ( $do == 'addphoto' ) {
+    if ($do == 'addphoto') {
         // Неавторизованных просим авторизоваться
-        if ( !$inUser->id ) {
+        if (!$inUser->id) {
             cmsUser::goToLogin();
         }
 
@@ -254,10 +245,10 @@ function photos()
         // получаем альбом
         $album = $inDB->getNsCategory('cms_photo_albums', $id);
 
-        if ( !$album ) {
+        if (!$album) {
             cmsCore::error404();
         }
-        if ( !$album['published'] && !$inUser->is_admin ) {
+        if (!$album['published'] && !$inUser->is_admin) {
             cmsCore::error404();
         }
 
@@ -265,13 +256,13 @@ function photos()
 
         // права доступа
         // загружаем только в разрешенные альбомы
-        if ( !$album['public'] && !$inUser->is_admin ) {
+        if (!$album['public'] && !$inUser->is_admin) {
             cmsCore::error404();
         }
 
         // Смотрим ограничения загрузки в сутки
         $today_uploaded = $album['uplimit'] ? $model->loadedByUser24h($inUser->id, $album['id']) : 0;
-        if ( !$inUser->is_admin && $album['uplimit'] && $today_uploaded >= $album['uplimit'] ) {
+        if (!$inUser->is_admin && $album['uplimit'] && $today_uploaded >= $album['uplimit']) {
 
             cmsCore::addSessionMessage('<strong>' . $_LANG['MAX_UPLOAD_IN_DAY'] . '</strong> ' . $_LANG['CAN_UPLOAD_TOMORROW'], 'error');
             cmsCore::redirectBack();
@@ -279,8 +270,8 @@ function photos()
 
         // глубиномер
         $path_list = $inDB->getNsCategoryPath('cms_photo_albums', $album['NSLeft'], $album['NSRight'], 'id, title, NSLevel');
-        if ( $path_list ) {
-            foreach ( $path_list as $pcat ) {
+        if ($path_list) {
+            foreach ($path_list as $pcat) {
                 $inPage->addPathway($pcat['title'], '/photos/' . $pcat['id']);
             }
         }
@@ -290,58 +281,57 @@ function photos()
 
 //=============================== PHOTO EDIT =================================//
 
-    if ( $do == 'editphoto' ) {
-        if ( $_SERVER['HTTP_X_REQUESTED_WITH'] != 'XMLHttpRequest' ) {
+    if ($do == 'editphoto') {
+        if ($_SERVER['HTTP_X_REQUESTED_WITH'] != 'XMLHttpRequest') {
             cmsCore::halt();
         }
 
-        if ( !$inUser->id ) {
+        if (!$inUser->id) {
             cmsCore::halt();
         }
 
         // получаем фото
         $photo = \cms\events::call('photos.get_photo', $inPhoto->getPhoto($id));
-        if ( !$photo ) {
+        if (!$photo) {
             cmsCore::halt();
         }
 
-        if ( mb_strstr($photo['NSDiffer'], 'club') ) {
+        if (mb_strstr($photo['NSDiffer'], 'club')) {
             cmsCore::halt();
         }
 
         $is_author = (($photo['user_id'] == $inUser->id) && $inUser->id);
 
-        if ( !$inUser->is_admin && !$is_author ) {
+        if (!$inUser->is_admin && !$is_author) {
             cmsCore::halt();
         }
 
-        if ( cmsCore::inRequest('edit_photo') ) {
-            $mod['title']       = cmsCore::request('title', 'str', '');
-            $mod['title']       = $mod['title'] ? $mod['title'] : $photo['title'];
+        if (cmsCore::inRequest('edit_photo')) {
+            $mod['title'] = cmsCore::request('title', 'str', '');
+            $mod['title'] = $mod['title'] ? $mod['title'] : $photo['title'];
             $mod['description'] = cmsCore::request('description', 'str', '');
-            $mod['tags']        = cmsCore::request('tags', 'str', '');
-            $mod['comments']    = $inUser->is_admin ? cmsCore::request('comments', 'int') : $photo['comments'];
+            $mod['tags'] = cmsCore::request('tags', 'str', '');
+            $mod['comments'] = $inUser->is_admin ? cmsCore::request('comments', 'int') : $photo['comments'];
 
-            if ( $model->config['seo_user_access'] || $inUser->is_admin ) {
+            if ($model->config['seo_user_access'] || $inUser->is_admin) {
                 $mod['pagetitle'] = cmsCore::request('pagetitle', 'str', '');
                 $mod['meta_keys'] = cmsCore::request('meta_keys', 'str', '');
                 $mod['meta_desc'] = cmsCore::request('meta_desc', 'str', '');
             }
 
-            $file        = $model->initUploadClass($inDB->getNsCategory('cms_photo_albums', $photo['album_id']))->uploadPhoto($photo['file']);
+            $file = $model->initUploadClass($inDB->getNsCategory('cms_photo_albums', $photo['album_id']))->uploadPhoto($photo['file']);
             $mod['file'] = $file['filename'] ? $file['filename'] : $photo['file'];
 
             $inPhoto->updatePhoto($mod, $photo['id']);
 
             $description = '<a href="/photos/photo' . $photo['id'] . '.html" class="act_photo"><img src="/images/photos/small/' . $mod['file'] . '" alt="' . htmlspecialchars(stripslashes($mod['title'])) . '" /></a>';
 
-            cmsActions::updateLog('add_photo', array( 'object' => $mod['title'], 'description' => $description ), $photo['id']);
+            cmsActions::updateLog('add_photo', array('object' => $mod['title'], 'description' => $description), $photo['id']);
 
             cmsCore::addSessionMessage($_LANG['PHOTO_SAVED'], 'success');
 
-            cmsCore::jsonOutput(array( 'error' => false, 'redirect' => '/photos/photo' . $photo['id'] . '.html' ));
-        }
-        else {
+            cmsCore::jsonOutput(array('error' => false, 'redirect' => '/photos/photo' . $photo['id'] . '.html'));
+        } else {
             $photo['tags'] = cmsTagLine('photo', $photo['id'], false);
 
             cmsPage::initTemplate('components', 'com_photos_edit')->
@@ -352,99 +342,98 @@ function photos()
                     assign('cfg', $model->config)->
                     display('com_photos_edit.tpl');
 
-            cmsCore::jsonOutput(array( 'error' => false, 'html' => ob_get_clean() ));
+            cmsCore::jsonOutput(array('error' => false, 'html' => ob_get_clean()));
         }
     }
 
 //================================= PHOTO MOVE ===============================//
 
-    if ( $do == 'movephoto' ) {
-        if ( $_SERVER['HTTP_X_REQUESTED_WITH'] != 'XMLHttpRequest' ) {
+    if ($do == 'movephoto') {
+        if ($_SERVER['HTTP_X_REQUESTED_WITH'] != 'XMLHttpRequest') {
             cmsCore::halt();
         }
 
-        if ( !$inUser->id ) {
+        if (!$inUser->id) {
             cmsCore::halt();
         }
 
         $photo = \cms\events::call('photos.get_photo', $inPhoto->getPhoto($id));
-        if ( !$photo ) {
+        if (!$photo) {
             cmsCore::halt();
         }
 
-        if ( mb_strstr($photo['NSDiffer'], 'club') ) {
+        if (mb_strstr($photo['NSDiffer'], 'club')) {
             cmsCore::halt();
         }
 
-        if ( !$inUser->is_admin ) {
+        if (!$inUser->is_admin) {
             cmsCore::halt();
         }
 
-        if ( !cmsCore::inRequest('move_photo') ) {
+        if (!cmsCore::inRequest('move_photo')) {
             cmsPage::initTemplate('components', 'com_photos_move')->
                     assign('form_action', '/photos/movephoto' . $photo['id'] . '.html')->
                     assign('html', $inPhoto->getAlbumsOption('', $photo['album_id']))->
                     display('com_photos_move.tpl');
 
-            cmsCore::jsonOutput(array( 'error' => false, 'html' => ob_get_clean() ));
-        }
-        else {
+            cmsCore::jsonOutput(array('error' => false, 'html' => ob_get_clean()));
+        } else {
             $album = \cms\events::call('photos.get_album', $inDB->getNsCategory('cms_photo_albums', cmsCore::request('album_id', 'int')));
 
-            if ( !$album ) {
+            if (!$album) {
                 cmsCore::halt();
             }
 
-            if ( !$album['public'] && !$inUser->is_admin ) {
+            if (!$album['public'] && !$inUser->is_admin) {
                 cmsCore::error404();
             }
 
             // Смотрим ограничения загрузки в сутки
             $today_uploaded = $album['uplimit'] ? $model->loadedByUser24h($inUser->id, $album['id']) : 0;
 
-            if ( !$inUser->is_admin && $album['uplimit'] && $today_uploaded >= $album['uplimit'] ) {
+            if (!$inUser->is_admin && $album['uplimit'] && $today_uploaded >= $album['uplimit']) {
 
-                cmsCore::jsonOutput(array( 'error' => true, 'text' => '<strong>' . $_LANG['MAX_UPLOAD_IN_DAY'] . '</strong> ' . $_LANG['CAN_UPLOAD_TOMORROW'] ));
+                cmsCore::jsonOutput(array('error' => true, 'text' => '<strong>' . $_LANG['MAX_UPLOAD_IN_DAY'] . '</strong> ' . $_LANG['CAN_UPLOAD_TOMORROW']));
             }
 
             $inDB->query("UPDATE cms_photo_files SET album_id = '{$album['id']}' WHERE id = '{$photo['id']}'");
 
-            cmsActions::updateLog('add_photo', array( 'target' => $album['title'], 'target_url' => '/photos/' . $album['id'], 'target_id' => $album['id'] ), $photo['id']);
+            cmsActions::updateLog('add_photo', array('target' => $album['title'], 'target_url' => '/photos/' . $album['id'], 'target_id' => $album['id']), $photo['id']);
 
             cmsCore::addSessionMessage($_LANG['PHOTO_MOVED'], 'info');
 
-            cmsCore::jsonOutput(array( 'error' => false, 'redirect' => '/photos/' . $album['id'] ));
+            cmsCore::jsonOutput(array('error' => false, 'redirect' => '/photos/' . $album['id']));
         }
     }
 
 //=============================== PHOTO DELETE ===============================//
 
-    if ( $do == 'delphoto' ) {
-        if ( $_SERVER['HTTP_X_REQUESTED_WITH'] != 'XMLHttpRequest' ) {
+    if ($do == 'delphoto') {
+        if ($_SERVER['HTTP_X_REQUESTED_WITH'] != 'XMLHttpRequest') {
             cmsCore::halt();
         }
 
-        if ( !$inUser->id ) {
+        if (!$inUser->id) {
             cmsCore::halt();
         }
 
-        if ( !cmsUser::checkCsrfToken() ) {
+        if (!cmsUser::checkCsrfToken()) {
             cmsCore::halt();
         }
 
         $photo = \cms\events::call('photos.get_photo', $inPhoto->getPhoto($id));
 
-        if ( !$photo ) {
+        if (!$photo) {
             cmsCore::halt();
         }
 
-        if ( mb_strstr($photo['NSDiffer'], 'club') ) {
+        if (mb_strstr($photo['NSDiffer'], 'club')) {
             cmsCore::halt();
         }
 
         $is_author = (($photo['user_id'] == $inUser->id) && $inUser->id);
 
-        if ( !$inUser->is_admin && !$is_author ) {
+        if (!$inUser->is_admin && !$is_author) {
             cmsCore::halt();
         }
 
@@ -454,27 +443,27 @@ function photos()
 
         cmsUser::clearCsrfToken();
 
-        cmsCore::jsonOutput(array( 'error' => false, 'redirect' => '/photos/' . $photo['album_id'] ));
+        cmsCore::jsonOutput(array('error' => false, 'redirect' => '/photos/' . $photo['album_id']));
     }
 
 //============================== PHOTO PUBLISH ===============================//
 
-    if ( $do == 'publish_photo' ) {
-        if ( $_SERVER['HTTP_X_REQUESTED_WITH'] != 'XMLHttpRequest' ) {
+    if ($do == 'publish_photo') {
+        if ($_SERVER['HTTP_X_REQUESTED_WITH'] != 'XMLHttpRequest') {
             cmsCore::halt();
         }
 
-        if ( !$inUser->id ) {
+        if (!$inUser->id) {
             cmsCore::halt();
         }
 
         $photo = \cms\events::call('photos.get_photo', $inPhoto->getPhoto($id));
 
-        if ( !$photo ) {
+        if (!$photo) {
             cmsCore::halt();
         }
 
-        if ( !$inUser->is_admin ) {
+        if (!$inUser->is_admin) {
             cmsCore::halt();
         }
 
@@ -485,13 +474,13 @@ function photos()
         $description = '<a href="/photos/photo' . $photo['id'] . '.html" class="act_photo"><img src="/images/photos/small/' . $photo['file'] . '" alt="' . htmlspecialchars(stripslashes($photo['title'])) . '" /></a>';
 
         cmsActions::log('add_photo', array(
-            'object'      => $photo['title'],
-            'object_url'  => '/photos/photo' . $photo['id'] . '.html',
-            'object_id'   => $photo['id'],
-            'user_id'     => $photo['user_id'],
-            'target'      => $photo['cat_title'],
-            'target_id'   => $photo['album_id'],
-            'target_url'  => '/photos/' . $photo['album_id'],
+            'object' => $photo['title'],
+            'object_url' => '/photos/photo' . $photo['id'] . '.html',
+            'object_id' => $photo['id'],
+            'user_id' => $photo['user_id'],
+            'target' => $photo['cat_title'],
+            'target_id' => $photo['album_id'],
+            'target_url' => '/photos/' . $photo['album_id'],
             'description' => $description
         ));
 
@@ -500,12 +489,11 @@ function photos()
 
 //======================== VIEW LATEST/BEST PHOTOS ===========================//
 
-    if ( in_array($do, array( 'latest', 'best' )) ) {
-        if ( $do == 'latest' ) {
+    if (in_array($do, array('latest', 'best'))) {
+        if ($do == 'latest') {
             $inDB->orderBy('f.pubdate', 'DESC');
             $pagetitle = ($pagetitle && $inCore->isMenuIdStrict()) ? $pagetitle : $_LANG['NEW_PHOTO_IN_GALLERY'];
-        }
-        else {
+        } else {
             $inDB->orderBy('f.rating', 'DESC');
             $pagetitle = ($pagetitle && $inCore->isMenuIdStrict()) ? $pagetitle : $_LANG['BEST_PHOTOS'];
         }
@@ -518,7 +506,7 @@ function photos()
 
         $photos = $inPhoto->getPhotos(false, 'with_comments');
 
-        if ( !$photos ) {
+        if (!$photos) {
             cmsCore::error404();
         }
 

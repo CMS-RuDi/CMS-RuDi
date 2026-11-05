@@ -68,6 +68,12 @@ class cms_model_comments
     {
         $item = \cms\events::call('comments.add_item', $item);
 
+        // Устаревшее поле cms_comments.pid: в актуальном коде не используется,
+        // но в старых схемах БД оно объявлено как NOT NULL без значения по умолчанию.
+        if ( !isset($item['pid']) ) {
+            $item['pid'] = 0;
+        }
+
         $item['target_title'] = $this->inDB->escape_string($item['target_title']);
 
         $comment_id = $this->inDB->insert('cms_comments', $item);

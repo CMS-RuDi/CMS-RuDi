@@ -204,7 +204,7 @@ function clubs() {
             // получаем альбомы
             if ($club['all_albums']) {
                 $inDB->limit($model->config['club_album_perpage']);
-                $inDB->orderBy('f.pubdate', 'DESC');
+                $inDB->orderBy('ANY_VALUE(f.pubdate)', 'DESC');
                 $club['photo_albums'] = $inPhoto->getAlbums(0, 'club' . $club['id']);
             } else {
                 $club['photo_albums'] = array();
@@ -822,7 +822,7 @@ function clubs() {
             return false;
         }
 
-        $inDB->orderBy('f.pubdate', 'DESC');
+        $inDB->orderBy('ANY_VALUE(f.pubdate)', 'DESC');
         $club['photo_albums'] = $inPhoto->getAlbums(0, 'club' . $club['id']);
         if (!$club['photo_albums']) {
             return false;
