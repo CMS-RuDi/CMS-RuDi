@@ -12,6 +12,7 @@ class DBSingeltone {
      * @var DBSingeltone|null
      */
     protected static $_instance;
+
     /**
      * Объект для работы с базой данных.
      *
@@ -47,12 +48,12 @@ class DBSingeltone {
             }
 
             self::$_instance = new self(
-                $arguments[0],
-                $arguments[1],
-                $arguments[2],
-                $arguments[3],
-                isset($arguments[4]) ? $arguments[4] : 'MySQL',
-                isset($arguments[5]) ? $arguments[5] : []
+                    $arguments[0],
+                    $arguments[1],
+                    $arguments[2],
+                    $arguments[3],
+                    isset($arguments[4]) ? $arguments[4] : 'MySQL',
+                    isset($arguments[5]) ? $arguments[5] : []
             );
         }
 

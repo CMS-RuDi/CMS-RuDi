@@ -14,48 +14,56 @@ class MySQL implements DBInterface {
      * @var \mysqli
      */
     protected $mysqli;
+
     /**
      * Признак активного соединения.
      *
      * @var boolean
      */
     protected $connected = false;
+
     /**
      * Текст последней ошибки подключения.
      *
      * @var string|null
      */
     protected $connect_error = null;
+
     /**
      * Время установки соединения (UNIX timestamp).
      *
      * @var integer
      */
     protected $db_con_time = 0;
+
     /**
      * Хост сервера базы данных.
      *
      * @var string
      */
     protected $host;
+
     /**
      * Имя пользователя базы данных.
      *
      * @var string
      */
     protected $user;
+
     /**
      * Пароль пользователя базы данных.
      *
      * @var string
      */
     protected $password;
+
     /**
      * Название базы данных.
      *
      * @var string
      */
     protected $dbase;
+
     /**
      * Опции подключения.
      *

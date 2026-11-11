@@ -33,36 +33,42 @@ class DB {
      * @var DB\Driver\DBInterface
      */
     protected $db;
+
     /**
      * Тип драйвера базы данных.
      *
      * @var string
      */
     protected $db_type;
+
     /**
      * Хост сервера базы данных.
      *
      * @var string
      */
     protected $db_host;
+
     /**
      * Имя пользователя базы данных.
      *
      * @var string
      */
     protected $db_user;
+
     /**
      * Пароль пользователя базы данных.
      *
      * @var string
      */
     protected $db_password;
+
     /**
      * Название базы данных.
      *
      * @var string|null
      */
     protected $db_name;
+
     /**
      * Дополнительные опции подключения (префикс таблиц, кодировка, порт и т.п.).
      *
@@ -75,6 +81,7 @@ class DB {
      * @var DB\Debug
      */
     protected $_debug;
+
     /**
      * Кеш вспомогательных данных (например, списка полей таблиц).
      *
@@ -88,108 +95,126 @@ class DB {
      */
     protected $_filter_stack = array();
     //========================================================================//
+
     /**
      * Название таблицы для метода getSQL().
      *
      * @var string
      */
     public $table = '';
+
     /**
      * Список полей для SELECT.
      *
      * @var array
      */
     public $select = array('i.*');
+
     /**
      * Условие GROUP BY.
      *
      * @var string
      */
     public $group_by = '';
+
     /**
      * Условие ORDER BY.
      *
      * @var string
      */
     public $order_by = '';
+
     /**
      * Накопленное условие WHERE.
      *
      * @var string
      */
     public $where = '';
+
     /**
      * Разделитель для следующего условия (AND или OR).
      *
      * @var string
      */
     public $where_separator = 'AND';
+
     /**
      * Подсказки индексов (FORCE/USE/IGNORE INDEX).
      *
      * @var string
      */
     public $index_action = '';
+
     /**
      * Ограничение выборки (LIMIT).
      *
      * @var string|integer
      */
     public $limit = 1000;
+
     /**
      * Флаг DISTINCT: строка «DISTINCT» или пустая строка.
      *
      * @var string
      */
     public $distinct = '';
+
     /**
      * Флаг STRAIGHT_JOIN.
      *
      * @var string
      */
     public $straight_join = '';
+
     /**
      * Накопленные JOIN-выражения.
      *
      * @var string
      */
     public $join = '';
+
     /**
      * Тип блокировки чтения (FOR UPDATE, LOCK IN SHARE MODE).
      *
      * @var string
      */
     public $read_type = '';
+
     /**
      * Количество записей на страницу.
      *
      * @var integer
      */
     public $perpage = 50;
+
     /**
      * Количество записей на страницу по умолчанию.
      *
      * @var integer
      */
     public $default_perpage = 50;
+
     /**
      * Признак открытой транзакции.
      *
      * @var boolean
      */
     public $is_transaction_started = false;
+
     /**
      * Признак того, что в WHERE уже есть хотя бы одно условие.
      *
      * @var boolean
      */
     public $filter_on = false;
+
     /**
      * Не сбрасывать фильтры при вызове resetFilters().
      *
      * @var boolean
      */
     public $keep_filters = false;
+
     /**
      * Не прерывать выполнение при ошибке запроса.
      *
@@ -735,6 +760,8 @@ class DB {
      * @return boolean
      */
     public function update($table_name, $id, $data, $skip_check_fields = false, $array_as = 'json') {
+        $this->resetFilters();
+
         $this->filterEqual('id', $id);
 
         return $this->updateFiltered($table_name, $data, $skip_check_fields, $array_as);

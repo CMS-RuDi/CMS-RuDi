@@ -6,13 +6,13 @@ namespace DSSoft\DB;
  * Сборщик времени выполнения и журнала событий при работе с базой данных.
  */
 class Debug {
-
     /**
      * Время запуска таймеров: имя => microtime(true).
      *
      * @var array
      */
     private $_timer = [];
+
     /**
      * Журнал событий.
      *
@@ -31,6 +31,49 @@ class Debug {
     }
 
     /**
+     * Получает оптимизированный и облегченный снимок стека вызовов (backtrace).
+     *
+     * Исключает сохранение тяжелых аргументов функций (DEBUG_BACKTRACE_IGNORE_ARGS)
+     * и фильтрует каждый шаг стека, оставляя только необходимую информацию о файлах,
+     * строках, классах и вызванных методах.
+     *
+     * @return array<int, array{
+     *     file?: string,
+     *     line?: int,
+     *     class?: string,
+     *     type?: string,
+     *     function?: string
+     * }> Массив шагов стека вызовов.
+     */
+    public function getBacktrace($shift_count = 1) {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+
+        while (($trace && !isset($trace[0]['line']))) {
+            array_shift($trace);
+        }
+
+        while ($shift_count > 0) {
+            array_shift($trace);
+            $shift_count--;
+        }
+
+        $clear_trace = [];
+        $keys = ['file', 'line', 'class', 'type', 'function'];
+
+        foreach ($trace as $step) {
+            $clear_step = [];
+            foreach ($keys as $key) {
+                if (isset($step[$key])) {
+                    $clear_step[$key] = $step[$key];
+                }
+            }
+            $clear_trace[] = $clear_step;
+        }
+
+        return $clear_trace;
+    }
+
+    /**
      * Добавляет запись в журнал.
      *
      * @param string $name Название таймера или события
@@ -43,6 +86,7 @@ class Debug {
         $start_time = isset($this->_timer[$name]) ? $this->_timer[$name] : microtime(true);
 
         $this->_log[] = array(
+            'backtrace' => $this->getBacktrace($error ? 2 : 1),
             'start_time' => $start_time,
             'execution_time' => number_format(microtime(true) - $start_time, 5),
             'name' => $name,
