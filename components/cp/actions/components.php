@@ -24,10 +24,10 @@ class components extends \cms\com_action {
         $this->page()->addPathway($this->lang->ad_components, $this->genActionUrl('components'));
 
         if (empty($params)) {
-            $do = $this->request()->get('do', 'str');
+            $do = $this->request->get('do', 'str');
 
             if (!empty($do)) {
-                $id = $this->request()->get('id', 'int', -1);
+                $id = $this->request->get('id', 'int', -1);
 
                 if ($do == 'show') {
                     dbShow('cms_components', $id);
@@ -149,8 +149,11 @@ class components extends \cms\com_action {
         $inPage = $this->page();
         $inConf = \cmsConfig::getInstance();
 
-        $do = $this->request('do', 'str', 'list');
-        $link = $this->request('link', 'str', '');
+        $DB = \cms\db::getInstance();
+        $inPut = \cms\request::getInstance();
+
+        $do = $inPut->get('do', 'str', 'list');
+        $link = $inPut->get('link', 'str', '');
 
         $id = $_REQUEST['id'] = $component['id'];
 

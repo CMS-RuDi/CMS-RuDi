@@ -115,16 +115,24 @@ if ($request->has('install')) {
     $inConf->db_base = $_CFG['db_base'];
     $inConf->db_prefix = $_CFG['db_prefix'];
 
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
 
     // Принудительно переподключаемся с только что введёнными настройками БД
     $inDB->reconnect(true);
 
-    // Если базы нет — пробуем создать её автоматически
+    // Если базы нет — подключаемся к серверу без выбора базы и создаём её.
     if (!$inDB->ready() && $inDB->connectErrno() === 1049) {
-        if ($inDB->createDatabase($_CFG['db_base'])) {
-            $inDB->reconnect(true);
+        $db_base = $inConf->db_base;
+
+        $inConf->db_base = '';
+        $inDB->reconnect(true);
+
+        if ($inDB->ready()) {
+            $inDB->createDatabase($db_base);
         }
+
+        $inConf->db_base = $db_base;
+        $inDB->reconnect(true);
     }
 
     if (!$inDB->ready()) {
@@ -141,10 +149,8 @@ if ($request->has('install')) {
     $_CFG = array_merge($d_cfg, $_CFG);
     $inConf->saveToFile($_CFG);
 
-    $sql = "UPDATE cms_users SET password = md5('" . $admin_password . "'), login = '" . $admin_login . "' WHERE id = 1";
-    $inDB->query($sql);
-    $sql = "UPDATE cms_users SET password = md5('" . $admin_password . "') WHERE id > 1";
-    $inDB->query($sql);
+    $inDB->update('users', 1, array( 'password' => md5($admin_password), 'login' => $admin_login ));
+    $inDB->filterGt('id', 1)->updateFiltered('users', array( 'password' => md5($admin_password) ));
 
     $installed = true;
 

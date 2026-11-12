@@ -12,30 +12,37 @@
 
 function mod_user_image($mod, $cfg)
 {
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
 
-    $sql = "SELECT u.id uid, u.nickname author, u.login as login, p.imageurl, p.title, p.id, pr.gender gender
-            FROM cms_user_photos p
-            LEFT JOIN cms_users u ON u.id = p.user_id
-            LEFT JOIN cms_user_profiles pr ON pr.user_id = u.id
-            LEFT JOIN cms_user_albums a ON a.id = p.album_id
-            WHERE p.allow_who = 'all' AND u.is_deleted = 0 AND u.is_locked = 0
-                  AND p.album_id > 0 AND a.allow_who = 'all'
-            ORDER BY RAND()
-            LIMIT 1";
+    $db = clone $inDB;
+    $db->select('u.id', 'uid');
+    $db->select('u.nickname', 'author');
+    $db->select('u.login', 'login');
+    $db->select('i.imageurl');
+    $db->select('i.title');
+    $db->select('i.id');
+    $db->select('pr.gender', 'gender');
+    $db->joinLeft('users', 'u', 'u.id = i.user_id');
+    $db->joinLeft('user_profiles', 'pr', 'pr.user_id = u.id');
+    $db->joinLeft('user_albums', 'a', 'a.id = i.album_id');
+    $db->filterEqual('i.allow_who', 'all');
+    $db->filterEqual('u.is_deleted', 0);
+    $db->filterEqual('u.is_locked', 0);
+    $db->filterGt('i.album_id', 0);
+    $db->filterEqual('a.allow_who', 'all');
+    $db->orderBy('RAND()');
+    $db->limit(0, 1);
 
-    $result = $inDB->query($sql);
+    $usr = $db->getItem('user_photos');
 
-    if ( !$inDB->num_rows($result) ) {
+    if ( !$usr ) {
         return false;
     }
 
-    while ( $usr = $inDB->fetch_assoc($result) ) {
+    $usr['genderlink'] = cmsUser::getGenderLink($usr['uid'], $usr['author'], $usr['gender'], $usr['login']);
 
-        $usr['genderlink'] = cmsUser::getGenderLink($usr['uid'], $usr['author'], $usr['gender'], $usr['login']);
-
-        $users[] = $usr;
-    }
+    $users   = array();
+    $users[] = $usr;
 
     cmsPage::initTemplate('modules', $cfg['tpl'])->
             assign('users', $users)->

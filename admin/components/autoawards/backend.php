@@ -1,188 +1,189 @@
 <?php
 /*
- *                           InstantCMS v1.10.6
- *                        http://www.instantcms.ru/
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
  *
- *                   written by InstantCMS Team, 2007-2015
- *                produced by InstantSoft, (www.instantsoft.ru)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                        LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
-if ( !defined('VALID_CMS_ADMIN') ) {
+if (!defined('VALID_CMS_ADMIN')) {
     die('ACCESS DENIED');
 }
 
-$opt = cmsCore::request('opt', 'str', 'list');
+$opt = $inPut->get('opt', 'str', 'list');
 
 $toolmenu = array();
 
-if ( $opt == 'list' ) {
-    $toolmenu[] = array( 'icon' => 'newaward.gif', 'title' => $_LANG['AD_NEW_AWARD'], 'link' => '?view=components&do=config&id=' . $id . '&opt=add' );
-    $toolmenu[] = array( 'icon' => 'listawards.gif', 'title' => $_LANG['AD_ALL_AWARDS'], 'link' => '?view=components&do=config&id=' . $id . '&opt=list' );
-    $toolmenu[] = array( 'icon' => 'edit.gif', 'title' => $_LANG['AD_EDIT_SELECTED'], 'link' => "javascript:checkSel('?view=components&do=config&id=" . $id . "&opt=edit&multiple=1');" );
-    $toolmenu[] = array( 'icon' => 'show.gif', 'title' => $_LANG['AD_ALLOW_SELECTED'], 'link' => "javascript:checkSel('?view=components&do=config&id=" . $id . "&opt=show_award&multiple=1');" );
-    $toolmenu[] = array( 'icon' => 'hide.gif', 'title' => $_LANG['AD_DISALLOW_SELECTED'], 'link' => "javascript:checkSel('?view=components&do=config&id=" . $id . "&opt=hide_award&multiple=1');" );
-}
-else {
-    $toolmenu[] = array( 'icon' => 'save.gif', 'title' => $_LANG['SAVE'], 'link' => 'javascript:document.addform.submit();' );
-    $toolmenu[] = array( 'icon' => 'cancel.gif', 'title' => $_LANG['CANCEL'], 'link' => '?view=components&do=config&id=' . $id );
+if ($opt == 'list') {
+    $toolmenu[] = array('icon' => 'newaward.gif', 'title' => $_LANG['AD_NEW_AWARD'], 'link' => '/cp/components/autoawards?opt=add');
+    $toolmenu[] = array('icon' => 'listawards.gif', 'title' => $_LANG['AD_ALL_AWARDS'], 'link' => '/cp/components/autoawards?opt=list');
+    $toolmenu[] = array('icon' => 'edit.gif', 'title' => $_LANG['AD_EDIT_SELECTED'], 'link' => "javascript:checkSel('/cp/components/autoawards?opt=edit&multiple=1');");
+    $toolmenu[] = array('icon' => 'show.gif', 'title' => $_LANG['AD_ALLOW_SELECTED'], 'link' => "javascript:checkSel('/cp/components/autoawards?opt=show_award&multiple=1');");
+    $toolmenu[] = array('icon' => 'hide.gif', 'title' => $_LANG['AD_DISALLOW_SELECTED'], 'link' => "javascript:checkSel('/cp/components/autoawards?opt=hide_award&multiple=1');");
+} else {
+    $toolmenu[] = array('icon' => 'save.gif', 'title' => $_LANG['SAVE'], 'link' => 'javascript:document.addform.submit();');
+    $toolmenu[] = array('icon' => 'cancel.gif', 'title' => $_LANG['CANCEL'], 'link' => '/cp/components/autoawards');
 }
 
 cpToolMenu($toolmenu);
 
-if ( $opt == 'show_award' ) {
-    if ( !isset($_REQUEST['item']) ) {
-        if ( isset($_REQUEST['item_id']) ) {
-            dbShow('cms_user_autoawards', cmsCore::request('item_id', 'int', 0));
+if ($opt == 'show_award') {
+    if (!$inPut->has('item')) {
+        if (isset($inPut->has('item_id'))) {
+            dbShow('cms_user_autoawards', $inPut->get('item_id', 'int', 0));
         }
         echo '1';
         exit;
-    }
-    else {
-        dbShowList('cms_user_autoawards', cmsCore::request('item', 'array_int', array()));
+    } else {
+        dbShowList('cms_user_autoawards', $inPut->get('item', 'array_int', array()));
         cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'], 'success');
         cmsCore::redirectBack();
     }
 }
 
-if ( $opt == 'hide_award' ) {
-    if ( !isset($_REQUEST['item']) ) {
-        if ( isset($_REQUEST['item_id']) ) {
-            dbHide('cms_user_autoawards', cmsCore::request('item_id', 'int', 0));
+if ($opt == 'hide_award') {
+    if (!$inPut->has('item')) {
+        if (isset($inPut->has('item_id'))) {
+            dbHide('cms_user_autoawards', $inPut->get('item_id', 'int', 0));
         }
         echo '1';
         exit;
-    }
-    else {
-        dbHideList('cms_user_autoawards', cmsCore::request('item', 'array_int', array()));
+    } else {
+        dbHideList('cms_user_autoawards', $inPut->get('item', 'array_int', array()));
         cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'], 'success');
         cmsCore::redirectBack();
     }
 }
 
-if ( $opt == 'submit' || $opt == 'update' ) {
-    if ( !cmsUser::checkCsrfToken() ) {
+if ($opt == 'submit' || $opt == 'update') {
+    if (!cmsUser::checkCsrfToken()) {
         cmsCore::error404();
     }
 
-    $title       = cmsCore::request('title', 'str', $_LANG['AD_AWARD']);
-    $description = cmsCore::request('description', 'str', '');
-    $published   = cmsCore::request('published', 'int', 0);
-    $imageurl    = preg_replace('/[^a-zA-Z0-9_\.\-]/iu', '', cmsCore::request('imageurl', 'str', ''));
-    $p_comment   = cmsCore::request('p_comment', 'int', 0);
-    $p_forum     = cmsCore::request('p_forum', 'int', 0);
-    $p_content   = cmsCore::request('p_content', 'int', 0);
-    $p_blog      = cmsCore::request('p_blog', 'int', 0);
-    $p_karma     = cmsCore::request('p_karma', 'int', 0);
-    $p_photo     = cmsCore::request('p_photo', 'int', 0);
-    $p_privphoto = cmsCore::request('p_privphoto', 'int', 0);
+    $title = $inPut->get('title', 'str', $_LANG['AD_AWARD']);
+    $description = $inPut->get('description', 'str', '');
+    $published = $inPut->get('published', 'int', 0);
+    $imageurl = preg_replace('/[^a-zA-Z0-9_\.\-]/iu', '', $inPut->get('imageurl', 'str', ''));
+    $p_comment = $inPut->get('p_comment', 'int', 0);
+    $p_forum = $inPut->get('p_forum', 'int', 0);
+    $p_content = $inPut->get('p_content', 'int', 0);
+    $p_blog = $inPut->get('p_blog', 'int', 0);
+    $p_karma = $inPut->get('p_karma', 'int', 0);
+    $p_photo = $inPut->get('p_photo', 'int', 0);
+    $p_privphoto = $inPut->get('p_privphoto', 'int', 0);
 
     cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'], 'success');
 
-    if ( $opt == 'submit' ) {
-        $sql = "INSERT INTO cms_user_autoawards (title, description, imageurl, p_comment, p_blog, p_forum, p_photo, p_privphoto, p_content, p_karma, published)
-                    VALUES ('$title', '$description', '$imageurl', $p_comment, $p_blog, $p_forum, $p_photo, $p_privphoto, $p_content, $p_karma, $published)";
-        $inDB->query($sql);
+    if ($opt == 'submit') {
+        $DB->insert('user_autoawards', array(
+            'title' => $title,
+            'description' => $description,
+            'imageurl' => $imageurl,
+            'p_comment' => $p_comment,
+            'p_blog' => $p_blog,
+            'p_forum' => $p_forum,
+            'p_photo' => $p_photo,
+            'p_privphoto' => $p_privphoto,
+            'p_content' => $p_content,
+            'p_karma' => $p_karma,
+            'published' => $published
+        ));
 
-        cmsCore::redirect('?view=components&do=config&opt=list&id=' . $id);
-    }
-    else {
-        $item_id = cmsCore::request('item_id', 'int', 0);
+        cmsCore::redirect('/cp/components/autoawards?opt=list');
+    } else {
+        $item_id = $inPut->get('item_id', 'int', 0);
 
-        $sql = "UPDATE cms_user_autoawards
-                    SET title='$title',
-                        description='$description',
-                        imageurl='$imageurl',
-                        p_comment=$p_comment,
-                        p_blog=$p_blog,
-                        p_forum=$p_forum,
-                        p_photo=$p_photo,
-                        p_privphoto=$p_privphoto,
-                        p_content=$p_content,
-                        p_karma=$p_karma,
-                        published=$published
-                    WHERE id = '$item_id'";
+        $DB->resetFilters();
+        $DB->update('user_autoawards', $item_id, array(
+            'title' => $title,
+            'description' => $description,
+            'imageurl' => $imageurl,
+            'p_comment' => $p_comment,
+            'p_blog' => $p_blog,
+            'p_forum' => $p_forum,
+            'p_photo' => $p_photo,
+            'p_privphoto' => $p_privphoto,
+            'p_content' => $p_content,
+            'p_karma' => $p_karma,
+            'published' => $published
+        ));
 
-        $inDB->query($sql);
-
-        if ( !isset($_SESSION['editlist']) || @sizeof($_SESSION['editlist']) == 0 ) {
-            cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list');
-        }
-        else {
-            cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=edit');
+        if (!isset($_SESSION['editlist']) || @sizeof($_SESSION['editlist']) == 0) {
+            cmsCore::redirect('/cp/components/autoawards?opt=list');
+        } else {
+            cmsCore::redirect('/cp/components/autoawards?opt=edit');
         }
     }
 }
 
-if ( $opt == 'delete' ) {
-    $item_id = cmsCore::request('item_id', 'int', 0);
+if ($opt == 'delete') {
+    $item_id = $inPut->get('item_id', 'int', 0);
 
-    $sql = "DELETE FROM cms_user_autoawards WHERE id = $item_id";
-    $inDB->query($sql);
-
-    $sql = "DELETE FROM cms_user_awards WHERE award_id = $item_id";
-    $inDB->query($sql);
+    $DB->resetFilters();
+    $DB->delete('user_autoawards', $item_id);
+    $DB->filterEqual('award_id', $item_id)->deleteFiltered('user_awards');
 
     cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'], 'success');
-    cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list');
+    cmsCore::redirect('/cp/components/autoawards?opt=list');
 }
 
-if ( $opt == 'list' ) {
+if ($opt == 'list') {
     $fields = array();
 
     $fields[0]['title'] = 'id';
     $fields[0]['field'] = 'id';
     $fields[0]['width'] = '30';
 
-    $fields[2]['title']  = $_LANG['TITLE'];
-    $fields[2]['field']  = 'title';
-    $fields[2]['width']  = '250';
+    $fields[2]['title'] = $_LANG['TITLE'];
+    $fields[2]['field'] = 'title';
+    $fields[2]['width'] = '250';
     $fields[2]['filter'] = 15;
-    $fields[2]['link']   = '?view=components&do=config&id=' . $id . '&opt=edit&item_id=%id%';
+    $fields[2]['link'] = '/cp/components/autoawards?opt=edit&item_id=%id%';
 
-    $fields[3]['title']  = $_LANG['DESCRIPTION'];
-    $fields[3]['field']  = 'description';
-    $fields[3]['width']  = '';
+    $fields[3]['title'] = $_LANG['DESCRIPTION'];
+    $fields[3]['field'] = 'description';
+    $fields[3]['width'] = '';
     $fields[3]['filter'] = 15;
 
-    $fields[4]['title']     = $_LANG['AD_GIVING'];
-    $fields[4]['field']     = 'published';
-    $fields[4]['width']     = '100';
-    $fields[4]['do']        = 'opt';
+    $fields[4]['title'] = $_LANG['AD_GIVING'];
+    $fields[4]['field'] = 'published';
+    $fields[4]['width'] = '100';
+    $fields[4]['do'] = 'opt';
     $fields[4]['do_suffix'] = '_award';
 
-    $actions             = array();
+    $actions = array();
     $actions[0]['title'] = $_LANG['EDIT'];
-    $actions[0]['icon']  = 'edit.gif';
-    $actions[0]['link']  = '?view=components&do=config&id=' . $id . '&opt=edit&item_id=%id%';
+    $actions[0]['icon'] = 'edit.gif';
+    $actions[0]['link'] = '/cp/components/autoawards?opt=edit&item_id=%id%';
 
-    $actions[1]['title']   = $_LANG['DELETE'];
-    $actions[1]['icon']    = 'delete.gif';
+    $actions[1]['title'] = $_LANG['DELETE'];
+    $actions[1]['icon'] = 'delete.gif';
     $actions[1]['confirm'] = $_LANG['AD_CONFIRM_DELETING'];
-    $actions[1]['link']    = '?view=components&do=config&id=' . $id . '&opt=delete&item_id=%id%';
+    $actions[1]['link'] = '/cp/components/autoawards?opt=delete&item_id=%id%';
 
     cpListTable('cms_user_autoawards', $fields, $actions);
 }
 
-if ( $opt == 'add' || $opt == 'edit' ) {
-    if ( $opt == 'add' ) {
+if ($opt == 'add' || $opt == 'edit') {
+    if ($opt == 'add') {
         cpAddPathway($_LANG['AD_NEW_AWARD']);
         echo '<h3>' . $_LANG['AD_NEW_AWARD'] . '</h3>';
-        $mod['p_comment']   = 0;
-        $mod['p_content']   = 0;
-        $mod['p_blog']      = 0;
-        $mod['p_karma']     = 0;
-        $mod['p_forum']     = 0;
-        $mod['p_photo']     = 0;
+        $mod['p_comment'] = 0;
+        $mod['p_content'] = 0;
+        $mod['p_blog'] = 0;
+        $mod['p_karma'] = 0;
+        $mod['p_forum'] = 0;
+        $mod['p_photo'] = 0;
         $mod['p_privphoto'] = 0;
-    }
-    else {
-        if ( isset($_REQUEST['multiple']) ) {
-            if ( isset($_REQUEST['item']) ) {
-                $_SESSION['editlist'] = cmsCore::request('item', 'array_int', array());
-            }
-            else {
+    } else {
+        if ($inPut->has('multiple')) {
+            if ($inPut->has('item')) {
+                $_SESSION['editlist'] = $inPut->get('item', 'array_int', array());
+            } else {
                 cmsCore::addSessionMessage($_LANG['AD_NO_SELECT_OBJECTS'], 'error');
                 cmsCore::redirectBack();
             }
@@ -190,21 +191,19 @@ if ( $opt == 'add' || $opt == 'edit' ) {
 
         $ostatok = '';
 
-        if ( isset($_SESSION['editlist']) ) {
+        if (isset($_SESSION['editlist'])) {
             $item_id = array_shift($_SESSION['editlist']);
-            if ( sizeof($_SESSION['editlist']) == 0 ) {
+            if (sizeof($_SESSION['editlist']) == 0) {
                 unset($_SESSION['editlist']);
-            }
-            else {
+            } else {
                 $ostatok = '(' . $_LANG['AD_NEXT_IN'] . sizeof($_SESSION['editlist']) . ')';
             }
-        }
-        else {
-            $item_id = cmsCore::request('item_id', 'int', 0);
+        } else {
+            $item_id = $inPut->get('item_id', 'int', 0);
         }
 
-        $mod = $inDB->get_fields('cms_user_autoawards', "id = '$item_id'", '*');
-        if ( !$mod ) {
+        $mod = $DB->getItemById('user_autoawards', $item_id);
+        if (!$mod) {
             cmsCore::error404();
         }
 
@@ -227,7 +226,7 @@ if ( $opt == 'add' || $opt == 'edit' ) {
             margin-right:6px;
         }
     </style>
-    <form action="index.php?view=components&do=config&id=<?php echo $id; ?>" method="post" enctype="multipart/form-data" name="addform" id="addform">
+    <form action="/cp/components/autoawards" method="post" enctype="multipart/form-data" name="addform" id="addform">
         <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
         <table width="625" border="0" cellspacing="5" class="proptable">
             <tr>
@@ -242,12 +241,12 @@ if ( $opt == 'add' || $opt == 'edit' ) {
                 <td valign="top"><strong><?php echo $_LANG['AD_ENABLE_AWARD_CONFIRM']; ?></strong><br />
                     <span class="hinttext"><?php echo $_LANG['AD_DISALLOW_TEXT']; ?></span>					</td>
                 <td valign="top"><label><input name="published" type="radio" value="1" checked="checked" <?php
-                        if ( @$mod['published'] ) {
+                        if (@$mod['published']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="published" type="radio" value="0"  <?php
-                        if ( @!$mod['published'] ) {
+                        if (@!$mod['published']) {
                             echo 'checked="checked"';
                         }
                         ?> /><?php echo $_LANG['NO']; ?></label></td>
@@ -257,16 +256,15 @@ if ( $opt == 'add' || $opt == 'edit' ) {
                     <span class="hinttext"><?php echo $_LANG['AD_AWARD_FOLDER']; ?></span></td>
                 <td valign="top"><?php
                     $awards_img = cmsUser::getAwardsImages();
-                    foreach ( $awards_img as $img ) {
+                    foreach ($awards_img as $img) {
                         ?>
 
                         <div style="float:left;margin:4px">
                             <table border="0" cellspacing="0" cellpadding="4"><tr>
-                                    <?php if ( $mod['imageurl'] != $img ) { ?>
+                                    <?php if ($mod['imageurl'] != $img) { ?>
                                         <td align="center" valign="middle"><label><img src="/images/users/awards/<?php echo $img; ?>" /><br/><input type="radio" name="imageurl" value="<?php echo $img; ?>"/></label></td>
                                         <?php
-                                    }
-                                    else {
+                                    } else {
                                         ?>
                                         <td align="center" valign="middle"><label><img src="/images/users/awards/<?php echo $img; ?>" /><br/><input type="radio" name="imageurl" value="<?php echo $img; ?>" checked="checked"/></label></td>
                                     <?php } ?>
@@ -285,7 +283,7 @@ if ( $opt == 'add' || $opt == 'edit' ) {
                             </td>
                             <td width="86%"><?php echo $_LANG['COMMENT10']; ?></td>
                         </tr>
-                        <?php if ( \cms\controller::enabled('forum') ) { ?>
+                        <?php if (\cms\controller::enabled('forum')) { ?>
                             <tr>
                                 <td><img src="/admin/components/autoawards/images/p_forum.gif" width="16" height="16" /></td>
                                 <td><input name="p_forum" type="text" id="p_input" size="5" value="<?php echo @$mod['p_forum']; ?>" /></td>
@@ -322,17 +320,16 @@ if ( $opt == 'add' || $opt == 'edit' ) {
         </table>
         <p>
             <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>" />
-            <input name="back3" type="button" id="back3" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components&do=config&id=<?php echo $id; ?>';" />
+            <input name="back3" type="button" id="back3" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = '/cp/components/autoawards';" />
             <input name="opt" type="hidden" id="opt" <?php
-                   if ( $opt == 'add' ) {
-                       echo 'value="submit"';
-                   }
-                   else {
-                       echo 'value="update"';
-                   }
-                   ?> />
+            if ($opt == 'add') {
+                echo 'value="submit"';
+            } else {
+                echo 'value="update"';
+            }
+            ?> />
                    <?php
-                   if ( $opt == 'edit' ) {
+                   if ($opt == 'edit') {
                        echo '<input name="item_id" type="hidden" value="' . $mod['id'] . '" />';
                    }
                    ?>

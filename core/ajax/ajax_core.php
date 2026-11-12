@@ -39,7 +39,8 @@ define("VALID_CMS", 1);
 
 $inCore = cmsCore::getInstance();
 
-$inDB   = cmsDatabase::getInstance();
+$inDB   = \cms\db::getInstance();
+$db     = $inDB;
 $inConf = cmsConfig::getInstance();
 $inUser = cmsUser::getInstance();
 $inPage = cmsPage::getInstance();

@@ -50,7 +50,7 @@ class p_usertab extends cmsPlugin
 
     public function viewTab($user_id)
     {
-        $inDB = cmsDatabase::getInstance();
+        $inDB = \cms\db::getInstance();
 
         $model = new cms_model_content();
 
@@ -58,7 +58,7 @@ class p_usertab extends cmsPlugin
 
         $total = $model->getArticlesCount();
 
-        $inDB->orderBy('con.pubdate', 'DESC');
+        $inDB->orderBy('pubdate', 'DESC');
         $inDB->limitPage(1, (int) $this->config['PU_LIMIT']);
 
         $content_list = $total ?

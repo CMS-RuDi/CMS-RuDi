@@ -1,31 +1,31 @@
 <?php
 /*
- *                           InstantCMS v1.10.6
- *                        http://www.instantcms.ru/
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
  *
- *                   written by InstantCMS Team, 2007-2015
- *                produced by InstantSoft, (www.instantsoft.ru)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                        LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
-if ( !defined('VALID_CMS_ADMIN') ) {
+if (!defined('VALID_CMS_ADMIN')) {
     die('ACCESS DENIED');
 }
 
-function getProvidersList()
-{
+function getProvidersList() {
     $pdir = @opendir(PATH . '/components/search/providers/');
 
-    if ( !$pdir ) {
+    if (!$pdir) {
         return false;
     }
 
     $provider_array = array();
 
-    while ( $provider = readdir($pdir) ) {
-        if ( ($provider != '.') && ($provider != '..') && !is_dir(PATH . '/components/search/providers/' . $provider) ) {
-            $provider         = mb_substr($provider, 0, mb_strrpos($provider, '.'));
+    while ($provider = readdir($pdir)) {
+        if (($provider != '.') && ($provider != '..') && !is_dir(PATH . '/components/search/providers/' . $provider)) {
+            $provider = mb_substr($provider, 0, mb_strrpos($provider, '.'));
             $provider_array[] = $provider;
         }
     }
@@ -37,26 +37,26 @@ function getProvidersList()
 
 $model = cms_model_search::initModel();
 
-$opt = cmsCore::request('opt', 'str', '');
+$opt = $inPut->get('opt', 'str', '');
 
-$toolmenu[] = array( 'icon' => 'save.gif', 'title' => $_LANG['SAVE'], 'link' => 'javascript:document.optform.submit();' );
-$toolmenu[] = array( 'icon' => 'cancel.gif', 'title' => $_LANG['CANCEL'], 'link' => '?view=components' );
+$toolmenu[] = array('icon' => 'save.gif', 'title' => $_LANG['SAVE'], 'link' => 'javascript:document.optform.submit();');
+$toolmenu[] = array('icon' => 'cancel.gif', 'title' => $_LANG['CANCEL'], 'link' => '/cp/components');
 
 cpToolMenu($toolmenu);
 
-if ( $opt == 'save' ) {
-    if ( !cmsUser::checkCsrfToken() ) {
+if ($opt == 'save') {
+    if (!cmsUser::checkCsrfToken()) {
         cmsCore::error404();
     }
 
-    $cfg                  = array();
-    $cfg['perpage']       = cmsCore::request('perpage', 'int', 15);
-    $cfg['comp']          = cmsCore::request('comp', 'array_str');
-    $cfg['search_engine'] = preg_replace('/[^a-z_]/i', '', cmsCore::request('search_engine', 'str', ''));
+    $cfg = array();
+    $cfg['perpage'] = $inPut->get('perpage', 'int', 15);
+    $cfg['comp'] = $inPut->get('comp', 'array_str');
+    $cfg['search_engine'] = preg_replace('/[^a-z_]/i', '', $inPut->get('search_engine', 'str', ''));
 
-    if ( $model->config['search_engine'] && class_exists($model->config['search_engine']) && method_exists($model->config['search_engine'], 'getProviderConfig') ) {
-        foreach ( $model->getProviderConfig() as $key => $value ) {
-            $cfg[$model->config['search_engine']][$value] = cmsCore::request($value, 'str', '');
+    if ($model->config['search_engine'] && class_exists($model->config['search_engine']) && method_exists($model->config['search_engine'], 'getProviderConfig')) {
+        foreach ($model->getProviderConfig() as $key => $value) {
+            $cfg[$model->config['search_engine']][$value] = $inPut->get($value, 'str', '');
         }
     }
 
@@ -65,11 +65,11 @@ if ( $opt == 'save' ) {
     cmsCore::redirectBack();
 }
 
-if ( $opt == 'dropcache' ) {
+if ($opt == 'dropcache') {
     $model->truncateResults();
 }
 ?>
-<form action="index.php?view=components&do=config&id=<?php echo $id; ?>" name="optform" method="post" target="_self">
+<form action="/cp/components/search" name="optform" method="post" target="_self">
     <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
     <table border="0" cellpadding="10" cellspacing="0" class="proptable">
         <tr>
@@ -80,13 +80,13 @@ if ( $opt == 'dropcache' ) {
             <td valign="top"><strong><?php echo $_LANG['AD_SEARCH_PROVIDER']; ?>: </strong></td>
             <td valign="top">
                 <select name="search_engine" style="width:245px">
-                    <option value="" <?php if ( !$model->config['search_engine'] ) { ?>selected="selected"<?php } ?>><?php echo $_LANG['AD_NATIVE']; ?></option>
+                    <option value="" <?php if (!$model->config['search_engine']) { ?>selected="selected"<?php } ?>><?php echo $_LANG['AD_NATIVE']; ?></option>
                     <?php
                     $provider_array = getProvidersList();
-                    if ( $provider_array ) {
-                        foreach ( $provider_array as $provider ) {
+                    if ($provider_array) {
+                        foreach ($provider_array as $provider) {
                             ?>
-                            <option value="<?php echo $provider; ?>" <?php if ( $model->config['search_engine'] == $provider ) { ?>selected="selected"<?php } ?>><?php echo $provider; ?></option>
+                            <option value="<?php echo $provider; ?>" <?php if ($model->config['search_engine'] == $provider) { ?>selected="selected"<?php } ?>><?php echo $provider; ?></option>
                             <?php
                         }
                     }
@@ -95,8 +95,8 @@ if ( $opt == 'dropcache' ) {
             </td>
         </tr>
         <?php
-        if ( $model->config['search_engine'] && class_exists($model->config['search_engine']) && method_exists($model->config['search_engine'], 'getProviderConfig') ) {
-            foreach ( $model->getProviderConfig() as $key => $value ) {
+        if ($model->config['search_engine'] && class_exists($model->config['search_engine']) && method_exists($model->config['search_engine'], 'getProviderConfig')) {
+            foreach ($model->getProviderConfig() as $key => $value) {
                 ?>
                 <tr>
                     <td width="215"><strong><?php echo $key; ?>: </strong></td>
@@ -111,10 +111,10 @@ if ( $opt == 'dropcache' ) {
             <td valign="top">
                 <?php
                 echo '<table border="0" cellpadding="2" cellspacing="0">';
-                foreach ( $model->components as $component ) {
+                foreach ($model->components as $component) {
                     echo '<tr>';
                     $checked = '';
-                    if ( in_array($component['link'], $model->config['comp']) ) {
+                    if (in_array($component['link'], $model->config['comp'])) {
                         $checked = 'checked="checked"';
                     }
                     echo '<td><input name="comp[]" id="' . $component['link'] . '" type="checkbox" value="' . $component['link'] . '" ' . $checked . '/></td><td><label for="' . $component['link'] . '">' . $component['title'] . '</label></td>';
@@ -127,10 +127,10 @@ if ( $opt == 'dropcache' ) {
             <td valign="top"><strong><?php echo $_LANG['AD_SEARCH_CASH']; ?>:</strong> </td>
             <td valign="top">
                 <?php
-                $records = $inDB->rows_count('cms_search', "1=1");
+                $records = $DB->resetFilters()->getCount('search', 'id', true);
                 echo $records . ' ' . $_LANG['AD_PIECES'];
-                if ( $records ) {
-                    echo ' | <a href="?view=components&do=config&id=' . $id . '&opt=dropcache">' . $_LANG['AD_CLEAN'] . '</a>';
+                if ($records) {
+                    echo ' | <a href="/cp/components/search?opt=dropcache">' . $_LANG['AD_CLEAN'] . '</a>';
                 }
                 ?></td>
         </tr>
@@ -138,6 +138,6 @@ if ( $opt == 'dropcache' ) {
     <p>
         <input name="opt" type="hidden" id="do" value="save" />
         <input name="save" type="submit" id="save" value="<?php echo $_LANG['SAVE']; ?>" />
-        <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components';"/>
+        <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = '/cp/components';"/>
     </p>
 </form>

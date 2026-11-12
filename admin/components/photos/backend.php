@@ -1,15 +1,16 @@
 <?php
 /*
- *                           InstantCMS v1.10.6
- *                        http://www.instantcms.ru/
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
  *
- *                   written by InstantCMS Team, 2007-2015
- *                produced by InstantSoft, (www.instantsoft.ru)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                        LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
-if ( !defined('VALID_CMS_ADMIN') ) {
+if (!defined('VALID_CMS_ADMIN')) {
     die('ACCESS DENIED');
 }
 
@@ -17,28 +18,28 @@ $cfg = $inCore->loadComponentConfig('photos');
 
 $model = new cms_model_photos();
 
-$opt = cmsCore::request('opt', 'str', 'list_albums');
+$opt = $inPut->get('opt', 'str', 'list_albums');
 
 //============================================================================//
 
-if ( $opt == 'saveconfig' ) {
-    if ( !cmsUser::checkCsrfToken() ) {
+if ($opt == 'saveconfig') {
+    if (!cmsUser::checkCsrfToken()) {
         cmsCore::error404();
     }
 
-    $cfg                        = array();
-    $cfg['link']                = cmsCore::request('show_link', 'int', 0);
-    $cfg['saveorig']            = cmsCore::request('saveorig', 'int', 0);
-    $cfg['maxcols']             = cmsCore::request('maxcols', 'int', 0);
-    $cfg['orderby']             = cmsCore::request('orderby', 'str', '');
-    $cfg['orderto']             = cmsCore::request('orderto', 'str', '');
-    $cfg['showlat']             = cmsCore::request('showlat', 'int', 0);
-    $cfg['watermark']           = cmsCore::request('watermark', 'int', 0);
-    $cfg['meta_keys']           = cmsCore::request('meta_keys', 'str', '');
-    $cfg['meta_desc']           = cmsCore::request('meta_desc', 'str', '');
-    $cfg['seo_user_access']     = cmsCore::request('seo_user_access', 'int', 0);
-    $cfg['best_latest_perpage'] = cmsCore::request('best_latest_perpage', 'int', 0);
-    $cfg['best_latest_maxcols'] = cmsCore::request('best_latest_maxcols', 'int', 0);
+    $cfg = array();
+    $cfg['link'] = $inPut->get('show_link', 'int', 0);
+    $cfg['saveorig'] = $inPut->get('saveorig', 'int', 0);
+    $cfg['maxcols'] = $inPut->get('maxcols', 'int', 0);
+    $cfg['orderby'] = $inPut->get('orderby', 'str', '');
+    $cfg['orderto'] = $inPut->get('orderto', 'str', '');
+    $cfg['showlat'] = $inPut->get('showlat', 'int', 0);
+    $cfg['watermark'] = $inPut->get('watermark', 'int', 0);
+    $cfg['meta_keys'] = $inPut->get('meta_keys', 'str', '');
+    $cfg['meta_desc'] = $inPut->get('meta_desc', 'str', '');
+    $cfg['seo_user_access'] = $inPut->get('seo_user_access', 'int', 0);
+    $cfg['best_latest_perpage'] = $inPut->get('best_latest_perpage', 'int', 0);
+    $cfg['best_latest_maxcols'] = $inPut->get('best_latest_maxcols', 'int', 0);
 
     $inCore->saveComponentConfig('photos', $cfg);
 
@@ -50,23 +51,22 @@ if ( $opt == 'saveconfig' ) {
 //=================================================================================================//
 //=================================================================================================//
 
-if ( $opt == 'list_albums' ) {
-    $toolmenu[] = array( 'icon' => 'newfolder.gif', 'title' => $_LANG['AD_ALBUM_ADD'], 'link' => '?view=components&do=config&id=' . $id . '&opt=add_album' );
-    $toolmenu[] = array( 'icon' => 'folders.gif', 'title' => $_LANG['AD_ALBUMS'], 'link' => '?view=components&do=config&id=' . $id . '&opt=list_albums' );
-    $toolmenu[] = array( 'icon' => 'config.gif', 'title' => $_LANG['AD_SETTINGS'], 'link' => '?view=components&do=config&id=' . $id . '&opt=config' );
+if ($opt == 'list_albums') {
+    $toolmenu[] = array('icon' => 'newfolder.gif', 'title' => $_LANG['AD_ALBUM_ADD'], 'link' => '/cp/components/photos?opt=add_album');
+    $toolmenu[] = array('icon' => 'folders.gif', 'title' => $_LANG['AD_ALBUMS'], 'link' => '/cp/components/photos?opt=list_albums');
+    $toolmenu[] = array('icon' => 'config.gif', 'title' => $_LANG['AD_SETTINGS'], 'link' => '/cp/components/photos?opt=config');
 }
 
-if ( in_array($opt, array( 'config', 'add_album', 'edit_album' )) ) {
-    $toolmenu[] = array( 'icon' => 'save.gif', 'title' => $_LANG['SAVE'], 'link' => 'javascript:document.addform.submit();' );
-    $toolmenu[] = array( 'icon' => 'cancel.gif', 'title' => $_LANG['CANCEL'], 'link' => '?view=components&do=config&id=' . $id );
+if (in_array($opt, array('config', 'add_album', 'edit_album'))) {
+    $toolmenu[] = array('icon' => 'save.gif', 'title' => $_LANG['SAVE'], 'link' => 'javascript:document.addform.submit();');
+    $toolmenu[] = array('icon' => 'cancel.gif', 'title' => $_LANG['CANCEL'], 'link' => '/cp/components/photos');
 }
 
 cpToolMenu($toolmenu);
 
 //=================================================================================================//
-//=================================================================================================//
 
-if ( $opt == 'config' ) {
+if ($opt == 'config') {
     cpAddPathway($_LANG['AD_SETTINGS']);
 
     cpCheckWritable('/images/photos', 'folder');
@@ -74,19 +74,19 @@ if ( $opt == 'config' ) {
     cpCheckWritable('/images/photos/small', 'folder');
     ?>
 
-    <form action="index.php?view=components&amp;do=config&amp;id=<?php echo $id; ?>" method="post" enctype="multipart/form-data" name="addform">
+    <form action="/cp/components/photos" method="post" enctype="multipart/form-data" name="addform">
         <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
         <table width="" border="0" cellpadding="10" cellspacing="0" class="proptable" style="width: 550px;">
             <tr>
                 <td width="300"><strong><?php echo $_LANG['AD_SHOW_LINKS_ORIGINAL']; ?>: </strong></td>
                 <td width="">
                     <label><input name="show_link" type="radio" value="1" <?php
-                        if ( $cfg['link'] ) {
+                        if ($cfg['link']) {
                             echo 'checked="checked"';
                         }
                         ?>/> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="show_link" type="radio" value="0" <?php
-                        if ( !$cfg['link'] ) {
+                        if (!$cfg['link']) {
                             echo 'checked="checked"';
                         }
                         ?>/> <?php echo $_LANG['NO']; ?></label>
@@ -96,12 +96,12 @@ if ( $opt == 'config' ) {
                 <td><strong><?php echo $_LANG['AD_RETAIN_BOOT']; ?>:</strong> </td>
                 <td>
                     <label><input name="saveorig" type="radio" value="1" <?php
-                        if ( $cfg['saveorig'] ) {
+                        if ($cfg['saveorig']) {
                             echo 'checked="checked"';
                         }
                         ?>/> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="saveorig" type="radio" value="0" <?php
-                        if ( !$cfg['saveorig'] ) {
+                        if (!$cfg['saveorig']) {
                             echo 'checked="checked"';
                         }
                         ?>/> <?php echo $_LANG['NO']; ?></label></td>
@@ -114,24 +114,24 @@ if ( $opt == 'config' ) {
                 <td valign="top"><strong><?php echo $_LANG['AD_ALBUM_SORT']; ?>: </strong></td>
                 <td><select name="orderby" style="width:190px">
                         <option value="title" <?php
-                        if ( $cfg['orderby'] == 'title' ) {
+                        if ($cfg['orderby'] == 'title') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_BY_ALPHABET']; ?></option>
                         <option value="pubdate" <?php
-                        if ( $cfg['orderby'] == 'pubdate' ) {
+                        if ($cfg['orderby'] == 'pubdate') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_BY_CALENDAR']; ?></option>
                     </select>
                     <select name="orderto" style="width:190px">
                         <option value="desc" <?php
-                        if ( $cfg['orderto'] == 'desc' ) {
+                        if ($cfg['orderto'] == 'desc') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_BY_DECREMENT']; ?></option>
                         <option value="asc" <?php
-                        if ( $cfg['orderto'] == 'asc' ) {
+                        if ($cfg['orderto'] == 'asc') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_BY_INCREMENT']; ?></option>
@@ -141,12 +141,12 @@ if ( $opt == 'config' ) {
                 <td><strong><?php echo $_LANG['AD_SHOW_LINKS_LATEST']; ?>: </strong></td>
                 <td>
                     <label><input name="showlat" type="radio" value="1" <?php
-                        if ( $cfg['showlat'] ) {
+                        if ($cfg['showlat']) {
                             echo 'checked="checked"';
                         }
                         ?>/> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="showlat" type="radio" value="0" <?php
-                        if ( !$cfg['showlat'] ) {
+                        if (!$cfg['showlat']) {
                             echo 'checked="checked"';
                         }
                         ?>/> <?php echo $_LANG['NO']; ?></label>
@@ -170,12 +170,12 @@ if ( $opt == 'config' ) {
                     <span class="hinttext"><?php echo $_LANG['AD_WATERMARK_PHOTOS_HINT']; ?> "<a href="/images/watermark.png" target="_blank">/images/watermark.png</a>"</span></td>
                 <td>
                     <label><input name="watermark" type="radio" value="1" <?php
-                        if ( $cfg['watermark'] ) {
+                        if ($cfg['watermark']) {
                             echo 'checked="checked"';
                         }
                         ?>/> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="watermark" type="radio" value="0" <?php
-                        if ( !$cfg['watermark'] ) {
+                        if (!$cfg['watermark']) {
                             echo 'checked="checked"';
                         }
                         ?>/> <?php echo $_LANG['NO']; ?>	</label>  				  </td>
@@ -198,12 +198,12 @@ if ( $opt == 'config' ) {
                 <td><strong><?php echo $_LANG['AD_USER_SEO_ACCESS']; ?> </strong></td>
                 <td>
                     <label><input name="seo_user_access" type="radio" value="1" <?php
-                        if ( $cfg['seo_user_access'] ) {
+                        if ($cfg['seo_user_access']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label><input name="seo_user_access" type="radio" value="0"  <?php
-                        if ( !$cfg['seo_user_access'] ) {
+                        if (!$cfg['seo_user_access']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['NO']; ?> </label>
@@ -213,82 +213,74 @@ if ( $opt == 'config' ) {
         <p>
             <input name="opt" type="hidden" value="saveconfig" />
             <input name="save" type="submit" id="save" value="<?php echo $_LANG['SAVE']; ?>" />
-            <input name="back3" type="button" id="back3" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components&do=config&id=<?php echo $id; ?>';"/>
+            <input name="back3" type="button" id="back3" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = '/cp/components/photos';"/>
         </p>
     </form>
     <?php
 }
 
 //=================================================================================================//
-//=================================================================================================//
 
-if ( $opt == 'show_album' ) {
-    $item_id = cmsCore::request('item_id', 'int', 0);
-    $inDB->query("UPDATE cms_photo_albums SET published = 1 WHERE id = '$item_id'");
-    echo '1';
-    exit;
+if ($opt == 'show_album') {
+    $DB->update('photo_albums', $inPut->get('item_id', 'int', 0), array('published' => 1));
+    exit('1');
 }
 
 //=================================================================================================//
-//=================================================================================================//
 
-if ( $opt == 'hide_album' ) {
-    $item_id = cmsCore::request('item_id', 'int', 0);
-    $inDB->query("UPDATE cms_photo_albums SET published = 0 WHERE id = '$item_id'");
-    echo '1';
-    exit;
+if ($opt == 'hide_album') {
+    $DB->update('photo_albums', $inPut->get('item_id', 'int', 0), array('published' => 0));
+    exit('1');
 }
 
 //=================================================================================================//
-//=================================================================================================//
 
-if ( $opt == 'submit_album' ) {
-    if ( !cmsUser::checkCsrfToken() ) {
+if ($opt == 'submit_album') {
+    if (!cmsUser::checkCsrfToken()) {
         cmsCore::error404();
     }
 
-    $album['title']       = cmsCore::request('title', 'str', 'NO_TITLE');
-    $album['description'] = cmsCore::request('description', 'str');
-    $album['published']   = cmsCore::request('published', 'int');
-    $album['showdate']    = cmsCore::request('showdate', 'int');
-    $album['parent_id']   = cmsCore::request('parent_id', 'int');
-    $album['showtype']    = cmsCore::request('showtype', 'str');
-    $album['public']      = cmsCore::request('public', 'int');
-    $album['orderby']     = cmsCore::request('orderby', 'str');
-    $album['orderto']     = cmsCore::request('orderto', 'str');
-    $album['perpage']     = cmsCore::request('perpage', 'int');
-    $album['thumb1']      = cmsCore::request('thumb1', 'int');
-    $album['thumb2']      = cmsCore::request('thumb2', 'int');
-    $album['thumbsqr']    = cmsCore::request('thumbsqr', 'int');
-    $album['cssprefix']   = cmsCore::request('cssprefix', 'str');
-    $album['nav']         = cmsCore::request('nav', 'int');
-    $album['uplimit']     = cmsCore::request('uplimit', 'int');
-    $album['maxcols']     = cmsCore::request('maxcols', 'int');
-    $album['orderform']   = cmsCore::request('orderform', 'int');
-    $album['showtags']    = cmsCore::request('showtags', 'int');
-    $album['bbcode']      = cmsCore::request('bbcode', 'int');
-    $album['is_comments'] = cmsCore::request('is_comments', 'int');
-    $album['meta_keys']   = cmsCore::request('meta_keys', 'str', '');
-    $album['meta_desc']   = cmsCore::request('meta_desc', 'str', '');
-    $album['pagetitle']   = cmsCore::request('pagetitle', 'str', '');
+    $album['title'] = $inPut->get('title', 'str', 'NO_TITLE');
+    $album['description'] = $inPut->get('description', 'str');
+    $album['published'] = $inPut->get('published', 'int');
+    $album['showdate'] = $inPut->get('showdate', 'int');
+    $album['parent_id'] = $inPut->get('parent_id', 'int');
+    $album['showtype'] = $inPut->get('showtype', 'str');
+    $album['public'] = $inPut->get('public', 'int');
+    $album['orderby'] = $inPut->get('orderby', 'str');
+    $album['orderto'] = $inPut->get('orderto', 'str');
+    $album['perpage'] = $inPut->get('perpage', 'int');
+    $album['thumb1'] = $inPut->get('thumb1', 'int');
+    $album['thumb2'] = $inPut->get('thumb2', 'int');
+    $album['thumbsqr'] = $inPut->get('thumbsqr', 'int');
+    $album['cssprefix'] = $inPut->get('cssprefix', 'str');
+    $album['nav'] = $inPut->get('nav', 'int');
+    $album['uplimit'] = $inPut->get('uplimit', 'int');
+    $album['maxcols'] = $inPut->get('maxcols', 'int');
+    $album['orderform'] = $inPut->get('orderform', 'int');
+    $album['showtags'] = $inPut->get('showtags', 'int');
+    $album['bbcode'] = $inPut->get('bbcode', 'int');
+    $album['is_comments'] = $inPut->get('is_comments', 'int');
+    $album['meta_keys'] = $inPut->get('meta_keys', 'str', '');
+    $album['meta_desc'] = $inPut->get('meta_desc', 'str', '');
+    $album['pagetitle'] = $inPut->get('pagetitle', 'str', '');
 
     $album = \cms\events::call('photos.add_album', $album);
 
-    $inDB->addNsCategory('cms_photo_albums', $album);
+    $DB->addNsCategory('photo_albums', $album);
 
     cmsCore::addSessionMessage($_LANG['AD_ALBUM'] . ' "' . stripslashes($album['title']) . '" ' . $_LANG['AD_ALBUM_CREATED'], 'success');
 
-    cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list_albums');
+    cmsCore::redirect('/cp/components/photos?opt=list_albums');
 }
 
 //=================================================================================================//
-//=================================================================================================//
 
-if ( $opt == 'delete_album' ) {
-    if ( cmsCore::inRequest('item_id') ) {
+if ($opt == 'delete_album') {
+    if (cmsCore::inRequest('item_id')) {
 
-        $album = $inDB->getNsCategory('cms_photo_albums', cmsCore::request('item_id', 'int', 0));
-        if ( !$album ) {
+        $album = $DB->getNsCategory('photo_albums', $inPut->get('item_id', 'int', 0));
+        if (!$album) {
             cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list_albums');
         }
 
@@ -297,127 +289,123 @@ if ( $opt == 'delete_album' ) {
         cmsPhoto::getInstance()->deleteAlbum($album['id'], '', $model->initUploadClass($album));
     }
 
-    cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list_albums');
+    cmsCore::redirect('/cp/components/photos?opt=list_albums');
 }
 
 //=================================================================================================//
-//=================================================================================================//
 
-if ( $opt == 'update_album' ) {
-    if ( !cmsUser::checkCsrfToken() ) {
+if ($opt == 'update_album') {
+    if (!cmsUser::checkCsrfToken()) {
         cmsCore::error404();
     }
 
-    $item_id = cmsCore::request('item_id', 'int', 0);
+    $item_id = $inPut->get('item_id', 'int', 0);
 
-    $old_album = $inDB->getNsCategory('cms_photo_albums', $item_id);
-    if ( !$old_album ) {
-        cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list_albums');
+    $old_album = $DB->getNsCategory('photo_albums', $item_id);
+    if (!$old_album) {
+        cmsCore::redirect('/cp/components/photos?opt=list_albums');
     }
 
-    $album['title']       = cmsCore::request('title', 'str', 'NO_TITLE');
-    $album['description'] = cmsCore::request('description', 'str', '');
-    $album['published']   = cmsCore::request('published', 'int');
-    $album['showdate']    = cmsCore::request('showdate', 'int');
-    $album['parent_id']   = cmsCore::request('parent_id', 'int');
-    $album['is_comments'] = cmsCore::request('is_comments', 'int');
-    $album['showtype']    = cmsCore::request('showtype', 'str');
-    $album['public']      = cmsCore::request('public', 'int');
-    $album['orderby']     = cmsCore::request('orderby', 'str');
-    $album['orderto']     = cmsCore::request('orderto', 'str');
-    $album['perpage']     = cmsCore::request('perpage', 'int');
-    $album['thumb1']      = cmsCore::request('thumb1', 'int');
-    $album['thumb2']      = cmsCore::request('thumb2', 'int');
-    $album['thumbsqr']    = cmsCore::request('thumbsqr', 'int');
-    $album['cssprefix']   = cmsCore::request('cssprefix', 'str');
-    $album['nav']         = cmsCore::request('nav', 'int');
-    $album['uplimit']     = cmsCore::request('uplimit', 'int');
-    $album['maxcols']     = cmsCore::request('maxcols', 'int');
-    $album['orderform']   = cmsCore::request('orderform', 'int');
-    $album['showtags']    = cmsCore::request('showtags', 'int');
-    $album['bbcode']      = cmsCore::request('bbcode', 'int');
-    $album['iconurl']     = cmsCore::request('iconurl', 'str');
-    $album['meta_keys']   = cmsCore::request('meta_keys', 'str', '');
-    $album['meta_desc']   = cmsCore::request('meta_desc', 'str', '');
-    $album['pagetitle']   = cmsCore::request('pagetitle', 'str', '');
+    $album['title'] = $inPut->get('title', 'str', 'NO_TITLE');
+    $album['description'] = $inPut->get('description', 'str', '');
+    $album['published'] = $inPut->get('published', 'int');
+    $album['showdate'] = $inPut->get('showdate', 'int');
+    $album['parent_id'] = $inPut->get('parent_id', 'int');
+    $album['is_comments'] = $inPut->get('is_comments', 'int');
+    $album['showtype'] = $inPut->get('showtype', 'str');
+    $album['public'] = $inPut->get('public', 'int');
+    $album['orderby'] = $inPut->get('orderby', 'str');
+    $album['orderto'] = $inPut->get('orderto', 'str');
+    $album['perpage'] = $inPut->get('perpage', 'int');
+    $album['thumb1'] = $inPut->get('thumb1', 'int');
+    $album['thumb2'] = $inPut->get('thumb2', 'int');
+    $album['thumbsqr'] = $inPut->get('thumbsqr', 'int');
+    $album['cssprefix'] = $inPut->get('cssprefix', 'str');
+    $album['nav'] = $inPut->get('nav', 'int');
+    $album['uplimit'] = $inPut->get('uplimit', 'int');
+    $album['maxcols'] = $inPut->get('maxcols', 'int');
+    $album['orderform'] = $inPut->get('orderform', 'int');
+    $album['showtags'] = $inPut->get('showtags', 'int');
+    $album['bbcode'] = $inPut->get('bbcode', 'int');
+    $album['iconurl'] = $inPut->get('iconurl', 'str');
+    $album['meta_keys'] = $inPut->get('meta_keys', 'str', '');
+    $album['meta_desc'] = $inPut->get('meta_desc', 'str', '');
+    $album['pagetitle'] = $inPut->get('pagetitle', 'str', '');
 
     // если сменили категорию
-    if ( $old_album['parent_id'] != $album['parent_id'] ) {
+    if ($old_album['parent_id'] != $album['parent_id']) {
         // перемещаем ее в дереве
         $inCore->nestedSetsInit('cms_photo_albums')->MoveNode($item_id, $album['parent_id']);
     }
 
-    $inDB->update('cms_photo_albums', $album, $item_id);
+    $DB->update('photo_albums', $item_id, $album);
 
     cmsCore::addSessionMessage($_LANG['AD_ALBUM'] . ' "' . stripslashes($album['title']) . '" ' . $_LANG['AD_ALBUM_SAVED'] . '.', 'success');
-    cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=list_albums');
+    cmsCore::redirect('/cp/components/photos?opt=list_albums');
 }
 
 //=================================================================================================//
-//=================================================================================================//
 
-if ( $opt == 'list_albums' ) {
+if ($opt == 'list_albums') {
     echo '<h3>' . $_LANG['AD_ALBUMS'] . '</h3>';
 
-    $fields[] = array( 'title' => 'id', 'field' => 'id', 'width' => '30' );
-    $fields[] = array( 'title' => $_LANG['TITLE'], 'field' => 'title', 'width' => '', 'link' => '?view=components&do=config&id=' . $id . '&opt=edit_album&item_id=%id%' );
-    $fields[] = array( 'title' => $_LANG['AD_ALBUM_COMMENTS'], 'field' => 'is_comments', 'width' => '95', 'prc' => 'cpYesNo' );
-    $fields[] = array( 'title' => $_LANG['AD_ADDING_USERS'], 'field' => 'public', 'width' => '100', 'prc' => 'cpYesNo' );
-    $fields[] = array( 'title' => $_LANG['AD_IS_PUBLISHED'], 'field' => 'published', 'width' => '60', 'do' => 'opt', 'do_suffix' => '_album' );
+    $fields[] = array('title' => 'id', 'field' => 'id', 'width' => '30');
+    $fields[] = array('title' => $_LANG['TITLE'], 'field' => 'title', 'width' => '', 'link' => '/cp/components/photos?opt=edit_album&item_id=%id%');
+    $fields[] = array('title' => $_LANG['AD_ALBUM_COMMENTS'], 'field' => 'is_comments', 'width' => '95', 'prc' => 'cpYesNo');
+    $fields[] = array('title' => $_LANG['AD_ADDING_USERS'], 'field' => 'public', 'width' => '100', 'prc' => 'cpYesNo');
+    $fields[] = array('title' => $_LANG['AD_IS_PUBLISHED'], 'field' => 'published', 'width' => '60', 'do' => 'opt', 'do_suffix' => '_album');
 
-    $actions[] = array( 'title' => $_LANG['AD_VIEW_ONLINE'], 'icon' => 'search.gif', 'link' => '/photos/%id%' );
-    $actions[] = array( 'title' => $_LANG['EDIT'], 'icon' => 'edit.gif', 'link' => '?view=components&do=config&id=' . $id . '&opt=edit_album&item_id=%id%' );
-    $actions[] = array( 'title' => $_LANG['DELETE'], 'icon' => 'delete.gif', 'confirm' => $_LANG['AD_ALBUM_PHOTOS_DEL'], 'link' => '?view=components&do=config&id=' . $id . '&opt=delete_album&item_id=%id%' );
+    $actions[] = array('title' => $_LANG['AD_VIEW_ONLINE'], 'icon' => 'search.gif', 'link' => '/photos/%id%');
+    $actions[] = array('title' => $_LANG['EDIT'], 'icon' => 'edit.gif', 'link' => '/cp/components/photos?opt=edit_album&item_id=%id%');
+    $actions[] = array('title' => $_LANG['DELETE'], 'icon' => 'delete.gif', 'confirm' => $_LANG['AD_ALBUM_PHOTOS_DEL'], 'link' => '/cp/components/photos?opt=delete_album&item_id=%id%');
 
     cpListTable('cms_photo_albums', $fields, $actions, 'parent_id>0 AND NSDiffer=""', 'NSLeft');
 }
 
 //=================================================================================================//
-//=================================================================================================//
 
-if ( $opt == 'add_album' || $opt == 'edit_album' ) {
-    if ( $opt == 'add_album' ) {
+if ($opt == 'add_album' || $opt == 'edit_album') {
+    if ($opt == 'add_album') {
         cpAddPathway($_LANG['AD_ALBUM_ADD']);
         echo '<h3>' . $_LANG['AD_ALBUM_ADD'] . '</h3>';
-    }
-    else {
-        $item_id = cmsCore::request('item_id', 'int', 0);
+    } else {
+        $item_id = $inPut->get('item_id', 'int', 0);
 
-        $mod = $inDB->getNsCategory('cms_photo_albums', $item_id);
+        $mod = $DB->getNsCategory('photo_albums', $item_id);
 
         cpAddPathway($_LANG['AD_ALBUM_EDIT']);
         echo '<h3>' . $_LANG['AD_ALBUM_EDIT'] . ' "' . $mod['title'] . '"</h3>';
     }
 
     //DEFAULT VALUES
-    if ( !isset($mod['thumb1']) ) {
+    if (!isset($mod['thumb1'])) {
         $mod['thumb1'] = 180;
     }
-    if ( !isset($mod['thumb2']) ) {
+    if (!isset($mod['thumb2'])) {
         $mod['thumb2'] = 650;
     }
-    if ( !isset($mod['thumbsqr']) ) {
+    if (!isset($mod['thumbsqr'])) {
         $mod['thumbsqr'] = 1;
     }
-    if ( !isset($mod['is_comments']) ) {
+    if (!isset($mod['is_comments'])) {
         $mod['is_comments'] = 0;
     }
-    if ( !isset($mod['maxcols']) ) {
+    if (!isset($mod['maxcols'])) {
         $mod['maxcols'] = 4;
     }
-    if ( !isset($mod['showtype']) ) {
+    if (!isset($mod['showtype'])) {
         $mod['showtype'] = 'thumb';
     }
-    if ( !isset($mod['perpage']) ) {
+    if (!isset($mod['perpage'])) {
         $mod['perpage'] = '20';
     }
-    if ( !isset($mod['uplimit']) ) {
+    if (!isset($mod['uplimit'])) {
         $mod['uplimit'] = 20;
     }
-    if ( !isset($mod['published']) ) {
+    if (!isset($mod['published'])) {
         $mod['published'] = 1;
     }
-    if ( !isset($mod['orderby']) ) {
+    if (!isset($mod['orderby'])) {
         $mod['orderby'] = 'pubdate';
     }
     ?>
@@ -433,7 +421,7 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
         }
     </script>
 
-    <form id="addform" name="addform" method="post" action="index.php?view=components&do=config&id=<?php echo $id; ?>">
+    <form id="addform" name="addform" method="post" action="/cp/components/photos">
         <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
         <table width="610" border="0" cellspacing="5" class="proptable">
             <tr>
@@ -443,18 +431,20 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
             <tr>
                 <td valign="top"><?php echo $_LANG['AD_ALBUM_PARENT']; ?>:</td>
                 <td valign="top">
-                    <?php $rootid = $inDB->get_field('cms_photo_albums', "parent_id=0 AND NSDiffer=''", 'id'); ?>
+                    <?php
+                    $DB->resetFilters();
+                    $rootid = $DB->filterEqual('parent_id', 0)->filterEqual('NSDiffer', '')->getFieldFiltered('photo_albums', 'id');
+                    ?>
                     <select name="parent_id" size="8" id="parent_id" style="width:285px">
                         <option value="<?php echo $rootid; ?>" <?php
-                        if ( @$mod['parent_id'] == $rootid || !isset($mod['parent_id']) ) {
+                        if (@$mod['parent_id'] == $rootid || !isset($mod['parent_id'])) {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_ALBUM_ROOT']; ?></option>
                                 <?php
-                                if ( isset($mod['parent_id']) ) {
+                                if (isset($mod['parent_id'])) {
                                     echo $inCore->getListItemsNS('cms_photo_albums', $mod['parent_id']);
-                                }
-                                else {
+                                } else {
                                     echo $inCore->getListItemsNS('cms_photo_albums');
                                 }
                                 ?>
@@ -465,12 +455,12 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td><?php echo $_LANG['AD_ALBUM_POST']; ?>?</td>
                 <td>
                     <label><input name="published" type="radio" value="1" <?php
-                        if ( @$mod['published'] ) {
+                        if (@$mod['published']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="published" type="radio" value="0"  <?php
-                        if ( @!$mod['published'] ) {
+                        if (@!$mod['published']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['NO']; ?></label>
@@ -480,12 +470,12 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td><?php echo $_LANG['AD_SHOW_DATES_COMMENTS']; ?>?</td>
                 <td>
                     <label><input name="showdate" type="radio" value="1" <?php
-                        if ( @$mod['showdate'] ) {
+                        if (@$mod['showdate']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="showdate" type="radio" value="0"  <?php
-                        if ( @!$mod['showdate'] ) {
+                        if (@!$mod['showdate']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['NO']; ?></label>
@@ -495,12 +485,12 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td valign="top"><?php echo $_LANG['AD_SHOW_TAGS']; ?>:</td>
                 <td valign="top">
                     <label><input name="showtags" type="radio" value="1" checked="checked" <?php
-                        if ( @$mod['showtags'] ) {
+                        if (@$mod['showtags']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="showtags" type="radio" value="0"  <?php
-                        if ( @!$mod['showtags'] ) {
+                        if (@!$mod['showtags']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['NO']; ?></label>
@@ -510,12 +500,12 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td valign="top"><?php echo $_LANG['AD_SHOW_CODE_FORUM']; ?>:</td>
                 <td valign="top">
                     <label><input name="bbcode" type="radio" value="1" checked="checked" <?php
-                        if ( @$mod['bbcode'] ) {
+                        if (@$mod['bbcode']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="bbcode" type="radio" value="0"  <?php
-                        if ( @!$mod['bbcode'] ) {
+                        if (@!$mod['bbcode']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['NO']; ?></label>
@@ -525,12 +515,12 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td valign="top"><?php echo $_LANG['AD_COMMENTS_ALBUM']; ?>:</td>
                 <td valign="top">
                     <label><input name="is_comments" type="radio" value="1" checked="checked" <?php
-                        if ( @$mod['is_comments'] ) {
+                        if (@$mod['is_comments']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="is_comments" type="radio" value="0"  <?php
-                        if ( @!$mod['is_comments'] ) {
+                        if (@!$mod['is_comments']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['NO']; ?></label>
@@ -541,34 +531,34 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td>
                     <select name="orderby" id="orderby" style="width:285px">
                         <option value="title" <?php
-                        if ( @$mod['orderby'] == 'title' ) {
+                        if (@$mod['orderby'] == 'title') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_BY_ALPHABET']; ?></option>
                         <option value="pubdate" <?php
-                        if ( @$mod['orderby'] == 'pubdate' ) {
+                        if (@$mod['orderby'] == 'pubdate') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_BY_CALENDAR']; ?></option>
                         <option value="rating" <?php
-                        if ( @$mod['orderby'] == 'rating' ) {
+                        if (@$mod['orderby'] == 'rating') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_BY_RATING']; ?></option>
                         <option value="hits" <?php
-                        if ( @$mod['orderby'] == 'hits' ) {
+                        if (@$mod['orderby'] == 'hits') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_BY_VIEWS']; ?></option>
                     </select>
                     <select name="orderto" id="orderto" style="width:285px">
                         <option value="desc" <?php
-                        if ( @$mod['orderto'] == 'desc' ) {
+                        if (@$mod['orderto'] == 'desc') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_BY_DECREMENT']; ?></option>
                         <option value="asc" <?php
-                        if ( @$mod['orderto'] == 'asc' ) {
+                        if (@$mod['orderto'] == 'asc') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_BY_INCREMENT']; ?></option>
@@ -580,12 +570,12 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td>
                     <select name="showtype" id="showtype" style="width:285px">
                         <option value="thumb" <?php
-                        if ( @$mod['showtype'] == 'thumb' ) {
+                        if (@$mod['showtype'] == 'thumb') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_GALLERY']; ?></option>
                         <option value="lightbox" <?php
-                        if ( @$mod['showtype'] == 'lightbox' ) {
+                        if (@$mod['showtype'] == 'lightbox') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_GALLERY_LIGHTBOX']; ?></option>
@@ -603,17 +593,17 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td>
                     <select name="public" id="select" style="width:285px">
                         <option value="0" <?php
-                        if ( @$mod['public'] == '0' ) {
+                        if (@$mod['public'] == '0') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_PROCHBITED']; ?></option>
                         <option value="1" <?php
-                        if ( @$mod['public'] == '1' ) {
+                        if (@$mod['public'] == '1') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_FROM_PREMODERATION']; ?></option>
                         <option value="2" <?php
-                        if ( @$mod['public'] == '2' ) {
+                        if (@$mod['public'] == '2') {
                             echo 'selected';
                         }
                         ?>><?php echo $_LANG['AD_WITHOUT_PREMODERATION']; ?></option>
@@ -630,12 +620,12 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td><?php echo $_LANG['AD_FORM_SORTING']; ?>:</td>
                 <td>
                     <label><input name="orderform" type="radio" value="1" checked="checked" <?php
-                        if ( @$mod['orderform'] ) {
+                        if (@$mod['orderform']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['SHOW']; ?></label>
                     <label><input name="orderform" type="radio" value="0"  <?php
-                        if ( @!$mod['orderform'] ) {
+                        if (@!$mod['orderform']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['HIDE']; ?></label>
@@ -645,12 +635,12 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                 <td><?php echo $_LANG['AD_ALBUM_NAVIGATTING']; ?>:</td>
                 <td>
                     <label><input name="nav" type="radio" value="1" <?php
-                        if ( @$mod['nav'] ) {
+                        if (@$mod['nav']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['YES']; ?></label>
                     <label><input name="nav" type="radio" value="0"  <?php
-                        if ( @!$mod['nav'] ) {
+                        if (@!$mod['nav']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['NO']; ?></label>
@@ -676,12 +666,12 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                             <td width="100" align="center" valign="middle" style="background-color:#EBEBEB"><?php echo $_LANG['AD_PHOTOS_SQUARE']; ?>:</td>
                             <td width="115" align="center" valign="middle" style="background-color:#EBEBEB">
                                 <label><input name="thumbsqr" type="radio" value="1" checked="checked" <?php
-                                    if ( @$mod['thumbsqr'] ) {
+                                    if (@$mod['thumbsqr']) {
                                         echo 'checked="checked"';
                                     }
                                     ?> /> <?php echo $_LANG['YES']; ?> </label>
                                 <label><input name="thumbsqr" type="radio" value="0"  <?php
-                                    if ( @!$mod['thumbsqr'] ) {
+                                    if (@!$mod['thumbsqr']) {
                                         echo 'checked="checked"';
                                     }
                                     ?> /><?php echo $_LANG['NO']; ?> </label>
@@ -696,34 +686,37 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
                     <input class="uispin" name="thumb2" type="text" id="thumb2" size="3" value="<?php echo @$mod['thumb2']; ?>"/> <?php echo $_LANG['AD_PX']; ?>.
                 </td>
             </tr>
-            <?php if ( $opt == 'edit_album' ) { ?>
+            <?php if ($opt == 'edit_album') { ?>
                 <tr>
                     <td valign="top"><?php echo $_LANG['AD_MINI_SKETCH']; ?>:<br />
-                        <?php if ( !empty($mod['iconurl']) && file_exists(PATH . '/images/photos/small/' . $mod['iconurl']) ) { ?>
+                        <?php if (!empty($mod['iconurl']) && file_exists(PATH . '/images/photos/small/' . $mod['iconurl'])) { ?>
                             <img id="marker_demo" src="/images/photos/small/<?php echo $mod['iconurl']; ?>">
                             <?php
-                        }
-                        else {
+                        } else {
                             ?>
                             <img id="marker_demo" src="/images/photos/no_image.png" style="display: none;">
                         <?php } ?>
                     </td>
                     <td valign="top">
-                        <?php if ( $inDB->rows_count('cms_photo_files', 'album_id = ' . $item_id . '') ) { ?>
+                        <?php
+                        $DB->resetFilters();
+                        $album_has_photos = $DB->filterEqual('album_id', $item_id)->getCount('photo_files');
+                        $DB->resetFilters();
+
+                        if ($album_has_photos) {
+                            ?>
                             <select name="iconurl" id="iconurl" style="width:285px" onchange="showMapMarker()">
                                 <?php
-                                if ( !empty($mod['iconurl']) && file_exists(PATH . '/images/photos/small/' . $mod['iconurl']) ) {
+                                if (!empty($mod['iconurl']) && file_exists(PATH . '/images/photos/small/' . $mod['iconurl'])) {
                                     echo $inCore->getListItems('cms_photo_files', $mod['iconurl'], 'id', 'ASC', 'album_id = ' . $item_id . ' AND published = 1', 'file');
-                                }
-                                else {
+                                } else {
                                     echo '<option value="" selected="selected">' . $_LANG['AD_MINI_SKETCH_CHOOSE'] . '</option>';
                                     echo $inCore->getListItems('cms_photo_files', '', 'id', 'ASC', 'album_id = ' . $item_id . ' AND published = 1', 'file');
                                 }
                                 ?>
                             </select>
                             <?php
-                        }
-                        else {
+                        } else {
                             ?>
                             <?php echo $_LANG['AD_ALBUM_NO_PHOTOS']; ?>.
                         <?php } ?>
@@ -765,17 +758,16 @@ if ( $opt == 'add_album' || $opt == 'edit_album' ) {
 
         <p>
             <input name="opt" type="hidden" id="opt" <?php
-            if ( $opt == 'add_album' ) {
+            if ($opt == 'add_album') {
                 echo 'value="submit_album"';
-            }
-            else {
+            } else {
                 echo 'value="update_album"';
             }
             ?> />
             <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>" />
-            <input name="back2" type="button" id="back2" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components&do=config&id=<?php echo $id; ?>';"/>
+            <input name="back2" type="button" id="back2" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = '/cp/components/photos';"/>
             <?php
-            if ( $opt == 'edit_album' ) {
+            if ($opt == 'edit_album') {
                 echo '<input name="item_id" type="hidden" value="' . $mod['id'] . '" />';
             }
             ?>

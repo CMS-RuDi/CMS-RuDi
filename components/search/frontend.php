@@ -14,7 +14,7 @@ function search()
 {
     $inCore = cmsCore::getInstance();
     $inPage = cmsPage::getInstance();
-    $inDB   = cmsDatabase::getInstance();
+    $inDB   = \cms\db::getInstance();
 
     global $_LANG;
 

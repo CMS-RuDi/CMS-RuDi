@@ -32,11 +32,11 @@ if ( mb_strlen($data) < 2 ||
 }
 
 if ( $opt == 'checklogin' ) {
-    $sql = "SELECT id, login FROM cms_users WHERE LOWER(login) = '" . mb_strtolower($data) . "' AND is_deleted = 0 LIMIT 1";
+    $is_busy = \cms\db::cloneOf($inDB)->filterEqual('login', mb_strtolower($data))
+                    ->filterEqual('is_deleted', 0)
+                    ->getCount('users');
 
-    $result = $inDB->query($sql);
-
-    if ( $inDB->num_rows($result) == 0 ) {
+    if ( !$is_busy ) {
         echo '<span style="color:green">' . $_LANG['YOU_LOGIN_COMPLETE'] . '</span>';
     }
     else {

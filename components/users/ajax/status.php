@@ -33,12 +33,12 @@ if ( mb_strlen($status) > 140 ) {
     $status = mb_substr($status, 0, 140);
 }
 
-$sql = "UPDATE cms_users
-        SET status = '" . $status . "', status_date = NOW()
-        WHERE id = '" . $user_id . "'
-        LIMIT 1";
+$inDB->resetFilters();
 
-$inDB->query($sql);
+$inDB->filterEqual('id', $user_id)->updateFiltered('users', array(
+    'status' => $status,
+    'status_date' => date('Y-m-d H:i:s')
+));
 
 //регистрируем событие
 if ( $status ) {

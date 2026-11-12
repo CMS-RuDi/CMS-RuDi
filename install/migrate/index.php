@@ -22,7 +22,7 @@ require(PATH . '/core/classes/autoload.php');
 $inCore = cmsAdmin::getInstance();
 
 $inConf = cmsConfig::getInstance();
-$inDB = cmsDatabase::getInstance();
+$inDB = \cms\db::getInstance();
 
 // принудительно включаем дебаг
 $inConf->debug = 1;
@@ -103,7 +103,7 @@ $version_next = '1.10.7';
 // ========================================================================== //
 
             if ($step == 1) {
-                $inDB->query("ALTER TABLE `cms_blog_posts` CHANGE `edit_date` `edit_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
+                $inDB->query("ALTER TABLE `{#}blog_posts` CHANGE `edit_date` `edit_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
 
                 echo '<div style="margin:15px 0px;font-weight:bold">Миграция завершена. Удалите папку /install/ прежде чем продолжить!</div>';
                 echo '<div class="nextlink"><a href="/">Перейти на сайт</a></div>';

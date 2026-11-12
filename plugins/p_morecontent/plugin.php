@@ -50,7 +50,7 @@ class p_morecontent extends cmsPlugin
 
     private function eventGetArticle($item)
     {
-        $inDB = cmsDatabase::getInstance();
+        $inDB = \cms\db::getInstance();
         global $_LANG;
 
         $item_id   = $item['id'];
@@ -59,13 +59,15 @@ class p_morecontent extends cmsPlugin
 
         // Получаем id назначения таких же тегов, не более пяти на каждый
         foreach ( $tag_arr as $tag ) {
-            $sql = "SELECT item_id FROM cms_tags WHERE tag = '$tag' AND item_id<>'$item_id' AND target='content' LIMIT 5";
-            $rs  = $inDB->query($sql);
+            $tagitems = \cms\db::cloneOf($inDB)->selectOnly('item_id')
+                    ->filterEqual('tag', $tag)
+                    ->filterNotEqual('item_id', $item_id)
+                    ->filterEqual('target', 'content')
+                    ->limit(0, 5)
+                    ->get('tags', false, false);
 
-            if ( $inDB->num_rows($rs) ) {
-                while ( $tagitem = $inDB->fetch_assoc($rs) ) {
-                    $id_target[] = $tagitem['item_id'];
-                }
+            foreach ( $tagitems as $tagitem ) {
+                $id_target[] = $tagitem['item_id'];
             }
         }
 

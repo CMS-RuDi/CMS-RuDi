@@ -40,7 +40,9 @@ if ($fdo == 'view') {
     $perpage = 20;
     $myprofile = ($inUser->id == $usr['id']);
 
-    $inDB->where("user_id = '{$usr['id']}'");
+    $inDB->resetFilters();
+
+    $inDB->filterEqual('i.user_id', $usr['id']);
 
     $total_files = $model->getUserFilesCount($myprofile || $inUser->is_admin);
 
@@ -71,9 +73,17 @@ if ($fdo == 'view') {
 if ($fdo == 'download') {
     $file_id = cmsCore::request('fileid', 'int', 0);
 
-    $allowsql = $inUser->id ? '' : "AND allow_who='all'";
+    $inDB->resetFilters();
 
-    $file = $inDB->get_fields('cms_user_files', "id = '$file_id' {$allowsql}", 'user_id, filename, allow_who');
+    $inDB->filterEqual('i.id', $file_id);
+
+    if (!$inUser->id) {
+        $inDB->filterEqual('i.allow_who', 'all');
+    }
+
+    $file = $inDB->getItem('user_files');
+
+    $inDB->resetFilters();
 
     if (!$file) {
         cmsCore::error404();
@@ -90,7 +100,9 @@ if ($fdo == 'download') {
         $inCore->halt($_LANG['FILE_HIDEN']);
     }
 
-    $inDB->query("UPDATE cms_user_files SET hits = hits + 1 WHERE id = " . $file_id);
+    $inDB->resetFilters();
+
+    $inDB->filterEqual('i.id', $file_id)->increment('user_files', 'hits', 1);
 
     header('Content-Disposition: attachment; filename=' . basename($fileurl) . "\n");
     header('Content-Type: application/x-force-download; name="' . $fileurl . '"' . "\n");
@@ -190,12 +202,14 @@ if ($fdo == 'addfile') {
 
                 $loaded_files[] = $name;
 
-                $sql = "INSERT INTO cms_user_files(user_id, filename, pubdate, allow_who, filesize, hits)
-						VALUES (" . $usr['id'] . ", '" . $name . "', NOW(), 'all', '" . $size . "', 0)";
-
-                $inDB->query($sql);
-
-                $file_id = $inDB->get_last_id('cms_user_files');
+                $file_id = $inDB->insert('user_files', array(
+                    'user_id' => $usr['id'],
+                    'filename' => $name,
+                    'pubdate' => date('Y-m-d H:i:s'),
+                    'allow_who' => 'all',
+                    'filesize' => $size,
+                    'hits' => 0
+                ));
 
                 cmsActions::log('add_file', array(
                     'object' => $name,
@@ -266,24 +280,23 @@ if ($fdo == 'delfilelist') {
         cmsCore::error404();
     }
 
-    $a_list = rtrim(implode(',', $files), ',');
-    $fsql = '';
+    $inDB->resetFilters();
 
-    if ($a_list) {
-        $fsql .= "id IN ({$a_list})";
-    } else {
-        $fsql .= '1=0';
-    }
+    $user_files = $inDB->filterEqual('i.user_id', (int) $id)->
+            filterIn('i.id', $files)->
+            get('user_files', false, false);
 
-    $sql = "SELECT id, filename FROM cms_user_files WHERE user_id = '" . $id . "' AND " . $fsql;
-    $result = $inDB->query($sql);
-
-    if ($inDB->num_rows($result)) {
-        while ($file = $inDB->fetch_assoc($result)) {
+    if ($user_files) {
+        foreach ($user_files as $file) {
             @unlink(PATH . '/upload/userfiles/' . $id . '/' . $file['filename']);
             cmsActions::removeObjectLog('add_file', $file['id']);
         }
-        $inDB->query("DELETE FROM cms_user_files WHERE user_id = '" . $id . "' AND " . $fsql);
+
+        $inDB->resetFilters();
+
+        $inDB->filterEqual('i.user_id', (int) $id)->
+                filterIn('i.id', $files)->
+                deleteFiltered('user_files');
     }
 
     cmsCore::redirect('/users/' . $id . '/files.html');
@@ -304,16 +317,11 @@ if ($fdo == 'pubfilelist') {
         cmsCore::error404();
     }
 
-    $a_list = rtrim(implode(',', $files), ',');
-    $fsql = '';
+    $inDB->resetFilters();
 
-    if ($a_list) {
-        $fsql .= "id IN ({$a_list})";
-    } else {
-        $fsql .= '1=0';
-    }
-
-    $inDB->query("UPDATE cms_user_files SET allow_who = '" . $allow . "' WHERE user_id = '" . $id . "' AND " . $fsql);
+    $inDB->filterEqual('i.user_id', (int) $id)->
+            filterIn('i.id', $files)->
+            updateFiltered('user_files', array('allow_who' => $allow));
 
     cmsCore::redirect('/users/' . $id . '/files.html');
 }

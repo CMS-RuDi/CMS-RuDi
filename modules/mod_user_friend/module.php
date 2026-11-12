@@ -12,51 +12,46 @@
 
 function mod_user_friend($mod, $cfg)
 {
-    $inDB   = cmsDatabase::getInstance();
+    $inDB   = \cms\db::getInstance();
     $inUser = cmsUser::getInstance();
 
     if ( !$inUser->id ) {
         return false;
     }
 
-    if ( $cfg['view_type'] == 'table' ) {
-        $sql = "SELECT
-                CASE
-                WHEN f.from_id = {$inUser->id}
-                THEN f.to_id
-                WHEN f.to_id = {$inUser->id}
-                THEN f.from_id
-                END AS user_id, u.login, u.nickname, u.is_deleted, p.imageurl
-                FROM cms_user_friends f
-                INNER JOIN cms_online o ON o.user_id = CASE WHEN f.from_id = {$inUser->id} THEN f.to_id WHEN f.to_id = {$inUser->id} THEN f.from_id END
-                LEFT JOIN cms_users u ON u.id = o.user_id
-                LEFT JOIN cms_user_profiles p ON p.user_id = u.id
-                WHERE (from_id = {$inUser->id} OR to_id = {$inUser->id}) AND is_accepted =1 LIMIT " . $cfg['limit'];
-    }
-    else {
-        $sql = "SELECT
-                CASE
-                WHEN f.from_id = {$inUser->id}
-                THEN f.to_id
-                WHEN f.to_id = {$inUser->id}
-                THEN f.from_id
-                END AS user_id, u.login, u.nickname
-                FROM cms_user_friends f
-                INNER JOIN cms_online o ON o.user_id = CASE WHEN f.from_id = {$inUser->id} THEN f.to_id WHEN f.to_id = {$inUser->id} THEN f.from_id END
-                LEFT JOIN cms_users u ON u.id = o.user_id
-                WHERE (from_id = {$inUser->id} OR to_id = {$inUser->id}) AND is_accepted =1 LIMIT " . $cfg['limit'];
+    $user_id = (int) $inUser->id;
+    $view_type = $cfg['view_type'];
+
+    $db = clone $inDB;
+    $db->select('CASE WHEN i.from_id = ' . $user_id . ' THEN i.to_id WHEN i.to_id = ' . $user_id . ' THEN i.from_id END', 'user_id');
+    $db->select('u.login');
+    $db->select('u.nickname');
+
+    if ( $view_type == 'table' ) {
+        $db->select('u.is_deleted');
+        $db->select('p.imageurl');
+        $db->joinLeft('user_profiles', 'p', 'p.user_id = u.id');
     }
 
-    $result = $inDB->query($sql);
-    $total  = $inDB->num_rows($result);
+    $db->joinInner('online', 'o', 'o.user_id = CASE WHEN i.from_id = ' . $user_id . ' THEN i.to_id WHEN i.to_id = ' . $user_id . ' THEN i.from_id END');
+    $db->joinLeft('users', 'u', 'u.id = o.user_id');
+    $db->filterStart()
+            ->filterEqual('i.from_id', $user_id)
+            ->filterOr()
+            ->filterEqual('i.to_id', $user_id)
+            ->filterEnd()
+            ->filterEqual('i.is_accepted', 1);
 
-    if ( $total ) {
-        $friends = array();
-        while ( $friend  = $inDB->fetch_assoc($result) ) {
-            $friend['avatar']            = ($cfg['view_type'] == 'table') ? cmsUser::getUserAvatarUrl($friend['user_id'], 'small', $friend['imageurl'], $friend['is_deleted']) : false;
-            $friend['user_link']         = cmsUser::getProfileLink($friend['login'], $friend['nickname']);
-            $friends[$friend['user_id']] = $friend;
-        }
+    $db->limit(0, (int) $cfg['limit']);
+
+    $friends = array();
+    $total   = 0;
+
+    foreach ( $db->get('user_friends', false, false) as $friend ) {
+        $friend['avatar']            = ($view_type == 'table') ? cmsUser::getUserAvatarUrl($friend['user_id'], 'small', $friend['imageurl'], $friend['is_deleted']) : false;
+        $friend['user_link']         = cmsUser::getProfileLink($friend['login'], $friend['nickname']);
+        $friends[$friend['user_id']] = $friend;
+        $total++;
     }
 
     cmsPage::initTemplate('modules', $cfg['tpl'])->

@@ -17,7 +17,7 @@ class cms_model_registration
     {
         $this->config = cmsCore::getInstance()->loadComponentConfig('registration');
         cmsCore::loadLanguage('components/registration');
-        $this->inDB   = cmsDatabase::getInstance();
+        $this->inDB   = \cms\db::getInstance();
     }
 
     public static function getDefaultConfig()
@@ -99,9 +99,11 @@ class cms_model_registration
         $code     = md5($user['email'] . uniqid() . '-' . microtime());
         $codelink = HOST . '/activate/' . $code;
 
-        $sql = "INSERT cms_users_activate (pubdate, user_id, code)
-                VALUES (NOW(), '" . $user['id'] . "', '" . $code . "')";
-        $this->inDB->query($sql);
+        $this->inDB->insert('users_activate', array(
+            'user_id' => $user['id'],
+            'code'    => $code,
+            'pubdate' => date('Y-m-d H:i:s')
+        ));
 
         $letter = cmsCore::getLanguageTextFile('activation');
 

@@ -21,7 +21,7 @@ function rss_clubs($item_id, $cfg)
         return false;
     }
 
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
 
     global $_LANG;
 
@@ -68,11 +68,11 @@ function rss_clubs($item_id, $cfg)
     // В RSS всегда только публичные посты
     $inBlog->whereOnlyPublic();
 
-    $inDB->orderBy('p.pubdate', 'DESC');
+    $inDB->orderBy('i.pubdate', 'DESC');
 
     $inDB->limit($cfg['maxitems']);
 
-    $inDB->addSelect('b.user_id as bloglink');
+    $inDB->select('b.user_id', 'bloglink');
 
     $posts = $model->getPosts(false, true);
 

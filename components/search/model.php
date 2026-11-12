@@ -27,9 +27,14 @@ class cms_model_search
     public $config                = array(); // конфигурация компонента
     private $default_array_result = array( 'session_id' => '', 'pubdate' => '', 'title' => '', 'description' => '', 'link' => '', 'place' => '', 'placelink' => '', 'imageurl' => '' ); // поля результатов поиска
 
+    /**
+     * @var \cms\db
+     */
+    public $inDB;
+
     public function __construct()
     {
-        $this->inDB            = cmsDatabase::getInstance();
+        $this->inDB            = \cms\db::getInstance();
         $this->inCore          = cmsCore::getInstance();
         $this->query           = self::getQuery();
         $this->look            = cmsCore::request('look', 'str', 'allwords');
@@ -114,7 +119,7 @@ class cms_model_search
         $query = preg_replace('/\s+/u', ' ', $query);
         // ограничиваем строку запроса
 
-        return cmsDatabase::getInstance()->escape_string(mb_substr($query, 0, 100));
+        return mb_substr($query, 0, 100);
     }
 
     /**
@@ -166,16 +171,17 @@ class cms_model_search
 
     public function wherePeriodIs()
     {
-        $today = date("d-m-Y");
-
         switch ( $this->from_pubdate ) {
-            case 'd': $this->inDB->where("DATE_FORMAT(pubdate, '%d-%m-%Y')='" . $today . "'");
+            case 'd':
+                $today = date('Y-m-d');
+
+                $this->inDB->filterBetween('pubdate', $today . ' 00:00:00', $today . ' 23:59:59');
                 break;
-            case 'w': $this->inDB->where("DATEDIFF(NOW(), pubdate) <= 7");
+            case 'w': $this->inDB->filterDateYounger('pubdate', 7, 'DAY');
                 break;
-            case 'm': $this->inDB->where("DATE_SUB(NOW(), INTERVAL 1 MONTH) < pubdate");
+            case 'm': $this->inDB->filterDateYounger('pubdate', 1, 'MONTH');
                 break;
-            case 'y': $this->inDB->where("DATE_SUB(NOW(), INTERVAL 1 YEAR) < pubdate");
+            case 'y': $this->inDB->filterDateYounger('pubdate', 1, 'YEAR');
                 break;
             default: return;
         }
@@ -184,7 +190,7 @@ class cms_model_search
 
     public function whereSessionIs($session_id)
     {
-        $this->inDB->where("session_id = '" . $session_id . "'");
+        $this->inDB->filterEqual('session_id', $session_id);
 
         return;
     }
@@ -196,24 +202,17 @@ class cms_model_search
      */
     public function getResults()
     {
-        $sql = "SELECT pubdate, title, description, link, place, placelink, imageurl
-                FROM cms_search
-				WHERE 1=1 " . $this->inDB->where . "
-                " . $this->inDB->group_by . "
-                " . $this->inDB->order_by . "
-				LIMIT " . (($this->page - 1) * $this->config['perpage']) . ", " . $this->config['perpage'];
+        $results = $this->inDB->selectOnly('pubdate, title, description, link, place, placelink, imageurl')->
+                limitPage($this->page, $this->config['perpage'])->
+                get('search', false, false);
 
-        $result = $this->inDB->query($sql);
-
-        $this->inDB->resetConditions();
-
-        if ( !$this->inDB->num_rows($result) ) {
+        if ( !$results ) {
             return false;
         }
 
         $rs = array();
 
-        while ( $res = $this->inDB->fetch_assoc($result) ) {
+        foreach ( $results as $res ) {
             $res['pubdate']     = $res['pubdate'] ? cmsCore::dateFormat($res['pubdate'], true, false, false) : '';
             // заголовок с учетом подсветки слов поиска
             $res['s_title']     = $this->getHighlightedText($res['title']);
@@ -232,14 +231,7 @@ class cms_model_search
      */
     public function getCountResults()
     {
-        $sql = "SELECT 1
-                FROM cms_search
-                WHERE 1=1 " . $this->inDB->where . "
-                " . $this->inDB->group_by . "\n";
-
-        $result = $this->inDB->query($sql);
-
-        return $this->inDB->num_rows($result);
+        return $this->inDB->getCount('search');
     }
 
     protected function checkArrayResults($input_array = array())
@@ -272,19 +264,18 @@ class cms_model_search
         }
 
         // если такая запись уже есть, возвращаемся
-        if ( $this->inDB->rows_count('cms_search', "session_id='" . $item['session_id'] . "' AND link='" . $item['link'] . "'") ) {
+        $is_exists = $this->inDB->resetFilters()->
+                filterEqual('session_id', $item['session_id'])->
+                filterEqual('link', $item['link'])->
+                getCount('search', 'id');
+
+        $this->inDB->resetFilters();
+
+        if ( $is_exists ) {
             return false;
         }
 
-        $set = '';
-
-        foreach ( $item as $field => $value ) {
-            $set .= $field . " = '" . $this->inDB->escape_string($value) . "',";
-        }
-
-        $set = rtrim($set, ',');
-
-        $this->inDB->query("INSERT INTO cms_search SET " . $set);
+        $this->inDB->insert('search', $item);
 
         return true;
     }
@@ -295,7 +286,9 @@ class cms_model_search
      */
     public function getCountTags()
     {
-        return $this->inDB->rows_count('cms_tags', "tag = '" . $this->query . "'");
+        return $this->inDB->resetFilters()->
+                        filterEqual('tag', $this->query)->
+                        getCount('tags', 'id');
     }
 
     /**
@@ -304,13 +297,13 @@ class cms_model_search
      */
     public function searchByTag()
     {
-        $sql = "SELECT *
-                FROM cms_tags
-                WHERE tag = '" . $this->query . "' ORDER BY tag DESC LIMIT " . (($this->page - 1) * $this->config['perpage']) . ", " . $this->config['perpage'];
+        $results = $this->inDB->resetFilters()->
+                filterEqual('tag', $this->query)->
+                orderBy('tag', 'desc')->
+                limitPage($this->page, $this->config['perpage'])->
+                get('tags', false, false);
 
-        $result = $this->inDB->query($sql);
-
-        if ( !$this->inDB->num_rows($result) ) {
+        if ( !$results ) {
             return false;
         }
 
@@ -318,7 +311,7 @@ class cms_model_search
 
         $row = 1;
 
-        while ( $res = $this->inDB->fetch_assoc($result) ) {
+        foreach ( $results as $res ) {
             if ( $itemlink = cmsTagItemLink($res['target'], $res['item_id']) ) {
                 $res['itemlink'] = $itemlink;
                 $res['tag_bar']  = cmsTagBar($res['target'], $res['item_id'], $this->query);
@@ -481,7 +474,7 @@ class cms_model_search
      */
     public function deleteResultsFromThisSession()
     {
-        $this->inDB->query("DELETE FROM cms_search WHERE session_id = '" . session_id() . "'");
+        $this->inDB->filterEqual('session_id', session_id())->deleteFiltered('search');
 
         return true;
     }
@@ -492,7 +485,7 @@ class cms_model_search
      */
     public function deleteOldResults()
     {
-        $this->inDB->query("DELETE FROM cms_search WHERE DATEDIFF(NOW(), date) > 1");
+        $this->inDB->filterDateOlder('date', 1, 'DAY')->deleteFiltered('search');
 
         return true;
     }
@@ -503,7 +496,8 @@ class cms_model_search
      */
     public function truncateResults()
     {
-        $this->inDB->query("TRUNCATE TABLE `cms_search`");
+        // TRUNCATE не выражается средствами построителя запросов
+        $this->inDB->resetFilters()->filter('1=1')->deleteFiltered('search');
 
         return true;
     }
@@ -546,7 +540,7 @@ class cms_model_search
 
         // все слова
         if ( $this->look == 'allwords' ) {
-            $this->against = '>\"' . $this->query . '\" ';
+            $this->against = '>"' . $this->query . '" ';
             $this->against .= '<(';
             foreach ( $words as $w ) {
                 $w = trim($w);
@@ -566,7 +560,7 @@ class cms_model_search
 
         // фраза целиком
         if ( $this->look == 'phrase' ) {
-            $this->against = '\"' . $this->query . '\"';
+            $this->against = '"' . $this->query . '"';
             $this->words   = $this->query;
         }
 
@@ -587,13 +581,18 @@ class cms_model_search
 
         // Получаем список компонентов
         // в каждой директории компонента ищем файл psearch.php
-        $rs = $this->inDB->query('SELECT link, title FROM cms_components WHERE internal = 0 AND published = 1');
+        $components = $this->inDB->resetFilters()->
+                selectOnly('i.link')->
+                select('i.title')->
+                filterEqual('i.internal', 0)->
+                filterEqual('i.published', 1)->
+                get('components', false, false);
 
-        if ( !$this->inDB->num_rows($rs) ) {
+        if ( !$components ) {
             return false;
         }
 
-        while ( $component = $this->inDB->fetch_assoc($rs) ) {
+        foreach ( $components as $component ) {
             if ( file_exists(PATH . '/components/' . $component['link'] . '/psearch.php') ) {
                 $component['title'] = str_replace('InstantShop', 'Каталог товаров', $component['title']);
                 $component['title'] = str_replace('InstantMaps', 'Каталог объектов на карте', $component['title']);

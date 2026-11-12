@@ -193,7 +193,7 @@ class install extends \cms\com_action {
             }
 
             // Удаляем компонент из базы, но только если он не системный
-            $this->model->db->delete('components', "id = '" . $component['id'] . "' AND system = 0");
+            \cms\db::getInstance()->filterEqual('id', (int) $component['id'])->filterEqual('system', 0)->deleteFiltered('components');
         }
 
         \cmsCore::addSessionMessage($this->lang->ad_component_is_deleted, 'success');
@@ -301,7 +301,7 @@ class install extends \cms\com_action {
             self::accessDenied();
         }
 
-        $plugin_id = $this->model->db->getField('plugins', "plugin='" . $this->model->db->escape($name) . "'", 'id');
+        $plugin_id = \cms\db::getInstance()->filterEqual('plugin', $name)->getFieldFiltered('plugins', 'id');
 
         if (empty($plugin_id) || !\cms\csrf_token::checkToken()) {
             \cmsCore::error404();

@@ -14,6 +14,8 @@ define('PATH', __DIR__ . '/../../..');
 
 include(PATH . '/core/ajax/ajax_core.php');
 
+$inDB = \cms\db::getInstance();
+
 if ( !$inUser->id ) {
     cmsCore::halt();
 }
@@ -30,7 +32,7 @@ if ( !$title ) {
 }
 
 // Получаем альбом
-$album = $inDB->getNsCategory('cms_photo_albums', cmsCore::request('album_id', 'int', 0), null);
+$album = $inDB->getNsCategory('photo_albums', cmsCore::request('album_id', 'int', 0), null);
 
 if ( !$album ) {
     cmsCore::halt();
@@ -55,7 +57,7 @@ $is_admin = $inUser->is_admin || ($inUser->id == $club['admin_id']);
 $is_moder = $model->checkUserRightsInClub('moderator');
 
 if ( $is_admin || $is_moder ) {
-    $inDB->update('cms_photo_albums', array( 'title' => $title ), $album['id']);
+    $inDB->update('photo_albums', (int) $album['id'], array( 'title' => $title ));
 
     cmsCore::jsonOutput(array(
         'error' => false,

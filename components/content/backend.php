@@ -75,7 +75,7 @@ class backend extends \cms\backend {
         }
 
         if ($title_part) {
-            $this->model->filterLike('LOWER(i.title)', '%' . mb_strtolower($title_part) . '%');
+            $this->model->filterLike('i.title', '%' . mb_strtolower($title_part) . '%');
         }
 
         if ($only_hidden) {
@@ -112,7 +112,7 @@ class backend extends \cms\backend {
                 assign('root_id', 1)->
                 assign('cats', $cats)->
                 assign('items', $items)->
-                assign('cats_opt', $this->core->getListItemsNS($this->model->inDB->prefix . \components\content\model::CATEGORY_TABLE, $category_id));
+                assign('cats_opt', $this->core->getListItemsNS(\components\content\model::CATEGORY_TABLE, $category_id));
 
         if ($pages > 1) {
             $tpl->assign('pagebar', $this->page->getPagebar($total, $page, $perpage, $this->genActionUrl('index', $category_id ? $category_id : false, ['hide_cats' => $hide_cats, 'title' => $title_part, 'orderby' => $orderby, 'orderto' => $orderto, 'page' => '%page%'])));
@@ -133,7 +133,9 @@ class backend extends \cms\backend {
         $to_cat_id = $this->request->get('obj_id', 'int', 0);
 
         if ($items && $to_cat_id) {
-            $last_ordering = (int) $this->model->getField(\components\content\model::CONTENT_TABLE, "category_id = '" . $to_cat_id . "' ORDER BY ordering DESC", 'ordering');
+            $last_ordering = (int) $this->model->db->filterEqual('category_id', (int) $to_cat_id)->
+                    orderBy('ordering', 'desc')->
+                    getFieldFiltered(\components\content\model::CONTENT_TABLE, 'ordering');
 
             foreach ($items as $item_id) {
                 $article = $this->model->getArticle($item_id);
@@ -162,13 +164,14 @@ class backend extends \cms\backend {
 
     public function actionShow($item_id = false) {
         if (!empty($item_id)) {
-            dbShow('cms_' . \components\content\model::CONTENT_TABLE, $item_id);
+            $this->model->db->update(\components\content\model::CONTENT_TABLE, (int) $item_id, ['published' => 1]);
             \cmsCore::halt(1);
         } else {
             $items = $this->request->get('item', 'array_int');
 
             if (!empty($items)) {
-                dbShowList('cms_' . \components\content\model::CONTENT_TABLE, $items);
+                $this->model->db->filterIn('id', $items)->
+                        updateFiltered(\components\content\model::CONTENT_TABLE, ['published' => 1]);
             }
         }
 
@@ -177,13 +180,14 @@ class backend extends \cms\backend {
 
     public function actionHide($item_id = false) {
         if (!empty($item_id)) {
-            dbHide('cms_' . \components\content\model::CONTENT_TABLE, $item_id);
+            $this->model->db->update(\components\content\model::CONTENT_TABLE, (int) $item_id, ['published' => 0]);
             \cmsCore::halt(1);
         } else {
             $items = $this->request->get('item', 'array_int');
 
             if (!empty($items)) {
-                dbHideList('cms_' . \components\content\model::CONTENT_TABLE, $items);
+                $this->model->db->filterIn('id', $items)->
+                        updateFiltered(\components\content\model::CONTENT_TABLE, ['published' => 0]);
             }
         }
 
@@ -281,7 +285,7 @@ class backend extends \cms\backend {
                 assign('meta_desc_lang_panel', self::getLangPanel('content_content', $item_id, 'meta_desc'))->
                 assign('tag_line', !empty($item['id']) ? \cmsTagLine('content', $item['id'], false) : '')->
                 assign('options', $this->options)->
-                assign('cats_list', $this->core->getListItemsNS($this->model->inDB->prefix . \components\content\model::CATEGORY_TABLE, $item['category_id']))->
+                assign('cats_list', $this->core->getListItemsNS(\components\content\model::CATEGORY_TABLE, $item['category_id']))->
                 assign('users_list', $this->core->getListItems('cms_users', !empty($item['user_id']) ? $item['user_id'] : $this->user->id, 'nickname', 'ASC', 'is_deleted=0 AND is_locked=0', 'id', 'nickname'))->
                 assign('groups', \cmsUser::getGroups());
 
@@ -471,11 +475,11 @@ class backend extends \cms\backend {
                 assign('pagetitle_lang_panel', self::getLangPanel('content_category', $item_id, 'pagetitle'))->
                 assign('meta_keys_lang_panel', self::getLangPanel('content_category', $item_id, 'meta_keys'))->
                 assign('meta_desc_lang_panel', self::getLangPanel('content_category', $item_id, 'meta_desc'))->
-                assign('root_id', $this->model->inDB->getNsRootCatId($this->model->inDB->prefix . \components\content\model::CATEGORY_TABLE))->
-                assign('cats_list', $this->core->getListItemsNS($this->model->inDB->prefix . \components\content\model::CATEGORY_TABLE, !empty($item['parent_id']) ? $item['parent_id'] : 0))->
+                assign('root_id', $this->model->db->getNsRootCatId(\components\content\model::CATEGORY_TABLE))->
+                assign('cats_list', $this->core->getListItemsNS(\components\content\model::CATEGORY_TABLE, !empty($item['parent_id']) ? $item['parent_id'] : 0))->
                 assign('billing_installed', \cms\controller::installed('billing'))->
                 assign('groups_list', $this->core->getListItems('cms_user_groups', !empty($item['modgrp_id']) ? $item['modgrp_id'] : 0, 'id', 'ASC', 'is_admin = 0'))->
-                assign('albums_list', $this->core->getListItemsNS('cms_photo_albums', !empty($item['photoalbum']['id']) ? $item['photoalbum']['id'] : 0))->
+                assign('albums_list', $this->core->getListItemsNS('photo_albums', !empty($item['photoalbum']['id']) ? $item['photoalbum']['id'] : 0))->
                 assign('groups', \cmsUser::getGroups());
 
         if ($do == 'add') {
@@ -500,7 +504,7 @@ class backend extends \cms\backend {
 
         if (!empty($item_id)) {
             // получаем старую категорию
-            $old = $this->model->db->getFields(\components\content\model::CATEGORY_TABLE, 'id=' . $item_id);
+            $old = $this->model->db->filterEqual('id', (int) $item_id)->getItem(\components\content\model::CATEGORY_TABLE);
 
             if (!$old) {
                 \cmsCore::error404();
@@ -553,13 +557,13 @@ class backend extends \cms\backend {
         }
 
         if (empty($item_id)) {
-            $ns = $this->core->nestedSetsInit($this->model->inDB->prefix . \components\content\model::CATEGORY_TABLE);
+            $ns = $this->core->nestedSetsInit(\components\content\model::CATEGORY_TABLE);
 
             $item_id = $ns->AddNode($category['parent_id']);
 
-            $category['seolink'] = \cmsCore::generateCatSeoLink($category, $this->model->inDB->prefix . \components\content\model::CATEGORY_TABLE, $this->options['is_url_cyrillic']);
+            $category['seolink'] = \cmsCore::generateCatSeoLink($category, \components\content\model::CATEGORY_TABLE, $this->options['is_url_cyrillic']);
 
-            $this->model->db->update(\components\content\model::CATEGORY_TABLE, 'id=' . $item_id, $category);
+            $this->model->db->update(\components\content\model::CATEGORY_TABLE, (int) $item_id, $category);
 
             $inmenu = $this->request->get('createmenu', 'str', '');
 
@@ -572,10 +576,10 @@ class backend extends \cms\backend {
             // если сменили категорию
             if ($old['parent_id'] != $category['parent_id']) {
                 // перемещаем ее в дереве
-                $this->core->nestedSetsInit($this->model->inDB->prefix . \components\content\model::CATEGORY_TABLE)->MoveNode($item_id, $category['parent_id']);
+                $this->core->nestedSetsInit(\components\content\model::CATEGORY_TABLE)->MoveNode($item_id, $category['parent_id']);
 
                 // обновляем сеолинки категорий
-                $this->model->inDB->updateNsCategorySeoLink($this->model->inDB->prefix . \components\content\model::CATEGORY_TABLE, $item_id, $this->options['is_url_cyrillic']);
+                $this->model->db->updateNsCategorySeoLink(\components\content\model::CATEGORY_TABLE, $item_id, $this->options['is_url_cyrillic']);
 
                 // Обновляем ссылки меню на категории
                 $this->model->updateCatMenu();
@@ -586,13 +590,13 @@ class backend extends \cms\backend {
                 \cmsCore::addSessionMessage($this->lang->ad_category_new_url, 'info');
             }
 
-            $this->model->db->update(\components\content\model::CATEGORY_TABLE, 'id=' . $item_id, $category);
+            $this->model->db->update(\components\content\model::CATEGORY_TABLE, (int) $item_id, $category);
 
             // если пришел запрос на обновление ссылок
             // и категория не менялась - если менялась, мы выше все обновили
             if ($this->request->has('update_seolink') && ($old['parent_id'] == $category['parent_id'])) {
                 // обновляем сеолинки категорий
-                $this->model->inDB->updateNsCategorySeoLink($this->model->inDB->prefix . \components\content\model::CATEGORY_TABLE, $item_id, $this->options['is_url_cyrillic']);
+                $this->model->db->updateNsCategorySeoLink(\components\content\model::CATEGORY_TABLE, $item_id, $this->options['is_url_cyrillic']);
 
                 // Обновляем ссылки меню на категории
                 $this->model->updateCatMenu();
@@ -619,14 +623,14 @@ class backend extends \cms\backend {
     //========================================================================//
 
     public function createMenuItem($menu, $id, $title, $linktype = 'content') {
-        $rootid = $this->model->inDB->getNsRootCatId('cms_menu');
+        $rootid = $this->model->db->getNsRootCatId('menu');
 
-        $ns = $this->core->nestedSetsInit('cms_menu');
+        $ns = $this->core->nestedSetsInit('menu');
         $myid = $ns->AddNode($rootid);
 
         $link = $this->core->getMenuLink($linktype, $id);
 
-        $this->model->db->update('menu', 'id=' . $id, [
+        $this->model->db->update('menu', (int) $id, [
             'menu' => $menu,
             'title' => $title,
             'link' => $link,

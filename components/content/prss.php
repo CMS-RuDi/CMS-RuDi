@@ -16,7 +16,7 @@ function rss_content($item_id, $cfg)
         return false;
     }
 
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
 
     global $_LANG;
 
@@ -26,7 +26,7 @@ function rss_content($item_id, $cfg)
     $items   = array();
 
     if ( $item_id ) {
-        $cat = $inDB->getNsCategory('cms_category', (int) $item_id);
+        $cat = $inDB->getNsCategory('category', (int) $item_id);
 
         if ( !$cat ) {
             return false;
@@ -52,12 +52,14 @@ function rss_content($item_id, $cfg)
         $channel['link']        = HOST . '/content';
     }
 
-    $inDB->where("con.showlatest = 1");
+    $inDB->filterEqual('showlatest', 1);
 
     $inDB->orderBy('con.pubdate', 'DESC');
-    $inDB->limit($cfg['maxitems']);
+    $inDB->limit((int) $cfg['maxitems']);
 
     $content = $model->getArticlesList();
+
+    $inDB->resetConditions();
 
     if ( $content ) {
         foreach ( $content as $con ) {

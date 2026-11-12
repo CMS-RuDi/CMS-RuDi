@@ -12,13 +12,11 @@
 
 function mod_tags($mod, $cfg)
 {
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
 
     if ( !@$cfg['targets'] ) {
         return false;
     }
-
-    $tl = "'" . implode("','", $cfg['targets']) . "'";
 
     if ( !isset($cfg['minfreq']) ) {
         $cfg['minfreq'] = 0;
@@ -52,16 +50,42 @@ function mod_tags($mod, $cfg)
         $cfg['end_size'] = 50;
     }
 
-    $sql = "SELECT tag, COUNT(tag) as num
-             FROM cms_tags WHERE target IN ({$tl}) ";
-    $sql .= $cfg['minlen'] ? " AND CHAR_LENGTH(tag) >= {$cfg['minlen']}\n" : "\n";
-    $sql .= "GROUP BY tag \n";
-    $sql .= $cfg['minfreq'] ? "HAVING num >= {$cfg['minfreq']} \n" : '';
-    $sql .= ($cfg['sortby'] == 'tag') ? "ORDER BY tag ASC \n" : "ORDER BY num DESC \n";
-    $sql .= 'LIMIT ' . $cfg['maxtags'];
+    $db = clone $inDB;
+    $db->select('tag');
+    $db->select('COUNT(tag)', 'num');
+    $db->filterIn('target', (array) $cfg['targets']);
 
-    $result = $inDB->query($sql);
-    if ( !$inDB->num_rows($result) ) {
+    if ( $cfg['minlen'] ) {
+        $db->filter('CHAR_LENGTH(tag) >= ' . (int) $cfg['minlen']);
+    }
+
+    $db->groupBy('tag');
+
+    if ( $cfg['sortby'] == 'tag' ) {
+        $db->orderBy('tag');
+    }
+    else {
+        $db->orderBy('num', 'DESC');
+    }
+
+    $rows = $db->get('tags', false, false);
+
+    // аналог HAVING num >= minfreq и LIMIT maxtags
+    $tags = array();
+
+    foreach ( $rows as $row ) {
+        if ( $cfg['minfreq'] && $row['num'] < $cfg['minfreq'] ) {
+            continue;
+        }
+
+        if ( count($tags) >= (int) $cfg['maxtags'] ) {
+            break;
+        }
+
+        $tags[] = $row;
+    }
+
+    if ( !$tags ) {
         return false;
     }
 
@@ -69,12 +93,11 @@ function mod_tags($mod, $cfg)
     $sizes    = range($cfg['start_size'], $cfg['end_size'], $cfg['step']);
     $size_prc = ceil((100 / sizeof($sizes)));
     // Общее число тегов
-    $summary  = 0;
+    $summary = 0;
 
-    while ( $tag = $inDB->fetch_assoc($result) ) {
-        $tag['fontsize'] = '';
-        $tags[]          = $tag;
-        $summary         += $tag['num'];
+    foreach ( $tags as $key => $tag ) {
+        $tags[$key]['fontsize'] = '';
+        $summary += $tag['num'];
     }
 
     // формируем размер шрифта

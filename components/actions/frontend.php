@@ -15,7 +15,7 @@ function actions()
     $inCore    = cmsCore::getInstance();
     $inUser    = cmsUser::getInstance();
     $inPage    = cmsPage::getInstance();
-    $inDB      = cmsDatabase::getInstance();
+    $inDB      = \cms\db::getInstance();
     $inActions = cmsActions::getInstance();
 
     $model = new cms_model_actions();

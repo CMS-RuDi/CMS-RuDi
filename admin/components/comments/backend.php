@@ -1,56 +1,51 @@
 <?php
 /*
- *                           InstantCMS v1.10.6
- *                        http://www.instantcms.ru/
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
  *
- *                   written by InstantCMS Team, 2007-2015
- *                produced by InstantSoft, (www.instantsoft.ru)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                        LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
-if ( !defined('VALID_CMS_ADMIN') ) {
+if (!defined('VALID_CMS_ADMIN')) {
     die('ACCESS DENIED');
 }
 
-function cpStripComment($text)
-{
+function cpStripComment($text) {
     $text = strip_tags($text);
 
-    if ( sizeof($text) < 120 ) {
+    if (sizeof($text) < 120) {
         return $text;
     }
 
     return mb_substr($text, 0, 120) . '...';
 }
 
-function cpCommentAuthor($item)
-{
-    $inDB = cmsDatabase::getInstance();
-
-    if ( !$item['user_id'] ) {
+function cpCommentAuthor($item) {
+    if (!$item['user_id']) {
         $author = $item['guestname'];
-    }
-    else {
-        $usersql = "SELECT id, nickname, login FROM cms_users WHERE id = " . $item['user_id'];
-        $userres = $inDB->query($usersql);
-        $u       = $inDB->fetch_assoc($userres);
-        $author  = $u['nickname'] . ' (<a href="/admin/index.php?view=users&do=edit&id=' . $u['id'] . '" target="_blank">' . $u['login'] . '</a>)';
+    } else {
+        $u = \cms\db::getInstance()->getItemById('users', (int) $item['user_id']);
+        $author = $u['nickname'] . ' (<a href="/cp/components/users?opt=edit&user_id=' . $u['id'] . '" target="_blank">' . $u['login'] . '</a>)';
     }
 
     return $author;
 }
 
-function cpCommentTarget($item)
-{
+function cpCommentTarget($item) {
     return '<a target="_blank" href="' . $item['target_link'] . '#c' . $item['id'] . '">' . $item['target_title'] . '</a>';
 }
 
 //------------------------------------------------------------------//
-$opt = cmsCore::request('opt', 'str', 'list');
+$opt = $inPut->get('opt', 'str', 'list');
 
-$toolmenu[] = array( 'icon' => 'listcomments.gif', 'title' => $_LANG['AD_ALL_COMENTS'], 'link' => '?view=components&do=config&id=' . $id . '&opt=list' );
-$toolmenu[] = array( 'icon' => 'config.gif', 'title' => $_LANG['AD_SETTINGS'], 'link' => '?view=components&do=config&id=' . $id . '&opt=config' );
+$DB = \cms\db::getInstance();
+
+$toolmenu[] = array('icon' => 'listcomments.gif', 'title' => $_LANG['AD_ALL_COMENTS'], 'link' => '/cp/components/comments?opt=list');
+$toolmenu[] = array('icon' => 'config.gif', 'title' => $_LANG['AD_SETTINGS'], 'link' => '/cp/components/comments?opt=config');
 
 cpToolMenu($toolmenu);
 
@@ -58,25 +53,25 @@ $model = new cms_model_comments();
 
 $cfg = $model->config;
 
-if ( $opt == 'saveconfig' ) {
-    if ( !cmsUser::checkCsrfToken() ) {
+if ($opt == 'saveconfig') {
+    if (!cmsUser::checkCsrfToken()) {
         cmsCore::error404();
     }
 
-    $cfg['email']          = cmsCore::request('email', 'email', '');
-    $cfg['regcap']         = cmsCore::request('regcap', 'int');
-    $cfg['subscribe']      = cmsCore::request('subscribe', 'int');
-    $cfg['min_karma']      = cmsCore::request('min_karma', 'int');
-    $cfg['min_karma_show'] = cmsCore::request('min_karma_show', 'int');
-    $cfg['min_karma_add']  = cmsCore::request('min_karma_add', 'int');
-    $cfg['perpage']        = cmsCore::request('perpage', 'int');
-    $cfg['cmm_ajax']       = cmsCore::request('cmm_ajax', 'int');
-    $cfg['cmm_ip']         = cmsCore::request('cmm_ip', 'int');
-    $cfg['max_level']      = cmsCore::request('max_level', 'int');
-    $cfg['edit_minutes']   = cmsCore::request('edit_minutes', 'int');
-    $cfg['watermark']      = cmsCore::request('watermark', 'int');
-    $cfg['meta_keys']      = cmsCore::request('meta_keys', 'str', '');
-    $cfg['meta_desc']      = cmsCore::request('meta_desc', 'str', '');
+    $cfg['email'] = $inPut->get('email', 'email', '');
+    $cfg['regcap'] = $inPut->get('regcap', 'int');
+    $cfg['subscribe'] = $inPut->get('subscribe', 'int');
+    $cfg['min_karma'] = $inPut->get('min_karma', 'int');
+    $cfg['min_karma_show'] = $inPut->get('min_karma_show', 'int');
+    $cfg['min_karma_add'] = $inPut->get('min_karma_add', 'int');
+    $cfg['perpage'] = $inPut->get('perpage', 'int');
+    $cfg['cmm_ajax'] = $inPut->get('cmm_ajax', 'int');
+    $cfg['cmm_ip'] = $inPut->get('cmm_ip', 'int');
+    $cfg['max_level'] = $inPut->get('max_level', 'int');
+    $cfg['edit_minutes'] = $inPut->get('edit_minutes', 'int');
+    $cfg['watermark'] = $inPut->get('watermark', 'int');
+    $cfg['meta_keys'] = $inPut->get('meta_keys', 'str', '');
+    $cfg['meta_desc'] = $inPut->get('meta_desc', 'str', '');
 
     $inCore->saveComponentConfig('comments', $cfg);
 
@@ -85,94 +80,92 @@ if ( $opt == 'saveconfig' ) {
     cmsCore::redirectBack();
 }
 
-if ( $opt == 'show_comment' ) {
-    $item_id = cmsCore::request('item_id', 'int', 0);
-    $inDB->query("UPDATE cms_comments SET published = 1 WHERE id = '$item_id'");
+if ($opt == 'show_comment') {
+    $item_id = $inPut->get('item_id', 'int', 0);
+    $DB->resetFilters();
+    $DB->update('comments', $item_id, array('published' => 1));
     echo '1';
     exit;
 }
 
-if ( $opt == 'hide_comment' ) {
-    $item_id = cmsCore::request('item_id', 'int', 0);
-    $inDB->query("UPDATE cms_comments SET published = 0 WHERE id = '$item_id'");
+if ($opt == 'hide_comment') {
+    $item_id = $inPut->get('item_id', 'int', 0);
+    $DB->resetFilters();
+    $DB->update('comments', $item_id, array('published' => 0));
     echo '1';
     exit;
 }
 
-if ( $opt == 'update' ) {
-    if ( !cmsUser::checkCsrfToken() ) {
+if ($opt == 'update') {
+    if (!cmsUser::checkCsrfToken()) {
         cmsCore::error404();
     }
 
-    $item_id = cmsCore::request('item_id', 'int', 0);
+    $item_id = $inPut->get('item_id', 'int', 0);
 
-    $guestname = cmsCore::request('guestname', 'str', '');
-    $pubdate   = cmsCore::request('pubdate', 'str');
-    $published = cmsCore::request('published', 'int');
-    $content   = $inDB->escape_string(cmsCore::request('content', 'html'));
+    $guestname = $inPut->get('guestname', 'str', '');
+    $pubdate = $inPut->get('pubdate', 'str');
+    $published = $inPut->get('published', 'int');
+    $content = $inPut->get('content', 'html');
 
-    $sql = "UPDATE cms_comments
-            SET guestname = '$guestname',
-                pubdate = '$pubdate',
-                published=$published,
-                content='$content'
-            WHERE id = $item_id
-            LIMIT 1";
-    $inDB->query($sql);
+    $DB->update('comments', $item_id, array(
+        'guestname' => $guestname,
+        'pubdate' => $pubdate,
+        'published' => $published,
+        'content' => $content
+    ));
 
     cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'], 'success');
-    cmsCore::redirect('index.php?view=components&do=config&id=' . $id . '&opt=list');
+    cmsCore::redirect('/cp/components/comments?opt=list');
 }
 
-if ( $opt == 'delete' ) {
-    $model->deleteComment(cmsCore::request('item_id', 'int'));
+if ($opt == 'delete') {
+    $model->deleteComment($inPut->get('item_id', 'int'));
     cmsCore::addSessionMessage($_LANG['AD_DO_SUCCESS'], 'success');
-    cmsCore::redirect('index.php?view=components&do=config&id=' . $id . '&opt=list');
+    cmsCore::redirect('/cp/components/comments?opt=list');
 }
 
-if ( $opt == 'list' ) {
-    if ( cmsCore::inRequest('show_hidden') ) {
+if ($opt == 'list') {
+    if ($inPut->has('show_hidden')) {
         cpAddPathway($_LANG['AD_COMENTS_ON_MODERATE']);
         echo '<h3>' . $_LANG['AD_COMENTS_ON_MODERATE'] . '</h3>';
-    }
-    else {
+    } else {
         echo '<h3>' . $_LANG['AD_ALL_COMENTS'] . '</h3>';
     }
 
-    $fields[] = array( 'title' => 'id', 'field' => 'id', 'width' => '30' );
-    $fields[] = array( 'title' => $_LANG['DATE'], 'field' => 'pubdate', 'width' => '100' );
-    $fields[] = array( 'title' => $_LANG['AD_TEXT'], 'field' => 'content', 'width' => '', 'prc' => 'cpStripComment' );
-    $fields[] = array( 'title' => $_LANG['AD_IP'], 'field' => 'ip', 'width' => '80' );
-    $fields[] = array( 'title' => $_LANG['AD_IS_PUBLISHED'], 'field' => 'published', 'width' => '50', 'do' => 'opt', 'do_suffix' => '_comment' );
-    $fields[] = array( 'title' => $_LANG['AD_AUTHOR'], 'field' => array( 'user_id', 'guestname' ), 'width' => '180', 'prc' => 'cpCommentAuthor' );
-    $fields[] = array( 'title' => $_LANG['AD_AIM'], 'field' => array( 'target_title', 'target_link', 'id' ), 'width' => '220', 'prc' => 'cpCommentTarget' );
+    $fields[] = array('title' => 'id', 'field' => 'id', 'width' => '30');
+    $fields[] = array('title' => $_LANG['DATE'], 'field' => 'pubdate', 'width' => '100');
+    $fields[] = array('title' => $_LANG['AD_TEXT'], 'field' => 'content', 'width' => '', 'prc' => 'cpStripComment');
+    $fields[] = array('title' => $_LANG['AD_IP'], 'field' => 'ip', 'width' => '80');
+    $fields[] = array('title' => $_LANG['AD_IS_PUBLISHED'], 'field' => 'published', 'width' => '50', 'do' => 'opt', 'do_suffix' => '_comment');
+    $fields[] = array('title' => $_LANG['AD_AUTHOR'], 'field' => array('user_id', 'guestname'), 'width' => '180', 'prc' => 'cpCommentAuthor');
+    $fields[] = array('title' => $_LANG['AD_AIM'], 'field' => array('target_title', 'target_link', 'id'), 'width' => '220', 'prc' => 'cpCommentTarget');
 
-    $actions[] = array( 'title' => $_LANG['EDIT'], 'icon' => 'edit.gif', 'link' => '?view=components&do=config&id=' . $id . '&opt=edit&item_id=%id%' );
-    $actions[] = array( 'title' => $_LANG['DELETE'], 'icon' => 'delete.gif', 'confirm' => $_LANG['AD_IF_COMENT_DELETE'], 'link' => '?view=components&do=config&id=' . $id . '&opt=delete&item_id=%id%' );
+    $actions[] = array('title' => $_LANG['EDIT'], 'icon' => 'edit.gif', 'link' => '/cp/components/comments?opt=edit&item_id=%id%');
+    $actions[] = array('title' => $_LANG['DELETE'], 'icon' => 'delete.gif', 'confirm' => $_LANG['AD_IF_COMENT_DELETE'], 'link' => '/cp/components/comments?opt=delete&item_id=%id%');
 
-    $where = cmsCore::inRequest('show_hidden') ? 'published = 0' : '';
+    $where = $inPut->has('show_hidden') ? 'published = 0' : '';
 
     cpListTable('cms_comments', $fields, $actions, $where, 'pubdate DESC');
 }
 
-if ( $opt == 'edit' ) {
-    $mod = $model->getComment(cmsCore::request('item_id', 'int'));
-    if ( !$mod ) {
+if ($opt == 'edit') {
+    $mod = $model->getComment($inPut->get('item_id', 'int'));
+    if (!$mod) {
         cmsCore::error404();
     }
 
-    if ( $mod['user_id'] == 0 ) {
+    if ($mod['user_id'] == 0) {
         $author = '<input name="guestname" type="text" id="title" size="30" value="' . $mod['guestname'] . '"/>';
-    }
-    else {
-        $author = $mod['nickname'] . ' (<a target="_blank" href="/admin/index.php?view=users&do=edit&id=' . $mod['user_id'] . '">' . $mod['login'] . '</a>)';
+    } else {
+        $author = $mod['nickname'] . ' (<a target="_blank" href="/cp/components/users?opt=edit&user_id=' . $mod['user_id'] . '">' . $mod['login'] . '</a>)';
     }
 
     cpAddPathway($_LANG['AD_EDIT_COMENT']);
     echo '<h3>' . $_LANG['AD_EDIT_COMENT'] . '</h3>';
     ?>
 
-    <form id="addform" name="addform" method="post" action="index.php?view=components&do=config&id=<?php echo $id; ?>">
+    <form id="addform" name="addform" method="post" action="/cp/components/comments">
         <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
         <table width="662" border="0" cellspacing="5" class="proptable">
             <tr>
@@ -186,12 +179,12 @@ if ( $opt == 'edit' ) {
             <tr>
                 <td><strong><?php echo $_LANG['AD_IF_COMENT_PUBLIC']; ?></strong></td>
                 <td><label><input name="published" type="radio" value="1" <?php
-                        if ( $mod['published'] ) {
+                        if ($mod['published']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['YES']; ?> </label>
                     <label> <input name="published" type="radio" value="0"  <?php
-                        if ( !$mod['published'] ) {
+                        if (!$mod['published']) {
                             echo 'checked="checked"';
                         }
                         ?> /> <?php echo $_LANG['NO']; ?> </label></td>
@@ -200,7 +193,7 @@ if ( $opt == 'edit' ) {
         <?php cmsCore::insertEditor('content', $mod['content'], '250', '100%'); ?>
         <p>
             <input name="add_mod" type="submit" id="add_mod" value="<?php echo $_LANG['SAVE']; ?>"/>
-            <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components';"/>
+            <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = '/cp/components';"/>
             <input name="opt" type="hidden" id="do" value="update" />
             <input name="item_id" type="hidden" value="<?php echo $mod['id'] ?>" />
         </p>
@@ -208,12 +201,12 @@ if ( $opt == 'edit' ) {
     <?php
 }
 
-if ( $opt == 'config' ) {
+if ($opt == 'config') {
     cpAddPathway($_LANG['AD_SETTINGS']);
     echo '<h3>' . $_LANG['AD_SETTINGS'] . '</h3>';
     ?>
 
-    <form action="index.php?view=components&do=config&id=<?php echo $id; ?>" method="post" name="optform" target="_self" id="form1">
+    <form action="/cp/components/comments" method="post" name="optform" target="_self" id="form1">
         <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
         <div id="config_tabs" style="margin-top:12px;" class="uitabs">
 
@@ -260,12 +253,12 @@ if ( $opt == 'config' ) {
                         </td>
                         <td valign="top">
                             <label><input name="subscribe" type="radio" value="1" <?php
-                                if ( $cfg['subscribe'] ) {
+                                if ($cfg['subscribe']) {
                                     echo 'checked="checked"';
                                 }
                                 ?> /> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="subscribe" type="radio" value="0"  <?php
-                                if ( !$cfg['subscribe'] ) {
+                                if (!$cfg['subscribe']) {
                                     echo 'checked="checked"';
                                 }
                                 ?> /> <?php echo $_LANG['NO']; ?></label>
@@ -282,12 +275,12 @@ if ( $opt == 'config' ) {
                         </td>
                         <td width="313" valign="top">
                             <label><input name="cmm_ajax" type="radio" value="1" <?php
-                                if ( $cfg['cmm_ajax'] ) {
+                                if ($cfg['cmm_ajax']) {
                                     echo 'checked="checked"';
                                 }
                                 ?> /> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="cmm_ajax" type="radio" value="0"  <?php
-                                if ( !$cfg['cmm_ajax'] ) {
+                                if (!$cfg['cmm_ajax']) {
                                     echo 'checked="checked"';
                                 }
                                 ?> /> <?php echo $_LANG['NO']; ?></label>
@@ -297,12 +290,12 @@ if ( $opt == 'config' ) {
                         <td valign="top"><strong><?php echo $_LANG['AD_WATERMARK']; ?></strong></td>
                         <td valign="top">
                             <label><input name="watermark" type="radio" value="1" <?php
-                                if ( $cfg['watermark'] ) {
+                                if ($cfg['watermark']) {
                                     echo 'checked="checked"';
                                 }
                                 ?> /> <?php echo $_LANG['YES']; ?></label>
                             <label><input name="watermark" type="radio" value="0"  <?php
-                                if ( !$cfg['watermark'] ) {
+                                if (!$cfg['watermark']) {
                                     echo 'checked="checked"';
                                 }
                                 ?> /> <?php echo $_LANG['NO']; ?></label>
@@ -325,17 +318,17 @@ if ( $opt == 'config' ) {
                         <td>
                             <select name="cmm_ip" id="cmm_ip" style="width:220px">
                                 <option value="0" <?php
-                                if ( $cfg['cmm_ip'] == 0 ) {
+                                if ($cfg['cmm_ip'] == 0) {
                                     echo 'selected';
                                 }
                                 ?>><?php echo $_LANG['AD_HIDE_IP']; ?></option>
                                 <option value="1" <?php
-                                if ( $cfg['cmm_ip'] == 1 ) {
+                                if ($cfg['cmm_ip'] == 1) {
                                     echo 'selected';
                                 }
                                 ?>><?php echo $_LANG['AD_ONLY_GUEST_IP']; ?></option>
                                 <option value="2" <?php
-                                if ( $cfg['cmm_ip'] == 2 ) {
+                                if ($cfg['cmm_ip'] == 2) {
                                     echo 'selected';
                                 }
                                 ?>><?php echo $_LANG['AD_ALL_IP']; ?></option>
@@ -355,12 +348,12 @@ if ( $opt == 'config' ) {
                         <td valign="top">
                             <select name="regcap" id="regcap" style="width:220px">
                                 <option value="0" <?php
-                                if ( $cfg['regcap'] == 0 ) {
+                                if ($cfg['regcap'] == 0) {
                                     echo 'selected';
                                 }
                                 ?>><?php echo $_LANG['AD_FOR_GUEST']; ?></option>
                                 <option value="1" <?php
-                                if ( $cfg['regcap'] == 1 ) {
+                                if ($cfg['regcap'] == 1) {
                                     echo 'selected';
                                 }
                                 ?>><?php echo $_LANG['AD_FOR_ALL']; ?></option>
@@ -374,37 +367,37 @@ if ( $opt == 'config' ) {
                         <td valign="top">
                             <select name="edit_minutes" id="regcap" style="width:220px">
                                 <option value="0" <?php
-                                if ( !$cfg['edit_minutes'] ) {
+                                if (!$cfg['edit_minutes']) {
                                     echo 'selected';
                                 }
                                 ?>><?php echo $_LANG['AD_AT_ONCE']; ?></option>
                                 <option value="1" <?php
-                                if ( $cfg['edit_minutes'] == 1 ) {
+                                if ($cfg['edit_minutes'] == 1) {
                                     echo 'selected';
                                 }
                                 ?>>1 <?php echo $_LANG['MINUTU1']; ?></option>
                                 <option value="5" <?php
-                                if ( $cfg['edit_minutes'] == 5 ) {
+                                if ($cfg['edit_minutes'] == 5) {
                                     echo 'selected';
                                 }
                                 ?>>5 <?php echo $_LANG['MINUTE10']; ?></option>
                                 <option value="10" <?php
-                                if ( $cfg['edit_minutes'] == 10 ) {
+                                if ($cfg['edit_minutes'] == 10) {
                                     echo 'selected';
                                 }
                                 ?>>10 <?php echo $_LANG['MINUTE10']; ?></option>
                                 <option value="15" <?php
-                                if ( $cfg['edit_minutes'] == 15 ) {
+                                if ($cfg['edit_minutes'] == 15) {
                                     echo 'selected';
                                 }
                                 ?>>15 <?php echo $_LANG['MINUTE10']; ?></option>
                                 <option value="30" <?php
-                                if ( $cfg['edit_minutes'] == 30 ) {
+                                if ($cfg['edit_minutes'] == 30) {
                                     echo 'selected';
                                 }
                                 ?>>30 <?php echo $_LANG['MINUTE10']; ?></option>
                                 <option value="60" <?php
-                                if ( $cfg['edit_minutes'] == 60 ) {
+                                if ($cfg['edit_minutes'] == 60) {
                                     echo 'selected';
                                 }
                                 ?>>1 <?php echo $_LANG['HOUR1']; ?></option>
@@ -423,12 +416,12 @@ if ( $opt == 'config' ) {
                         </td>
                         <td width="313" valign="top">
                             <label><input name="min_karma" type="radio" value="1" <?php
-                                if ( $cfg['min_karma'] ) {
+                                if ($cfg['min_karma']) {
                                     echo 'checked="checked"';
                                 }
                                 ?> />  <?php echo $_LANG['YES']; ?></label>
                             <label><input name="min_karma" type="radio" value="0" <?php
-                                if ( !$cfg['min_karma'] ) {
+                                if (!$cfg['min_karma']) {
                                     echo 'checked="checked"';
                                 }
                                 ?>/>  <?php echo $_LANG['NO']; ?></label>
@@ -460,7 +453,7 @@ if ( $opt == 'config' ) {
         <p>
             <input name="opt" type="hidden" id="do" value="saveconfig" />
             <input name="save" type="submit" id="save" value="<?php echo $_LANG['SAVE']; ?>" />
-            <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components&do=config&id=<?php echo $id; ?>';"/>
+            <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = '/cp/components/comments';"/>
         </p>
     </form>
     <?php

@@ -35,7 +35,8 @@ class phpTpl extends tplMainClass {
         $inCore = \cmsCore::getInstance();
         $inPage = \cmsPage::getInstance();
         $inUser = \cmsUser::getInstance();
-        $inDB = \cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
+        $inDB = cmsDatabase::getInstance();
         $inConf = \cmsConfig::getInstance();
 
         if (file_exists(TEMPLATE_DIR . $this->tpl_file)) {

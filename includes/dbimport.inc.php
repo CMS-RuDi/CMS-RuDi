@@ -15,5 +15,5 @@
  */
 function dbRunSQL($sql_file, $db_pref)
 {
-    return cmsDatabase::getInstance()->importFromFile($sql_file);
+    return \cmsDatabase::getInstance()->importFromFile($sql_file);
 }

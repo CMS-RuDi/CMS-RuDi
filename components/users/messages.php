@@ -21,8 +21,28 @@ $show_notice = false;
 
 $new_msg = $inUser->getNewMsg();
 
-$friends       = cmsUser::getFriends($inUser->id);
-$interlocutors = cmsCore::getListItems("cms_users u INNER JOIN cms_user_msg m ON m.from_id = u.id", ". $whith_id .", 'm.from_id', 'ASC', "m.from_del = 0 AND m.to_del = 0 AND m.to_id = '" . $id . "' GROUP BY m.from_id", 'from_id', 'nickname');
+$friends = cmsUser::getFriends($inUser->id);
+
+// Список собеседников для выпадающего списка
+$interlocutors = '';
+
+$inDB->resetFilters();
+
+$interlocutors_list = $inDB->distinctSelect()->
+        selectOnly('i.from_id', 'from_id')->
+        select('u.nickname')->
+        joinInner('users', 'u', 'u.id = i.from_id')->
+        filterEqual('i.from_del', 0)->
+        filterEqual('i.to_del', 0)->
+        filterEqual('i.to_id', (int) $id)->
+        orderBy('i.from_id', 'ASC')->
+        get('user_msg', false, false);
+
+foreach ( $interlocutors_list as $interlocutor ) {
+    $selected = $whith_id == $interlocutor['from_id'] ? 'selected="selected"' : '';
+
+    $interlocutors .= '<option value="' . htmlspecialchars($interlocutor['from_id']) . '" ' . $selected . '>' . $interlocutor['nickname'] . '</option>';
+}
 
 // каких сообщений больше, то и показываем
 if ( $new_msg['messages'] > $new_msg['notices'] ) {
@@ -37,7 +57,7 @@ switch ( $opt ) {
     case 'in':
         $page_title = $_LANG['INBOX'];
 
-        $inDB->addJoin("INNER JOIN cms_user_msg m ON m.from_id = u.id AND m.to_id = '" . $id . "' AND m.to_del = 0");
+        $inDB->joinInner('user_msg', 'm', 'm.from_id = i.id AND m.to_id = ' . (int) $id . ' AND m.to_del = 0');
 
         $msg_count = $model->getMessagesCount();
 
@@ -47,7 +67,7 @@ switch ( $opt ) {
     case 'out':
         $page_title = $_LANG['SENT'];
 
-        $inDB->addJoin("INNER JOIN cms_user_msg m ON m.to_id = u.id AND m.from_id = '" . $id . "' AND m.from_del = 0");
+        $inDB->joinInner('user_msg', 'm', 'm.to_id = i.id AND m.from_id = ' . (int) $id . ' AND m.from_del = 0');
 
         $msg_count = $model->getMessagesCount();
 
@@ -59,7 +79,7 @@ switch ( $opt ) {
 
         $show_notice = true;
 
-        $inDB->where("m.to_id = '" . $id . "'");
+        $inDB->filterEqual('i.to_id', (int) $id);
 
         $msg_count = $model->getMessagesCount($show_notice);
 
@@ -76,10 +96,12 @@ switch ( $opt ) {
 
             $page_title = $_LANG['MESSEN_WITH'] . ' ' . $with_usr['nickname'];
 
-            $inDB->addJoin("INNER JOIN cms_user_msg m ON m.from_id = u.id AND
-                            m.from_id IN (" . $id . ", " . $with_usr['id'] . ") AND
-                            m.to_id IN (" . $id . ", " . $with_usr['id'] . ") AND
-                            m.from_del = 0 AND m.to_del = 0");
+            $inDB->resetFilters();
+
+            $inDB->joinInner('user_msg', 'm', 'm.from_id = i.id AND
+                            m.from_id IN (' . (int) $id . ', ' . (int) $with_usr['id'] . ') AND
+                            m.to_id IN (' . (int) $id . ', ' . (int) $with_usr['id'] . ') AND
+                            m.from_del = 0 AND m.to_del = 0');
 
             $msg_count = $model->getMessagesCount();
 
@@ -95,7 +117,13 @@ switch ( $opt ) {
     default: return;
 }
 
-$inDB->orderBy('m.id', 'DESC');
+if ( $show_notice ) {
+    $inDB->orderBy('i.id', 'DESC');
+}
+else {
+    $inDB->orderBy('m.id', 'DESC');
+}
+
 $inDB->limitPage($page, $perpage);
 
 $records = $msg_count ?
@@ -124,6 +152,6 @@ cmsPage::initTemplate('components', 'com_users_messages')->
         assign('pagebar', $pagebar)->
         assign('new_messages', $new_msg)->
         assign('friends', isset($friends) ? $friends : array())->
-        assign('interlocutors', isset($interlocutors) ? $interlocutors : array())->
+        assign('interlocutors', $interlocutors)->
         assign('records', $records)->
         display('com_users_messages.tpl');

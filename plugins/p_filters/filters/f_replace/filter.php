@@ -19,7 +19,8 @@ function PhotoLink($photo_title)
 {
     $photo_title = cmsCore::strClear($photo_title);
 
-    $photo = cmsDatabase::getInstance()->get_fields('cms_photo_files', "title LIKE '{$photo_title}'", 'id, title');
+    $db    = \cms\db::getInstance();
+    $photo = $db->getRow('photo_files', "title LIKE '" . $db->escape($photo_title) . "'", 'id, title');
 
     if ( $photo ) {
         $link = '<a href="/photos/photo' . $photo['id'] . '.html" title="' . htmlspecialchars($photo['title']) . '">' . $photo['title'] . '</a>';
@@ -35,7 +36,8 @@ function AlbumLink($album_title)
 {
     $album_title = cmsCore::strClear($album_title);
 
-    $album = cmsDatabase::getInstance()->get_fields('cms_photo_albums', "title LIKE '{$album_title}'", 'id, title');
+    $db    = \cms\db::getInstance();
+    $album = $db->getRow('photo_albums', "title LIKE '" . $db->escape($album_title) . "'", 'id, title');
 
     if ( $album ) {
         $link = '<a href="/photos/' . $album['id'] . '" title="' . htmlspecialchars($album['title']) . '">' . $album['title'] . '</a>';
@@ -51,7 +53,8 @@ function ContentLink($content_title)
 {
     $content_title = cmsCore::strClear($content_title);
 
-    $content = cmsDatabase::getInstance()->get_fields('cms_content', "title LIKE '{$content_title}'", 'seolink, title');
+    $db      = \cms\db::getInstance();
+    $content = $db->getRow('content', "title LIKE '" . $db->escape($content_title) . "'", 'seolink, title');
 
     if ( $content ) {
         $link = '<a href="/' . $content['seolink'] . '.html" title="' . htmlspecialchars($content['title']) . '">' . $content['title'] . '</a>';

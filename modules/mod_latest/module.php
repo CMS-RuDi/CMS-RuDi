@@ -12,7 +12,7 @@
 
 function mod_latest($mod, $cfg)
 {
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
 
     $model = new cms_model_content();
 
@@ -47,7 +47,7 @@ function mod_latest($mod, $cfg)
         }
         else {
             //выбираем из категории и подкатегорий
-            $rootcat = $inDB->getNsCategory('cms_category', $cfg['cat_id']);
+            $rootcat = $inDB->getNsCategory('category', $cfg['cat_id']);
 
             if ( !$rootcat ) {
                 return false;
@@ -57,13 +57,13 @@ function mod_latest($mod, $cfg)
         }
     }
 
-    $inDB->where("con.showlatest = 1");
+    $inDB->filterEqual('showlatest', 1);
 
     if ( $cfg['is_pag'] ) {
         $total = $model->getArticlesCount();
     }
 
-    $inDB->orderBy('con.pubdate', 'DESC');
+    $inDB->orderBy('pubdate', 'DESC');
     $inDB->limitPage($cfg['page'], $cfg['newscount']);
 
     $content_list = $model->getArticlesList();

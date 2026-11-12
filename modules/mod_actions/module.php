@@ -12,7 +12,7 @@
 
 function mod_actions(array $mod, $cfg)
 {
-    $inDB      = cmsDatabase::getInstance();
+    $inDB      = \cms\db::getInstance();
     $inActions = cmsActions::getInstance();
 
     global $_LANG;

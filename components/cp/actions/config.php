@@ -21,15 +21,19 @@ class config extends \cms\com_action
 
         $config   = \cmsConfig::getConfig();
         $tpl_info = $this->page()->getCurrentTplInfo();
+        $db       = \cms\db::getInstance();
 
-        $result = $this->model->db->query("SELECT (sum(data_length)+sum(index_length))/1024/1024 as size FROM INFORMATION_SCHEMA.TABLES WHERE table_schema = '" . $config['db_base'] . "'", false, true);
+        $db_info = $db->getRow(
+            'information_schema.tables',
+            "table_schema = '" . $db->escape($config['db_base']) . "'",
+            '(sum(data_length)+sum(index_length))/1024/1024 as size'
+        );
 
-        if ( $result === false ) {
+        if ( $db_info === false ) {
             $db_size = $this->lang->ad_db_size_error;
         }
         else {
-            $s       = $this->model->db->fetchAssoc($result);
-            $db_size = round($s['size'], 2) . ' ' . $this->lang->size_mb;
+            $db_size = round($db_info['size'], 2) . ' ' . $this->lang->size_mb;
         }
 
         $tpl = $this->page()->initTemplate('cp/applets', 'config')->

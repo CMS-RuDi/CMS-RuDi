@@ -43,10 +43,10 @@ class p_loginza extends cmsPlugin
      */
     public function install()
     {
-        $inDB = cmsDatabase::getInstance();
+        $inDB = \cms\db::getInstance();
 
-        if ( !$inDB->isFieldExists('cms_users', 'openid') ) {
-            $inDB->query("ALTER TABLE `cms_users` ADD `openid` VARCHAR( 250 ) NULL, ADD INDEX ( `openid` )");
+        if ( !$inDB->isFieldExists('users', 'openid') ) {
+            $inDB->query("ALTER TABLE `{#}users` ADD `openid` VARCHAR( 250 ) NULL, ADD INDEX ( `openid` )");
         }
 
         return parent::install();
@@ -58,7 +58,11 @@ class p_loginza extends cmsPlugin
      */
     public function upgrade()
     {
-        cmsDatabase::getInstance()->query("UPDATE `cms_users` SET `openid` = MD5(openid) WHERE `openid` IS NOT NULL");
+        $inDB = \cms\db::getInstance();
+
+        foreach ( $inDB->getRows('users', 'openid IS NOT NULL', 'id, openid') as $openid_user ) {
+            $inDB->update('users', (int) $openid_user['id'], array( 'openid' => md5($openid_user['openid']) ));
+        }
 
         return parent::upgrade();
     }
@@ -103,7 +107,7 @@ class p_loginza extends cmsPlugin
 
     private function loginzaAuth()
     {
-        $inDB   = cmsDatabase::getInstance();
+        $inDB   = \cms\db::getInstance();
         $inUser = cmsUser::getInstance();
 
         $token = cmsCore::request('token', 'str', '');
@@ -130,7 +134,7 @@ class p_loginza extends cmsPlugin
 
         // если пользователь уже был или успешно создан, авторизуем
         if ( $user_id ) {
-            $user = $inDB->get_fields('cms_users', "id = '{$user_id}'", 'login, password');
+            $user = $inDB->getRow('users', 'id = ' . (int) $user_id, 'login, password');
             if ( !$user ) {
                 cmsCore::error404();
             }
@@ -147,7 +151,7 @@ class p_loginza extends cmsPlugin
     private function createUser($profile)
     {
         $inCore = cmsCore::getInstance();
-        $inDB   = cmsDatabase::getInstance();
+        $inDB   = \cms\db::getInstance();
         $inUser = cmsUser::getInstance();
 
         $nickname  = $email     = $birthdate = '';
@@ -189,7 +193,7 @@ class p_loginza extends cmsPlugin
 
         if ( !$nickname || !$login ) {
             // не указано вообще ничего
-            $max      = $inDB->get_fields('cms_users', 'id>0', 'id', 'id DESC');
+            $max      = $inDB->getRow('users', 'id > 0', 'id', 'id DESC');
             $nickname = $login    = 'user' . ($max['id'] + 1);
         }
 
@@ -199,7 +203,7 @@ class p_loginza extends cmsPlugin
         if ( !empty($profile->email) ) {
             $email = cmsCore::strClear($profile->email);
 
-            $already_email = $inDB->get_field('cms_users', "email='{$email}' AND is_deleted=0", 'email');
+            $already_email = $inDB->filterEqual('email', $email)->filterEqual('is_deleted', 0)->getFieldFiltered('users', 'email');
 
             if ( $already_email == $email ) {
                 cmsCore::redirect('/auth/error.html');
@@ -211,9 +215,9 @@ class p_loginza extends cmsPlugin
         }
 
         // проверяем занятость логина
-        if ( $inDB->get_field('cms_users', "login='{$login}' AND is_deleted=0", 'login') == $login ) {
+        if ( $inDB->filterEqual('login', $login)->filterEqual('is_deleted', 0)->getFieldFiltered('users', 'login') == $login ) {
             // если логин занят, добавляем к нему ID
-            $max   = $inDB->get_fields('cms_users', 'id>0', 'id', 'id DESC');
+            $max   = $inDB->getRow('users', 'id > 0', 'id', 'id DESC');
             $login .= ($max['id'] + 1);
         }
 
@@ -232,7 +236,7 @@ class p_loginza extends cmsPlugin
                     'openid'      => md5($profile->identity),
         ));
 
-        $user_array['id'] = $user_id          = $inDB->insert('cms_users', $user_array);
+        $user_array['id'] = $user_id          = $inDB->insert('users', $user_array);
 
         // создаем профиль пользователя
         if ( $user_id ) {
@@ -261,7 +265,7 @@ class p_loginza extends cmsPlugin
 
             $inUser->loadUserGeo();
 
-            $inDB->insert('cms_user_profiles', array(
+            $inDB->insert('user_profiles', array(
                 'city'     => (!empty($advanced['city']) ? $advanced['city'] : $inUser->city),
                 'user_id'  => $user_id,
                 'imageurl' => $filename,
@@ -326,7 +330,7 @@ class p_loginza extends cmsPlugin
 
     private function getUserByIdentity($identity)
     {
-        return cmsDatabase::getInstance()->get_field('cms_users', "openid='" . md5($identity) . "'", 'id');
+        return \cms\db::getInstance()->filterEqual('openid', md5($identity))->getFieldFiltered('users', 'id');
     }
 
     private function request($url)

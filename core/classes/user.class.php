@@ -137,27 +137,36 @@ class cmsUser {
             }
         }
 
-        $where = $user_id ? "u.id = '$user_id'" : $where;
+        $where = $user_id ? "i.id = '" . (int) $user_id . "'" : $where;
 
         if (!$where) {
             return false;
         }
 
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
-        $sql = "SELECT u.*, g.is_admin, g.alias, g.access, p.imageurl, p.imageurl as orig_imageurl, p.karma, p.city
-                   FROM cms_users u
-				   INNER JOIN cms_user_groups g ON g.id = u.group_id
-				   INNER JOIN cms_user_profiles p ON p.user_id = u.id
-                   WHERE " . $where . " AND u.is_deleted = 0 AND u.is_locked = 0 LIMIT 1";
+        $db->resetFilters();
 
-        $result = $inDB->query($sql);
+        $info = $db->select('i.*')
+                ->select('g.is_admin')
+                ->select('g.alias')
+                ->select('g.access')
+                ->select('p.imageurl')
+                ->select('p.imageurl', 'orig_imageurl')
+                ->select('p.karma')
+                ->select('p.city')
+                ->joinInner('user_groups', 'g', 'g.id = i.group_id')
+                ->joinInner('user_profiles', 'p', 'p.user_id = i.id')
+                ->filter($where)
+                ->filterEqual('i.is_deleted', 0)
+                ->filterEqual('i.is_locked', 0)
+                ->getItem('users');
 
-        if ($inDB->num_rows($result) !== 1) {
+        $db->resetFilters();
+
+        if (!$info) {
             return false;
         }
-
-        $info = $inDB->fetch_assoc($result);
 
         $info['ip'] = self::getIp();
 
@@ -173,30 +182,63 @@ class cmsUser {
      * Если да, то показывает сообщение и завершает работу
      */
     private function checkBan() {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
-        $user_where = $this->id ? "(ip = '{$this->ip}' OR user_id = '{$this->id}')" : "ip = '{$this->ip}'";
+        $db->resetFilters();
+
+        $db->filterStart();
+
+        if ($this->id) {
+            $db->filterEqual('ip', $this->ip)
+                    ->filterOr()
+                    ->filterEqual('user_id', (int) $this->id);
+        } else {
+            $db->filterEqual('ip', $this->ip);
+        }
+
+        $db->filterEnd()->filterEqual('status', 1);
 
         // Проверяем бан
-        $ban = $inDB->get_fields('cms_banlist', $user_where . ' AND status=1', 'int_num, int_period, autodelete, id, status, bandate, user_id, cause');
+        $ban = $db->select('i.int_num')
+                ->select('i.int_period')
+                ->select('i.autodelete')
+                ->select('i.id')
+                ->select('i.status')
+                ->select('i.bandate')
+                ->select('i.user_id')
+                ->select('i.cause')
+                ->getItem('banlist');
+
+        $db->resetFilters();
 
         if (!$ban) {
             return;
         }
 
         if ($this->id) {
-            $inDB->query("UPDATE cms_banlist SET ip = '" . $this->ip . "' WHERE user_id = '" . $this->id . "'");
+            $db->filterEqual('user_id', (int) $this->id)->updateFiltered('banlist', array(
+                'ip' => $this->ip
+            ));
         }
 
         $interval = $ban['int_num'] . ' ' . $ban['int_period'];
 
+        $db->resetFilters();
+
+        $is_expired = $db->filterEqual('id', (int) $ban['id'])
+                ->filterFunc('bandate', 'DATE_SUB(NOW(), INTERVAL ' . $interval . ')', '<=')
+                ->filterGt('int_num', 0)
+                ->getCount('banlist');
+
+        $db->resetFilters();
+
         // проверяем истек ли срок бана
-        if ($inDB->rows_count('cms_banlist', "id = '" . $ban['id'] . "' AND bandate <= DATE_SUB(NOW(), INTERVAL " . $interval . ") AND int_num > 0")) {
+        if ($is_expired) {
             // если истек и флаг автоудаления есть, удаляем
             if ($ban['autodelete']) {
-                $inDB->query("DELETE FROM cms_banlist WHERE id='" . $ban['id'] . "'");
+                $db->delete('banlist', (int) $ban['id']);
             } else {
-                $inDB->query("UPDATE cms_banlist SET status=0 WHERE id='" . $ban['id'] . "'");
+                $db->update('banlist', (int) $ban['id'], array('status' => 0));
             }
         } else {
             global $_LANG;
@@ -222,7 +264,7 @@ class cmsUser {
                 return false;
             }
 
-            $user = $this->loadUser(0, "md5(CONCAT(u.id, u.password,'" . cmsDatabase::getInstance()->escape_string(PATH) . "')) = '$cookie_code'");
+            $user = $this->loadUser(0, "md5(CONCAT(i.id, i.password,'" . \cms\db::getInstance()->escape_string(PATH) . "')) = '$cookie_code'");
 
             if ($user) {
                 $_SESSION['user'] = $user;
@@ -284,26 +326,42 @@ class cmsUser {
      * @return int
      */
     public static function getRating($user_id) {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
         $rating = 0;
 
-        $targets = $inDB->get_table('cms_rating_targets', 'is_user_affect = 1 ORDER BY user_weight', 'target, user_weight, target_table');
+        $db->resetFilters();
+
+        $targets = $db->select('i.target')
+                ->select('i.user_weight')
+                ->select('i.target_table')
+                ->filterEqual('i.is_user_affect', 1)
+                ->orderBy('i.user_weight', 'ASC')
+                ->get('rating_targets', false, '');
+
+        $db->resetFilters();
 
         if (!$targets) {
             return $rating;
         }
 
-        $start_sql = "SELECT SUM( r.total_rating ) AS rating FROM cms_ratings_total r \n";
-
         foreach ($targets as $target) {
-            $sql = "INNER JOIN " . $target['target_table'] . " " . $target['target'] . " ON
-					 r.item_id = " . $target['target'] . ".id AND
-					 r.target = '" . $target['target'] . "' AND
-					 " . $target['target'] . ".user_id = '" . $user_id . "' \n";
+            $target_table = $target['target_table'];
 
-            $result = $inDB->query($start_sql . $sql);
-            $data = $inDB->fetch_assoc($result);
+            if ($db->prefix && strpos($target_table, $db->prefix) === 0) {
+                $target_table = substr($target_table, strlen($db->prefix));
+            }
+
+            $db->resetFilters();
+
+            $data = $db->select('SUM(i.total_rating)', 'rating')
+                    ->joinInner($target_table, $target['target'], $target['target'] . '.id = i.item_id')
+                    ->filterEqual('i.target', $target['target'])
+                    ->filterEqual($target['target'] . '.user_id', $user_id)
+                    ->getItem('ratings_total');
+
+            $db->resetFilters();
+
             $rating += (int) @$data['rating'] * (int) $target['user_weight'];
         }
 
@@ -316,16 +374,20 @@ class cmsUser {
      * @return int
      */
     public static function getKarma($user_id) {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
-        $sql = "SELECT SUM(points) as karma FROM cms_user_karma WHERE user_id = '" . $user_id . "' GROUP BY user_id";
-        $result = $inDB->query($sql);
+        $db->resetFilters();
 
-        if (!$inDB->num_rows($result)) {
+        $data = $db->select('SUM(i.points)', 'karma')
+                ->filterEqual('i.user_id', (int) $user_id)
+                ->groupBy('i.user_id')
+                ->getItem('user_karma');
+
+        $db->resetFilters();
+
+        if (!$data) {
             return 0;
         }
-
-        $data = $inDB->fetch_assoc($result);
 
         return (int) $data['karma'];
     }
@@ -338,15 +400,22 @@ class cmsUser {
      * @return int
      */
     public static function changeKarmaUser($to_user_id, $points, $from_user_id = 0) {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
         $from_user_id = $from_user_id ? $from_user_id : self::getInstance()->id;
 
-        $inDB->query("INSERT INTO cms_user_karma (user_id, sender_id, points, senddate) VALUES ('" . $to_user_id . "', '" . $from_user_id . "', '" . $points . "', NOW())");
+        $db->insert('user_karma', array(
+            'user_id' => (int) $to_user_id,
+            'sender_id' => (int) $from_user_id,
+            'points' => (int) $points,
+            'senddate' => date('Y-m-d H:i:s')
+        ));
 
         $user_karma = self::getKarma($to_user_id);
 
-        $inDB->query("UPDATE cms_user_profiles SET karma = '" . $user_karma . "' WHERE user_id = '" . $to_user_id . "'");
+        $db->filterEqual('user_id', (int) $to_user_id)->updateFiltered('user_profiles', array(
+            'karma' => $user_karma
+        ));
 
         self::checkAwards($to_user_id);
 
@@ -358,26 +427,36 @@ class cmsUser {
      * @return html
      */
     public static function getBirthdayUsers() {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
         $today = date("d-m");
 
-        $sql = "SELECT u.id as id, u.nickname as nickname, u.login as login, u.birthdate, p.gender as gender
-                FROM cms_users u
-				LEFT JOIN cms_user_profiles p ON p.user_id = u.id
-                WHERE u.is_locked = 0 AND u.is_deleted = 0 AND p.showbirth = 1 AND DATE_FORMAT(u.birthdate, '%d-%m')='" . $today . "'";
+        $db->resetFilters();
 
-        $rs = $inDB->query($sql);
-        $total = $inDB->num_rows($rs);
+        $users = $db->select('i.id', 'id')
+                ->select('i.nickname', 'nickname')
+                ->select('i.login', 'login')
+                ->select('i.birthdate')
+                ->select('p.gender', 'gender')
+                ->joinLeft('user_profiles', 'p', 'p.user_id = i.id')
+                ->filterEqual('i.is_locked', 0)
+                ->filterEqual('i.is_deleted', 0)
+                ->filterEqual('p.showbirth', 1)
+                ->filter("DATE_FORMAT(i.birthdate, '%d-%m') = '" . $db->escape($today) . "'")
+                ->get('users', false, '');
+
+        $db->resetFilters();
+
+        if (!$users) {
+            return false;
+        }
 
         $now = 0;
         $html = '';
 
-        if (!$total) {
-            return false;
-        }
+        $total = count($users);
 
-        while ($usr = $inDB->fetch_assoc($rs)) {
+        foreach ($users as $usr) {
             $html .= self::getGenderLink($usr['id'], $usr['nickname'], $usr['gender'], $usr['login']);
 
             if ($now < $total - 1) {
@@ -397,18 +476,26 @@ class cmsUser {
      * @return html
      */
     public static function getUsersList($selected = 0, $exclude = array()) {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
         $html = '';
 
-        $sql = "SELECT id, nickname FROM cms_users WHERE is_locked = 0 AND is_deleted = 0 ORDER BY nickname";
-        $rs = $inDB->query($sql);
+        $db->resetFilters();
 
-        if (!$inDB->num_rows($rs)) {
+        $users = $db->select('i.id')
+                ->select('i.nickname')
+                ->filterEqual('i.is_locked', 0)
+                ->filterEqual('i.is_deleted', 0)
+                ->orderBy('i.nickname', 'ASC')
+                ->get('users', false, '');
+
+        $db->resetFilters();
+
+        if (!$users) {
             return;
         }
 
-        while ($u = $inDB->fetch_assoc($rs)) {
+        foreach ($users as $u) {
             if (!in_array($u['id'], $exclude)) {
                 if ($selected) {
                     if ($u['id'] == $selected) {
@@ -436,23 +523,20 @@ class cmsUser {
             return;
         }
 
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
         $html = '';
 
-        $sql = "SELECT id, nickname FROM cms_users WHERE ";
+        $db->resetFilters();
 
-        $a_list = implode(',', $authors);
+        $users = $db->select('i.id')
+                ->select('i.nickname')
+                ->filterIn('i.id', $authors)
+                ->get('users', false, '');
 
-        if ($a_list) {
-            $sql .= "id IN (" . $a_list . ")";
-        } else {
-            $sql .= '1=0';
-        }
+        $db->resetFilters();
 
-        $rs = $inDB->query($sql);
-
-        if ($inDB->num_rows($rs)) {
-            while ($u = $inDB->fetch_assoc($rs)) {
+        if ($users) {
+            foreach ($users as $u) {
                 if ($selected) {
                     if (in_array($u['id'], $selected)) {
                         $html .= '<option value="' . $u['id'] . '" selected="selected">' . $u['nickname'] . '</option>';
@@ -498,25 +582,29 @@ class cmsUser {
      * @return html
      */
     public static function getFriendsList($user_id, $selected = 0) {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
         $html = '';
 
-        $sql = "SELECT
-				CASE
-				WHEN f.from_id = " . $user_id . "
-				THEN f.to_id
-				WHEN f.to_id = " . $user_id . "
-				THEN f.from_id
-				END AS id, u.nickname as nickname
-                FROM cms_user_friends f
-				LEFT JOIN cms_users u ON u.id = CASE WHEN f.from_id = " . $user_id . " THEN f.to_id WHEN f.to_id = " . $user_id . " THEN f.from_id END
-				WHERE (from_id = " . $user_id . " OR to_id = " . $user_id . ") AND is_accepted =1";
+        $db->resetFilters();
 
-        $result = $inDB->query($sql);
+        $friend_id = (int) $user_id;
 
-        if ($inDB->num_rows($result)) {
-            while ($friend = $inDB->fetch_assoc($result)) {
+        $friends = $db->select("CASE WHEN i.from_id = " . $friend_id . " THEN i.to_id WHEN i.to_id = " . $friend_id . " THEN i.from_id END", 'id')
+                ->select('u.nickname', 'nickname')
+                ->joinLeft('users', 'u', 'u.id = CASE WHEN i.from_id = ' . $friend_id . ' THEN i.to_id WHEN i.to_id = ' . $friend_id . ' THEN i.from_id END')
+                ->filterStart()
+                ->filterEqual('i.from_id', $friend_id)
+                ->filterOr()
+                ->filterEqual('i.to_id', $friend_id)
+                ->filterEnd()
+                ->filterEqual('i.is_accepted', 1)
+                ->get('user_friends', false, '');
+
+        $db->resetFilters();
+
+        if ($friends) {
+            foreach ($friends as $friend) {
                 if (@$selected == $friend['id']) {
                     $s = 'selected';
                 } else {
@@ -584,9 +672,9 @@ class cmsUser {
             return false;
         }
 
-        return cmsDatabase::getInstance()->insert('cms_user_friends', array(
-                    'to_id' => $user_id,
-                    'from_id' => $my_id,
+        return \cms\db::getInstance()->insert('user_friends', array(
+                    'to_id' => (int) $user_id,
+                    'from_id' => (int) $my_id,
                     'logdate' => date('Y-m-d H:i:s'),
                     'is_accepted' => 0
         ));
@@ -607,7 +695,7 @@ class cmsUser {
         if ($friend_field_id) {
             \cms\events::call('users.delete_friend', $user_id);
 
-            cmsDatabase::getInstance()->query("DELETE FROM cms_user_friends WHERE id = '" . $friend_field_id . "'");
+            \cms\db::getInstance()->delete('user_friends', (int) $friend_field_id);
 
             cmsActions::removeObjectLog('add_friend', $friend_field_id);
             cmsUser::clearSessionFriends();
@@ -635,22 +723,31 @@ class cmsUser {
             return false;
         }
 
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
+
         if ($to_from === false) {
-            $where = "to_id IN (" . $user_id . ", " . $my_id . ") AND from_id IN (" . $my_id . ", " . $user_id . ")";
+            $db->filterIn('to_id', array((int) $user_id, (int) $my_id))
+                    ->filterIn('from_id', array((int) $my_id, (int) $user_id));
         } else {
             // Если ко мне в друзья просились
             if ($to_from == 'to_me') {
-                $where = "to_id = '" . $my_id . "' AND from_id = '" . $user_id . "'";
+                $db->filterEqual('to_id', (int) $my_id)->filterEqual('from_id', (int) $user_id);
             } else { // я просился в друзья
-                $where = "to_id = '" . $user_id . "' AND from_id = '" . $my_id . "'";
+                $db->filterEqual('to_id', (int) $user_id)->filterEqual('from_id', (int) $my_id);
             }
         }
 
         if ($accepted !== false) {
-            $where .= $accepted ? 'AND is_accepted = 1' : 'AND is_accepted = 0';
+            $db->filterEqual('is_accepted', $accepted ? 1 : 0);
         }
 
-        return cmsDatabase::getInstance()->get_field('cms_user_friends', $where, 'id');
+        $friend_field_id = $db->getFieldFiltered('user_friends', 'id');
+
+        $db->resetFilters();
+
+        return $friend_field_id;
     }
 
     /**
@@ -663,7 +760,21 @@ class cmsUser {
             return 0;
         }
 
-        return cmsDatabase::getInstance()->rows_count('cms_user_friends', "(from_id = '" . $user_id . "' OR to_id = '" . $user_id . "') AND is_accepted =1");
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
+
+        $count = $db->filterStart()
+                ->filterEqual('from_id', (int) $user_id)
+                ->filterOr()
+                ->filterEqual('to_id', (int) $user_id)
+                ->filterEnd()
+                ->filterEqual('is_accepted', 1)
+                ->getCount('user_friends');
+
+        $db->resetFilters();
+
+        return $count;
     }
 
     /**
@@ -697,24 +808,34 @@ class cmsUser {
         }
 
         //иначе получаем список из базы, кладем в сессию и возвращаем
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
-        $sql = "SELECT
-				CASE
-				WHEN f.from_id = " . $user_id . "
-				THEN f.to_id
-				WHEN f.to_id = " . $user_id . "
-				THEN f.from_id
-				END AS id, u.nickname as nickname, u.login as login, u.is_deleted, u.status, u.logdate, p.imageurl
-                FROM cms_user_friends f
-				LEFT JOIN cms_users u ON u.id = CASE WHEN f.from_id = " . $user_id . " THEN f.to_id WHEN f.to_id = " . $user_id . " THEN f.from_id END
-				INNER JOIN cms_user_profiles p ON p.user_id = u.id
-				WHERE (from_id = " . $user_id . " OR to_id = " . $user_id . ") AND is_accepted =1 ORDER BY u.logdate DESC";
+        $db->resetFilters();
 
-        $result = $inDB->query($sql);
+        $friend_id = (int) $user_id;
 
-        if ($inDB->num_rows($result)) {
-            while ($friend = $inDB->fetch_assoc($result)) {
+        $rs = $db->select("CASE WHEN i.from_id = " . $friend_id . " THEN i.to_id WHEN i.to_id = " . $friend_id . " THEN i.from_id END", 'id')
+                ->select('u.nickname', 'nickname')
+                ->select('u.login', 'login')
+                ->select('u.is_deleted')
+                ->select('u.status')
+                ->select('u.logdate')
+                ->select('p.imageurl')
+                ->joinLeft('users', 'u', 'u.id = CASE WHEN i.from_id = ' . $friend_id . ' THEN i.to_id WHEN i.to_id = ' . $friend_id . ' THEN i.from_id END')
+                ->joinInner('user_profiles', 'p', 'p.user_id = u.id')
+                ->filterStart()
+                ->filterEqual('i.from_id', $friend_id)
+                ->filterOr()
+                ->filterEqual('i.to_id', $friend_id)
+                ->filterEnd()
+                ->filterEqual('i.is_accepted', 1)
+                ->orderBy('u.logdate', 'DESC')
+                ->get('user_friends', false, '');
+
+        $db->resetFilters();
+
+        if ($rs) {
+            foreach ($rs as $friend) {
                 $friend['avatar'] = self::getUserAvatarUrl($friend['id'], 'small', $friend['imageurl'], $friend['is_deleted']);
                 $friend['is_online'] = self::isOnline($friend['id']);
                 $friend['flogdate'] = self::getOnlineStatus($friend['id'], $friend['logdate']);
@@ -745,11 +866,20 @@ class cmsUser {
      * Возвращает html стены пользователя
      * @param int $selected
      * @param array $exclude
+     * @param string $limit Готовое значение LIMIT (необязательно)
      * @return html
      */
-    public static function getUserWall($target_id, $component = 'users', $my_profile = 0, $is_admin = 0) {
-        $inDB = cmsDatabase::getInstance();
+    public static function getUserWall($target_id, $component = 'users', $my_profile = 0, $is_admin = 0, $limit = null) {
+        $db = \cms\db::getInstance();
         $inUser = self::getInstance();
+
+        // AJAX-постраничная загрузка передает LIMIT явно из нового слоя БД
+        if ($limit === null) {
+            $limit = $db->limit;
+        }
+
+        // сортировку можно заранее задать через builder
+        $order_by = $db->order_by;
 
         cmsCore::loadLanguage('components/' . $component);
 
@@ -760,31 +890,49 @@ class cmsUser {
         $records = array();
 
         //получаем общее число записей на стене этого пользователя
-        $total = $inDB->rows_count('cms_user_wall', "user_id = '" . $target_id . "' AND usertype = '" . $component . "'");
+        $db->resetFilters();
+
+        $total = $db->filterEqual('i.user_id', (int) $target_id)
+                ->filterEqual('i.usertype', $component)
+                ->getCount('user_wall');
 
         if ($total) {
-            $sql = "SELECT w.*, g.gender, g.imageurl, u.nickname as author, u.login as author_login, u.is_deleted, w.pubdate
-                    FROM cms_user_wall w
-					INNER JOIN cms_users u ON u.id = w.author_id
-					INNER JOIN cms_user_profiles g ON g.user_id = u.id
-                    WHERE w.user_id = '" . $target_id . "' AND w.usertype = '" . $component . "'
-                    ORDER BY w.pubdate DESC\n";
-            if ($inDB->limit) {
-                $sql .= "LIMIT " . $inDB->limit;
+            if ($limit) {
+                $db->limit = $limit;
             }
 
-            $result = $inDB->query($sql);
-            $inDB->resetConditions();
+            if ($order_by) {
+                $db->order_by = $order_by;
+            } else {
+                $db->orderBy('i.pubdate', 'DESC');
+            }
 
-            while ($record = $inDB->fetch_assoc($result)) {
-                $record['is_today'] = time() - strtotime($record['pubdate']) < 86400;
-                $record['fpubdate'] = $record['is_today'] ? cmsCore::dateDiffNow($record['pubdate']) : cmsCore::dateFormat($record['pubdate']);
-                $record['avatar'] = cmsUser::getUserAvatarUrl($record['author_id'], 'small', $record['imageurl'], $record['is_deleted']);
-                $records[] = $record;
+            $records = $db->select('i.*')
+                    ->select('g.gender')
+                    ->select('g.imageurl')
+                    ->select('u.nickname', 'author')
+                    ->select('u.login', 'author_login')
+                    ->select('u.is_deleted')
+                    ->select('i.pubdate')
+                    ->joinInner('users', 'u', 'u.id = i.author_id')
+                    ->joinInner('user_profiles', 'g', 'g.user_id = u.id')
+                    ->filterEqual('i.user_id', (int) $target_id)
+                    ->filterEqual('i.usertype', $component)
+                    ->get('user_wall', false, '');
+
+            foreach ($records as $key => $record) {
+                $records[$key]['is_today'] = time() - strtotime($record['pubdate']) < 86400;
+                $records[$key]['fpubdate'] = $record['is_today'] ? cmsCore::dateDiffNow($record['pubdate']) : cmsCore::dateFormat($record['pubdate']);
+                $records[$key]['avatar'] = cmsUser::getUserAvatarUrl($record['author_id'], 'small', $record['imageurl'], $record['is_deleted']);
             }
 
             $records = \cms\events::call('users.get_wall_posts', $records);
         }
+
+        // не оставляем фильтры стены в общем builder'е для следующих запросов
+        $perpage = $db->perpage;
+        $page = isset($db->page) ? $db->page : 1;
+        $db->resetFilters();
 
         ob_start();
 
@@ -796,7 +944,7 @@ class cmsUser {
                 assign('is_admin', $is_admin)->
                 assign('component', $component)->
                 assign('total', $total)->
-                assign('pagebar', cmsPage::getPagebar($total, $inDB->page, $inDB->perpage, 'javascript:wallPage(%page%)'))->
+                assign('pagebar', cmsPage::getPagebar($total, $page, $perpage, 'javascript:wallPage(%page%)'))->
                 display('com_users_wall.tpl');
 
         return ob_get_clean();
@@ -852,7 +1000,16 @@ class cmsUser {
             return self::$cache[$target][$item_id][$user_id];
         }
 
-        $is_rate = cmsDatabase::getInstance()->rows_count('cms_ratings', "item_id = '" . $item_id . "' AND target = '" . $target . "' AND user_id = '" . $user_id . "'");
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
+
+        $is_rate = $db->filterEqual('item_id', (int) $item_id)
+                ->filterEqual('target', $target)
+                ->filterEqual('user_id', $user_id)
+                ->getCount('ratings');
+
+        $db->resetFilters();
 
         // возвращаем и кешируем значение
         return self::$cache[$target][$item_id][$user_id] = $is_rate;
@@ -864,7 +1021,15 @@ class cmsUser {
      */
     public static function getGuestInfo($field = '') {
         if (!self::$guest_group_info) {
-            $data = cmsDatabase::getInstance()->get_fields('cms_user_groups', "alias = 'guest'", 'id, access');
+            $db = \cms\db::getInstance();
+
+            $db->resetFilters();
+
+            $data = $db->select('i.id')->select('i.access')
+                    ->filterEqual('i.alias', 'guest')
+                    ->getItem('user_groups');
+
+            $db->resetFilters();
 
             if ($data) {
                 $data['group_id'] = $data['id'];
@@ -931,7 +1096,9 @@ class cmsUser {
         }
 
         if ($user_id) {
-            cmsDatabase::getInstance()->query("UPDATE cms_users SET logdate = CURRENT_TIMESTAMP WHERE id = '" . $user_id . "'");
+            \cms\db::getInstance()->update('users', (int) $user_id, array(
+                'logdate' => date('Y-m-d H:i:s')
+            ));
         }
 
         return true;
@@ -956,8 +1123,20 @@ class cmsUser {
         $useragent = cmsCore::strClear((string) $_SERVER['HTTP_USER_AGENT']);
         $page = cmsCore::isAjax() ? '' : cmsCore::strClear((string) $_SERVER['REQUEST_URI']);
 
-        cmsDatabase::getInstance()->
-                query("INSERT IGNORE INTO cms_online (ip, sess_id, user_id) VALUES ('" . $this->ip . "', '" . $sess_id . "', '" . $this->id . "') ON DUPLICATE KEY UPDATE agent = '" . $useragent . "', viewurl = '" . $page . "'");
+        // поля online.agent/viewurl — varchar(250)
+        $useragent = mb_substr($useragent, 0, 250);
+        $page = mb_substr($page, 0, 250);
+
+        \cms\db::getInstance()->insertOrUpdate('online', array(
+            'ip' => $this->ip,
+            'sess_id' => $sess_id,
+            'user_id' => $this->id,
+            'agent' => $useragent,
+            'viewurl' => $page
+                ), array(
+            'agent' => $useragent,
+            'viewurl' => $page
+        ));
 
         // удаляем старые записи
         if (cmsConfig::getConfig('user_stats') == 1) {
@@ -972,7 +1151,9 @@ class cmsUser {
      * Удаляет просроченные данные об online пользователях
      */
     public static function clearOnlineUsers() {
-        return cmsDatabase::getInstance()->query("DELETE FROM cms_online WHERE lastdate <= DATE_SUB(NOW(), INTERVAL " . ONLINE_INTERVAL . " MINUTE) LIMIT 5");
+        return \cms\db::getInstance()
+                        ->filterFunc('lastdate', 'DATE_SUB(NOW(), INTERVAL ' . ONLINE_INTERVAL . ' MINUTE)', '<=')
+                        ->deleteFiltered('online');
     }
 
     /**
@@ -980,7 +1161,7 @@ class cmsUser {
      */
     private function loadOnlineUsers() {
         if (!isset($this->online_users)) {
-            $this->online_users = cmsDatabase::getInstance()->get_table('cms_online');
+            $this->online_users = \cms\db::getInstance()->getRows('online');
         }
     }
 
@@ -1069,15 +1250,22 @@ class cmsUser {
      * @return array
      */
     public static function getNewMessages($user_id) {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
-        $sql = "SELECT from_id FROM cms_user_msg WHERE to_id = '" . $user_id . "' AND to_del = 0 AND is_new = 1";
-        $result = $inDB->query($sql);
+        $db->resetFilters();
+
+        $rs = $db->selectOnly('i.from_id')
+                ->filterEqual('i.to_id', (int) $user_id)
+                ->filterEqual('i.to_del', 0)
+                ->filterEqual('i.is_new', 1)
+                ->get('user_msg', false, '');
+
+        $db->resetFilters();
 
         $messages = 0;
         $notices = 0;
 
-        while ($o = $inDB->fetch_assoc($result)) {
+        foreach ($rs as $o) {
             if ($o['from_id'] < 0) {
                 $notices++;
             } else {
@@ -1110,7 +1298,15 @@ class cmsUser {
             return self::$cache['users_awards'][$user_id];
         }
 
-        $aw = cmsDatabase::getInstance()->get_table('cms_user_awards', "user_id = '" . $user_id . "'", '*');
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
+
+        $aw = $db->filterEqual('i.user_id', (int) $user_id)
+                ->orderBy('i.id', 'ASC')
+                ->get('user_awards', false, '');
+
+        $db->resetFilters();
 
         return self::$cache['users_awards'][$user_id] = $aw;
     }
@@ -1120,7 +1316,17 @@ class cmsUser {
      * @return array
      */
     public static function getAutoAwards() {
-        return cmsDatabase::getInstance()->get_table('cms_user_autoawards', "published = 1 ORDER BY title", '*');
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
+
+        $awards = $db->filterEqual('i.published', 1)
+                ->orderBy('i.title', 'ASC')
+                ->get('user_autoawards', false, '');
+
+        $db->resetFilters();
+
+        return $awards;
     }
 
     /**
@@ -1133,7 +1339,7 @@ class cmsUser {
             return false;
         }
 
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
         $awards = self::getAutoAwards();
 
@@ -1141,16 +1347,34 @@ class cmsUser {
             return false;
         }
 
-        $p_content = $inDB->rows_count('cms_content', "user_id='" . $user_id . "' AND published = 1");
-        $p_comment = $inDB->rows_count('cms_comments', "user_id='" . $user_id . "' AND published = 1");
-        $p_blog = $inDB->rows_count('cms_blog_posts', "user_id='" . $user_id . "' AND published = 1");
-        $p_forum = \cms\controller::enabled('forum') ? $inDB->rows_count('cms_forum_posts', "user_id='" . $user_id . "'") : 0;
-        $p_photo = $inDB->rows_count('cms_photo_files', "user_id='" . $user_id . "' AND published = 1");
-        $p_privphoto = $inDB->rows_count('cms_user_photos', "user_id='" . $user_id . "'");
-        $p_karma = $inDB->get_field('cms_user_profiles', "user_id='" . $user_id . "'", 'karma');
+        $p_content = $db->resetFilters()->filterEqual('user_id', (int) $user_id)
+                        ->filterEqual('published', 1)->getCount('content');
+        $db->resetFilters();
+        $p_comment = $db->filterEqual('user_id', (int) $user_id)
+                        ->filterEqual('published', 1)->getCount('comments');
+        $db->resetFilters();
+        $p_blog = $db->filterEqual('user_id', (int) $user_id)
+                        ->filterEqual('published', 1)->getCount('blog_posts');
+        $db->resetFilters();
+        $p_forum = \cms\controller::enabled('forum') ? $db->filterEqual('user_id', (int) $user_id)->getCount('forum_posts') : 0;
+        $db->resetFilters();
+        $p_photo = $db->filterEqual('user_id', (int) $user_id)
+                        ->filterEqual('published', 1)->getCount('photo_files');
+        $db->resetFilters();
+        $p_privphoto = $db->filterEqual('user_id', (int) $user_id)->getCount('user_photos');
+        $db->resetFilters();
+        $p_karma = $db->filterEqual('user_id', (int) $user_id)->getFieldFiltered('user_profiles', 'karma');
 
         foreach ($awards as $award) {
-            if ($inDB->rows_count('cms_user_awards', "user_id = '" . $user_id . "' AND award_id = '" . $award['id'] . "'")) {
+            $db->resetFilters();
+
+            $is_awarded = $db->filterEqual('user_id', (int) $user_id)
+                    ->filterEqual('award_id', (int) $award['id'])
+                    ->getCount('user_awards');
+
+            $db->resetFilters();
+
+            if ($is_awarded) {
                 continue;
             }
 
@@ -1185,7 +1409,7 @@ class cmsUser {
 
         global $_LANG;
 
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
         $user = self::getShortUserData($user_id);
 
@@ -1197,12 +1421,15 @@ class cmsUser {
             return false;
         }
 
-        $award = $inDB->escape_string($award);
-
-        $sql = "INSERT INTO cms_user_awards (user_id, pubdate, title, description, imageurl, from_id, award_id)
-				VALUES ('" . $user_id . "', NOW(), '" . $award['title'] . "', '" . $award['description'] . "', '" . $award['imageurl'] . "', '" . $award['from_id'] . "', '" . $award['id'] . "')";
-        $inDB->query($sql);
-        $award_id = $inDB->get_last_id('cms_user_awards');
+        $award_id = $db->insert('user_awards', array(
+            'user_id' => (int) $user_id,
+            'pubdate' => date('Y-m-d H:i:s'),
+            'title' => $award['title'],
+            'description' => $award['description'],
+            'imageurl' => $award['imageurl'],
+            'from_id' => isset($award['from_id']) ? (int) $award['from_id'] : 0,
+            'award_id' => (int) $award['id']
+        ));
 
         if (!$award_id) {
             return false;
@@ -1232,16 +1459,13 @@ class cmsUser {
      * @return bool
      */
     public static function sendMessage($sender_id, $receiver_id, $message) {
-        $inDB = cmsDatabase::getInstance();
-
-        $message = $inDB->escape_string($message);
-
-        $sql = "INSERT INTO cms_user_msg (to_id, from_id, senddate, is_new, message)
-                VALUES ('" . $receiver_id . "', '" . $sender_id . "', NOW(), 1, '" . $message . "')";
-
-        $inDB->query($sql);
-
-        $msg_id = $inDB->get_last_id('cms_user_msg');
+        $msg_id = \cms\db::getInstance()->insert('user_msg', array(
+            'to_id' => (int) $receiver_id,
+            'from_id' => (int) $sender_id,
+            'senddate' => date('Y-m-d H:i:s'),
+            'is_new' => 1,
+            'message' => $message
+        ));
 
         return $msg_id ? $msg_id : false;
     }
@@ -1311,7 +1535,18 @@ class cmsUser {
             return false;
         }
 
-        return (bool) cmsDatabase::getInstance()->rows_count('cms_subscribe', "user_id = '" . $user_id . "' AND target = '" . $target . "' AND target_id = '" . $target_id . "'");
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
+
+        $is_subscribed = $db->filterEqual('user_id', (int) $user_id)
+                ->filterEqual('target', $target)
+                ->filterEqual('target_id', (int) $target_id)
+                ->getCount('subscribe');
+
+        $db->resetFilters();
+
+        return (bool) $is_subscribed;
     }
 
     /**
@@ -1323,17 +1558,31 @@ class cmsUser {
      * @return bool
      */
     public static function subscribe($user_id, $target, $target_id, $subscribe = true) {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
 
         if ($subscribe) {
-            if (!$inDB->rows_count('cms_subscribe', "user_id = '" . $user_id . "' AND target = '" . $target . "' AND target_id = '" . $target_id . "'")) {
-                $sql = "INSERT INTO cms_subscribe (user_id, target, target_id, pubdate)
-                        VALUES ('" . $user_id . "', '" . $target . "', '" . $target_id . "', NOW())";
-                $inDB->query($sql);
+            $is_subscribed = $db->filterEqual('user_id', (int) $user_id)
+                    ->filterEqual('target', $target)
+                    ->filterEqual('target_id', (int) $target_id)
+                    ->getCount('subscribe');
+
+            $db->resetFilters();
+
+            if (!$is_subscribed) {
+                $db->insert('subscribe', array(
+                    'user_id' => (int) $user_id,
+                    'target' => $target,
+                    'target_id' => (int) $target_id,
+                    'pubdate' => date('Y-m-d H:i:s')
+                ));
             }
         } else {
-            $sql = "DELETE FROM cms_subscribe WHERE user_id = '" . $user_id . "' AND target = '" . $target . "' AND target_id = '" . $target_id . "'";
-            $inDB->query($sql);
+            $db->filterEqual('user_id', (int) $user_id)
+                    ->filterEqual('target', $target)
+                    ->filterEqual('target_id', (int) $target_id)
+                    ->deleteFiltered('subscribe');
         }
         return true;
     }
@@ -1353,18 +1602,23 @@ class cmsUser {
         global $_LANG;
 
         $inUser = self::getInstance();
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
         //получаем список подписанных пользователей
-        $sql = "SELECT u.id, u.email, p.cm_subscribe as subscribe_type
-                FROM cms_subscribe s
-                INNER JOIN cms_users u ON u.id = s.user_id
-                INNER JOIN cms_user_profiles p ON p.user_id = u.id
-                WHERE s.target = '" . $target . "' AND s.target_id = '" . $target_id . "'";
+        $db->resetFilters();
 
-        $r = $inDB->query($sql);
+        $subscribers = $db->select('u.id')
+                ->select('u.email')
+                ->select('p.cm_subscribe', 'subscribe_type')
+                ->joinInner('users', 'u', 'u.id = i.user_id')
+                ->joinInner('user_profiles', 'p', 'p.user_id = u.id')
+                ->filterEqual('i.target', $target)
+                ->filterEqual('i.target_id', (int) $target_id)
+                ->get('subscribe', false, '');
 
-        if (!$inDB->num_rows($r)) {
+        $db->resetFilters();
+
+        if (!$subscribers) {
             return false;
         }
 
@@ -1374,7 +1628,7 @@ class cmsUser {
             return false;
         }
 
-        while ($user = $inDB->fetch_assoc($r)) {
+        foreach ($subscribers as $user) {
             if ($user['id'] == $inUser->id) {
                 continue;
             }
@@ -1408,14 +1662,22 @@ class cmsUser {
      * @return html
      */
     public static function getGenderLink($user_id, $nickname = '', $gender = '', $login = '', $css_style = '') {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
 
         if (!$gender) {
-            $gender = $inDB->get_field('cms_user_profiles', "user_id = '" . $user_id . "'", 'gender');
+            $gender = $db->filterEqual('user_id', (int) $user_id)
+                    ->getFieldFiltered('user_profiles', 'gender');
+
+            $db->resetFilters();
         }
 
         if (!$nickname || !$login) {
-            $user = $inDB->get_fields('cms_users', "id = '" . $user_id . "'", 'nickname, login');
+            $user = $db->getItemByField('users', 'id', (int) $user_id);
+
+            $db->resetFilters();
+
             $nickname = $user['nickname'];
             $login = $user['login'];
         }
@@ -1490,7 +1752,19 @@ class cmsUser {
      * @return array
      */
     public static function getAllUsers() {
-        return cmsDatabase::getInstance()->get_table('cms_users', 'id > 0 AND is_locked = 0 AND is_deleted = 0');
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
+
+        $users = $db->filterGt('i.id', 0)
+                ->filterEqual('i.is_locked', 0)
+                ->filterEqual('i.is_deleted', 0)
+                ->orderBy('i.id', 'ASC')
+                ->get('users', false, '');
+
+        $db->resetFilters();
+
+        return $users;
     }
 
     /**
@@ -1498,7 +1772,18 @@ class cmsUser {
      * @return int
      */
     public static function getCountAllUsers() {
-        return cmsDatabase::getInstance()->rows_count('cms_users', 'id > 0 AND is_locked=0 AND is_deleted=0');
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
+
+        $count = $db->filterGt('i.id', 0)
+                ->filterEqual('i.is_locked', 0)
+                ->filterEqual('i.is_deleted', 0)
+                ->getCount('users');
+
+        $db->resetFilters();
+
+        return $count;
     }
 
     /**
@@ -1522,17 +1807,25 @@ class cmsUser {
             return self::$cache['get_short_user'][$id];
         }
 
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
+
         if (is_numeric($id)) {
-            $where = "id = '$id'";
+            $db->filterEqual('id', (int) $id);
         } else {
             if (preg_match("/^(?:[a-z0-9\._\-]+)@(?:[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?\.)+(?:[a-z]{2,6})$/ui", $id)) {
-                $where = "email = '" . $id . "'";
+                $db->filterEqual('email', $id);
             } else {
-                $where = "login = '" . $id . "'";
+                $db->filterEqual('login', $id);
             }
         }
 
-        return self::$cache['get_short_user'][$id] = cmsDatabase::getInstance()->get_fields('cms_users', $where, '*', 'id DESC');
+        $user = $db->orderBy('id', 'DESC')->getItem('users');
+
+        $db->resetFilters();
+
+        return self::$cache['get_short_user'][$id] = $user;
     }
 
     /**
@@ -1540,14 +1833,18 @@ class cmsUser {
      * @return array
      */
     public static function getAdminGroups() {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
         $groups = array();
 
-        $result = $inDB->query("SELECT id FROM cms_user_groups WHERE is_admin = 1");
+        $db->resetFilters();
 
-        if ($inDB->num_rows($result)) {
-            while ($group = $inDB->fetch_assoc($result)) {
+        $rs = $db->selectOnly('i.id')->filterEqual('i.is_admin', 1)->get('user_groups', false, '');
+
+        $db->resetFilters();
+
+        if ($rs) {
+            foreach ($rs as $group) {
                 $groups[] = $group['id'];
             }
         }
@@ -1561,7 +1858,15 @@ class cmsUser {
      * @return int
      */
     public static function getGroupIdByUserId($user_id) {
-        return cmsDatabase::getInstance()->get_field('cms_users', "id='" . $user_id . "'", 'group_id');
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
+
+        $group_id = $db->filterEqual('id', (int) $user_id)->getFieldFiltered('users', 'group_id');
+
+        $db->resetFilters();
+
+        return $group_id;
     }
 
     /**
@@ -1570,7 +1875,15 @@ class cmsUser {
      * @return str
      */
     public static function getGroupTitle($group_id) {
-        return cmsDatabase::getInstance()->get_field('cms_user_groups', "id='" . $group_id . "'", 'title');
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
+
+        $title = $db->filterEqual('id', (int) $group_id)->getFieldFiltered('user_groups', 'title');
+
+        $db->resetFilters();
+
+        return $title;
     }
 
     /**
@@ -1579,28 +1892,29 @@ class cmsUser {
      * @return array
      */
     public static function getGroups($no_guests = false) {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
         $groups = array();
 
-        $sql = "SELECT id, title, alias, is_admin, access
-                FROM cms_user_groups\n";
+        $db->resetFilters();
+
+        $db->select('i.id')
+                ->select('i.title')
+                ->select('i.alias')
+                ->select('i.is_admin')
+                ->select('i.access');
 
         if ($no_guests) {
-            $sql .= "WHERE alias <> 'guest'\n";
+            $db->filterNotEqual('i.alias', 'guest');
         }
 
-        $sql .= "ORDER BY is_admin ASC";
+        $db->orderBy('i.is_admin', 'ASC');
 
-        $result = $inDB->query($sql);
+        $rs = $db->get('user_groups', false, '');
 
-        if ($inDB->num_rows($result)) {
-            while ($group = $inDB->fetch_assoc($result)) {
-                $groups[] = $group;
-            }
-        }
+        $db->resetFilters();
 
-        return $groups;
+        return $rs ? $rs : $groups;
     }
 
     /**
@@ -1609,21 +1923,18 @@ class cmsUser {
      * @return array
      */
     public static function getGroupMembers($group_id) {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
-        $users = array();
+        $db->resetFilters();
 
-        $sql = "SELECT id, nickname, login
-                FROM cms_users
-				WHERE group_id='" . $group_id . "' AND is_deleted=0";
+        $users = $db->select('i.id')
+                ->select('i.nickname')
+                ->select('i.login')
+                ->filterEqual('i.group_id', (int) $group_id)
+                ->filterEqual('i.is_deleted', 0)
+                ->get('users');
 
-        $result = $inDB->query($sql);
-
-        if ($inDB->num_rows($result)) {
-            while ($user = $inDB->fetch_assoc($result)) {
-                $users[$user['id']] = $user;
-            }
-        }
+        $db->resetFilters();
 
         return $users;
     }
@@ -1634,7 +1945,9 @@ class cmsUser {
      * @return bool
      */
     public static function deleteGroupAccessType($access_type = '') {
-        return cmsDatabase::getInstance()->query("DELETE FROM cms_user_groups_access WHERE access_type = '" . $access_type . "'");
+        return \cms\db::getInstance()
+                        ->filterEqual('access_type', $access_type)
+                        ->deleteFiltered('user_groups_access');
     }
 
     /**
@@ -1648,10 +1961,11 @@ class cmsUser {
             return false;
         }
 
-        $sql = "INSERT IGNORE INTO cms_user_groups_access (access_type, access_name, hide_for_guest)
-                 VALUES ('" . $access_type . "', '" . $access_name . "', '" . $hide_for_guest . "')";
-
-        return cmsDatabase::getInstance()->query($sql);
+        return \cms\db::getInstance()->insert('user_groups_access', array(
+                    'access_type' => $access_type,
+                    'access_name' => $access_name,
+                    'hide_for_guest' => (int) $hide_for_guest
+                        ), false, 'json', true);
     }
 
     /**
@@ -1673,17 +1987,17 @@ class cmsUser {
             return $default_back_url;
         }
 
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
         $inCore = cmsCore::getInstance();
 
         // Авторизация по логину или e-mail
         if (!preg_match("/^([a-z0-9\._-]+)@([a-z0-9\._-]+)\.([a-z]{2,4})$/ui", $login)) {
-            $where_login = "u.login = '" . $login . "'";
+            $where_login = "i.login = '" . $login . "'";
         } else {
-            $where_login = "u.email = '" . $login . "'";
+            $where_login = "i.email = '" . $login . "'";
         }
 
-        $where_pass = $pass_in_md5 ? "u.password = '" . $passw . "'" : "u.password = md5('" . $passw . "')";
+        $where_pass = $pass_in_md5 ? "i.password = '" . $passw . "'" : "i.password = md5('" . $passw . "')";
 
         // Проверяем локальную пару логин + пароль
         $user = $this->loadUser(0, $where_login . " AND " . $where_pass);
@@ -1712,10 +2026,15 @@ class cmsUser {
         // обновляем дату последнего визита, ip
         self::setUserLogdate($user['id']);
 
-        $inDB->query("UPDATE cms_users SET last_ip = '" . $this->ip . "', is_logged_once = 1 WHERE id = '" . $user['id'] . "'");
+        $db->update('users', (int) $user['id'], array(
+            'last_ip' => $this->ip,
+            'is_logged_once' => 1
+        ));
 
         // помечаем, что пользователь онлайн
-        $inDB->query("UPDATE cms_online SET user_id = '" . $user['id'] . "' WHERE sess_id = '" . session_id() . "'");
+        $db->filterEqual('sess_id', session_id())->updateFiltered('online', array(
+            'user_id' => (int) $user['id']
+        ));
 
         //////////////  юзер уже авторизован //////////////////////////
         // Формируем url редиректа после авторизации
@@ -1766,7 +2085,7 @@ class cmsUser {
      * @return bool
      */
     public function logout() {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
         cmsCore::unsetCookie('userid');
 
@@ -1776,8 +2095,8 @@ class cmsUser {
 
         self::setUserLogdate($this->id);
 
-        $inDB->query("DELETE FROM cms_online WHERE user_id = '" . $this->id . "'");
-        $inDB->query("DELETE FROM cms_search WHERE session_id = '" . $sess_id . "'");
+        $db->filterEqual('user_id', (int) $this->id)->deleteFiltered('online');
+        $db->filterEqual('session_id', $sess_id)->deleteFiltered('search');
 
         session_destroy();
     }
@@ -1801,7 +2120,15 @@ class cmsUser {
                 return self::$cache['is_admin'][$user_id];
             }
 
-            $is_admin = cmsDatabase::getInstance()->get_field('cms_users u LEFT JOIN cms_user_groups g ON g.id = u.group_id', "u.id = '" . $user_id . "'", 'is_admin');
+            $db = \cms\db::getInstance();
+
+            $db->resetFilters();
+
+            $is_admin = $db->joinInner('user_groups', 'g', 'g.id = i.group_id')
+                    ->filterEqual('i.id', (int) $user_id)
+                    ->getFieldFiltered('users', 'g.is_admin');
+
+            $db->resetFilters();
 
             return self::$cache['is_admin'][$user_id] = $is_admin;
         }
@@ -1831,7 +2158,15 @@ class cmsUser {
             return false;
         }
 
-        $cat = cmsDatabase::getInstance()->get_table('cms_category', "modgrp_id = '" . $group_id . "'", 'id');
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
+
+        $cat = $db->selectOnly('i.id')
+                ->filterEqual('i.modgrp_id', (int) $group_id)
+                ->get('category', false, '');
+
+        $db->resetFilters();
 
         return $cat ? $cat : false;
     }
@@ -1847,7 +2182,9 @@ class cmsUser {
             return $inUser->access;
         }
 
-        $access = cmsDatabase::getInstance()->get_field('cms_user_groups', "id = '" . $inUser->group_id . "'", 'access');
+        $db = \cms\db::getInstance();
+
+        $access = $db->getField("user_groups", $inUser->group_id, 'access');
 
         if ($access) {
             $access = str_replace(', ', ',', $access);

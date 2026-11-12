@@ -13,7 +13,7 @@
 function photos() {
     $inCore = cmsCore::getInstance();
     $inPage = cmsPage::getInstance();
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
     $inUser = cmsUser::getInstance();
 
     $inPhoto = cmsPhoto::getInstance();
@@ -24,7 +24,7 @@ function photos() {
 
     $pagetitle = $inCore->menuTitle();
 
-    $root_album_id = $inDB->getNsRootCatId('cms_photo_albums');
+    $root_album_id = $inDB->getNsRootCatId('photo_albums');
 
     $id = cmsCore::request('id', 'int', $root_album_id);
     $do = $inCore->do;
@@ -44,7 +44,7 @@ function photos() {
 //=========================== Просмотр альбома ===============================//
 
     if ($do == 'view') {
-        $album = $inDB->getNsCategory('cms_photo_albums', $id, null);
+        $album = $inDB->getNsCategory('photo_albums', $id, null);
 
         if (!$album && $inCore->menuId() !== 1) {
             cmsCore::error404();
@@ -59,7 +59,7 @@ function photos() {
 
         // если не корневой альбом
         if ($album['id'] != $root_album_id) {
-            $path_list = $inDB->getNsCategoryPath('cms_photo_albums', $album['NSLeft'], $album['NSRight'], 'id, title, NSLevel');
+            $path_list = $inDB->getNsCategoryPath('photo_albums', $album['NSLeft'], $album['NSRight'], 'id, title, NSLevel');
 
             if ($path_list) {
                 foreach ($path_list as $pcat) {
@@ -76,7 +76,7 @@ function photos() {
         }
 
         //Формируем подкатегории альбома
-        $inDB->orderBy('ANY_VALUE(f.' . $model->config['orderby'] . ')', $model->config['orderto']);
+        $inDB->orderBy('MAX(f.' . $model->config['orderby'] . ')', $model->config['orderto']);
         $subcats = $inPhoto->getAlbums($album['id']);
 
         // Сортировка фотографий
@@ -96,7 +96,7 @@ function photos() {
         $total = $inPhoto->getPhotosCount($inUser->is_admin);
 
         //устанавливаем сортировку
-        $inDB->orderBy('f.' . $orderby, $orderto);
+        $inDB->orderBy('i.' . $orderby, $orderto);
 
         //устанавливаем номер текущей страницы и кол-во фото на странице
         $inDB->limitPage($page, $album['perpage']);
@@ -174,7 +174,7 @@ function photos() {
             cmsCore::error404();
         }
 
-        $path_list = $inDB->getNsCategoryPath('cms_photo_albums', $photo['NSLeft'], $photo['NSRight'], 'id, title, NSLevel');
+        $path_list = $inDB->getNsCategoryPath('photo_albums', $photo['NSLeft'], $photo['NSRight'], 'id, title, NSLevel');
 
         if ($path_list) {
             foreach ($path_list as $pcat) {
@@ -198,13 +198,13 @@ function photos() {
 
         // Обновляем количество просмотров фотографии
         if (!$is_author) {
-            $inDB->setFlag('cms_photo_files', $photo['id'], 'hits', $photo['hits'] + 1);
+            $inDB->setFlag('photo_files', $photo['id'], 'hits', $photo['hits'] + 1);
         }
 
         //навигация
         if ($photo['album_nav']) {
-            $nextid = $inDB->get_fields('cms_photo_files', 'id<' . $photo['id'] . ' AND album_id = ' . $photo['album_id'] . ' AND published=1', 'id, file', 'id DESC');
-            $previd = $inDB->get_fields('cms_photo_files', 'id>' . $photo['id'] . ' AND album_id = ' . $photo['album_id'] . ' AND published=1', 'id, file', 'id ASC');
+            $nextid = $inDB->getRow('photo_files', 'id < ' . (int) $photo['id'] . ' AND album_id = ' . (int) $photo['album_id'] . ' AND published = 1', 'id, file', 'id DESC');
+            $previd = $inDB->getRow('photo_files', 'id > ' . (int) $photo['id'] . ' AND album_id = ' . (int) $photo['album_id'] . ' AND published = 1', 'id, file', 'id ASC');
         } else {
             $previd = false;
             $nextid = false;
@@ -243,7 +243,7 @@ function photos() {
         $do_photo = cmsCore::request('do_photo', 'str', 'addphoto');
 
         // получаем альбом
-        $album = $inDB->getNsCategory('cms_photo_albums', $id);
+        $album = $inDB->getNsCategory('photo_albums', $id);
 
         if (!$album) {
             cmsCore::error404();
@@ -269,7 +269,7 @@ function photos() {
         }
 
         // глубиномер
-        $path_list = $inDB->getNsCategoryPath('cms_photo_albums', $album['NSLeft'], $album['NSRight'], 'id, title, NSLevel');
+        $path_list = $inDB->getNsCategoryPath('photo_albums', $album['NSLeft'], $album['NSRight'], 'id, title, NSLevel');
         if ($path_list) {
             foreach ($path_list as $pcat) {
                 $inPage->addPathway($pcat['title'], '/photos/' . $pcat['id']);
@@ -319,7 +319,7 @@ function photos() {
                 $mod['meta_desc'] = cmsCore::request('meta_desc', 'str', '');
             }
 
-            $file = $model->initUploadClass($inDB->getNsCategory('cms_photo_albums', $photo['album_id']))->uploadPhoto($photo['file']);
+            $file = $model->initUploadClass($inDB->getNsCategory('photo_albums', $photo['album_id']))->uploadPhoto($photo['file']);
             $mod['file'] = $file['filename'] ? $file['filename'] : $photo['file'];
 
             $inPhoto->updatePhoto($mod, $photo['id']);
@@ -378,7 +378,7 @@ function photos() {
 
             cmsCore::jsonOutput(array('error' => false, 'html' => ob_get_clean()));
         } else {
-            $album = \cms\events::call('photos.get_album', $inDB->getNsCategory('cms_photo_albums', cmsCore::request('album_id', 'int')));
+            $album = \cms\events::call('photos.get_album', $inDB->getNsCategory('photo_albums', cmsCore::request('album_id', 'int')));
 
             if (!$album) {
                 cmsCore::halt();
@@ -396,7 +396,7 @@ function photos() {
                 cmsCore::jsonOutput(array('error' => true, 'text' => '<strong>' . $_LANG['MAX_UPLOAD_IN_DAY'] . '</strong> ' . $_LANG['CAN_UPLOAD_TOMORROW']));
             }
 
-            $inDB->query("UPDATE cms_photo_files SET album_id = '{$album['id']}' WHERE id = '{$photo['id']}'");
+            $inDB->update('photo_files', (int) $photo['id'], array( 'album_id' => $album['id'] ));
 
             cmsActions::updateLog('add_photo', array('target' => $album['title'], 'target_url' => '/photos/' . $album['id'], 'target_id' => $album['id']), $photo['id']);
 
@@ -437,7 +437,7 @@ function photos() {
             cmsCore::halt();
         }
 
-        $inPhoto->deletePhoto($photo, $model->initUploadClass($inDB->getNsCategory('cms_photo_albums', $photo['album_id'])));
+        $inPhoto->deletePhoto($photo, $model->initUploadClass($inDB->getNsCategory('photo_albums', $photo['album_id'])));
 
         cmsCore::addSessionMessage($_LANG['PHOTO_DELETED'], 'success');
 
@@ -491,18 +491,18 @@ function photos() {
 
     if (in_array($do, array('latest', 'best'))) {
         if ($do == 'latest') {
-            $inDB->orderBy('f.pubdate', 'DESC');
+            $inDB->orderBy('i.pubdate', 'DESC');
             $pagetitle = ($pagetitle && $inCore->isMenuIdStrict()) ? $pagetitle : $_LANG['NEW_PHOTO_IN_GALLERY'];
         } else {
-            $inDB->orderBy('f.rating', 'DESC');
+            $inDB->orderBy('i.rating', 'DESC');
             $pagetitle = ($pagetitle && $inCore->isMenuIdStrict()) ? $pagetitle : $_LANG['BEST_PHOTOS'];
         }
 
         $inDB->limit($model->config['best_latest_perpage']);
 
         // выбираем категории фото
-        $inDB->addJoin("INNER JOIN cms_photo_albums a ON a.id = f.album_id AND a.published = 1 AND a.NSDiffer = ''");
-        $inDB->addSelect('a.title as cat_title');
+        $inDB->joinInner('photo_albums', 'a', "a.id = i.album_id AND a.published = 1 AND a.NSDiffer = ''");
+        $inDB->select('a.title', 'cat_title');
 
         $photos = $inPhoto->getPhotos(false, 'with_comments');
 

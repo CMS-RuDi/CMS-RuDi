@@ -46,8 +46,8 @@ class p_related_posts extends cmsPlugin {
             return $item;
         }
 
-        $current_post_id = $item['id'];
-        $current_blog_id = $item['blog_id'];
+        $current_post_id = (int) $item['id'];
+        $current_blog_id = (int) $item['blog_id'];
         $current_title = $item['title'];
         $search_mode = (int) $this->config['search_mode'];
         $tags_mode = (int) $this->config['tags_mode'];
@@ -57,7 +57,7 @@ class p_related_posts extends cmsPlugin {
         $blank_photo = strip_tags($this->config['blank_photo']);
         $cash_time = (int) $this->config['cash_time'];
         $found_posts = array();
-        $exception = '';
+        $exception_ids = array();
 
         // защита от дурака
         if ($need_found < 1 || $truncate < 20) {
@@ -78,56 +78,57 @@ class p_related_posts extends cmsPlugin {
         }
 
         // Исключаем текущий, предыдущий и следующий пост
-        $sql = "(
-                SELECT id
-                FROM cms_blog_posts
-                WHERE id < $current_post_id
-                AND blog_id = $current_blog_id
-                ORDER BY id DESC LIMIT 1
-                ) UNION (
-                SELECT id
-                FROM cms_blog_posts
-                WHERE id > $current_post_id
-                AND blog_id = $current_blog_id
-                ORDER BY id ASC LIMIT 1
-                )";
+        $prev = \cms\db::cloneOf($this->inDB)->selectOnly('id')
+                ->filterLt('id', $current_post_id)
+                ->filterEqual('blog_id', $current_blog_id)
+                ->orderBy('id', 'DESC')
+                ->limit(0, 1)
+                ->getItem('blog_posts');
 
-        if ($res = $this->inDB->query($sql)) {
-            while ($r = $this->inDB->fetch_row($res)) {
-                $exception .= $r[0] . ", ";
-            }
+        $next = \cms\db::cloneOf($this->inDB)->selectOnly('id')
+                ->filterGt('id', $current_post_id)
+                ->filterEqual('blog_id', $current_blog_id)
+                ->orderBy('id', 'ASC')
+                ->limit(0, 1)
+                ->getItem('blog_posts');
+
+        if ($prev) {
+            $exception_ids[] = (int) $prev['id'];
+        }
+
+        if ($next) {
+            $exception_ids[] = (int) $next['id'];
         }
 
         // Первый набор исключений готов
-        $exception .= $current_post_id;
+        $exception_ids[] = $current_post_id;
 
         if (in_array($search_mode, array(1, 2))) {// Если разрешен поиск по титлу или контенту
-            $target = $search_mode == 1 ? 'p.title' : 'p.content_html';
+            $target = $search_mode == 1 ? 'i.title' : 'i.content_html';
 
-            // Сразу по обоим полям с существующими на сегодняшний день индексами сделать нельзя
-            $sql = "SELECT p.id,
-                           p.title,
-                           p.seolink AS post_link,
-                           p.content_html AS content,
-                           ANY_VALUE(b.seolink) AS blog_link,
-                           ANY_VALUE(img.fileurl),
-                           MATCH($target) AGAINST('$current_title') AS rel
-                    FROM cms_blog_posts p
-                    JOIN cms_blogs b ON b.id = p.blog_id
-                    LEFT JOIN cms_upload_images img ON img.target_id = p.id AND img.target = 'blog_post' AND img.component = 'blogs'
-                    WHERE MATCH($target) AGAINST('$current_title' IN BOOLEAN MODE)
-                    AND p.allow_who = 'all'
-                    AND b.allow_who = 'all'
-                    AND b.owner = 'user'
-                    AND p.id NOT IN($exception)
-                    GROUP BY p.id
-                    ORDER BY rel DESC
-                    LIMIT $need_found";
+            $escaped_title = $this->inDB->escape($current_title);
 
-            if ($res = $this->inDB->query($sql)) {
-                while ($r = $this->inDB->fetch_assoc($res)) {
-                    $found_posts[] = $r;
-                }
+            $db = clone $this->inDB;
+            $db->select('i.id');
+            $db->select('i.title');
+            $db->select('i.seolink', 'post_link');
+            $db->select('i.content_html', 'content');
+            $db->select('MIN(b.seolink)', 'blog_link');
+            $db->select('MIN(img.fileurl)');
+            $db->select('MATCH(' . $target . ") AGAINST('" . $escaped_title . "')", 'rel');
+            $db->joinInner('blogs', 'b', 'b.id = i.blog_id');
+            $db->joinLeft('upload_images', 'img', "img.target_id = i.id AND img.target = 'blog_post' AND img.component = 'blogs'");
+            $db->filter("MATCH(" . $target . ") AGAINST('" . $escaped_title . "' IN BOOLEAN MODE)");
+            $db->filterEqual('i.allow_who', 'all');
+            $db->filterEqual('b.allow_who', 'all');
+            $db->filterEqual('b.owner', 'user');
+            $db->filterNotIn('i.id', $exception_ids);
+            $db->groupBy('i.id');
+            $db->orderBy('rel', 'DESC');
+            $db->limit(0, $need_found);
+
+            foreach ($db->get('blog_posts', false, false) as $r) {
+                $found_posts[] = $r;
             }
         }
 
@@ -136,61 +137,57 @@ class p_related_posts extends cmsPlugin {
         if ($found < $need_found && $tags_mode) {// Если недобор и разрешен поиск по тегам
             $left_find = $need_found - $found;
 
-            $except = '';
+            $exception2_ids = $exception_ids;
+
             foreach ($found_posts as $post) {// Обновляю список найденных постов
-                $except .= $post['id'] . ", ";
+                $exception2_ids[] = (int) $post['id'];
             }
 
-            // Второй набор исключений готов
-            $exception2 = $except . $exception;
-
             // Вытягиваю идентификаторы постов имеющих такие же теги как и у текущего поста.
-            // Остаток оставляю в чистом виде в надежде что в последующей выборке все посты с этими идентификаторами попадут в выборку.
-            // В ином случае недобор покроется за счет соседей
-            $sql = "SELECT item_id,
-                           COUNT(item_id) AS match_common_tags
-                    FROM cms_tags
-                    WHERE item_id NOT IN($exception2)
-                    AND target = 'blogpost'
-                    AND tag IN(SELECT tag
-                               FROM cms_tags
-                               WHERE target = 'blogpost'
-                               AND item_id = $current_post_id)
-                    GROUP BY item_id
-                    ORDER BY match_common_tags DESC
-                    LIMIT $left_find";
+            $current_tags = $this->inDB->getRows('tags', "target = 'blogpost' AND item_id = " . $current_post_id, 'tag');
+            $tag_list = array();
 
-            $res = $this->inDB->query($sql);
+            foreach ($current_tags as $current_tag) {
+                $tag_list[] = $current_tag['tag'];
+            }
 
-            // Определять факт успеха операции в этом месте недостаточно, тут нужно гарантировать возврат числа
-            if ($this->inDB->num_rows($res)) {
-                $target_id = '';
+            if ($tag_list) {
+                $db = clone $this->inDB;
+                $db->select('item_id');
+                $db->select('COUNT(item_id)', 'match_common_tags');
+                $db->filterNotIn('item_id', $exception2_ids);
+                $db->filterEqual('target', 'blogpost');
+                $db->filterIn('tag', $tag_list);
+                $db->groupBy('item_id');
+                $db->orderBy('match_common_tags', 'DESC');
+                $db->limit(0, $left_find);
 
-                while ($r = $this->inDB->fetch_row($res)) {
-                    $target_id .= ($r[0]) . ", "; // Заполняю найдеными идентификаторами переменную
+                $target_ids = array();
+
+                foreach ($db->get('tags', false, false) as $r) {
+                    $target_ids[] = (int) $r['item_id'];
                 }
 
-                $target_id = rtrim($target_id, ', ');
+                // Определять факт успеха операции в этом месте недостаточно, тут нужно гарантировать возврат числа
+                if ($target_ids) {
+                    // Вытягиваю посты
+                    $db = clone $this->inDB;
+                    $db->select('i.id');
+                    $db->select('i.title');
+                    $db->select('i.seolink', 'post_link');
+                    $db->select('i.content_html', 'content');
+                    $db->select('b.seolink', 'blog_link');
+                    $db->select('img.fileurl');
+                    $db->joinInner('blogs', 'b', 'b.id = i.blog_id');
+                    $db->joinLeft('upload_images', 'img', "img.target_id = i.id AND img.target = 'blog_post' AND img.component = 'blogs'");
+                    $db->filterEqual('i.allow_who', 'all');
+                    $db->filterEqual('b.allow_who', 'all');
+                    $db->filterEqual('b.owner', 'user');
+                    $db->filterIn('i.id', $target_ids);
+                    $db->groupBy('i.id');
+                    $db->limit(0, $left_find);
 
-                // Вытягиваю посты
-                $sql = "SELECT p.id,
-                               p.title,
-                               p.seolink AS post_link,
-                               p.content_html AS content,
-                               b.seolink AS blog_link,
-                               img.fileurl
-                        FROM cms_blog_posts p
-                        JOIN cms_blogs b ON b.id = p.blog_id
-                        LEFT JOIN cms_upload_images img ON img.target_id = p.id AND img.target = 'blog_post' AND img.component = 'blogs'
-                        WHERE p.allow_who = 'all'
-                        AND b.allow_who = 'all'
-                        AND b.owner = 'user'
-                        AND p.id IN($target_id)
-                        GROUP BY p.id
-                        LIMIT $left_find";
-
-                if ($res = $this->inDB->query($sql)) {
-                    while ($r = $this->inDB->fetch_assoc($res)) {
+                    foreach ($db->get('blog_posts', false, false) as $r) {
                         $found_posts[] = $r;
                     }
                 }
@@ -202,44 +199,59 @@ class p_related_posts extends cmsPlugin {
         if ($found < $need_found && $add_mode == 1) { // Если опять недобор и разрешено дополнять сеседями
             $left_find = $need_found - $found;
 
-            $except = '';
-            foreach ($found_posts as $post) { // Обновляю список найденных постов
-                $except .= $post['id'] . ", ";
-            }
+            $exception3_ids = $exception_ids;
 
-            // Третий набор исключений готов
-            $exception3 = $except . $exception;
+            foreach ($found_posts as $post) { // Обновляю список найденных постов
+                $exception3_ids[] = (int) $post['id'];
+            }
 
             // Смотрю как там оно распределено и сколько вообще осталось контента удовлетворяющего моим требованиям
-            $sql = "(
-                     SELECT COUNT(p.id)
-                     FROM cms_blog_posts p
-                     JOIN cms_blogs b ON b.id = p.blog_id
-                     WHERE p.allow_who = 'all'
-                     AND b.allow_who = 'all'
-                     AND b.owner = 'user'
-                     AND p.id < $current_post_id
-                     AND p.id NOT IN($exception3)
-                     ) UNION (
-                     SELECT COUNT(p.id)
-                     FROM cms_blog_posts p
-                     JOIN cms_blogs b ON b.id = p.blog_id
-                     WHERE p.allow_who = 'all'
-                     AND b.allow_who = 'all'
-                     AND b.owner = 'user'
-                     AND p.id > $current_post_id
-                     AND p.id NOT IN($exception3)
-                    )";
+            $base_query = function ($direction, $limit) use ($current_post_id, $exception3_ids) {
+                $db = clone $this->inDB;
+                $db->select('i.id');
+                $db->select('i.title');
+                $db->select('i.seolink', 'post_link');
+                $db->select('i.content_html', 'content');
+                $db->select('b.seolink', 'blog_link');
+                $db->select('img.fileurl');
+                $db->joinInner('blogs', 'b', 'b.id = i.blog_id');
+                $db->joinLeft('upload_images', 'img', "img.target_id = i.id AND img.target = 'blog_post' AND img.component = 'blogs'");
+                $db->filterEqual('i.allow_who', 'all');
+                $db->filterEqual('b.allow_who', 'all');
+                $db->filterEqual('b.owner', 'user');
+                $db->filterNotIn('i.id', $exception3_ids);
 
-            if ($res = $this->inDB->query($sql)) {
-                $have_left = $this->inDB->fetch_row($res);
-                $have_left = $have_left[0];
-                $have_right = $this->inDB->fetch_row($res);
-                $have_right = $have_right[0];
-            } else {
-                $have_left = 0;
-                $have_right = 0;
-            }
+                if ($direction == 'left') {
+                    $db->filterLt('i.id', $current_post_id)->orderBy('i.id', 'DESC');
+                } else {
+                    $db->filterGt('i.id', $current_post_id)->orderBy('i.id', 'ASC');
+                }
+
+                $db->groupBy('i.id');
+                $db->limit(0, (int) $limit);
+
+                return $db->get('blog_posts', false, false);
+            };
+
+            $count_query = function ($direction) use ($current_post_id, $exception3_ids) {
+                $db = clone $this->inDB;
+                $db->joinInner('blogs', 'b', 'b.id = i.blog_id');
+                $db->filterEqual('i.allow_who', 'all');
+                $db->filterEqual('b.allow_who', 'all');
+                $db->filterEqual('b.owner', 'user');
+                $db->filterNotIn('i.id', $exception3_ids);
+
+                if ($direction == 'left') {
+                    $db->filterLt('i.id', $current_post_id);
+                } else {
+                    $db->filterGt('i.id', $current_post_id);
+                }
+
+                return $db->getCount('blog_posts');
+            };
+
+            $have_left = $count_query('left');
+            $have_right = $count_query('right');
 
             // Все дальнейшие действия актуальны только если в базе остался подходящий под все условия контент
             if ($have_left + $have_right > 0) {
@@ -257,64 +269,15 @@ class p_related_posts extends cmsPlugin {
                 }
 
                 if ($need_from_left == 0) {// Если слева оказался ноль
-                    $sql = "SELECT p.id,
-                                   p.title,
-                                   p.seolink AS post_link,
-                                   p.content_html AS content,
-                                   b.seolink AS blog_link, img.fileurl
-                            FROM cms_blog_posts p
-                            JOIN cms_blogs b ON b.id = p.blog_id
-                            LEFT JOIN cms_upload_images img ON img.target_id = p.id AND img.target = 'blog_post' AND img.component = 'blogs'
-                            WHERE p.allow_who = 'all'
-                            AND b.allow_who = 'all'
-                            AND b.owner = 'user'
-                            AND p.id NOT IN($exception3)
-                            AND p.id > $current_post_id
-                            GROUP BY p.id
-                            ORDER BY p.id ASC
-                            LIMIT $left_find";
+                    foreach ($base_query('right', $left_find) as $post) {
+                        $found_posts[] = $post;
+                    }
                 } else {
-                    $sql = "(
-                             SELECT p.id,
-                                    p.title,
-                                    p.seolink AS post_link,
-                                    p.content_html AS content,
-                                    b.seolink AS blog_link, img.fileurl
-                             FROM cms_blog_posts p
-                             JOIN cms_blogs b ON b.id = p.blog_id
-                             LEFT JOIN cms_upload_images img ON img.target_id = p.id AND img.target = 'blog_post' AND img.component = 'blogs'
-                             WHERE p.allow_who = 'all'
-                             AND b.allow_who = 'all'
-                             AND b.owner = 'user'
-                             AND p.id NOT IN($exception3)
-                             AND p.id < $current_post_id
-                             GROUP BY p.id
-                             ORDER BY p.id DESC
-                             LIMIT $need_from_left
-                             ) UNION (
-                             SELECT p.id,
-                                    p.title,
-                                    p.seolink AS post_link,
-                                    p.content_html AS content,
-                                    b.seolink AS blog_link, img.fileurl
-                             FROM cms_blog_posts p
-                             JOIN cms_blogs b ON b.id = p.blog_id
-                             LEFT JOIN cms_upload_images img ON img.target_id = p.id AND img.target = 'blog_post' AND img.component = 'blogs'
-                             WHERE p.allow_who = 'all'
-                             AND b.allow_who = 'all'
-                             AND b.owner = 'user'
-                             AND p.id NOT IN($exception3)
-                             AND p.id > $current_post_id
-                             GROUP BY p.id
-                             ORDER BY p.id ASC
-                             LIMIT $need_from_right
-                            )
+                    foreach ($base_query('left', $need_from_left) as $post) {
+                        $found_posts[] = $post;
+                    }
 
-                            LIMIT $left_find";
-                }
-
-                if ($res = $this->inDB->query($sql)) {
-                    while ($post = $this->inDB->fetch_assoc($res)) {
+                    foreach ($base_query('right', $need_from_right) as $post) {
                         $found_posts[] = $post;
                     }
                 }

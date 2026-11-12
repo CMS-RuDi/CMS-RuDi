@@ -12,7 +12,7 @@
 
 function mod_user_rating($mod, $cfg)
 {
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
 
     $model = new cms_model_users();
 

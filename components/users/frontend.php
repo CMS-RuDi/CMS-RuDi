@@ -16,7 +16,7 @@ function users()
 
     $inCore = cmsCore::getInstance();
     $inPage = cmsPage::getInstance();
-    $inDB   = cmsDatabase::getInstance();
+    $inDB   = \cms\db::getInstance();
     $inUser = cmsUser::getInstance();
 
     global $_LANG;
@@ -86,6 +86,8 @@ function users()
         }
 
 //======================== Условия выборки ===========================//
+        $inDB->resetFilters();
+
 // группа
         if ( $group_id ) {
             $model->whereUserGroupIs($group_id);
@@ -294,7 +296,11 @@ function users()
             }
 
             if ( $usr['email'] != $users['email'] ) {
-                $is_set_email = $inDB->get_field('cms_users', "email='{$users['email']}'", 'id');
+                $inDB->resetFilters();
+
+                $is_set_email = $inDB->filterEqual('i.email', $users['email'])->getCount('users');
+
+                $inDB->resetFilters();
 
                 if ( $is_set_email ) {
                     cmsCore::addSessionMessage($_LANG['ADRESS_EMAIL_IS_BUSY'], 'error');
@@ -303,7 +309,7 @@ function users()
                 else {
 // формируем токен
                     $token          = md5($usr['email'] . uniqid() . microtime());
-                    $inDB->insert('cms_users_activate', array( 'user_id' => $inUser->id, 'pubdate' => date("Y-m-d H:i:s"), 'code' => $token ));
+                    $inDB->insert('users_activate', array( 'user_id' => $inUser->id, 'pubdate' => date("Y-m-d H:i:s"), 'code' => $token ));
                     $codelink       = HOST . '/users/change_email/' . $token . '/' . $users['email'];
 // по старому адресу высылаем письмо с подтверждением
                     $letter         = cmsCore::getLanguageTextFile('change_email');
@@ -321,8 +327,8 @@ function users()
             $profiles['showbirth']      = cmsCore::request('showbirth', 'int');
             $profiles['description']    = cmsCore::request('description', 'str', '');
             $users['birthdate']         = (int) $_REQUEST['birthdate']['year'] . '-' . (int) $_REQUEST['birthdate']['month'] . '-' . (int) $_REQUEST['birthdate']['day'];
-            $profiles['signature']      = $inDB->escape_string(cmsCore::badTagClear(cmsCore::request('signature', 'html', '')));
-            $profiles['signature_html'] = $inDB->escape_string(cmsCore::parseSmiles(cmsCore::request('signature', 'html', ''), true));
+            $profiles['signature']      = cmsCore::badTagClear(cmsCore::request('signature', 'html', ''));
+            $profiles['signature_html'] = cmsCore::parseSmiles(cmsCore::request('signature', 'html', ''), true);
             $profiles['allow_who']      = cmsCore::request('allow_who', 'str');
 
             if ( !preg_match('/^([a-zA-Z]+)$/ui', $profiles['allow_who']) ) {
@@ -346,7 +352,7 @@ function users()
                 if ( is_array($model->config['privforms']) ) {
                     foreach ( $model->config['privforms'] as $form_id ) {
                         $form_input            = cmsForm::getFieldsInputValues($form_id);
-                        $profiles['formsdata'] .= $inDB->escape_string(cmsCore::arrayToYaml($form_input['values']));
+                        $profiles['formsdata'] .= cmsCore::arrayToYaml($form_input['values']);
 
 // Проверяем значения формы
                         foreach ( $form_input['errors'] as $field_error ) {
@@ -363,8 +369,17 @@ function users()
                 cmsCore::redirectBack();
             }
 
-            $inDB->update('cms_user_profiles', \cms\events::call('users.update_profile', array_merge(array( 'id' => $usr['pid'], 'user_id' => $usr['id'] ), $profiles)), $usr['pid']);
-            $inDB->update('cms_users', \cms\events::call('users.update_data', array_merge(array( 'id' => $usr['id'] ), $users)), $usr['id']);
+            $profile_data = \cms\events::call('users.update_profile', array_merge(array( 'id' => $usr['pid'], 'user_id' => $usr['id'] ), $profiles));
+
+            $inDB->resetFilters();
+
+            $inDB->update('user_profiles', (int) $usr['pid'], $profile_data);
+
+            $user_data = \cms\events::call('users.update_data', array_merge(array( 'id' => $usr['id'] ), $users));
+
+            $inDB->resetFilters();
+
+            $inDB->update('users', (int) $usr['id'], $user_data);
 
             cmsCore::addSessionMessage($_LANG['PROFILE_SAVED'], 'info');
             cmsCore::redirect(cmsUser::getProfileURL($usr['login']));
@@ -398,8 +413,11 @@ function users()
 
             \cms\events::call('users.update_password', array( 'user_id' => $usr['id'], 'oldpass' => $oldpass, 'newpass' => $newpass ));
 
-            $sql = "UPDATE cms_users SET password='" . md5($newpass) . "' WHERE id = '$id' AND password='" . md5($oldpass) . "'";
-            $inDB->query($sql);
+            $inDB->resetFilters();
+
+            $inDB->filterEqual('i.id', $id)->
+                    filterEqual('i.password', md5($oldpass))->
+                    updateFiltered('users', array( 'password' => md5($newpass) ));
             cmsCore::addSessionMessage($_LANG['PASS_CHANGED'], 'info');
             cmsCore::redirect(cmsUser::getProfileURL($inUser->login));
         }
@@ -439,10 +457,18 @@ function users()
         }
 // Профиль удален
         if ( $usr['is_deleted'] ) {
+            $inDB->resetFilters();
+
+            $others_active = $inDB->filterEqual('i.login', $usr['login'])->
+                    filterEqual('i.is_deleted', 0)->
+                    getCount('users');
+
+            $inDB->resetFilters();
+
             cmsPage::initTemplate('components', 'com_users_deleted.tpl')->
                     assign('usr', $usr)->
                     assign('is_admin', $inUser->is_admin)->
-                    assign('others_active', $inDB->rows_count('cms_users', "login='" . $usr['login'] . "' AND is_deleted=0", 1))->
+                    assign('others_active', $others_active)->
                     display('com_users_deleted.tpl');
             return;
         }
@@ -484,32 +510,67 @@ function users()
         }
 
         if ( \cms\controller::enabled('board') && $model->config['sw_board'] ) {
-            $usr['board_count'] = $inDB->rows_count('cms_board_items', "user_id = '" . $usr['id'] . "' AND published=1");
+            $inDB->resetFilters();
+
+            $usr['board_count'] = $inDB->filterEqual('i.user_id', $usr['id'])->
+                    filterEqual('i.published', 1)->
+                    getCount('board_items');
+
+            $inDB->resetFilters();
         }
         else {
             $usr['board_count'] = 0;
         }
 
-        $usr['comments_count'] = $model->config['sw_comm'] ?
-                $inDB->rows_count('cms_comments', "user_id='" . $usr['id'] . "' AND published=1") : 0;
+        $usr['comments_count'] = 0;
+
+        if ( $model->config['sw_comm'] ) {
+            $inDB->resetFilters();
+
+            $usr['comments_count'] = $inDB->filterEqual('i.user_id', $usr['id'])->
+                    filterEqual('i.published', 1)->
+                    getCount('comments');
+
+            $inDB->resetFilters();
+        }
 
         if ( \cms\controller::enabled('forum') && $model->config['sw_forum'] ) {
-            $usr['forum_count'] = $inDB->rows_count('cms_forum_posts', "user_id = '" . $usr['id'] . "'");
+            $inDB->resetFilters();
+
+            $usr['forum_count'] = $inDB->filterEqual('i.user_id', $usr['id'])->getCount('forum_posts');
+
+            $inDB->resetFilters();
         }
         else {
             $usr['forum_count'] = 0;
         }
 
-        $usr['files_count'] = $model->config['sw_files'] ?
-                $inDB->rows_count('cms_user_files', "user_id = '" . $usr['id'] . "'") : 0;
+        $usr['files_count'] = 0;
+
+        if ( $model->config['sw_files'] ) {
+            $inDB->resetFilters();
+
+            $usr['files_count'] = $inDB->filterEqual('i.user_id', $usr['id'])->getCount('user_files');
+
+            $inDB->resetFilters();
+        }
 
         $cfg_reg = $inCore->loadComponentConfig('registration');
 
         $usr['invites_count'] = ($inUser->id && $myprofile && $cfg_reg['reg_type'] == 'invite') ?
                 $model->getUserInvitesCount($inUser->id) : 0;
 
-        $usr['blog'] = $model->config['sw_blogs'] ?
-                $inDB->get_fields('cms_blogs', "user_id = '" . $usr['id'] . "' AND owner = 'user'", 'title, seolink') : false;
+        $usr['blog'] = false;
+
+        if ( $model->config['sw_blogs'] ) {
+            $inDB->resetFilters();
+
+            $usr['blog'] = $inDB->filterEqual('i.user_id', $usr['id'])->
+                    filterEqual('i.owner', 'user')->
+                    getItem('blogs');
+
+            $inDB->resetFilters();
+        }
 
         $usr['form_fields'] = array();
 
@@ -701,7 +762,11 @@ function users()
             cmsCore::halt();
         }
 
-        $msg = $inDB->get_fields('cms_user_msg', "id='" . $id . "'", '*');
+        $inDB->resetFilters();
+
+        $msg = $inDB->filterEqual('i.id', (int) $id)->getItem('user_msg');
+
+        $inDB->resetFilters();
 
         if ( !$msg ) {
             cmsCore::halt();
@@ -715,30 +780,30 @@ function users()
 
 // Сообщения с from_id < 0
         if ( $msg['from_id'] < 0 ) {
-            $inDB->query("DELETE FROM cms_user_msg WHERE id = '" . $id . "' LIMIT 1");
+            $inDB->delete('user_msg', (int) $id);
             $info_text = $_LANG['MESS_NOTICE_DEL_OK'];
         }
 
 // мне сообщение от пользователя
         if ( $msg['to_id'] == $inUser->id && $msg['from_id'] > 0 ) {
-            $inDB->query("UPDATE cms_user_msg SET to_del=1 WHERE id='" . $id . "'");
+            $inDB->update('user_msg', (int) $id, array( 'to_del' => 1 ));
             $info_text = $_LANG['MESS_DEL_OK'];
         }
 
 // от меня сообщение
         if ( $msg['from_id'] == $inUser->id && !$msg['is_new'] ) {
-            $inDB->query("UPDATE cms_user_msg SET from_del=1 WHERE id='" . $id . "'");
+            $inDB->update('user_msg', (int) $id, array( 'from_del' => 1 ));
             $info_text = $_LANG['MESS_DEL_OK'];
         }
 
 // отзываем сообщение
         if ( $msg['from_id'] == $inUser->id && $msg['is_new'] ) {
-            $inDB->query("DELETE FROM cms_user_msg WHERE id = '" . $id . "' LIMIT 1");
+            $inDB->delete('user_msg', (int) $id);
             $info_text = $_LANG['MESS_BACK_OK'];
         }
 
 // удаляем сообщения, которые удалены с двух сторон
-        $inDB->query("DELETE FROM cms_user_msg WHERE to_del=1 AND from_del=1");
+        $inDB->filterEqual('to_del', 1)->filterEqual('from_del', 1)->deleteFiltered('user_msg');
 
         cmsCore::jsonOutput(array( 'error' => false, 'text' => $info_text ));
     }
@@ -761,16 +826,20 @@ function users()
 
         $opt = cmsCore::request('opt', 'str', 'in');
 
+        $inDB->resetFilters();
+
         if ( $opt == 'notices' ) {
 
-            $inDB->query("DELETE FROM cms_user_msg WHERE to_id = '" . $id . "' AND from_id < 0");
+            $inDB->filterEqual('i.to_id', (int) $id)->
+                    filterLt('i.from_id', 0)->
+                    deleteFiltered('user_msg');
         }
         else {
             $del_flag = $opt == 'in' ? 'to_del' : 'from_del';
             $id_flag  = $opt == 'in' ? 'to_id' : 'from_id';
 
-            $inDB->query("UPDATE cms_user_msg SET " . $del_flag . "=1 WHERE " . $id_flag . "='" . $id . "'");
-            $inDB->query("DELETE FROM cms_user_msg WHERE to_del=1 AND from_del=1");
+            $inDB->filterEqual('i.' . $id_flag, (int) $id)->updateFiltered('user_msg', array( $del_flag => 1 ));
+            $inDB->filterEqual('to_del', 1)->filterEqual('from_del', 1)->deleteFiltered('user_msg');
         }
 
         cmsCore::addSessionMessage($_LANG['MESS_ALL_DEL_OK'], 'info');
@@ -809,9 +878,10 @@ function users()
                 cmsCore::redirect('/users/' . $id . '/avatar.html');
             }
 
-            $sql = "UPDATE cms_user_profiles SET imageurl = '" . $file['filename'] . "' WHERE user_id = '" . $id . "' LIMIT 1";
+            $inDB->resetFilters();
 
-            $inDB->query($sql);
+            $inDB->filterEqual('i.user_id', (int) $id)->
+                    updateFiltered('user_profiles', array( 'imageurl' => $file['filename'] ));
 
 // очищаем предыдущую запись о смене аватара
             cmsActions::removeObjectLog('add_avatar', $id);
@@ -899,8 +969,10 @@ function users()
                 copy($uploadfile, $uploadavatar);
                 @img_resize($uploadfile, $uploadthumb, $model->config['smallw'], $model->config['smallw']);
 
-                $sql = "UPDATE cms_user_profiles SET imageurl = '" . $filename . "' WHERE user_id = '" . $id . "' LIMIT 1";
-                $inDB->query($sql);
+                $inDB->resetFilters();
+
+                $inDB->filterEqual('i.user_id', (int) $id)->
+                        updateFiltered('user_profiles', array( 'imageurl' => $filename ));
 
 // очищаем предыдущую запись о смене аватара
                 cmsActions::removeObjectLog('add_avatar', $id);
@@ -999,7 +1071,9 @@ function users()
         $is_need_accept_id = cmsUser::getFriendFieldId($id, 0, 'to_me');
 
         if ( $is_need_accept_id ) {
-            $inDB->query("UPDATE cms_user_friends SET is_accepted = 1 WHERE id = '" . $is_need_accept_id . "'");
+            $inDB->resetFilters();
+
+            $inDB->update('user_friends', (int) $is_need_accept_id, array( 'is_accepted' => 1 ));
 
 //регистрируем событие
             cmsActions::log('add_friend', array(
@@ -1155,7 +1229,11 @@ function users()
 //============================= Удаление награды  ============================//
 
     if ( $do == 'delaward' ) {
-        $aw = $inDB->get_fields('cms_user_awards', "id = '$id'", '*');
+        $inDB->resetFilters();
+
+        $aw = $inDB->filterEqual('i.id', (int) $id)->getItem('user_awards');
+
+        $inDB->resetFilters();
 
         if ( !$aw ) {
             cmsCore::error404();
@@ -1165,7 +1243,7 @@ function users()
             cmsCore::error404();
         }
 
-        $inDB->delete('cms_user_awards', "id = '" . $id . "'", 1);
+        $inDB->delete('user_awards', (int) $id);
 
         cmsActions::removeObjectLog('add_award', $id);
 
@@ -1184,20 +1262,23 @@ function users()
             cmsCore::error404();
         }
 
+        $inDB->resetFilters();
+
         foreach ( $awards as $aw ) {
 //Перебираем все награды и ищем пользователей с текущей наградой
-            $sql = "SELECT u.id as id, u.nickname as nickname, u.login as login, IFNULL(p.gender, 'm') as gender
-                 FROM cms_user_awards aw
-                 LEFT JOIN cms_users u ON u.id = aw.user_id
-                 LEFT JOIN cms_user_profiles p ON p.user_id = u.id
-                 WHERE aw.award_id = '" . $aw['id'] . "'";
-
-            $rs = $inDB->query($sql);
+            $users = $inDB->selectOnly('u.id', 'id')->
+                    select('u.nickname', 'nickname')->
+                    select('u.login', 'login')->
+                    select("IFNULL(p.gender, 'm')", 'gender')->
+                    joinLeft('users', 'u', 'u.id = i.user_id')->
+                    joinLeft('user_profiles', 'p', 'p.user_id = u.id')->
+                    filterEqual('i.award_id', $aw['id'])->
+                    get('user_awards', false, false);
 
             $aw['uhtml'] = '';
 
-            if ( $inDB->num_rows($rs) ) {
-                while ( $user = $inDB->fetch_assoc($rs) ) {
+            if ( $users ) {
+                foreach ( $users as $user ) {
                     $aw['uhtml'] .= cmsUser::getGenderLink($user['id'], $user['nickname'], $user['gender'], $user['login']) . ', ';
                 }
 
@@ -1293,7 +1374,9 @@ function users()
             cmsCore::error404();
         }
 
-        $inDB->query("UPDATE cms_users SET is_deleted = 0 WHERE id = '" . $id . "'");
+        $inDB->resetFilters();
+
+        $inDB->update('users', (int) $id, array( 'is_deleted' => 0 ));
 
         cmsCore::redirectBack();
     }
@@ -1367,23 +1450,33 @@ function users()
         $token = cmsCore::request('token', 'str', '');
 
 // не занят ли email
-        $is_email = $inDB->get_field('cms_users', "email='" . $email . "'", 'id');
+        $inDB->resetFilters();
+
+        $is_email = $inDB->filterEqual('i.email', $email)->getCount('users');
+
+        $inDB->resetFilters();
 
         if ( $is_email || !$email || !$token ) {
             cmsCore::error404();
         }
 
 // проверяем токен
-        $valid_id = $inDB->get_field('cms_users_activate', "code='" . $token . "' AND user_id = '" . $inUser->id . "'", 'id');
+        $activate = $inDB->filterEqual('i.code', $token)->
+                filterEqual('i.user_id', $inUser->id)->
+                getItem('users_activate');
+
+        $inDB->resetFilters();
+
+        $valid_id = $activate ? $activate['id'] : false;
 
         if ( !$valid_id ) {
             cmsCore::error404();
         }
 
-        $inDB->delete('cms_users_activate', "id = '{$valid_id}'");
+        $inDB->delete('users_activate', (int) $valid_id);
 
 // Сохраняем новый email
-        $inDB->update('cms_users', array( 'email' => $email ), $inUser->id);
+        $inDB->update('users', (int) $inUser->id, array( 'email' => $email ));
 
         cmsCore::addSessionMessage($_LANG['NEW_EMAIL_SAVED'], 'success');
 

@@ -22,7 +22,7 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
 {
     $inCore = cmsCore::getInstance();
     $inPage = cmsPage::getInstance();
-    $inDB   = cmsDatabase::getInstance();
+    $inDB   = \cms\db::getInstance();
     $inUser = cmsUser::getInstance();
 
     $model = new cms_model_comments($labels);
@@ -91,7 +91,7 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
         $total = $model->getCommentsCount(!($is_moder || $myprofile));
 
         // Сортировка и разбивка на страницы
-        $inDB->orderBy('c.pubdate', 'DESC');
+        $inDB->orderBy('i.pubdate', 'DESC');
         $inDB->limitPage($page, $model->config['perpage']);
 
         // Сами комментарии
@@ -127,7 +127,7 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
         if ( !$model->config['cmm_ajax'] ) {
             $model->whereTargetIs($target, $target_id);
 
-            $inDB->orderBy('c.pubdate', 'ASC');
+            $inDB->orderBy('i.pubdate', 'ASC');
 
             $comments = \cms\events::call('comments.before_show', $model->getComments(!($inUser->is_admin || $model->is_can_moderate), true));
 
@@ -196,9 +196,9 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
 
         if ( $model->is_can_bbcode ) {
             $content                   = cmsCore::request('content', 'html', '');
-            $comment['content_bbcode'] = $inDB->escape_string($content);
+            $comment['content_bbcode'] = $content;
             $content                   = cmsCore::parseSmiles($content, true);
-            $comment['content']        = $inDB->escape_string($content);
+            $comment['content']        = $content;
         }
         else {
             $comment['content']        = cmsCore::request('content', 'str', '');
@@ -236,7 +236,7 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
         // получаем массив со ссылкой и заголовком цели комментария
         // для этого:
         //  1. узнаем ответственный компонент из cms_comment_targets
-        $target = $inDB->get_fields('cms_comment_targets', "target='{$comment['target']}'", '*');
+        $target = $inDB->filterEqual('target', $comment['target'])->getItem('comment_targets');
         if ( !$target ) {
             cmsCore::jsonOutput(array( 'error' => true, 'text' => $_LANG['ERR_UNKNOWN_TARGET'] . ' #1' ));
         }
@@ -380,8 +380,8 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
 
         if ( $model->is_can_bbcode ) {
             $content                   = cmsCore::request('content', 'html', '');
-            $com_new['content_bbcode'] = $inDB->escape_string($content);
-            $com_new['content']        = $inDB->escape_string(cmsCore::parseSmiles($content, true));
+            $com_new['content_bbcode'] = $content;
+            $com_new['content']        = cmsCore::parseSmiles($content, true);
         }
         else {
             $com_new['content']        = cmsCore::request('content', 'str', '');
@@ -438,7 +438,7 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
         }
 
         //узнаем ответственный компонент из cms_comment_targets
-        $target = $inDB->get_fields('cms_comment_targets', "target='{$comment['target']}'", '*');
+        $target = $inDB->filterEqual('target', $comment['target'])->getItem('comment_targets');
         if ( !$target ) {
             cmsCore::jsonOutput(array( 'error' => true, 'text' => $_LANG['ERR_UNKNOWN_TARGET'] . ' #1' ));
         }

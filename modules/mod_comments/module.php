@@ -12,7 +12,7 @@
 
 function mod_comments($mod, $cfg)
 {
-    $inDB   = cmsDatabase::getInstance();
+    $inDB   = \cms\db::getInstance();
     $inUser = cmsUser::getInstance();
 
     if ( !isset($cfg['showrss']) ) {
@@ -52,7 +52,7 @@ function mod_comments($mod, $cfg)
         $model->whereRatingOver($cfg['minrate']);
     }
 
-    $inDB->orderBy('c.pubdate', 'DESC');
+    $inDB->orderBy('pubdate', 'DESC');
     $inDB->limitPage(1, $cfg['shownum']);
 
     $comments = $model->getComments(true, false, true);

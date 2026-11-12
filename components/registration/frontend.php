@@ -16,7 +16,7 @@ function registration()
 
     $inCore = cmsCore::getInstance();
     $inPage = cmsPage::getInstance();
-    $inDB   = cmsDatabase::getInstance();
+    $inDB   = \cms\db::getInstance();
     $inUser = cmsUser::getInstance();
     $inConf = cmsConfig::getInstance();
 
@@ -66,9 +66,11 @@ function registration()
 
             $usercode = md5($usr['id'] . '-' . uniqid() . '-' . microtime() . '-' . PATH);
 
-            $sql = "INSERT cms_users_activate (pubdate, user_id, code)
-                VALUES (NOW(), '" . $usr['id'] . "', '" . $usercode . "')";
-            $inDB->query($sql);
+            $inDB->insert('users_activate', array(
+                'user_id' => $usr['id'],
+                'code'    => $usercode,
+                'pubdate' => date('Y-m-d H:i:s')
+            ));
 
             $newpass_link = HOST . '/registration/remind/' . $usercode;
 
@@ -101,14 +103,14 @@ function registration()
         }
 
         // проверяем код
-        $user_id = $inDB->get_field('cms_users_activate', "code = '" . $usercode . "'", 'user_id');
+        $user_id = $inDB->filterEqual('code', $usercode)->getFieldFiltered('users_activate', 'user_id');
 
         if ( !$user_id ) {
             cmsCore::error404();
         }
 
         //получаем пользователя
-        $user = $inDB->get_fields('cms_users', "id = '" . $user_id . "'", '*');
+        $user = $inDB->getRow('users', 'id = ' . (int) $user_id, '*');
 
         if ( !$user ) {
             cmsCore::error404();
@@ -154,9 +156,12 @@ function registration()
 
             $md5_pass = md5($pass);
 
-            $inDB->query("UPDATE cms_users SET password = '" . $md5_pass . "', logdate = NOW() WHERE id = '" . $user['id'] . "'");
+            $inDB->update('users', (int) $user['id'], array(
+                'password' => $md5_pass,
+                'logdate'  => date('Y-m-d H:i:s')
+            ));
 
-            $inDB->query("DELETE FROM cms_users_activate WHERE code = '" . $usercode . "'");
+            $inDB->filterEqual('code', $usercode)->deleteFiltered('users_activate');
 
             cmsCore::addSessionMessage($_LANG['CHANGE_PASS_COMPLETED'], 'info');
 
@@ -289,7 +294,7 @@ function registration()
             if ( is_array($users_model->config['privforms']) ) {
                 foreach ( $users_model->config['privforms'] as $form_id ) {
                     $form_input        = cmsForm::getFieldsInputValues($form_id);
-                    $item['formsdata'] .= $inDB->escape_string(cmsCore::arrayToYaml($form_input['values']));
+                    $item['formsdata'] .= cmsCore::arrayToYaml($form_input['values']);
                     // Проверяем значения формы
                     foreach ( $form_input['errors'] as $field_error ) {
                         if ( $field_error ) {
@@ -308,7 +313,16 @@ function registration()
         }
 
         // проверяем есть ли такой пользователь
-        $user_exist = $inDB->get_fields('cms_users', "(login LIKE '" . $item['login'] . "' OR email LIKE '" . $item['email'] . "') AND is_deleted = 0", 'id, login, email');
+        $user_exist = $inDB->selectOnly('id')
+                ->select('login')
+                ->select('email')
+                ->filterStart()
+                ->filterLike('login', $item['login'])
+                ->filterOr()
+                ->filterLike('email', $item['email'])
+                ->filterEnd()
+                ->filterEqual('is_deleted', 0)
+                ->getItem('users');
 
         if ( $user_exist ) {
             if ( $user_exist['login'] == $item['login'] ) {
@@ -353,12 +367,12 @@ function registration()
 
         $item = \cms\events::call('users.before_register', $item);
 
-        $item['id']      = $item['user_id'] = $inDB->insert('cms_users', $item);
+        $item['id']      = $item['user_id'] = $inDB->insert('users', $item);
         if ( !$item['id'] ) {
             cmsCore::error404();
         }
 
-        $inDB->insert('cms_user_profiles', $item);
+        $inDB->insert('user_profiles', $item);
 
         \cms\events::call('users.register', $item);
 
@@ -458,14 +472,14 @@ function registration()
             cmsCore::error404();
         }
 
-        $user_id = $inDB->get_field('cms_users_activate', "code = '" . $code . "'", 'user_id');
+        $user_id = $inDB->filterEqual('code', $code)->getFieldFiltered('users_activate', 'user_id');
 
         if ( !$user_id ) {
             cmsCore::error404();
         }
 
-        $inDB->query("UPDATE cms_users SET is_locked = 0 WHERE id = '" . $user_id . "'");
-        $inDB->query("DELETE FROM cms_users_activate WHERE code = '" . $code . "'");
+        $inDB->update('users', (int) $user_id, array( 'is_locked' => 0 ));
+        $inDB->filterEqual('code', $code)->deleteFiltered('users_activate');
 
         \cms\events::call('users.activated', $user_id);
 

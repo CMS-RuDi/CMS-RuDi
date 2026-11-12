@@ -18,7 +18,7 @@ class cms_model_actions
 
     public function __construct()
     {
-        $this->inDB   = cmsDatabase::getInstance();
+        $this->inDB   = \cms\db::getInstance();
         $this->config = cmsCore::getInstance()->loadComponentConfig('actions');
 
         cmsCore::loadLanguage('components/users');

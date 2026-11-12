@@ -12,41 +12,36 @@
 
 function mod_random_image($mod, $cfg)
 {
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
 
-    $catsql = '';
+    $db = clone $inDB;
+
+    $db->select('i.*');
+    $db->select('a.title', 'album_title');
+    $db->joinLeft('photo_albums', 'a', 'a.id = i.album_id');
 
     if ( $cfg['album_id'] != 0 ) {
         if ( $cfg['subs'] ) {
-            $rootcat = $inDB->get_fields('cms_photo_albums', 'id=' . $cfg['album_id'], 'NSLeft, NSRight');
-            $catsql  = " AND a.NSLeft >= {$rootcat['NSLeft']} AND a.NSRight <= {$rootcat['NSRight']}";
+            $rootcat = $inDB->getRow('photo_albums', 'id = ' . (int) $cfg['album_id'], 'NSLeft, NSRight');
+
+            if ( $rootcat ) {
+                $db->filter('a.NSLeft >= ' . (int) $rootcat['NSLeft'] . ' AND a.NSRight <= ' . (int) $rootcat['NSRight']);
+            }
         }
         else {
-            $catsql = "AND f.album_id = " . $cfg['album_id'];
+            $db->filterEqual('i.album_id', (int) $cfg['album_id']);
         }
     }
 
-    $sql = "SELECT f.*, a.title album_title
-            FROM cms_photo_files f
-            LEFT JOIN cms_photo_albums a ON a.id = f.album_id
-            WHERE f.published = 1 " . $catsql . "
-            ORDER BY RAND()
-            LIMIT 1
-            ";
+    $db->filterEqual('i.published', 1);
+    $db->orderBy('RAND()');
+    $db->limit(0, 1);
 
-    $result = $inDB->query($sql);
-
-    $is_img = false;
-
-    if ( $inDB->num_rows($result) ) {
-        $is_img = true;
-
-        $item = $inDB->fetch_assoc($result);
-    }
+    $item = $db->getItem('photo_files');
 
     cmsPage::initTemplate('modules', $cfg['tpl'])->
             assign('item', $item)->
-            assign('is_img', $is_img)->
+            assign('is_img', (bool) $item)->
             assign('cfg', $cfg)->
             display($cfg['tpl']);
 

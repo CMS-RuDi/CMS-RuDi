@@ -12,9 +12,11 @@
 
 function cmsInsertTags($tagstr, $target, $item_id)
 {
-    $inDB = cmsDatabase::getInstance();
+    $db = \cms\db::getInstance();
 
-    $inDB->query("DELETE FROM cms_tags WHERE target='" . $target . "' AND item_id = '" . $item_id . "'");
+    $db->filterEqual('target', $target)
+            ->filterEqual('item_id', (int) $item_id)
+            ->deleteFiltered('tags');
 
     $tagstr = strip_tags(mb_strtolower(preg_replace('/\s+/u', ' ', trim($tagstr))));
 
@@ -29,8 +31,11 @@ function cmsInsertTags($tagstr, $target, $item_id)
         $tag = mb_substr(trim($tag), 0, 240);
 
         if ( mb_strlen($tag) >= 3 ) {
-            $tag = $inDB->escape_string($tag);
-            $inDB->query("INSERT INTO cms_tags (tag, target, item_id) VALUES ('" . $tag . "', '" . $target . "', " . $item_id . ")");
+            $db->insert('tags', array(
+                'tag'     => $tag,
+                'target'  => $target,
+                'item_id' => (int) $item_id
+            ));
         }
     }
 
@@ -39,25 +44,31 @@ function cmsInsertTags($tagstr, $target, $item_id)
 
 function cmsClearTags($target, $item_id)
 {
-    return cmsDatabase::getInstance()->query("DELETE FROM cms_tags WHERE target='" . $target . "' AND item_id = '" . $item_id . "'");
+    return \cms\db::getInstance()
+            ->filterEqual('target', $target)
+            ->filterEqual('item_id', (int) $item_id)
+            ->deleteFiltered('tags');
 }
 
 function cmsTagLine($target, $item_id, $links = true, $selected = '')
 {
-    $inDB = cmsDatabase::getInstance();
+    $db = \cms\db::getInstance();
 
-    $sql = "SELECT tag
-			FROM cms_tags
-			WHERE target='" . $target . "' AND item_id='" . $item_id . "'
-			ORDER BY tag DESC";
+    $db->resetFilters();
 
-    $rs   = $inDB->query($sql);
+    $tags = $db->select('i.tag')
+            ->filterEqual('i.target', $target)
+            ->filterEqual('i.item_id', (int) $item_id)
+            ->orderBy('i.tag', 'DESC')
+            ->get('tags', false, '');
+
     $html = '';
-    $tags = $inDB->num_rows($rs);
 
     if ( $tags ) {
-        $t   = 1;
-        while ( $tag = $inDB->fetch_assoc($rs) ) {
+        $t    = 1;
+        $last = count($tags);
+
+        foreach ( $tags as $tag ) {
             if ( $links ) {
                 if ( $selected == $tag['tag'] ) {
                     $html .= '<a href="/search/tag/' . urlencode($tag['tag']) . '" style="font-weight:bold;text-decoration:underline">' . $tag['tag'] . '</a>';
@@ -69,7 +80,7 @@ function cmsTagLine($target, $item_id, $links = true, $selected = '')
             else {
                 $html .= $tag['tag'];
             }
-            if ( $t < $tags ) {
+            if ( $t < $last ) {
                 $html .= ', ';
                 $t++;
             }
@@ -95,7 +106,7 @@ function cmsTagBar($target, $item_id, $selected = '')
 
 function cmsTagItemLink($target, $item_id)
 {
-    $inDB   = cmsDatabase::getInstance();
+    $db     = \cms\db::getInstance();
     $inCore = cmsCore::getInstance();
     $link   = '';
 
@@ -103,32 +114,60 @@ function cmsTagItemLink($target, $item_id)
         case 'content':
             $today = date("Y-m-d H:i:s");
 
-            $sql = "SELECT i.title as title, c.title as cat, i.seolink as seolink, c.seolink as cat_seolink
-                            FROM cms_content i
-                            INNER JOIN cms_category c ON c.id = i.category_id
-                            WHERE i.id = '" . $item_id . "' AND i.published = 1  AND i.is_arhive = 0 AND i.pubdate <= '" . $today . "' AND (i.is_end=0 OR (i.is_end=1 AND i.enddate >= '" . $today . "')) LIMIT 1";
+            $db->resetFilters();
 
-            $rs = $inDB->query($sql);
+            $item = $db->select('i.title', 'title')
+                    ->select('c.title', 'cat')
+                    ->select('i.seolink', 'seolink')
+                    ->select('c.seolink', 'cat_seolink')
+                    ->joinInner('category', 'c', 'c.id = i.category_id')
+                    ->filterEqual('i.id', (int) $item_id)
+                    ->filterEqual('i.published', 1)
+                    ->filterEqual('i.is_arhive', 0)
+                    ->filterLtEqual('i.pubdate', $today)
+                    ->filterStart()
+                    ->filterEqual('i.is_end', 0)
+                    ->filterOr()
+                    ->filterStart()
+                    ->filterEqual('i.is_end', 1)
+                    ->filterGtEqual('i.enddate', $today)
+                    ->filterEnd()
+                    ->filterEnd()
+                    ->getItem('content');
 
-            if ( $inDB->num_rows($rs) ) {
-                $item = $inDB->fetch_assoc($rs);
+            $db->resetFilters();
+
+            if ( $item ) {
                 $link = '<a href="/' . $item['cat_seolink'] . '" class="tag_searchcat">' . $item['cat'] . '</a> &rarr; ';
                 $link .= '<a href="/' . $item['seolink'] . '.html" class="tag_searchitem">' . $item['title'] . '</a>';
             }
             break;
         case 'blogpost':
-            $sql = "SELECT i.title as title, i.id as item_id, c.title as cat, c.id as cat_id, c.owner as owner, c.user_id user_id, i.seolink as seolink, c.seolink as bloglink
-                        FROM cms_blog_posts i
-                        LEFT JOIN cms_blogs c ON c.id = i.blog_id
-                        WHERE i.id = '" . $item_id . "' AND i.published = 1";
+            $db->resetFilters();
 
-            $rs = $inDB->query($sql);
+            $item = $db->select('i.title', 'title')
+                    ->select('i.id', 'item_id')
+                    ->select('c.title', 'cat')
+                    ->select('c.id', 'cat_id')
+                    ->select('c.owner', 'owner')
+                    ->select('c.user_id', 'user_id')
+                    ->select('i.seolink', 'seolink')
+                    ->select('c.seolink', 'bloglink')
+                    ->joinLeft('blogs', 'c', 'c.id = i.blog_id')
+                    ->filterEqual('i.id', (int) $item_id)
+                    ->filterEqual('i.published', 1)
+                    ->getItem('blog_posts');
 
-            if ( $inDB->num_rows($rs) ) {
-                $item = $inDB->fetch_assoc($rs);
+            $db->resetFilters();
 
+            if ( $item ) {
                 if ( $item['owner'] == 'club' ) {
-                    $item['cat'] = $inDB->get_field('cms_clubs', 'id=' . $item['user_id'], 'title');
+                    $db->resetFilters();
+
+                    $item['cat'] = $db->filterEqual('id', (int) $item['user_id'])
+                            ->getFieldFiltered('clubs', 'title');
+
+                    $db->resetFilters();
                 }
 
                 $link = '<a href="/blogs/' . $item['bloglink'] . '" class="tag_searchcat">' . $item['cat'] . '</a> &rarr; ';
@@ -136,44 +175,59 @@ function cmsTagItemLink($target, $item_id)
             }
             break;
         case 'photo':
-            $sql = "SELECT i.title as title, i.id as item_id, c.title as cat, c.id as cat_id
-                        FROM cms_photo_files i
-                        LEFT JOIN cms_photo_albums c ON c.id = i.album_id
-                        WHERE i.id = '" . $item_id . "' AND i.published = 1";
+            $db->resetFilters();
 
-            $rs = $inDB->query($sql);
+            $item = $db->select('i.title', 'title')
+                    ->select('i.id', 'item_id')
+                    ->select('c.title', 'cat')
+                    ->select('c.id', 'cat_id')
+                    ->joinLeft('photo_albums', 'c', 'c.id = i.album_id')
+                    ->filterEqual('i.id', (int) $item_id)
+                    ->filterEqual('i.published', 1)
+                    ->getItem('photo_files');
 
-            if ( $inDB->num_rows($rs) ) {
-                $item = $inDB->fetch_assoc($rs);
+            $db->resetFilters();
+
+            if ( $item ) {
                 $link = '<a href="/photos/' . $item['cat_id'] . '" class="tag_searchcat">' . $item['cat'] . '</a> &rarr; ';
                 $link .= '<a href="/photos/photo' . $item['item_id'] . '.html" class="tag_searchitem">' . $item['title'] . '</a>';
             }
             break;
         case 'userphoto':
-            $sql = "SELECT i.title as title, i.id as item_id, c.nickname as cat, c.id as cat_id, c.login as login
-                        FROM cms_user_photos i
-                        LEFT JOIN cms_users c ON c.id = i.user_id
-                        WHERE i.id = '" . $item_id . "'";
+            $db->resetFilters();
 
-            $rs = $inDB->query($sql);
+            $item = $db->select('i.title', 'title')
+                    ->select('i.id', 'item_id')
+                    ->select('c.nickname', 'cat')
+                    ->select('c.id', 'cat_id')
+                    ->select('c.login', 'login')
+                    ->joinLeft('users', 'c', 'c.id = i.user_id')
+                    ->filterEqual('i.id', (int) $item_id)
+                    ->getItem('user_photos');
 
-            if ( $inDB->num_rows($rs) ) {
-                $item = $inDB->fetch_assoc($rs);
+            $db->resetFilters();
+
+            if ( $item ) {
                 $link = '<a href="' . cmsUser::getProfileURL($item['login']) . '" class="tag_searchcat">' . $item['cat'] . '</a> &rarr; ';
                 $link .= '<a href="/users/' . $item['cat_id'] . '/photo' . $item['item_id'] . '.html" class="tag_searchitem">' . $item['title'] . '</a>';
             }
             break;
         case 'catalog':
             if ( \cms\controller::installed('catalog') ) {
-                $sql = "SELECT i.title as title, i.id as item_id, c.title as cat, c.id as cat_id
-                        FROM cms_uc_items i
-                        LEFT JOIN cms_uc_cats c ON c.id = i.category_id
-                        WHERE i.id = '" . $item_id . "' AND i.published = 1";
+                $db->resetFilters();
 
-                $rs = $inDB->query($sql);
+                $item = $db->select('i.title', 'title')
+                        ->select('i.id', 'item_id')
+                        ->select('c.title', 'cat')
+                        ->select('c.id', 'cat_id')
+                        ->joinLeft('uc_cats', 'c', 'c.id = i.category_id')
+                        ->filterEqual('i.id', (int) $item_id)
+                        ->filterEqual('i.published', 1)
+                        ->getItem('uc_items');
 
-                if ( $inDB->num_rows($rs) ) {
-                    $item = $inDB->fetch_assoc($rs);
+                $db->resetFilters();
+
+                if ( $item ) {
                     $link = '<a href="/catalog/' . $item['cat_id'] . '" class="tag_searchcat">' . $item['cat'] . '</a> &rarr; ';
                     $link .= '<a href="/catalog/item' . $item['item_id'] . '.html" class="tag_searchitem">' . $item['title'] . '</a>';
                 }
@@ -182,44 +236,58 @@ function cmsTagItemLink($target, $item_id)
         case 'video':
             $model = cms_model_video::initModel();
 
-            $sql = "SELECT i.title as title, i.id as item_id, i.seolink as movie_seolink, c.title as cat_title, c.id as cat_id, c.seolink as cat_seolink
-                        FROM cms_video_movie i
-                        INNER JOIN cms_video_category c ON c.id = i.cat_id
-                        WHERE i.id = '" . $item_id . "'";
+            $db->resetFilters();
 
-            $rs = $inDB->query($sql);
+            $item = $db->select('i.title', 'title')
+                    ->select('i.id', 'item_id')
+                    ->select('i.seolink', 'movie_seolink')
+                    ->select('c.title', 'cat_title')
+                    ->select('c.id', 'cat_id')
+                    ->select('c.seolink', 'cat_seolink')
+                    ->joinInner('video_category', 'c', 'c.id = i.cat_id')
+                    ->filterEqual('i.id', (int) $item_id)
+                    ->getItem('video_movie');
 
-            if ( $inDB->num_rows($rs) ) {
-                $item = $inDB->fetch_assoc($rs);
+            $db->resetFilters();
+
+            if ( $item ) {
                 $link = '<a href="' . $model->getCatLink($item['cat_seolink'], $item['cat_id']) . '" class="tag_searchcat">' . $item['cat_title'] . '</a> &rarr; ';
                 $link .= '<a href="' . $model->getMovieLink($item['cat_seolink'] . '/' . $item['movie_seolink'], $item['item_id']) . '" class="tag_searchitem">' . $item['title'] . '</a>';
             }
             break;
 
         case 'shop':
-            $sql = "SELECT i.title as title, i.seolink as seolink, c.title as cat, c.seolink as cat_seolink
-                        FROM cms_shop_items i
-                        LEFT JOIN cms_shop_cats c ON c.id = i.category_id
-                        WHERE i.id = '" . $item_id . "'";
+            $db->resetFilters();
 
-            $rs = $inDB->query($sql);
+            $item = $db->select('i.title', 'title')
+                    ->select('i.seolink', 'seolink')
+                    ->select('c.title', 'cat')
+                    ->select('c.seolink', 'cat_seolink')
+                    ->joinLeft('shop_cats', 'c', 'c.id = i.category_id')
+                    ->filterEqual('i.id', (int) $item_id)
+                    ->getItem('shop_items');
 
-            if ( $inDB->num_rows($rs) ) {
-                $item = $inDB->fetch_assoc($rs);
+            $db->resetFilters();
+
+            if ( $item ) {
                 $link = '<a href="/shop/' . $item['cat_seolink'] . '" class="tag_searchcat">' . $item['cat'] . '</a> &rarr; ';
                 $link .= '<a href="/shop/' . $item['seolink'] . '.html" class="tag_searchitem">' . $item['title'] . '</a>';
             }
             break;
         case 'maps':
-            $sql = "SELECT i.title as title, i.seolink as seolink, c.title as cat, c.seolink as cat_seolink
-                        FROM cms_map_items i
-                        LEFT JOIN cms_map_cats c ON c.id = i.category_id
-                        WHERE i.id = '" . $item_id . "'";
+            $db->resetFilters();
 
-            $rs = $inDB->query($sql);
+            $item = $db->select('i.title', 'title')
+                    ->select('i.seolink', 'seolink')
+                    ->select('c.title', 'cat')
+                    ->select('c.seolink', 'cat_seolink')
+                    ->joinLeft('map_cats', 'c', 'c.id = i.category_id')
+                    ->filterEqual('i.id', (int) $item_id)
+                    ->getItem('map_items');
 
-            if ( $inDB->num_rows($rs) ) {
-                $item = $inDB->fetch_assoc($rs);
+            $db->resetFilters();
+
+            if ( $item ) {
                 $link = '<a href="/maps/' . $item['cat_seolink'] . '" class="tag_searchcat">' . $item['cat'] . '</a> &rarr; ';
                 $link .= '<a href="/maps/' . $item['seolink'] . '.html" class="tag_searchitem">' . $item['title'] . '</a>';
             }
@@ -230,16 +298,19 @@ function cmsTagItemLink($target, $item_id)
 
 function cmsTagsList()
 {
-    $inDB   = cmsDatabase::getInstance();
+    $db     = \cms\db::getInstance();
     $html   = '';
-    $sql    = "SELECT t.tag, COUNT(t.tag) as num
-			FROM cms_tags t
-			GROUP BY t.tag
-			ORDER BY t.tag";
-    $result = $inDB->query($sql);
 
-    if ( $inDB->num_rows($result) > 0 ) {
-        while ( $tag = $inDB->fetch_assoc($result) ) {
+    $db->resetFilters();
+
+    $tags = $db->select('i.tag')
+            ->select('COUNT(i.tag)', 'num')
+            ->groupBy('i.tag')
+            ->orderBy('i.tag', 'ASC')
+            ->get('tags', false, '');
+
+    if ( $tags ) {
+        foreach ( $tags as $tag ) {
             if ( $tag['tag'] ) {
                 $html .= '<a href="/search/tag/' . urlencode($tag['tag']) . '">' . $tag['tag'] . '</a> (' . $tag['num'] . ') ';
             }

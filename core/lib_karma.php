@@ -18,9 +18,17 @@ function cmsKarma($target, $item_id)
 
     $item_id = intval($item_id);
 
-    $inDB = cmsDatabase::getInstance();
+    $db = \cms\db::getInstance();
 
-    $item = $inDB->get_fields('cms_ratings_total', "item_id = '" . $item_id . "' AND target='" . $target . "'", 'total_rating, total_votes');
+    $db->resetFilters();
+
+    $item = $db->select('i.total_rating')
+            ->select('i.total_votes')
+            ->filterEqual('i.item_id', $item_id)
+            ->filterEqual('i.target', $target)
+            ->getItem('ratings_total');
+
+    $db->resetFilters();
 
     if ( !$item ) {
         return array( 'points' => 0, 'votes' => 0 );
@@ -31,18 +39,40 @@ function cmsKarma($target, $item_id)
 
 function cmsAlreadyKarmed($target, $item_id, $user_id)
 {
-    return cmsDatabase::getInstance()->rows_count('cms_ratings', "target='" . $target . "' AND item_id = '" . $item_id . "' AND user_id = '" . $user_id . "'");
+    $db = \cms\db::getInstance();
+
+    $db->resetFilters();
+
+    $karmed = $db->filterEqual('target', $target)
+            ->filterEqual('item_id', (int) $item_id)
+            ->filterEqual('user_id', $user_id)
+            ->getCount('ratings');
+
+    $db->resetFilters();
+
+    return $karmed;
 }
 
 function cmsAlreadyKarmedIP($target, $item_id, $ip)
 {
-    return cmsDatabase::getInstance()->rows_count('cms_ratings', "target='" . $target . "' AND item_id = '" . $item_id . "' AND ip = '" . $ip . "'");
+    $db = \cms\db::getInstance();
+
+    $db->resetFilters();
+
+    $karmed = $db->filterEqual('target', $target)
+            ->filterEqual('item_id', (int) $item_id)
+            ->filterEqual('ip', $ip)
+            ->getCount('ratings');
+
+    $db->resetFilters();
+
+    return $karmed;
 }
 
 function cmsSubmitKarma($target, $item_id, $points)
 {
     $inUser  = cmsUser::getInstance();
-    $inDB    = cmsDatabase::getInstance();
+    $db      = \cms\db::getInstance();
     $ip      = cmsCore::strClear($_SERVER['REMOTE_ADDR']);
     $target  = cmsCore::strClear($target);
     $points  = (int) $points;
@@ -53,45 +83,74 @@ function cmsSubmitKarma($target, $item_id, $points)
     }
 
     //вставляем новый голос
-    $sql = "INSERT INTO cms_ratings (item_id, points, ip, target, user_id, pubdate)
-            VALUES ('" . $item_id . "', '" . $points . "', '" . $ip . "', '" . $target . "', '" . $inUser->id . "', NOW())";
-    $inDB->query($sql);
+    $db->insert('ratings', array(
+        'item_id' => $item_id,
+        'points'  => $points,
+        'ip'      => $ip,
+        'target'  => $target,
+        'user_id' => $inUser->id,
+        'pubdate' => date('Y-m-d H:i:s')
+    ));
 
     //проверяем была ли сделана агрегация для этой цели ранее
-    $is_agr = $inDB->rows_count('cms_ratings_total', "target='" . $target . "' AND item_id = '" . $item_id . "'", 1);
+    $db->resetFilters();
+
+    $is_agr = $db->filterEqual('target', $target)
+            ->filterEqual('item_id', $item_id)
+            ->getCount('ratings_total');
 
     //если была, то обновляем
     if ( $is_agr ) {
-        $agr_sql = "UPDATE cms_ratings_total
-                               SET  total_rating = total_rating + (" . $points . "),
-                                    total_votes  = total_votes + 1
-                               WHERE target='" . $target . "' AND item_id = '" . $item_id . "'";
+        $db->filterEqual('target', $target)
+                ->filterEqual('item_id', $item_id)
+                ->increment('ratings_total', 'total_rating', $points);
+
+        $db->filterEqual('target', $target)
+                ->filterEqual('item_id', $item_id)
+                ->increment('ratings_total', 'total_votes', 1);
     }
 
     //если не было, то вставляем
     if ( !$is_agr ) {
-        $agr_sql = "INSERT INTO cms_ratings_total (target, item_id, total_rating, total_votes)
-                                VALUES ('" . $target . "', '" . $item_id . "', '" . $points . "', '1')";
+        $db->insert('ratings_total', array(
+            'target'       => $target,
+            'item_id'      => $item_id,
+            'total_rating' => $points,
+            'total_votes'  => 1
+        ));
     }
 
-    $inDB->query($agr_sql);
-
     //получаем информацию о цели
-    $info = $inDB->get_fields('cms_rating_targets', "target='" . $target . "'", '*');
+    $db->resetFilters();
+
+    $info = $db->filterEqual('target', $target)->getItem('rating_targets');
+
+    $db->resetFilters();
+
+    // таблица цели хранится с префиксом CMS, builder сам добавит префикс
+    $target_table = !empty($info['target_table']) ? $info['target_table'] : '';
+
+    if ( $target_table && $db->prefix && strpos($target_table, $db->prefix) === 0 ) {
+        $target_table = substr($target_table, strlen($db->prefix));
+    }
 
     //если нужно, изменяем рейтинг автора цели
-    if ( $info['is_user_affect'] && $info['user_weight'] && $info['target_table'] ) {
-        $user_sql = "UPDATE cms_users u,
-                            " . $info['target_table'] . " t
-                     SET u.rating = u.rating + (" . $points . "*" . $info['user_weight'] . ")
-                     WHERE t.user_id = u.id AND t.id = '" . $item_id . "'";
+    if ( !empty($info['is_user_affect']) && !empty($info['user_weight']) && $target_table ) {
+        $db->resetFilters();
 
-        $inDB->query($user_sql);
+        $target_item = $db->getItemById($target_table, $item_id);
+
+        $db->resetFilters();
+
+        if ( $target_item && !empty($target_item['user_id']) ) {
+            $db->filterEqual('id', (int) $target_item['user_id'])
+                    ->increment('users', 'rating', $points * $info['user_weight']);
+        }
     }
 
     //проверяем наличие метода updateRatingHook(target, item_id, points) в модели
     //компонента, ответственного за цель
-    if ( $info['component'] ) {
+    if ( !empty($info['component']) ) {
         if ( class_exists('cms_model_' . $info['component']) ) {
             $model_class = 'cms_model_' . $info['component'];
             $model       = new $model_class();
@@ -101,11 +160,8 @@ function cmsSubmitKarma($target, $item_id, $points)
                 $model->updateRatingHook($target, $item_id, $points);
             }
             else {
-                if ( $inDB->isFieldExists($info['target_table'], 'rating') ) {
-                    $sql = "UPDATE " . $info['target_table'] . "
-                            SET rating = rating + (" . $points . ")
-                            WHERE id = '" . $item_id . "'";
-                    $inDB->query($sql);
+                if ( $db->isFieldExists($target_table, 'rating') ) {
+                    $db->filterEqual('id', $item_id)->increment($target_table, 'rating', $points);
                 }
             }
         }

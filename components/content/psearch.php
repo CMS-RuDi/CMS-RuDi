@@ -16,36 +16,45 @@ if ( !defined('VALID_CMS') ) {
 
 function search_content($query, $look)
 {
-    $inDB        = cmsDatabase::getInstance();
+    $db          = \cms\db::getInstance();
     $searchModel = cms_model_search::initModel();
 
     global $_LANG;
 
-    $sql = "SELECT con.*, cat.title cat_title, cat.id cat_id, cat.seolink as cat_seolink, cat.parent_id as cat_parent_id
-                FROM cms_content con
-                INNER JOIN cms_category cat ON cat.id = con.category_id AND cat.published = 1
-                WHERE MATCH(con.title, con.content) AGAINST ('$query' IN BOOLEAN MODE) AND con.is_end = 0 AND con.published = 1 LIMIT 100";
+    $items = $db->resetFilters()->
+            selectOnly('i.*')->
+            select('cat.title', 'cat_title')->
+            select('cat.id', 'cat_id')->
+            select('cat.seolink', 'cat_seolink')->
+            select('cat.parent_id', 'cat_parent_id')->
+            joinInner('category', 'cat', 'cat.id = i.category_id')->
+            filter("MATCH(i.title, i.content) AGAINST ('" . $db->escape($query) . "' IN BOOLEAN MODE)")->
+            filterEqual('cat.published', 1)->
+            filterEqual('i.is_end', 0)->
+            filterEqual('i.published', 1)->
+            limit(0, 100)->
+            get('content', false, false);
 
-    $result = $inDB->query($sql);
+    if ( !$items ) {
+        return;
+    }
 
-    if ( $inDB->num_rows($result) ) {
-        cmsCore::loadLanguage('components/content');
+    cmsCore::loadLanguage('components/content');
 
-        while ( $item = $inDB->fetch_assoc($result) ) {
+    foreach ( $items as $item ) {
 
-            $result_array = array();
+        $result_array = array();
 
-            $result_array['link']        = "/" . $item['seolink'] . ".html";
-            $result_array['place']       = $_LANG['CATALOG_ARTICLES'];
-            $result_array['placelink']   = $item['cat_parent_id'] > 0 ? "/" . $item['cat_seolink'] : $link;
-            $result_array['description'] = $searchModel->getProposalWithSearchWord($item['content']);
-            $result_array['title']       = $item['title'];
-            $result_array['pubdate']     = $item['pubdate'];
-            $result_array['imageurl']    = (file_exists(PATH . '/images/photos/medium/article' . $item['id'] . '.jpg') ? '/images/photos/medium/article' . $item['id'] . '.jpg' : '');
-            $result_array['session_id']  = session_id();
+        $result_array['link']        = "/" . $item['seolink'] . ".html";
+        $result_array['place']       = $_LANG['CATALOG_ARTICLES'];
+        $result_array['placelink']   = $item['cat_parent_id'] > 0 ? "/" . $item['cat_seolink'] : $link;
+        $result_array['description'] = $searchModel->getProposalWithSearchWord($item['content']);
+        $result_array['title']       = $item['title'];
+        $result_array['pubdate']     = $item['pubdate'];
+        $result_array['imageurl']    = (file_exists(PATH . '/images/photos/medium/article' . $item['id'] . '.jpg') ? '/images/photos/medium/article' . $item['id'] . '.jpg' : '');
+        $result_array['session_id']  = session_id();
 
-            $searchModel->addResult($result_array);
-        }
+        $searchModel->addResult($result_array);
     }
 
     return;

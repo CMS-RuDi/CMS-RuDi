@@ -417,7 +417,7 @@ if ( $bdo == 'blog' ) {
     $inPage->addPathway($club['title'], '/clubs/' . $club['id']);
     $inPage->addPathway($blog['title'], $model->getBlogURL($club['id']));
 
-    $inDB->addSelect('b.user_id as bloglink');
+    $inDB->select('b.user_id', 'bloglink');
 
     // Если показываем посты на модерации, если запрашиваем их
     if ( $on_moderate ) {
@@ -454,7 +454,7 @@ if ( $bdo == 'blog' ) {
     $total = $inBlog->getPostsCount($is_admin || $is_moder);
 
     //устанавливаем сортировку
-    $inDB->orderBy('p.pubdate', 'DESC');
+    $inDB->orderBy('i.pubdate', 'DESC');
 
     $inDB->limitPage($page, $model->config['posts_perpage']);
 
@@ -701,7 +701,7 @@ if ( $bdo == 'publishpost' ) {
     }
 
     if ( $club['clubtype'] != 'private' && $post['allow_who'] != 'nobody' ) {
-        if ( !$inDB->get_field('cms_actions_log', "object_id = '{$post['id']}' AND object_url = '{$post['seolink']}'", 'id') ) {
+        if ( !$inDB->filterEqual('object_id', $post['id'])->filterEqual('object_url', $post['seolink'])->getFieldFiltered('actions_log', 'id') ) {
             cmsActions::log($inBlog->getTarget('actions_post'), array(
                 'object'          => $post['title'],
                 'user_id'         => $post['user_id'],

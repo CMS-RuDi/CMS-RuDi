@@ -1,23 +1,23 @@
 <?php
 
 /*
- *                           InstantCMS v1.10.6
- *                        http://www.instantcms.ru/
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
  *
- *                   written by InstantCMS Team, 2007-2015
- *                produced by InstantSoft, (www.instantsoft.ru)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                        LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
-function blogs()
-{
+function blogs() {
     $inCore = cmsCore::getInstance();
     $inPage = cmsPage::getInstance();
-    $inDB   = cmsDatabase::getInstance();
+    $db = \cms\db::getInstance();
     $inUser = cmsUser::getInstance();
 
-    $inBlog        = cmsBlogs::getInstance();
+    $inBlog = cmsBlogs::getInstance();
     $inBlog->owner = 'user';
 
     global $_LANG;
@@ -27,14 +27,14 @@ function blogs()
     define('IS_BILLING', \cms\controller::enabled('billing'));
 
     //Получаем параметры
-    $id          = cmsCore::request('id', 'int', 0);
-    $post_id     = cmsCore::request('post_id', 'int', 0);
-    $bloglink    = cmsCore::request('bloglink', 'str', '');
-    $seolink     = cmsCore::request('seolink', 'str', '');
-    $do          = $inCore->do;
-    $page        = cmsCore::request('page', 'int', 1);
-    $cat_id      = cmsCore::request('cat_id', 'int', 0);
-    $ownertype   = cmsCore::request('ownertype', 'str', '');
+    $id = cmsCore::request('id', 'int', 0);
+    $post_id = cmsCore::request('post_id', 'int', 0);
+    $bloglink = cmsCore::request('bloglink', 'str', '');
+    $seolink = cmsCore::request('seolink', 'str', '');
+    $do = $inCore->do;
+    $page = cmsCore::request('page', 'int', 1);
+    $cat_id = cmsCore::request('cat_id', 'int', 0);
+    $ownertype = cmsCore::request('ownertype', 'str', '');
     $on_moderate = cmsCore::request('on_moderate', 'int', 0);
 
     $pagetitle = $inCore->getComponentTitle();
@@ -43,37 +43,36 @@ function blogs()
     $inPage->setTitle($pagetitle);
     $inPage->setDescription($model->config['meta_desc'] ? $model->config['meta_desc'] : $pagetitle);
     $inPage->setKeywords($model->config['meta_keys'] ? $model->config['meta_keys'] : $pagetitle);
-    $inPage->addHeadJsLang(array( 'CONFIG_BLOG', 'DEL_BLOG', 'YOU_REALY_DELETE_BLOG', 'NEW_CAT', 'RENAME_CAT', 'YOU_REALY_DELETE_CAT', 'YOU_REALY_DELETE_POST', 'NO_PUBLISHED' ));
+    $inPage->addHeadJsLang(array('CONFIG_BLOG', 'DEL_BLOG', 'YOU_REALY_DELETE_BLOG', 'NEW_CAT', 'RENAME_CAT', 'YOU_REALY_DELETE_CAT', 'YOU_REALY_DELETE_POST', 'NO_PUBLISHED'));
 
 //================================ МОЙ БЛОГ ==================================//
 
-    if ( $do == 'my_blog' ) {
-        if ( !$inUser->id ) {
+    if ($do == 'my_blog') {
+        if (!$inUser->id) {
             cmsCore::error404();
         }
 
         $my_blog = $inBlog->getBlogByUserId($inUser->id);
 
-        if ( !$my_blog ) {
+        if (!$my_blog) {
             cmsCore::redirect('/blogs/createblog.html');
-        }
-        else {
+        } else {
             cmsCore::redirect($model->getBlogURL($my_blog['seolink']));
         }
     }
 
 //========================== ПОСЛЕДНИЕ ПОСТЫ =================================//
 
-    if ( $do == 'view' ) {
+    if ($do == 'view') {
         $inPage->addHead('<link rel="alternate" type="application/rss+xml" title="' . $_LANG['RSS_BLOGS'] . '" href="' . HOST . '/rss/blogs/all/feed.rss">');
 
         // кроме админов в списке только с доступом для всех
-        if ( !$inUser->is_admin ) {
+        if (!$inUser->is_admin) {
             $inBlog->whereOnlyPublic();
         }
 
         // ограничиваем по рейтингу если надо
-        if ( $model->config['list_min_rating'] ) {
+        if ($model->config['list_min_rating']) {
             $inBlog->ratingGreaterThan($model->config['list_min_rating']);
         }
 
@@ -81,13 +80,13 @@ function blogs()
         $total = $inBlog->getPostsCount($inUser->is_admin);
 
         //устанавливаем сортировку
-        $inDB->orderBy('p.pubdate', 'DESC');
+        $db->orderBy('i.pubdate', 'DESC');
 
-        $inDB->limitPage($page, $model->config['perpage']);
+        $db->limitPage($page, $model->config['perpage']);
 
         // сами посты
         $posts = $model->getPosts($inUser->is_admin);
-        if ( !$posts && $page > 1 ) {
+        if (!$posts && $page > 1) {
             cmsCore::error404();
         }
 
@@ -103,26 +102,26 @@ function blogs()
 
 //========================== СОЗДАНИЕ БЛОГА ==================================//
 
-    if ( $do == 'create' ) {
+    if ($do == 'create') {
         //Проверяем авторизацию
-        if ( !$inUser->id ) {
+        if (!$inUser->id) {
             cmsUser::goToLogin();
         }
 
         //Если у пользователя уже есть блог, то выходим
-        if ( $inBlog->getUserBlogId($inUser->id) ) {
+        if ($inBlog->getUserBlogId($inUser->id)) {
             cmsCore::redirectBack();
         }
 
         $inPage->addPathway($_LANG['PATH_CREATING_BLOG']);
         $inPage->setTitle($_LANG['CREATE_BLOG']);
 
-        if ( IS_BILLING ) {
+        if (IS_BILLING) {
             cmsBilling::checkBalance('blogs', 'add_blog');
         }
 
         //Показ формы создания блога
-        if ( !cmsCore::inRequest('goadd') ) {
+        if (!cmsCore::inRequest('goadd')) {
 
             cmsPage::initTemplate('components', 'com_blog_create')->
                     assign('is_restrictions', (!$inUser->is_admin && $model->config['min_karma']))->
@@ -131,48 +130,48 @@ function blogs()
         }
 
         //Сам процесс создания блога
-        if ( cmsCore::inRequest('goadd') ) {
+        if (cmsCore::inRequest('goadd')) {
 
-            $title     = cmsCore::request('title', 'str');
+            $title = cmsCore::request('title', 'str');
             $allow_who = cmsCore::request('allow_who', 'str', 'all');
             $ownertype = cmsCore::request('ownertype', 'str', 'single');
 
             //Проверяем название
-            if ( mb_strlen($title) < 5 ) {
+            if (mb_strlen($title) < 5) {
                 cmsCore::addSessionMessage($_LANG['BLOG_ERR_TITLE'], 'error');
                 cmsCore::redirect('/blogs/createblog.html');
             }
 
             //Проверяем хватает ли кармы, но только если это не админ
-            if ( $model->config['min_karma'] && !$inUser->is_admin ) {
+            if ($model->config['min_karma'] && !$inUser->is_admin) {
                 // если персональный блог
-                if ( $ownertype == 'single' && ($inUser->karma < $model->config['min_karma_private']) ) {
+                if ($ownertype == 'single' && ($inUser->karma < $model->config['min_karma_private'])) {
                     cmsCore::addSessionMessage($_LANG['BLOG_YOU_NEED'] . ' <a href="/users/' . $inUser->id . '/karma.html">' . $_LANG['BLOG_KARMS'] . '</a> ' . $_LANG['FOR_CREATE_PERSON_BLOG'] . ' &mdash; ' . $model->config['min_karma_private'] . ', ' . $_LANG['BLOG_HEAVING'] . ' &mdash; ' . $inUser->karma, 'error');
                     cmsCore::redirect('/blogs/createblog.html');
                 }
 
                 // если коллективный блог
-                if ( $ownertype == 'multi' && ($inUser->karma < $model->config['min_karma_public']) ) {
+                if ($ownertype == 'multi' && ($inUser->karma < $model->config['min_karma_public'])) {
                     cmsCore::addSessionMessage($_LANG['BLOG_YOU_NEED'] . ' <a href="/users/' . $inUser->id . '/karma.html">' . $_LANG['BLOG_KARMS'] . '</a> ' . $_LANG['FOR_CREATE_TEAM_BLOG'] . ' &mdash; ' . $model->config['min_karma_public'] . ', ' . $_LANG['BLOG_HEAVING'] . ' &mdash; ' . $inUser->karma, 'error');
                     cmsCore::redirect('/blogs/createblog.html');
                 }
             }
 
             //Добавляем блог в базу
-            $blog_id   = $inBlog->addBlog(\cms\events::call('blogs.add', [ 'user_id' => $inUser->id, 'title' => $title, 'allow_who' => $allow_who, 'ownertype' => $ownertype, 'forall' => 1 ]));
-            $blog_link = $inDB->get_field('cms_blogs', "id='{$blog_id}'", 'seolink');
+            $blog_id = $inBlog->addBlog(\cms\events::call('blogs.add', ['user_id' => $inUser->id, 'title' => $title, 'allow_who' => $allow_who, 'ownertype' => $ownertype, 'forall' => 1]));
+            $blog_link = $db->getField('blogs', $blog_id, 'seolink');
             //регистрируем событие
             cmsActions::log('add_blog', array(
-                'object'      => $title,
-                'object_url'  => $model->getBlogURL($blog_link),
-                'object_id'   => $blog_id,
-                'target'      => '',
-                'target_url'  => '',
-                'target_id'   => 0,
+                'object' => $title,
+                'object_url' => $model->getBlogURL($blog_link),
+                'object_id' => $blog_id,
+                'target' => '',
+                'target_url' => '',
+                'target_id' => 0,
                 'description' => ''
             ));
 
-            if ( IS_BILLING ) {
+            if (IS_BILLING) {
                 cmsBilling::process('blogs', 'add_blog');
             }
 
@@ -183,28 +182,28 @@ function blogs()
 
 //============================ НАСТРОЙКИ БЛОГА ===============================//
 
-    if ( $do == 'config' ) {
-        if ( !$inUser->id ) {
+    if ($do == 'config') {
+        if (!$inUser->id) {
             cmsCore::error404();
         }
 
-        if ( !cmsCore::isAjax() ) {
+        if (!cmsCore::isAjax()) {
             cmsCore::error404();
         }
 
         // получаем блог
         $blog = $model->getBlog($id);
-        if ( !$blog ) {
+        if (!$blog) {
             cmsCore::error404();
         }
 
         //Проверяем является пользователь хозяином блога или админом
-        if ( $blog['user_id'] != $inUser->id && !$inUser->is_admin ) {
+        if ($blog['user_id'] != $inUser->id && !$inUser->is_admin) {
             cmsCore::halt();
         }
 
         //Если нет запроса на сохранение, показываем форму настроек блога
-        if ( !cmsCore::inRequest('goadd') ) {
+        if (!cmsCore::inRequest('goadd')) {
             //Получаем список авторов блога
             $authors = \cms\events::call('blogs.get_authors', $inBlog->getBlogAuthors($blog['id']));
 
@@ -218,91 +217,90 @@ function blogs()
                     assign('is_admin', $inUser->is_admin)->
                     display('com_blog_config.tpl');
 
-            cmsCore::jsonOutput(array( 'error' => false, 'html' => ob_get_clean() ));
+            cmsCore::jsonOutput(array('error' => false, 'html' => ob_get_clean()));
         }
 
         //Если пришел запрос на сохранение
-        if ( cmsCore::inRequest('goadd') ) {
+        if (cmsCore::inRequest('goadd')) {
             //Получаем настройки
-            $title     = cmsCore::request('title', 'str');
+            $title = cmsCore::request('title', 'str');
             $allow_who = cmsCore::request('allow_who', 'str', 'all');
             $ownertype = cmsCore::request('ownertype', 'str', 'single');
-            $premod    = cmsCore::request('premod', 'int', 0);
-            $forall    = cmsCore::request('forall', 'int', 1);
-            $showcats  = cmsCore::request('showcats', 'int', 1);
-            $authors   = cmsCore::request('authorslist', 'array_int', array());
+            $premod = cmsCore::request('premod', 'int', 0);
+            $forall = cmsCore::request('forall', 'int', 1);
+            $showcats = cmsCore::request('showcats', 'int', 1);
+            $authors = cmsCore::request('authorslist', 'array_int', array());
 
-            if ( $model->config['seo_user_access'] || $inUser->is_admin ) {
+            if ($model->config['seo_user_access'] || $inUser->is_admin) {
                 $page_title = cmsCore::request('pagetitle', 'str', '');
-                $meta_keys  = cmsCore::request('meta_keys', 'str', '');
-                $meta_desc  = cmsCore::request('meta_desc', 'str', '');
-            }
-            else {
-                $page_title = $meta_keys  = $meta_desc  = '';
+                $meta_keys = cmsCore::request('meta_keys', 'str', '');
+                $meta_desc = cmsCore::request('meta_desc', 'str', '');
+            } else {
+                $page_title = $meta_keys = $meta_desc = '';
             }
 
             //Проверяем настройки
-            if ( mb_strlen($title) < 5 ) {
+            if (mb_strlen($title) < 5) {
                 $title = $blog['title'];
             }
 
             //Проверяем ограничения по карме (для смены типа блога)
-            if ( $model->config['min_karma'] && !$inUser->is_admin ) {
+            if ($model->config['min_karma'] && !$inUser->is_admin) {
                 // если персональный блог
-                if ( $ownertype == 'single' && ($inUser->karma < $model->config['min_karma_private']) ) {
+                if ($ownertype == 'single' && ($inUser->karma < $model->config['min_karma_private'])) {
 
-                    cmsCore::jsonOutput(array( 'error' => true, 'text' => $_LANG['BLOG_YOU_NEED'] . ' <a href="/users/' . $inUser->id . '/karma.html">' . $_LANG['BLOG_KARMS'] . '</a> ' . $_LANG['FOR_CREATE_PERSON_BLOG'] . ' &mdash; ' . $model->config['min_karma_private'] . ', ' . $_LANG['BLOG_HEAVING'] . ' &mdash; ' . $inUser->karma ));
+                    cmsCore::jsonOutput(array('error' => true, 'text' => $_LANG['BLOG_YOU_NEED'] . ' <a href="/users/' . $inUser->id . '/karma.html">' . $_LANG['BLOG_KARMS'] . '</a> ' . $_LANG['FOR_CREATE_PERSON_BLOG'] . ' &mdash; ' . $model->config['min_karma_private'] . ', ' . $_LANG['BLOG_HEAVING'] . ' &mdash; ' . $inUser->karma));
                 }
 
                 // если коллективный блог
-                if ( $ownertype == 'multi' && ($inUser->karma < $model->config['min_karma_public']) ) {
+                if ($ownertype == 'multi' && ($inUser->karma < $model->config['min_karma_public'])) {
 
-                    cmsCore::jsonOutput(array( 'error' => true, 'text' => $_LANG['BLOG_YOU_NEED'] . ' <a href="/users/' . $inUser->id . '/karma.html">' . $_LANG['BLOG_KARMS'] . '</a> ' . $_LANG['FOR_CREATE_TEAM_BLOG'] . ' &mdash; ' . $model->config['min_karma_public'] . ', ' . $_LANG['BLOG_HEAVING'] . ' &mdash; ' . $inUser->karma ));
+                    cmsCore::jsonOutput(array('error' => true, 'text' => $_LANG['BLOG_YOU_NEED'] . ' <a href="/users/' . $inUser->id . '/karma.html">' . $_LANG['BLOG_KARMS'] . '</a> ' . $_LANG['FOR_CREATE_TEAM_BLOG'] . ' &mdash; ' . $model->config['min_karma_public'] . ', ' . $_LANG['BLOG_HEAVING'] . ' &mdash; ' . $inUser->karma));
                 }
             }
 
-            if ( !cmsUser::checkCsrfToken() ) {
+            if (!cmsUser::checkCsrfToken()) {
                 cmsCore::halt();
             }
 
             //сохраняем авторов
-            \cms\events::call('blogs.update_authors', [ $blog['id'], &$authors ]);
+            \cms\events::call('blogs.update_authors', [$blog['id'], &$authors]);
             $inBlog->updateBlogAuthors($blog['id'], $authors);
 
             //сохраняем настройки блога
             $blog['seolink_new'] = $inBlog->updateBlog($blog['id'], \cms\events::call('blogs.update', [
-                        'title'     => $title,
+                        'title' => $title,
                         'pagetitle' => $page_title,
                         'meta_keys' => $meta_keys,
                         'meta_desc' => $meta_desc,
                         'allow_who' => $allow_who,
-                        'showcats'  => $showcats,
+                        'showcats' => $showcats,
                         'ownertype' => $ownertype,
-                        'premod'    => $premod,
-                        'forall'    => $forall
+                        'premod' => $premod,
+                        'forall' => $forall
                     ]), $model->config['update_seo_link_blog']);
 
             $blog['seolink'] = $blog['seolink_new'] ? $blog['seolink_new'] : $blog['seolink'];
 
-            if ( stripslashes($title) != $blog['title'] ) {
+            if (stripslashes($title) != $blog['title']) {
                 // обновляем записи постов
-                cmsActions::updateLog('add_post', array( 'target' => $title, 'target_url' => $model->getBlogURL($blog['seolink']) ), 0, $blog['id']);
+                cmsActions::updateLog('add_post', array('target' => $title, 'target_url' => $model->getBlogURL($blog['seolink'])), 0, $blog['id']);
                 // обновляем запись добавления блога
-                cmsActions::updateLog('add_blog', array( 'object' => $title, 'object_url' => $model->getBlogURL($blog['seolink']) ), $blog['id']);
+                cmsActions::updateLog('add_blog', array('object' => $title, 'object_url' => $model->getBlogURL($blog['seolink'])), $blog['id']);
             }
 
-            cmsCore::jsonOutput(array( 'error' => false, 'redirect' => $model->getBlogURL($blog['seolink']) ));
+            cmsCore::jsonOutput(array('error' => false, 'redirect' => $model->getBlogURL($blog['seolink'])));
         }
     }
 
 //============================ СПИСОК БЛОГОВ =================================//
 
-    if ( $do == 'view_blogs' ) {
+    if ($do == 'view_blogs') {
         // rss в адресной строке
         $inPage->addHead('<link rel="alternate" type="application/rss+xml" title="' . $_LANG['BLOGS'] . '" href="' . HOST . '/rss/blogs/all/feed.rss">');
 
         // тип блога
-        if ( $ownertype && $ownertype != 'all' ) {
+        if ($ownertype && $ownertype != 'all') {
             $inBlog->whereOwnerTypeIs($ownertype);
         }
 
@@ -310,18 +308,18 @@ function blogs()
         $total = $inBlog->getBlogsCount();
 
         //устанавливаем сортировку
-        $inDB->orderBy('b.rating', 'DESC');
+        $db->orderBy('i.rating', 'DESC');
 
-        $inDB->limitPage($page, $model->config['perpage_blog']);
+        $db->limitPage($page, $model->config['perpage_blog']);
 
         //Получаем список блогов
         $blogs = \cms\events::call('blogs.get_blogs', $inBlog->getBlogs($model));
-        if ( !$blogs && $page > 1 ) {
+        if (!$blogs && $page > 1) {
             cmsCore::error404();
         }
 
         //Генерируем панель со страницами и устанавливаем заголовки страниц и глубиномера
-        switch ( $ownertype ) {
+        switch ($ownertype) {
             case 'all': $inPage->setTitle($_LANG['ALL_BLOGS']);
                 $inPage->setDescription($_LANG['BLOGS'] . ' - ' . $_LANG['ALL_BLOGS']);
                 $inPage->addPathway($_LANG['ALL_BLOGS']);
@@ -339,8 +337,8 @@ function blogs()
                 break;
         }
 
-        if ( $blogs ) {
-            foreach ( $blogs as $b ) {
+        if ($blogs) {
+            foreach ($blogs as $b) {
                 $k[] = $b['title'];
             }
             $inPage->setKeywords(implode(', ', $k));
@@ -357,43 +355,46 @@ function blogs()
 
 //============================ ПРОСМОТР БЛОГА ================================//
 
-    if ( $do == 'blog' ) {
+    if ($do == 'blog') {
         // получаем блог
         $blog = $model->getBlog($bloglink);
 
         // Совместимость со старыми ссылками на клубные блоги
         // Пробуем клубный блог получить по ссылке
-        if ( !$blog ) {
-            $blog_user_id = $inDB->get_field('cms_blogs', "seolink = '$bloglink' AND owner = 'club'", 'user_id');
-            if ( $blog_user_id ) {
+        if (!$blog) {
+            $blog_user_id = $db->
+                    filterEqual('seolink', $bloglink)->
+                    filterEqual('owner', 'club')->
+                    getFieldFiltered('blogs', 'user_id');
+            if ($blog_user_id) {
                 cmsCore::redirect('/clubs/' . $blog_user_id . '_blog', '301');
             }
         }
 
-        if ( !$blog ) {
+        if (!$blog) {
             cmsCore::error404();
         }
 
         // Права доступа
-        $myblog    = ($inUser->id && $inUser->id == $blog['user_id']); // автор блога
+        $myblog = ($inUser->id && $inUser->id == $blog['user_id']); // автор блога
         $is_writer = $inBlog->isUserBlogWriter($blog, $inUser->id); // может ли пользователь писать в блог
 
         $inPage->addPathway($blog['title'], $model->getBlogURL($blog['seolink']));
         // rss в адресной строке
         $inPage->addHead('<link rel="alternate" type="application/rss+xml" title="' . htmlspecialchars(strip_tags($blog['title'])) . '" href="' . HOST . '/rss/blogs/' . $blog['id'] . '/feed.rss">');
-        if ( $myblog || $inUser->is_admin ) {
+        if ($myblog || $inUser->is_admin) {
             $inPage->addHeadJS('components/blogs/js/blog.js');
         }
 
         //Если доступа нет, возвращаемся и выводим сообщение об ошибке
-        if ( !cmsUser::checkUserContentAccess($blog['allow_who'], $blog['user_id']) ) {
+        if (!cmsUser::checkUserContentAccess($blog['allow_who'], $blog['user_id'])) {
             cmsCore::addSessionMessage($_LANG['CLOSED_BLOG'] . '<br>' . $_LANG['CLOSED_BLOG_TEXT'], 'error');
             cmsCore::redirect('/blogs');
         }
 
         // Если показываем посты на модерации, если запрашиваем их
-        if ( $on_moderate ) {
-            if ( !$inUser->is_admin && !($myblog && $blog['ownertype'] == 'multi' && $blog['premod']) ) {
+        if ($on_moderate) {
+            if (!$inUser->is_admin && !($myblog && $blog['ownertype'] == 'multi' && $blog['premod'])) {
                 cmsCore::error404();
             }
 
@@ -412,12 +413,12 @@ function blogs()
         $inBlog->whereBlogIs($blog['id']);
 
         // кроме админов автора в списке только с доступом для всех
-        if ( !$inUser->is_admin && !$myblog && !$inUser->isFriend($blog['user_id']) ) {
+        if (!$inUser->is_admin && !$myblog && !$inUser->isFriend($blog['user_id'])) {
             $inBlog->whereOnlyPublic();
         }
 
         // если пришла категория
-        if ( $cat_id ) {
+        if ($cat_id) {
             $all_total = $inBlog->getPostsCount($inUser->is_admin || $myblog);
             $inBlog->whereCatIs($cat_id);
         }
@@ -426,19 +427,19 @@ function blogs()
         $total = $inBlog->getPostsCount($inUser->is_admin || $myblog);
 
         //устанавливаем сортировку
-        $inDB->orderBy('p.pubdate', 'DESC');
+        $db->orderBy('i.pubdate', 'DESC');
 
-        $inDB->limitPage($page, $model->config['perpage']);
+        $db->limitPage($page, $model->config['perpage']);
 
         // сами посты
         $posts = $model->getPosts(($inUser->is_admin || $myblog));
-        if ( !$posts && $page > 1 ) {
+        if (!$posts && $page > 1) {
             cmsCore::error404();
         }
 
         $blogcats = false;
         // Если нужно, получаем список рубрик (категорий) этого блога
-        if ( $blog['showcats'] ) {
+        if ($blog['showcats']) {
             $blogcats = \cms\events::call('blogs.get_categories', $inBlog->getBlogCats($blog['id']));
         }
 
@@ -447,14 +448,13 @@ function blogs()
 
         // админлинки
         $blog['moderate_link'] = $model->getBlogURL($blog['seolink']) . '/moderate.html';
-        $blog['blog_link']     = $model->getBlogURL($blog['seolink']);
+        $blog['blog_link'] = $model->getBlogURL($blog['seolink']);
         $blog['add_post_link'] = '/blogs/' . $blog['id'] . '/newpost' . ($cat_id ? $cat_id : '') . '.html';
 
         //Генерируем панель со страницами
-        if ( $cat_id ) {
+        if ($cat_id) {
             $pagination = cmsPage::getPagebar($total, $page, $model->config['perpage'], $blog['blog_link'] . '/page-%page%/cat-' . $cat_id);
-        }
-        else {
+        } else {
             $pagination = cmsPage::getPagebar($total, $page, $model->config['perpage'], $blog['blog_link'] . '/page-%page%');
         }
 
@@ -462,16 +462,14 @@ function blogs()
         $inPage->setTitle($blog['pagetitle'] ? $blog['pagetitle'] : $blog['title']);
         $inPage->setDescription($blog['meta_desc'] ? $blog['meta_desc'] : $blog['title']);
         // keywords
-        if ( $blog['meta_keys'] ) {
+        if ($blog['meta_keys']) {
             $meta_keys = $blog['meta_keys'];
-        }
-        elseif ( $posts ) {
-            foreach ( $posts as $p ) {
+        } elseif ($posts) {
+            foreach ($posts as $p) {
                 $k[] = $p['title'];
             }
             $meta_keys = implode(', ', $k);
-        }
-        else {
+        } else {
             $meta_keys = $blog['title'];
         }
         $inPage->setKeywords($meta_keys);
@@ -493,52 +491,52 @@ function blogs()
 
 //=================== НОВЫЙ ПОСТ / РЕДАКТИРОВАНИЕ ПОСТА ======================//
 
-    if ( $do == 'newpost' || $do == 'editpost' ) {
-        if ( !$inUser->id ) {
+    if ($do == 'newpost' || $do == 'editpost') {
+        if (!$inUser->id) {
             cmsUser::goToLogin();
         }
 
         // для редактирования сначала получаем пост
-        if ( $do == 'editpost' ) {
+        if ($do == 'editpost') {
             $post = $model->getPost($post_id);
-            if ( !$post ) {
+            if (!$post) {
                 cmsCore::error404();
             }
-            $id           = $post['blog_id'];
+            $id = $post['blog_id'];
             $post['tags'] = cmsTagLine('blogpost', $post['id'], false);
         }
 
         // получаем блог
         $blog = $model->getBlog($id);
-        if ( !$blog ) {
+        if (!$blog) {
             cmsCore::error404();
         }
 
         //Если доступа нет, возвращаемся и выводим сообщение об ошибке
-        if ( !cmsUser::checkUserContentAccess($blog['allow_who'], $blog['user_id']) ) {
+        if (!cmsUser::checkUserContentAccess($blog['allow_who'], $blog['user_id'])) {
             cmsCore::addSessionMessage($_LANG['CLOSED_BLOG'] . '<br>' . $_LANG['CLOSED_BLOG_TEXT'], 'error');
             cmsCore::redirect('/blogs');
         }
 
         // Права доступа
-        $myblog    = ($inUser->id && $inUser->id == $blog['user_id']); // автор блога
+        $myblog = ($inUser->id && $inUser->id == $blog['user_id']); // автор блога
         $is_writer = $inBlog->isUserBlogWriter($blog, $inUser->id); // может ли пользователь писать в блог
         // если не его блог, пользователь не писатель и не админ, вне зависимости от авторства показываем 404
-        if ( !$myblog && !$is_writer && !$inUser->is_admin ) {
+        if (!$myblog && !$is_writer && !$inUser->is_admin) {
             cmsCore::error404();
         }
         // проверяем является ли пользователь автором, если редактируем пост
-        if ( ($do == 'editpost') && !$inUser->is_admin && $post['user_id'] != $inUser->id ) {
+        if (($do == 'editpost') && !$inUser->is_admin && $post['user_id'] != $inUser->id) {
             cmsCore::error404();
         }
 
         //Если еще не было запроса на сохранение
-        if ( !cmsCore::inRequest('goadd') ) {
+        if (!cmsCore::inRequest('goadd')) {
             $inPage->addPathway($blog['title'], $model->getBlogURL($blog['seolink']));
 
             //для нового поста
-            if ( $do == 'newpost' ) {
-                if ( IS_BILLING ) {
+            if ($do == 'newpost') {
+                if (IS_BILLING) {
                     cmsBilling::checkBalance('blogs', 'add_post');
                 }
 
@@ -546,17 +544,16 @@ function blogs()
                 $inPage->setTitle($_LANG['NEW_POST']);
 
                 $post = cmsUser::sessionGet('mod');
-                if ( $post ) {
+                if ($post) {
                     cmsUser::sessionDel('mod');
-                }
-                else {
-                    $post['cat_id']   = $cat_id;
+                } else {
+                    $post['cat_id'] = $cat_id;
                     $post['comments'] = 1;
                 }
             }
 
             //для редактирования поста
-            if ( $do == 'editpost' ) {
+            if ($do == 'editpost') {
                 $inPage->addPathway($post['title'], $model->getPostURL($blog['seolink'], $post['seolink']));
                 $inPage->addPathway($_LANG['EDIT_POST']);
                 $inPage->setTitle($_LANG['EDIT_POST']);
@@ -570,7 +567,7 @@ function blogs()
 
             //получаем код панелей bbcode и смайлов
             $bb_toolbar = cmsPage::getBBCodeToolbar('message', $model->config['img_on'], 'blogs', 'blog_post', $post_id);
-            $smilies    = cmsPage::getSmilesPanel('message');
+            $smilies = cmsPage::getSmilesPanel('message');
 
             $inCore->initAutoGrowText('#message');
 
@@ -591,48 +588,48 @@ function blogs()
         }
 
         //Если есть запрос на сохранение
-        if ( cmsCore::inRequest('goadd') ) {
+        if (cmsCore::inRequest('goadd')) {
             $errors = false;
 
             //Получаем параметры
-            $mod['title']     = cmsCore::request('title', 'str');
-            $mod['content']   = cmsCore::request('content', 'html');
-            $mod['feel']      = cmsCore::request('feel', 'str', '');
-            $mod['music']     = cmsCore::request('music', 'str', '');
-            $mod['cat_id']    = cmsCore::request('cat_id', 'int');
+            $mod['title'] = cmsCore::request('title', 'str');
+            $mod['content'] = cmsCore::request('content', 'html');
+            $mod['feel'] = cmsCore::request('feel', 'str', '');
+            $mod['music'] = cmsCore::request('music', 'str', '');
+            $mod['cat_id'] = cmsCore::request('cat_id', 'int');
             $mod['allow_who'] = cmsCore::request('allow_who', 'str', $blog['allow_who']);
-            $mod['tags']      = cmsCore::request('tags', 'str', '');
-            $mod['comments']  = cmsCore::request('comments', 'int', 1);
+            $mod['tags'] = cmsCore::request('tags', 'str', '');
+            $mod['comments'] = cmsCore::request('comments', 'int', 1);
 
-            if ( $model->config['seo_user_access'] || $inUser->is_admin ) {
+            if ($model->config['seo_user_access'] || $inUser->is_admin) {
                 $mod['pagetitle'] = cmsCore::request('pagetitle', 'str', '');
                 $mod['meta_keys'] = cmsCore::request('meta_keys', 'str', '');
                 $mod['meta_desc'] = cmsCore::request('meta_desc', 'str', '');
             }
 
             $mod['published'] = ($myblog || !$blog['premod']) ? 1 : 0;
-            $mod['blog_id']   = $blog['id'];
+            $mod['blog_id'] = $blog['id'];
 
             //Проверяем их
-            if ( mb_strlen($mod['title']) < 2 ) {
+            if (mb_strlen($mod['title']) < 2) {
                 cmsCore::addSessionMessage($_LANG['POST_ERR_TITLE'], 'error');
                 $errors = true;
             }
-            if ( mb_strlen($mod['content']) < 5 ) {
+            if (mb_strlen($mod['content']) < 5) {
                 cmsCore::addSessionMessage($_LANG['POST_ERR_TEXT'], 'error');
                 $errors = true;
             }
 
             // Если есть ошибки, возвращаемся назад
-            if ( $errors ) {
+            if ($errors) {
                 cmsUser::sessionPut('mod', $mod);
                 cmsCore::redirectBack();
             }
 
             //Если нет ошибок
             //добавляем новый пост...
-            if ( $do == 'newpost' ) {
-                if ( IS_BILLING ) {
+            if ($do == 'newpost') {
+                if (IS_BILLING) {
                     cmsBilling::process('blogs', 'add_post');
                 }
 
@@ -641,23 +638,23 @@ function blogs()
 
                 // добавляем пост, получая его id и seolink
                 $added = $inBlog->addPost(\cms\events::call('blogs.add_post', $mod));
-                $mod   = array_merge($mod, $added);
+                $mod = array_merge($mod, $added);
 
-                if ( $mod['published'] ) {
+                if ($mod['published']) {
                     $mod['seolink'] = $model->getPostURL($blog['seolink'], $mod['seolink']);
 
-                    if ( $blog['allow_who'] != 'nobody' && $mod['allow_who'] != 'nobody' ) {
+                    if ($blog['allow_who'] != 'nobody' && $mod['allow_who'] != 'nobody') {
 
                         \cms\events::call('blogs.add_post_done', $mod);
 
                         cmsActions::log('add_post', array(
-                            'object'          => $mod['title'],
-                            'object_url'      => $mod['seolink'],
-                            'object_id'       => $mod['id'],
-                            'target'          => $blog['title'],
-                            'target_url'      => $model->getBlogURL($blog['seolink']),
-                            'target_id'       => $blog['id'],
-                            'description'     => '',
+                            'object' => $mod['title'],
+                            'object_url' => $mod['seolink'],
+                            'object_id' => $mod['id'],
+                            'target' => $blog['title'],
+                            'target_url' => $model->getBlogURL($blog['seolink']),
+                            'target_id' => $blog['id'],
+                            'description' => '',
                             'is_friends_only' => (int) ($blog['allow_who'] == 'friends' || $mod['allow_who'] == 'friends')
                         ));
                     }
@@ -667,7 +664,7 @@ function blogs()
                     cmsCore::redirect($mod['seolink']);
                 }
 
-                if ( !$mod['published'] ) {
+                if (!$mod['published']) {
                     $message = str_replace('%user%', cmsUser::getProfileLink($inUser->login, $inUser->nickname), $_LANG['MSG_POST_SUBMIT']);
                     $message = str_replace('%post%', '<a href="' . $model->getPostURL($blog['seolink'], $added['seolink']) . '">' . $mod['title'] . '</a>', $message);
                     $message = str_replace('%blog%', '<a href="' . $model->getBlogURL($blog['seolink']) . '">' . $blog['title'] . '</a>', $message);
@@ -681,23 +678,23 @@ function blogs()
             }
 
             //...или сохраняем пост после редактирования
-            if ( $do == 'editpost' ) {
-                if ( $model->config['update_date'] ) {
+            if ($do == 'editpost') {
+                if ($model->config['update_date']) {
                     $mod['pubdate'] = date('Y-m-d H:i:s');
                 }
 
                 $mod['edit_times'] = (int) $post['edit_times'] + 1;
-                $mod['edit_date']  = date('Y-m-d H:i:s');
+                $mod['edit_date'] = date('Y-m-d H:i:s');
 
                 $new_post_seolink = $inBlog->updatePost($post['id'], \cms\events::call('blogs.update_post', $mod), $model->config['update_seo_link']);
 
                 $post['seolink'] = is_string($new_post_seolink) ? $new_post_seolink : $post['seolink'];
 
-                cmsActions::updateLog('add_post', array( 'object'     => $mod['title'],
-                    'pubdate'    => $model->config['update_date'] ? $mod['pubdate'] : $post['pubdate'],
-                    'object_url' => $model->getPostURL($blog['seolink'], $post['seolink']) ), $post['id']);
+                cmsActions::updateLog('add_post', array('object' => $mod['title'],
+                    'pubdate' => $model->config['update_date'] ? $mod['pubdate'] : $post['pubdate'],
+                    'object_url' => $model->getPostURL($blog['seolink'], $post['seolink'])), $post['id']);
 
-                if ( !$mod['published'] ) {
+                if (!$mod['published']) {
                     $message = str_replace('%user%', cmsUser::getProfileLink($inUser->login, $inUser->nickname), $_LANG['MSG_POST_UPDATE']);
                     $message = str_replace('%post%', '<a href="' . $model->getPostURL($blog['seolink'], $post['seolink']) . '">' . $mod['title'] . '</a>', $message);
                     $message = str_replace('%blog%', '<a href="' . $model->getBlogURL($blog['seolink']) . '">' . $blog['title'] . '</a>', $message);
@@ -705,8 +702,7 @@ function blogs()
                     cmsUser::sendMessage(USER_UPDATER, $blog['user_id'], $message);
 
                     cmsCore::addSessionMessage($_LANG['POST_PREMODER_TEXT'], 'info');
-                }
-                else {
+                } else {
                     cmsCore::addSessionMessage($_LANG['POST_UPDATED'], 'success');
                 }
 
@@ -717,22 +713,22 @@ function blogs()
 
 //================= НОВАЯ РУБРИКА / РЕДАКТИРОВАНИЕ РУБРИКИ ===================//
 
-    if ( $do == 'newcat' || $do == 'editcat' ) {
-        if ( !$inUser->id ) {
+    if ($do == 'newcat' || $do == 'editcat') {
+        if (!$inUser->id) {
             cmsCore::error404();
         }
 
-        if ( !cmsCore::isAjax() ) {
+        if (!cmsCore::isAjax()) {
             cmsCore::error404();
         }
 
         $cat = array();
 
         // Для редактирования сначала получаем рубрику
-        if ( $do == 'editcat' ) {
+        if ($do == 'editcat') {
             $cat = \cms\events::call('blogs.get_category', $inBlog->getBlogCategory($cat_id));
 
-            if ( !$cat ) {
+            if (!$cat) {
                 cmsCore::halt();
             }
 
@@ -741,82 +737,82 @@ function blogs()
 
         // получаем блог
         $blog = $model->getBlog($id);
-        if ( !$blog ) {
+        if (!$blog) {
             cmsCore::halt();
         }
 
         //Проверяем является пользователь хозяином блога или админом
-        if ( $blog['user_id'] != $inUser->id && !$inUser->is_admin ) {
+        if ($blog['user_id'] != $inUser->id && !$inUser->is_admin) {
             cmsCore::halt();
         }
 
         //Если нет запроса на сохранение
-        if ( !cmsCore::inRequest('goadd') ) {
+        if (!cmsCore::inRequest('goadd')) {
             cmsPage::initTemplate('components', 'com_blog_edit_cat')->
                     assign('mod', $cat)->
                     assign('form_action', ($do == 'newcat' ? '/blogs/' . $blog['id'] . '/newcat.html' : '/blogs/editcat' . $cat['id'] . '.html'))->
                     display('com_blog_edit_cat.tpl');
 
-            cmsCore::jsonOutput(array( 'error' => false, 'html' => ob_get_clean() ));
+            cmsCore::jsonOutput(array('error' => false, 'html' => ob_get_clean()));
         }
 
         //Если есть запрос на сохранение
-        if ( cmsCore::inRequest('goadd') ) {
-            $new_cat['title']       = cmsCore::request('title', 'str', '');
+        if (cmsCore::inRequest('goadd')) {
+            $new_cat['title'] = cmsCore::request('title', 'str', '');
             $new_cat['description'] = cmsCore::request('description', 'str', '');
-            $new_cat['blog_id']     = $blog['id'];
+            $new_cat['blog_id'] = $blog['id'];
 
-            if ( mb_strlen($new_cat['title']) < 3 ) {
-                cmsCore::jsonOutput(array( 'error' => true, 'text' => $_LANG['CAT_ERR_TITLE'] ));
+            if (mb_strlen($new_cat['title']) < 3) {
+                cmsCore::jsonOutput(array('error' => true, 'text' => $_LANG['CAT_ERR_TITLE']));
             }
 
-            if ( !cmsUser::checkCsrfToken() ) {
+            if (!cmsUser::checkCsrfToken()) {
                 cmsCore::halt();
             }
 
             //новая рубрика
-            if ( $do == 'newcat' ) {
+            if ($do == 'newcat') {
 
                 $cat['id'] = $inBlog->addBlogCategory(\cms\events::call('blogs.add_category', $new_cat));
                 cmsCore::addSessionMessage($_LANG['CAT_IS_ADDED'], 'success');
             }
             //редактирование рубрики
-            if ( $do == 'editcat' ) {
+            if ($do == 'editcat') {
                 $inBlog->updateBlogCategory($cat['id'], \cms\events::call('blogs.update_category', $new_cat));
                 cmsCore::addSessionMessage($_LANG['CAT_IS_UPDATED'], 'success');
             }
 
-            cmsCore::jsonOutput(array( 'error' => false, 'redirect' => $model->getBlogURL($blog['seolink'], 1, $cat['id']) ));
+            cmsCore::jsonOutput(array('error' => false, 'redirect' => $model->getBlogURL($blog['seolink'], 1, $cat['id'])));
         }
     }
 
 //=========================== УДАЛЕНИЕ РУБРИКИ ===============================//
 
-    if ( $do == 'delcat' ) {
-        if ( !$inUser->id ) {
+    if ($do == 'delcat') {
+        if (!$inUser->id) {
             cmsCore::error404();
         }
 
-        if ( !cmsCore::isAjax() ) {
+        if (!cmsCore::isAjax()) {
             cmsCore::error404();
         }
 
         $cat = \cms\events::call('blogs.get_category', $inBlog->getBlogCategory($cat_id));
 
-        if ( !$cat ) {
+        if (!$cat) {
             cmsCore::halt();
         }
 
         $blog = $model->getBlog($cat['blog_id']);
-        if ( !$blog ) {
+        if (!$blog) {
             cmsCore::halt();
         }
 
-        if ( $blog['user_id'] != $inUser->id && !$inUser->is_admin ) {
+        if ($blog['user_id'] != $inUser->id && !$inUser->is_admin) {
             cmsCore::halt();
         }
 
-        if ( !cmsUser::checkCsrfToken() ) {
+        if (!cmsUser::checkCsrfToken()) {
             cmsCore::halt();
         }
 
@@ -824,50 +820,53 @@ function blogs()
 
         cmsCore::addSessionMessage($_LANG['CAT_IS_DELETED'], 'success');
 
-        cmsCore::jsonOutput(array( 'error' => false, 'redirect' => $model->getBlogURL($blog['seolink']) ));
+        cmsCore::jsonOutput(array('error' => false, 'redirect' => $model->getBlogURL($blog['seolink'])));
     }
 
 //============================ ПРОСМОТР ПОСТА ================================//
 
-    if ( $do == 'post' ) {
+    if ($do == 'post') {
         $post = $model->getPost($seolink);
 
-        if ( !$post ) {
+        if (!$post) {
             cmsCore::error404();
         }
 
         $blog = $model->getBlog($post['blog_id']);
 
         // Совместимость со старыми ссылками на клубные посты блога
-        if ( !$blog ) {
-            $blog_user_id = $inDB->get_field('cms_blogs', "id = '{$post['blog_id']}' AND owner = 'club'", 'user_id');
-            if ( $blog_user_id ) {
+        if (!$blog) {
+            $blog_user_id = $db->
+                    filterEqual('id', $post['blog_id'])->
+                    filterEqual('owner', 'club')->
+                    getFieldFiltered('blogs', 'user_id');
+            if ($blog_user_id) {
                 cmsCore::redirect('/clubs/' . $blog_user_id . '_' . $post['seolink'] . '.html', '301');
             }
         }
 
-        if ( !$blog ) {
+        if (!$blog) {
             cmsCore::error404();
         }
 
         // Проверяем сеолинк блога и делаем редирект если он изменился
-        if ( $bloglink != $blog['seolink'] ) {
+        if ($bloglink != $blog['seolink']) {
             cmsCore::redirect($model->getPostURL($blog['seolink'], $post['seolink']), '301');
         }
 
         // право просмотра блога
-        if ( !cmsUser::checkUserContentAccess($blog['allow_who'], $blog['user_id']) ) {
+        if (!cmsUser::checkUserContentAccess($blog['allow_who'], $blog['user_id'])) {
             cmsCore::addSessionMessage($_LANG['CLOSED_BLOG'] . '<br>' . $_LANG['CLOSED_BLOG_TEXT'], 'error');
             cmsCore::redirect('/blogs');
         }
 
         // право просмотра самого поста
-        if ( !cmsUser::checkUserContentAccess($post['allow_who'], $post['user_id']) ) {
+        if (!cmsUser::checkUserContentAccess($post['allow_who'], $post['user_id'])) {
             cmsCore::addSessionMessage($_LANG['CLOSED_POST'] . '<br>' . $_LANG['CLOSED_POST_TEXT'], 'error');
             cmsCore::redirect($model->getBlogURL($blog['seolink']));
         }
 
-        if ( $inUser->id ) {
+        if ($inUser->id) {
             $inPage->addHeadJS('components/blogs/js/blog.js');
         }
 
@@ -878,7 +877,7 @@ function blogs()
         $inPage->setDescription($post['meta_desc'] ? $post['meta_desc'] : crop($post['content_html']));
         $inPage->setKeywords($post['meta_keys'] ? $post['meta_keys'] : $post['title']);
 
-        if ( $post['cat_id'] ) {
+        if ($post['cat_id']) {
             $cat = \cms\events::call('blogs.get_category', $inBlog->getBlogCategory($post['cat_id']));
         }
 
@@ -887,8 +886,8 @@ function blogs()
         $is_author = ($inUser->id && $inUser->id == $post['user_id']);
 
         // увеличиваем кол-во просмотров
-        if ( !$is_author ) {
-            $inDB->setFlag('cms_blog_posts', $post['id'], 'hits', $post['hits'] + 1);
+        if (!$is_author) {
+            $db->setFlag('blog_posts', $post['id'], 'hits', $post['hits'] + 1);
         }
 
         cmsPage::initTemplate('components', 'com_blog_view_post')->
@@ -902,7 +901,7 @@ function blogs()
                 assign('navigation', $inBlog->getPostNavigation($post['id'], $blog['id'], $model, $blog['seolink']))->
                 display('com_blog_view_post.tpl');
 
-        if ( $inCore->isComponentInstalled('comments') && $post['comments'] ) {
+        if ($inCore->isComponentInstalled('comments') && $post['comments']) {
             cmsCore::includeComments();
             comments('blog', $post['id'], array(), $is_author);
         }
@@ -910,75 +909,75 @@ function blogs()
 
 //============================= УДАЛЕНИЕ ПОСТА ===============================//
 
-    if ( $do == 'delpost' ) {
-        if ( !$inUser->id ) {
+    if ($do == 'delpost') {
+        if (!$inUser->id) {
             cmsCore::error404();
         }
 
-        if ( !cmsCore::isAjax() ) {
+        if (!cmsCore::isAjax()) {
             cmsCore::error404();
         }
 
         $post = $model->getPost($post_id);
-        if ( !$post ) {
+        if (!$post) {
             cmsCore::halt();
         }
 
         $blog = $model->getBlog($post['blog_id']);
-        if ( !$blog ) {
+        if (!$blog) {
             cmsCore::halt();
         }
 
-        $myblog    = ($inUser->id == $blog['user_id']); // автор блога
+        $myblog = ($inUser->id == $blog['user_id']); // автор блога
         $is_writer = $inBlog->isUserBlogWriter($blog, $inUser->id);
         // если не его блог, пользователь не писатель и не админ
-        if ( !$myblog && !$is_writer && !$inUser->is_admin ) {
+        if (!$myblog && !$is_writer && !$inUser->is_admin) {
             cmsCore::halt();
         }
         // проверяем является ли пользователь автором
-        if ( !$inUser->is_admin && !$myblog && $post['user_id'] != $inUser->id ) {
+        if (!$inUser->is_admin && !$myblog && $post['user_id'] != $inUser->id) {
             cmsCore::halt();
         }
 
-        if ( !cmsUser::checkCsrfToken() ) {
+        if (!cmsUser::checkCsrfToken()) {
             cmsCore::halt();
         }
 
         \cms\events::call('blogs.delete_post', $post['id']);
         $inBlog->deletePost($post['id']);
 
-        if ( $inUser->id != $post['user_id'] ) {
+        if ($inUser->id != $post['user_id']) {
             cmsUser::sendMessage(USER_UPDATER, $post['user_id'], $_LANG['YOUR_POST'] . ' <b>&laquo;' . $post['title'] . '&raquo;</b> ' . $_LANG['WAS_DELETED_FROM_BLOG'] . ' <b>&laquo;<a href="' . $model->getBlogURL($blog['seolink']) . '">' . $blog['title'] . '</a>&raquo;</b>');
         }
 
         cmsCore::addSessionMessage($_LANG['POST_IS_DELETED'], 'success');
 
-        cmsCore::jsonOutput(array( 'error' => false, 'redirect' => $model->getBlogURL($blog['seolink']) ));
+        cmsCore::jsonOutput(array('error' => false, 'redirect' => $model->getBlogURL($blog['seolink'])));
     }
 
 //=========================== ПУБЛИКАЦИЯ ПОСТА ===============================//
 
-    if ( $do == 'publishpost' ) {
-        if ( !$inUser->id ) {
+    if ($do == 'publishpost') {
+        if (!$inUser->id) {
             cmsCore::error404();
         }
 
-        if ( !cmsCore::isAjax() ) {
+        if (!cmsCore::isAjax()) {
             cmsCore::error404();
         }
 
         $post = $model->getPost($post_id);
-        if ( !$post ) {
+        if (!$post) {
             cmsCore::halt();
         }
 
         $blog = $model->getBlog($post['blog_id']);
-        if ( !$blog ) {
+        if (!$blog) {
             cmsCore::halt();
         }
 
         // публикуют авторы блога и админы
-        if ( $blog['user_id'] != $inUser->id && !$inUser->is_admin ) {
+        if ($blog['user_id'] != $inUser->id && !$inUser->is_admin) {
             cmsCore::halt();
         }
 
@@ -986,20 +985,20 @@ function blogs()
 
         $post['seolink'] = $model->getPostURL($blog['seolink'], $post['seolink']);
 
-        if ( $blog['allow_who'] == 'all' && $post['allow_who'] == 'all' ) {
+        if ($blog['allow_who'] == 'all' && $post['allow_who'] == 'all') {
             \cms\events::call('blogs.add_post_done', $post);
         }
 
-        if ( $blog['allow_who'] != 'nobody' && $post['allow_who'] != 'nobody' ) {
+        if ($blog['allow_who'] != 'nobody' && $post['allow_who'] != 'nobody') {
             cmsActions::log('add_post', array(
-                'object'          => $post['title'],
-                'user_id'         => $post['user_id'],
-                'object_url'      => $post['seolink'],
-                'object_id'       => $post['id'],
-                'target'          => $blog['title'],
-                'target_url'      => $model->getBlogURL($blog['seolink']),
-                'target_id'       => $blog['id'],
-                'description'     => '',
+                'object' => $post['title'],
+                'user_id' => $post['user_id'],
+                'object_url' => $post['seolink'],
+                'object_id' => $post['id'],
+                'target' => $blog['title'],
+                'target_url' => $model->getBlogURL($blog['seolink']),
+                'target_id' => $blog['id'],
+                'description' => '',
                 'is_friends_only' => (int) ($blog['allow_who'] == 'friends' || $post['allow_who'] == 'friends')
             ));
         }
@@ -1011,27 +1010,27 @@ function blogs()
 
 //=========================== УДАЛЕНИЕ БЛОГА =================================//
 
-    if ( $do == 'delblog' ) {
-        if ( !$inUser->id ) {
+    if ($do == 'delblog') {
+        if (!$inUser->id) {
             cmsCore::error404();
         }
 
-        if ( !cmsCore::isAjax() ) {
+        if (!cmsCore::isAjax()) {
             cmsCore::error404();
         }
 
         // получаем блог
         $blog = $model->getBlog($id);
-        if ( !$blog ) {
+        if (!$blog) {
             cmsCore::error404();
         }
 
         //Проверяем является пользователь хозяином блога или админом
-        if ( $blog['user_id'] != $inUser->id && !$inUser->is_admin ) {
+        if ($blog['user_id'] != $inUser->id && !$inUser->is_admin) {
             cmsCore::halt();
         }
 
-        if ( !cmsUser::checkCsrfToken() ) {
+        if (!cmsUser::checkCsrfToken()) {
             cmsCore::halt();
         }
 
@@ -1039,23 +1038,23 @@ function blogs()
 
         cmsCore::addSessionMessage($_LANG['BLOG_IS_DELETED'], 'success');
 
-        cmsCore::jsonOutput(array( 'error' => false, 'redirect' => '/blogs' ));
+        cmsCore::jsonOutput(array('error' => false, 'redirect' => '/blogs'));
     }
 
 //==================== Просмотр популярных публикаций ========================//
 
-    if ( $do == 'best' ) {
+    if ($do == 'best') {
         $inPage->setTitle($_LANG['POPULAR_IN_BLOGS']);
         $inPage->addPathway($_LANG['POPULAR_IN_BLOGS']);
         $inPage->setDescription($_LANG['POPULAR_IN_BLOGS']);
 
         // кроме админов в списке только с доступом для всех
-        if ( !$inUser->is_admin ) {
+        if (!$inUser->is_admin) {
             $inBlog->whereOnlyPublic();
         }
 
         // ограничиваем по рейтингу если надо
-        if ( $model->config['list_min_rating'] ) {
+        if ($model->config['list_min_rating']) {
             $inBlog->ratingGreaterThan($model->config['list_min_rating']);
         }
 
@@ -1063,13 +1062,13 @@ function blogs()
         $total = $inBlog->getPostsCount($inUser->is_admin);
 
         //устанавливаем сортировку
-        $inDB->orderBy('p.rating', 'DESC');
+        $db->orderBy('i.rating', 'DESC');
 
-        $inDB->limitPage($page, $model->config['perpage']);
+        $db->limitPage($page, $model->config['perpage']);
 
         // сами посты
         $posts = $model->getPosts($inUser->is_admin, $model);
-        if ( !$posts && $page > 1 ) {
+        if (!$posts && $page > 1) {
             cmsCore::error404();
         }
 

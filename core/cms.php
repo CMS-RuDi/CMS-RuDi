@@ -891,7 +891,15 @@ class cmsCore {
             return $this->module_configs[$module_id];
         }
 
-        $mod = cmsDatabase::getInstance()->get_fields('cms_modules', "id='" . $module_id . "'", 'content, config');
+        // Отдельное состояние builder'а, чтобы не зависеть от фильтров,
+        // оставленных другими запросами в общем экземпляре
+        $db = clone \cms\db::getInstance();
+
+        $mod = $db->filterEqual('id', (int) $module_id)->getItem('modules');
+
+        // getItem() восстанавливает переданные ему фильтры, поэтому чистим состояние
+        $db->resetFilters();
+
         if (!$mod) {
             return array();
         }
@@ -917,15 +925,11 @@ class cmsCore {
      * @return bool
      */
     public function saveModuleConfig($module_id, $config) {
-        $inDB = cmsDatabase::getInstance();
-
         //конвертируем массив настроек в YAML
-        $config_yaml = $inDB->escape_string(self::arrayToYaml($config));
+        $config_yaml = self::arrayToYaml($config);
 
         //обновляем модуль в базе
-        $update_query = "UPDATE cms_modules SET config='" . $config_yaml . "' WHERE id = '" . $module_id . "'";
-
-        $inDB->query($update_query);
+        \cms\db::cloneOf(\cms\db::getInstance())->update('modules', (int) $module_id, array('config' => $config_yaml));
 
         return true;
     }
@@ -944,7 +948,14 @@ class cmsCore {
     }
 
     public function isModuleInstalled($module) {
-        return (bool) cmsDatabase::getInstance()->rows_count('cms_modules', "content='" . $module . "' AND user=0", 1);
+        $db = clone \cms\db::getInstance();
+
+        $installed = $db->filterEqual('content', $module)->filterEqual('user', 0)->getCount('modules');
+
+        // getCount() оставляет наложенные фильтры в состоянии builder'а
+        $db->resetFilters();
+
+        return (bool) $installed;
     }
 
     /**
@@ -988,11 +999,9 @@ class cmsCore {
      * @return int
      */
     public static function fileDownloadCount($fileurl) {
-        $inDB = cmsDatabase::getInstance();
+        $db = clone \cms\db::getInstance();
 
-        $fileurl = $inDB->escape_string($fileurl);
-
-        $hits = $inDB->get_field('cms_downloads', "fileurl = '" . $fileurl . "'", 'hits');
+        $hits = $db->filterEqual('fileurl', $fileurl)->getFieldFiltered('downloads', 'hits');
 
         return $hits ? $hits : 0;
     }
@@ -1276,21 +1285,16 @@ class cmsCore {
      * @return html
      */
     public static function getListItems($table, $selected = 0, $order_by = 'id', $order_to = 'ASC', $where = '', $id_field = 'id', $title_field = 'title') {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
         $html = '';
 
-        $sql = "SELECT " . $id_field . ", " . $title_field . " FROM " . $table . " \n";
+        // Историческая сигнатура: в $table может прийти несколько таблиц/джойн,
+        // а в $where - готовое условие (включая GROUP BY), поэтому выборку
+        // выполняет getRows(), а значения фильтруются слоем БД
+        $items = $db->getRows($table, $where ? $where : '1', $id_field . ', ' . $title_field, trim($order_by . ' ' . $order_to));
 
-        if ($where) {
-            $sql .= "WHERE " . $where . " \n";
-        }
-
-        $sql .= "ORDER BY " . $order_by . " " . $order_to;
-
-        $result = $inDB->query($sql);
-
-        while ($item = $inDB->fetch_assoc($result)) {
+        foreach ($items as $item) {
             if (@$selected == $item[$id_field]) {
                 $s = 'selected="selected"';
             } else {
@@ -1315,16 +1319,14 @@ class cmsCore {
      * @return html
      */
     public function getListItemsNS($table, $selected = 0, $differ = '', $need_field = '', $rootid = 0, $no_padding = false) {
-        $inDB = cmsDatabase::getInstance();
+        $db = clone \cms\db::getInstance();
 
         $html = '';
 
         $nested_sets = $this->nestedSetsInit($table);
 
-        $lookup = "parent_id=0 AND NSDiffer='" . $differ . "'";
-
         if (!$rootid) {
-            $rootid = $inDB->get_field($table, $lookup, 'id');
+            $rootid = $db->filterEqual('parent_id', 0)->filterEqual('NSDiffer', (string) $differ)->getFieldFiltered($table, 'id');
         }
 
         if (!$rootid) {
@@ -1334,7 +1336,7 @@ class cmsCore {
         $rs_rows = $nested_sets->SelectSubNodes($rootid);
 
         if ($rs_rows) {
-            while ($node = $inDB->fetch_assoc($rs_rows)) {
+            while ($node = $db->fetchAssoc($rs_rows)) {
                 if (!$need_field || $node[$need_field]) {
                     if (@$selected == $node['id']) {
                         $s = 'selected="selected"';
@@ -1378,12 +1380,14 @@ class cmsCore {
      * @return boolean
      */
     public static function registerRatingsTarget($target, $component, $target_title, $is_user_affect = true, $user_weight = 1, $target_table = '') {
-        $is_user_affect = (int) $is_user_affect;
-
-        $sql = "INSERT IGNORE INTO cms_rating_targets (target, component, is_user_affect, user_weight, target_table, target_title)
-                VALUES ('" . $target . "', '" . $component . "', '" . $is_user_affect . "', '" . $user_weight . "', '" . $target_table . "', '" . $target_title . "')";
-
-        cmsDatabase::getInstance()->query($sql);
+        \cms\db::getInstance()->insert('rating_targets', array(
+            'target'         => $target,
+            'component'      => $component,
+            'is_user_affect' => (int) $is_user_affect,
+            'user_weight'    => $user_weight,
+            'target_table'   => $target_table,
+            'target_title'   => $target_title
+                ), false, 'json', true);
 
         return true;
     }
@@ -1397,15 +1401,10 @@ class cmsCore {
      * @return boolean
      */
     public static function deleteRatings($target, $item_id) {
-        $inDB = cmsDatabase::getInstance();
+        $db = clone \cms\db::getInstance();
 
-        $sql = "DELETE FROM cms_ratings WHERE target='" . $target . "' AND item_id='" . $item_id . "'";
-
-        $inDB->query($sql);
-
-        $sql = "DELETE FROM cms_ratings_total WHERE target='" . $target . "' AND item_id='" . $item_id . "'";
-
-        $inDB->query($sql);
+        $db->filterEqual('target', $target)->filterEqual('item_id', $item_id)->deleteFiltered('ratings');
+        $db->filterEqual('target', $target)->filterEqual('item_id', $item_id)->deleteFiltered('ratings_total');
 
         return true;
     }
@@ -1429,16 +1428,19 @@ class cmsCore {
      * return true
      */
     public static function registerCommentsTarget($target, $component, $title, $target_table, $subj) {
-        $sql = "INSERT IGNORE INTO cms_comment_targets (target, component, title, target_table, subj)
-                 VALUES ('" . $target . "', '" . $component . "', '" . $title . "', '" . $target_table . "', '" . $subj . "')";
-
-        cmsDatabase::getInstance()->query($sql);
+        \cms\db::getInstance()->insert('comment_targets', array(
+            'target'       => $target,
+            'component'    => $component,
+            'title'        => $title,
+            'target_table' => $target_table,
+            'subj'         => $subj
+                ), false, 'json', true);
 
         return true;
     }
 
     public static function getCommentsTargets() {
-        return cmsDatabase::getInstance()->get_table('cms_comment_targets', 'id>0', '*');
+        return \cms\db::cloneOf(\cms\db::getInstance())->filterGt('id', 0)->orderBy('id')->get('comment_targets', false, false);
     }
 
     /**
@@ -1450,9 +1452,9 @@ class cmsCore {
      * @return boolean
      */
     public static function deleteComments($target, $target_id) {
-        $inDB = cmsDatabase::getInstance();
+        $db = clone \cms\db::getInstance();
 
-        $comments = $inDB->get_table('cms_comments', "target='" . $target . "' AND target_id='" . $target_id . "'", 'id');
+        $comments = $db->selectOnly('id')->filterEqual('target', $target)->filterEqual('target_id', $target_id)->get('comments', false, false);
 
         if (!$comments) {
             return false;
@@ -1464,7 +1466,7 @@ class cmsCore {
             self::deleteRatings('comment', $comment['id']);
         }
 
-        $inDB->delete('cms_comments', "target='" . $target . "' AND target_id='" . $target_id . "'");
+        $db->filterEqual('target', $target)->filterEqual('target_id', $target_id)->deleteFiltered('comments');
 
         return true;
     }
@@ -1479,7 +1481,17 @@ class cmsCore {
      */
     public static function getCommentsCount($target, $target_id) {
         if (self::getInstance()->isComponentInstalled('comments')) {
-            return cmsDatabase::getInstance()->rows_count('cms_comments', "target = '" . $target . "' AND target_id = '" . $target_id . "' AND published = 1");
+            $db = clone \cms\db::getInstance();
+
+            $count = $db->filterEqual('target', $target)
+                    ->filterEqual('target_id', $target_id)
+                    ->filterEqual('published', 1)
+                    ->getCount('comments');
+
+            // getCount() оставляет наложенные фильтры в состоянии builder'а
+            $db->resetFilters();
+
+            return $count;
         } else {
             return 0;
         }
@@ -1697,7 +1709,10 @@ class cmsCore {
             return true;
         }
 
-        $access = cmsDatabase::getInstance()->get_table('cms_content_access', "content_type = '" . $content_type . "' AND content_id = '" . $content_id . "'", 'group_id');
+        $access = \cms\db::cloneOf(\cms\db::getInstance())->selectOnly('group_id')
+                        ->filterEqual('content_type', $content_type)
+                        ->filterEqual('content_id', $content_id)
+                        ->get('content_access', false, false);
 
         if (!$access || !is_array($access)) {
             return true;
@@ -1718,7 +1733,7 @@ class cmsCore {
         self::clearAccess($id, $content_type);
 
         foreach ($showfor_list as $key => $value) {
-            cmsDatabase::getInstance()->insert('cms_content_access', array('content_id' => $id, 'content_type' => $content_type, 'group_id' => $value));
+            \cms\db::getInstance()->insert('content_access', array('content_id' => $id, 'content_type' => $content_type, 'group_id' => $value));
         }
 
         return true;
@@ -1729,7 +1744,9 @@ class cmsCore {
      * @return bool
      */
     public static function clearAccess($id, $content_type) {
-        return cmsDatabase::getInstance()->delete('cms_content_access', "content_id = '" . $id . "' AND content_type = '" . $content_type . "'");
+        return \cms\db::cloneOf(\cms\db::getInstance())->filterEqual('content_id', $id)
+                        ->filterEqual('content_type', $content_type)
+                        ->deleteFiltered('content_access');
     }
 
     public static function checkAccessByIp($allow_ips = '') {
@@ -1955,12 +1972,12 @@ class cmsCore {
      * @return bool
      */
     public static function registerUploadImages($target_id, $target, $fileurl, $component) {
-        return cmsDatabase::getInstance()->insert('cms_upload_images', array(
-                    'target_id' => $target_id,
+        return \cms\db::getInstance()->insert('upload_images', array(
+                    'target_id'  => $target_id,
                     'session_id' => session_id(),
-                    'fileurl' => $fileurl,
-                    'component' => $component,
-                    'target' => $target
+                    'fileurl'    => $fileurl,
+                    'component'  => $component,
+                    'target'     => $target
         ));
     }
 
@@ -1969,10 +1986,10 @@ class cmsCore {
      * @return bool
      */
     public static function setIdUploadImage($target, $target_id) {
-        $inDB = cmsDatabase::getInstance();
-        $sid = session_id();
-
-        return $inDB->query("UPDATE cms_upload_images SET target_id = '" . $target_id . "' WHERE session_id = '" . $sid . "' AND target = '" . $target . "' AND target_id = 0");
+        return \cms\db::cloneOf(\cms\db::getInstance())->filterEqual('session_id', session_id())
+                        ->filterEqual('target', $target)
+                        ->filterEqual('target_id', 0)
+                        ->updateFiltered('upload_images', array('target_id' => $target_id));
     }
 
     /**
@@ -1984,7 +2001,16 @@ class cmsCore {
 
         $target_id = (int) $target_id;
 
-        return cmsDatabase::getInstance()->rows_count('cms_upload_images', "target_id = '" . $target_id . "' AND session_id = '" . $sid . "'");
+        $db = clone \cms\db::getInstance();
+
+        $count = $db->filterEqual('target_id', $target_id)
+                ->filterEqual('session_id', $sid)
+                ->getCount('upload_images');
+
+        // getCount() оставляет наложенные фильтры в состоянии builder'а
+        $db->resetFilters();
+
+        return $count;
     }
 
     /**
@@ -1992,19 +2018,27 @@ class cmsCore {
      * @return bool
      */
     public static function deleteUploadImages($target_id, $target) {
-        $inDB = cmsDatabase::getInstance();
+        $db = clone \cms\db::getInstance();
 
-        $rs = $inDB->query("SELECT * FROM cms_upload_images WHERE target_id = '" . $target_id . "' AND target='" . $target . "'");
+        $files = $db->filterEqual('target_id', $target_id)
+                ->filterEqual('target', $target)
+                ->get('upload_images', false, false);
 
-        if ($inDB->num_rows($rs)) {
-            while ($file = $inDB->fetch_assoc($rs)) {
+        if ($files) {
+            $ids = array();
+
+            foreach ($files as $file) {
                 $filename = PATH . $file['fileurl'];
 
                 if (file_exists($filename)) {
                     @unlink($filename);
                 }
 
-                $inDB->query("DELETE FROM cms_upload_images WHERE id = '" . $file['id'] . "'");
+                $ids[] = (int) $file['id'];
+            }
+
+            if ($ids) {
+                $db->filterIn('id', $ids)->deleteFiltered('upload_images');
             }
         }
 
@@ -2049,9 +2083,10 @@ class cmsCore {
      * @return bool
      */
     public static function isCached($target, $target_id, $cachetime = 1, $cacheint = 'MINUTE') {
-        $where = "target='" . $target . "' AND target_id='" . $target_id . "' AND cachedate >= DATE_SUB(NOW(), INTERVAL " . $cachetime . " " . (empty($cacheint) ? 'MINUTE' : $cacheint) . ")";
-
-        $cachefile = cmsDatabase::getInstance()->get_field('cms_cache', $where, 'cachefile');
+        $cachefile = \cms\db::cloneOf(\cms\db::getInstance())->filterEqual('target', $target)
+                        ->filterEqual('target_id', $target_id)
+                        ->filterDateYounger('cachedate', (int) $cachetime, empty($cacheint) ? 'MINUTE' : $cacheint)
+                        ->getFieldFiltered('cache', 'cachefile');
 
         if ($cachefile) {
             $cachefile = PATH . '/cache/' . $cachefile;
@@ -2074,7 +2109,9 @@ class cmsCore {
      * @return html
      */
     public static function getCache($target, $target_id) {
-        $cachefile = cmsDatabase::getInstance()->get_field('cms_cache', "target='" . $target . "' AND target_id='" . $target_id . "'", 'cachefile');
+        $cachefile = \cms\db::cloneOf(\cms\db::getInstance())->filterEqual('target', $target)
+                        ->filterEqual('target_id', $target_id)
+                        ->getFieldFiltered('cache', 'cachefile');
 
         if ($cachefile) {
             $cachefile = PATH . '/cache/' . $cachefile;
@@ -2098,10 +2135,12 @@ class cmsCore {
     public static function saveCache($target, $target_id, $html) {
         $filename = md5($target . $target_id) . '.html';
 
-        $sql = "INSERT DELAYED INTO cms_cache (target, target_id, cachedate, cachefile)
-                VALUES ('" . $target . "', " . $target_id . ", NOW(), '" . $filename . "')";
-
-        cmsDatabase::getInstance()->query($sql);
+        \cms\db::getInstance()->insert('cache', array(
+            'target'    => $target,
+            'target_id' => $target_id,
+            'cachedate' => date('Y-m-d H:i:s'),
+            'cachefile' => $filename
+        ));
 
         $filename = PATH . '/cache/' . $filename;
 
@@ -2117,7 +2156,9 @@ class cmsCore {
      * @return bool
      */
     public static function deleteCache($target, $target_id) {
-        cmsDatabase::getInstance()->query("DELETE FROM cms_cache WHERE target='" . $target . "' AND target_id='" . $target_id . "'");
+        \cms\db::cloneOf(\cms\db::getInstance())->filterEqual('target', $target)
+                ->filterEqual('target_id', $target_id)
+                ->deleteFiltered('cache');
 
         $oldcache = PATH . '/cache/' . md5($target . $target_id) . '.html';
 
@@ -2164,16 +2205,16 @@ class cmsCore {
      * @return str
      */
     public static function generateCatSeoLink($category, $table, $is_cyr = false, $differ = '') {
-        $inDB = cmsDatabase::getInstance();
+        $db = clone \cms\db::getInstance();
 
         $seolink = '';
 
-        $cat = $inDB->getNsCategory($table, $category['id']);
+        $cat = $db->getNsCategory($table, $category['id']);
         if (!$cat) {
             return $seolink;
         }
 
-        $path_list = $inDB->getNsCategoryPath($table, $cat['NSLeft'], $cat['NSRight'], 'id, title, NSLevel, seolink, url', $differ);
+        $path_list = $db->getNsCategoryPath($table, $cat['NSLeft'], $cat['NSRight'], 'id, title, NSLevel, seolink, url', $differ);
 
         if (!$path_list) {
             return $seolink;
@@ -2187,7 +2228,12 @@ class cmsCore {
 
         $seolink = rtrim($seolink, '/');
 
-        $is_exists = $inDB->rows_count($table, "seolink='" . $seolink . "' AND id <> " . $category['id']);
+        $is_exists = $db->filterEqual('seolink', $seolink)
+                ->filterNotEqual('id', $category['id'])
+                ->getCount($table);
+
+        // getCount() оставляет наложенные фильтры в состоянии builder'а
+        $db->resetFilters();
 
         if ($is_exists) {
             $seolink .= '-' . $cat['id'];
@@ -2333,28 +2379,6 @@ class cmsCore {
 
     public static function strClear($input, $strip_tags = true) {
         return \cms\request::strClear($input);
-        /*
-          if ( is_array($input) ) {
-          foreach ( $input as $key => $string ) {
-          $value[self::strClear((string) $key)] = self::strClear($string, $strip_tags);
-          }
-
-          return $value;
-          }
-
-          $string = trim((string) $input);
-
-          //Если magic_quotes_gpc = On, сначала убираем экранирование
-          $string = (@get_magic_quotes_gpc()) ? stripslashes($string) : $string;
-
-          $string = rtrim($string, ' \\');
-
-          if ( $strip_tags ) {
-          $string = cmsDatabase::getInstance()->escape_string(strip_tags($string));
-          }
-
-          return $string;
-         */
     }
 
     public static function loadLanguage($file) {
@@ -2410,13 +2434,13 @@ class cmsCore {
 
         $filters = [];
 
-        $inDB = cmsDatabase::getInstance();
+        $db = clone \cms\db::getInstance();
 
-        if (!$inDB->isTableExists('cms_filters')) {
+        if (!$db->isTableExists('filters')) {
             return $filters;
         }
 
-        $rows = $inDB->get_table('cms_filters', 'published=1', '*');
+        $rows = $db->filterEqual('published', 1)->get('filters', false, false);
 
         if ($rows) {
             foreach ($rows as $filter) {

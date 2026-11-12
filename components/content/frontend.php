@@ -14,7 +14,7 @@ function content()
 {
     $inCore = cmsCore::getInstance();
     $inPage = cmsPage::getInstance();
-    $inDB   = cmsDatabase::getInstance();
+    $inDB   = \cms\db::getInstance();
     $inUser = cmsUser::getInstance();
 
     $model = new cms_model_content();
@@ -84,7 +84,7 @@ function content()
         }
 
         // Получаем дерево категорий
-        $path_list = $inDB->getNsCategoryPath('cms_category', $cat['NSLeft'], $cat['NSRight'], 'id, title, NSLevel, seolink, url');
+        $path_list = $model->db->getNsCategoryPath('category', $cat['NSLeft'], $cat['NSRight'], 'id, title, NSLevel, seolink, url');
 
         if ( $path_list ) {
             $path_list = translations::process(cmsConfig::getConfig('lang'), 'content_category', $path_list);
@@ -206,7 +206,7 @@ function content()
 
         // увеличиваем кол-во просмотров
         if ( @!$is_author ) {
-            $inDB->setFlag('cms_content', $article['id'], 'hits', $article['hits'] + 1);
+            $model->db->update('content', (int) $article['id'], ['hits' => (int) $article['hits'] + 1]);
         }
 
         // Картинка статьи
@@ -224,7 +224,7 @@ function content()
 
         // Получаем дерево категорий
         $path_list = $article['showpath'] ?
-                $inDB->getNsCategoryPath('cms_category', $article['leftkey'], $article['rightkey'], 'id, title, NSLevel, seolink, url') :
+                $model->db->getNsCategoryPath('category', $article['leftkey'], $article['rightkey'], 'id, title, NSLevel, seolink, url') :
                 array();
 
         if ( $path_list ) {
@@ -380,7 +380,7 @@ function content()
                 $inPage->addPathway($_LANG['USERS'], '/' . str_replace('/', '', cmsUser::PROFILE_LINK_PREFIX));
 
                 if ( $item['user_id'] != $inUser->id ) {
-                    $user = $inDB->get_fields('cms_users', "id='{$item['user_id']}'", 'login, nickname');
+                    $user = $model->db->filterEqual('id', (int) $item['user_id'])->getItem('users');
                     $inPage->addPathway($user['nickname'], cmsUser::getProfileURL($user['login']));
                 }
                 else {
@@ -439,8 +439,8 @@ function content()
             $article['is_end']    = $do == 'editarticle' ? $item['is_end'] : 0;
             $article['showtitle'] = $do == 'editarticle' ? $item['showtitle'] : 1;
 
-            $article['meta_desc'] = $do == 'addarticle' ? mb_strtolower($article['title']) : $inDB->escape_string($item['meta_desc']);
-            $article['meta_keys'] = $do == 'addarticle' ? $inCore->getKeywords($article['content']) : $inDB->escape_string($item['meta_keys']);
+            $article['meta_desc'] = $do == 'addarticle' ? mb_strtolower($article['title']) : $item['meta_desc'];
+            $article['meta_keys'] = $do == 'addarticle' ? $inCore->getKeywords($article['content']) : $item['meta_keys'];
 
             $article['showdate']   = $do == 'editarticle' ? $item['showdate'] : 1;
             $article['showlatest'] = $do == 'editarticle' ? $item['showlatest'] : 1;
@@ -471,9 +471,6 @@ function content()
 
                 cmsCore::redirectBack();
             }
-
-            $article['description'] = $inDB->escape_string($article['description']);
-            $article['content']     = $inDB->escape_string($article['content']);
 
             $article = \cms\events::call('content.after_edit_item', $article);
 
@@ -584,12 +581,12 @@ function content()
             cmsCore::error404();
         }
 
-        $inDB->setFlag('cms_content', $article['id'], 'published', 1);
+        $model->db->update('content', (int) $article['id'], ['published' => 1]);
 
         \cms\events::call('content.add_item_done', $article);
 
         if ( IS_BILLING ) {
-            $author        = $inDB->get_fields('cms_users', "id='{$article['user_id']}'", '*');
+            $author        = $model->db->filterEqual('id', (int) $article['user_id'])->getItem('users');
             $category_cost = $article['cost'] === '' ? false : (int) $article['cost'];
             cmsBilling::process('content', 'add_content', $category_cost, $author);
         }
@@ -718,7 +715,7 @@ function content()
         $inPage->addPathway($_LANG['ARTICLES_RATING']);
 
         // Только статьи, за которые можно голосовать
-        $inDB->where("con.canrate = 1");
+        $model->filterEqual('canrate', 1);
 
         // Сортировка и разбивка на страницы
         $inDB->orderBy('con.rating', 'DESC');

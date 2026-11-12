@@ -12,7 +12,7 @@
 
 function mod_whoonline($mod, $cfg)
 {
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
 
     if ( !isset($cfg['color_admin']) ) {
         $cfg['color_admin'] = '#FF0000';
@@ -28,33 +28,35 @@ function mod_whoonline($mod, $cfg)
     $today_users = array();
 
     if ( $online_count['users'] ) {
-        $sql = "SELECT
-                o.user_id as id,
-                u.login,
-                u.nickname,
-                p.gender as gender
-                FROM cms_online o
-                LEFT JOIN cms_users u ON  u.id = o.user_id
-                LEFT JOIN cms_user_profiles p ON p.user_id = u.id
-                WHERE u.is_locked = 0 AND u.is_deleted = 0
-                GROUP BY o.user_id";
+        $db = clone $inDB;
+        $db->select('i.user_id', 'id');
+        $db->select('MAX(u.login)', 'login');
+        $db->select('MAX(u.nickname)', 'nickname');
+        $db->select('MAX(p.gender)', 'gender');
+        $db->joinLeft('users', 'u', 'u.id = i.user_id');
+        $db->joinLeft('user_profiles', 'p', 'p.user_id = u.id');
+        $db->filterEqual('u.is_locked', 0);
+        $db->filterEqual('u.is_deleted', 0);
+        $db->groupBy('i.user_id');
 
-        $result = $inDB->query($sql);
-        $users  = getUsersArray($result, $cfg, $inDB);
+        $users = getUsersArray($db->get('online', false, false), $cfg);
     }
 
     if ( $cfg['show_today'] ) {
-        $today  = date("Y-m-d");
-        $sql    = "SELECT u.id as id, u.nickname as nickname, u.login as login, p.gender as gender
-                FROM cms_users u
-                LEFT JOIN cms_user_profiles p ON p.user_id = u.id
-                WHERE u.is_locked = 0 AND u.is_deleted = 0 AND DATE_FORMAT(u.logdate, '%Y-%m-%d')='$today'
-                ORDER BY u.logdate DESC";
-        $result = $inDB->query($sql);
+        $today = date("Y-m-d");
 
-        if ( $inDB->num_rows($result) ) {
-            $today_users = getUsersArray($result, $cfg, $inDB);
-        }
+        $db = clone $inDB;
+        $db->select('i.id', 'id');
+        $db->select('i.nickname', 'nickname');
+        $db->select('i.login', 'login');
+        $db->select('p.gender', 'gender');
+        $db->joinLeft('user_profiles', 'p', 'p.user_id = i.id');
+        $db->filterEqual('i.is_locked', 0);
+        $db->filterEqual('i.is_deleted', 0);
+        $db->filter("DATE_FORMAT(i.logdate, '%Y-%m-%d') = '" . $inDB->escape($today) . "'");
+        $db->orderBy('i.logdate', 'DESC');
+
+        $today_users = getUsersArray($db->get('users', false, false), $cfg);
     }
 
     cmsPage::initTemplate('modules', $cfg['tpl'])->
@@ -67,11 +69,11 @@ function mod_whoonline($mod, $cfg)
     return true;
 }
 
-function getUsersArray($result, $cfg, $inDB)
+function getUsersArray($rows, $cfg)
 {
     $users = array();
 
-    while ( $usr = $inDB->fetch_assoc($result) ) {
+    foreach ( $rows as $usr ) {
         if ( $cfg['admin_editor'] ) {
             if ( cmsUser::userIsAdmin($usr['id']) ) {
 

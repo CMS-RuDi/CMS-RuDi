@@ -17,7 +17,7 @@ class cms_model_photos
 
     public function __construct()
     {
-        $this->inDB   = cmsDatabase::getInstance();
+        $this->inDB   = \cms\db::getInstance();
         $this->config = cmsCore::getInstance()->loadComponentConfig('photos');
         cmsCore::loadLib('karma');
         cmsCore::loadLanguage('components/photos');
@@ -46,14 +46,14 @@ class cms_model_photos
         $result = array();
 
         switch ( $target ) {
-            case 'palbum': $album = $this->inDB->get_fields('cms_photo_albums', "id='{$target_id}'", 'title');
+            case 'palbum': $album = $this->inDB->getRow('photo_albums', 'id = ' . (int) $target_id, 'title');
                 if ( !$album ) {
                     return false;
                 }
                 $result['link']  = '/photos/' . $target_id;
                 $result['title'] = $album['title'];
                 break;
-            case 'photo': $photo           = $this->inDB->get_fields('cms_photo_files', "id='{$target_id}'", 'title');
+            case 'photo': $photo           = $this->inDB->getRow('photo_files', 'id = ' . (int) $target_id, 'title');
                 if ( !$photo ) {
                     return false;
                 }
@@ -71,15 +71,9 @@ class cms_model_photos
             return false;
         }
 
-        switch ( $target ) {
-            case 'photo':
-                $sql = "UPDATE cms_photo_files
-				SET rating = rating + (" . $points . ")
-				WHERE id = '" . $item_id . "'";
-                break;
+        if ( $target === 'photo' ) {
+            $this->inDB->filterEqual('id', (int) $item_id)->increment('photo_files', 'rating', $points);
         }
-
-        $this->inDB->query($sql);
 
         return true;
     }
@@ -104,7 +98,10 @@ class cms_model_photos
 
     public function loadedByUser24h($user_id, $album_id)
     {
-        return $this->inDB->rows_count('cms_photo_files', "user_id = '" . $user_id . "' AND album_id = '" . $album_id . "' AND pubdate >= DATE_SUB(NOW(), INTERVAL 1 DAY)");
+        return \cms\db::cloneOf($this->inDB)->filterEqual('user_id', $user_id)
+                ->filterEqual('album_id', $album_id)
+                ->filterDateYounger('pubdate', 1)
+                ->getCount('photo_files');
     }
 
 }

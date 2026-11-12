@@ -113,7 +113,8 @@ class plugin {
 
     public function __construct() {
         $this->inCore = \cmsCore::getInstance();
-        $this->db = \cms\db::getInstance();
+        // Отдельное состояние builder'а на каждый плагин
+        $this->db = clone \cms\db::getInstance();
         $this->inPage = \cmsPage::getInstance();
 
         $this->name = get_called_class();
@@ -247,7 +248,7 @@ class plugin {
      */
     public function upgrade() {
         // находим ID установленной версии
-        $plugin_id = $this->db->getField('plugins', "plugin='" . $this->name . "'", 'id');
+        $plugin_id = $this->db->filterEqual('plugin', $this->name)->getFieldFiltered('plugins', 'id');
 
         // если плагин еще не был установлен, выходим
         if (!$plugin_id) {
@@ -272,7 +273,7 @@ class plugin {
         $info['config'] = \cms\model::arrayToYaml($config);
 
         // обновляем плагин в базе
-        $this->db->update('plugins', 'id=' . $plugin_id, $info);
+        $this->db->update('plugins', (int) $plugin_id, $info);
 
         $this->registerEvents($this->events);
 
@@ -283,13 +284,13 @@ class plugin {
     public function registerEvents() {
         // Старая база 1.10.x: таблицы cms_events ещё нет
         if (!$this->db->isTableExists('events')) {
-            $plugin_id = $this->db->getField('plugins', "plugin='" . $this->name . "'", 'id');
+            $plugin_id = $this->db->filterEqual('plugin', $this->name)->getFieldFiltered('plugins', 'id');
 
             if (!$plugin_id) {
                 return;
             }
 
-            $this->db->delete('event_hooks', "plugin_id='" . $plugin_id . "'");
+            $this->db->filterEqual('plugin_id', $plugin_id)->deleteFiltered('event_hooks');
 
             foreach ($this->events as $event) {
                 $this->db->insert('event_hooks', array('event' => $event, 'plugin_id' => $plugin_id));
@@ -299,9 +300,9 @@ class plugin {
         }
 
         // Удаляем все события плагина
-        $this->db->delete('events', "type='plugin' AND name='" . $this->db->escape($this->name) . "'");
+        $this->db->filterEqual('type', 'plugin')->filterEqual('name', $this->name)->deleteFiltered('events');
 
-        $max_order = $this->db->getField('events', 1, 'ordering', 'ordering DESC');
+        $max_order = $this->db->orderBy('ordering', 'DESC')->getFieldFiltered('events', 'ordering');
 
         // добавляем хуки событий для плагина
         foreach ($this->events as $event) {
@@ -350,11 +351,9 @@ class plugin {
      * @return boolean
      */
     public function saveConfig() {
-        // конвертируем массив настроек в YAML
-        $config_yaml = $this->db->escape(\cms\model::arrayToYaml($this->config));
-
         // обновляем плагин в базе
-        $this->db->query("UPDATE {#}plugins SET config='" . $config_yaml . "' WHERE plugin = '" . $this->name . "'");
+        $this->db->filterEqual('plugin', $this->name)
+                ->updateFiltered('plugins', array('config' => \cms\model::arrayToYaml($this->config)));
 
         return true;
     }
@@ -402,7 +401,7 @@ class plugin {
             if (isset(self::$plugins[$name])) {
                 self::$configs[$name] = self::$plugins[$name]['config'];
             } else {
-                $config = db::getInstance()->getField('plugins', "plugin='" . $name . "'", 'config');
+                $config = \cms\db::cloneOf(db::getInstance())->filterEqual('plugin', $name)->getFieldFiltered('plugins', 'config');
 
                 if (!empty($config)) {
                     self::$configs[$name] = model::yamlToArray($config);

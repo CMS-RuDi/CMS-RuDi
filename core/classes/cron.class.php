@@ -41,7 +41,7 @@ class cmsCron
      */
     public static function registerJob($job_name, $job)
     {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
         if ( !isset($job['enabled']) ) {
             $job['enabled'] = 1;
@@ -55,16 +55,19 @@ class cmsCron
             $job['class_method'] = '';
         }
 
-        $sql = "INSERT INTO cms_cron_jobs (job_name, job_interval, job_run_date,
-                                           component, model_method, custom_file,
-                                           is_enabled, is_new, comment,
-                                           class_name, class_method)
-                VALUES ('" . $job_name . "', '" . $job['interval'] . "', CURRENT_TIMESTAMP,
-                        '" . $job['component'] . "', '" . $job['model_method'] . "', '" . $job['custom_file'] . "',
-                        '" . $job['enabled'] . "', '1', '" . $job['comment'] . "',
-                        '" . $job['class_name'] . "', '" . $job['class_method'] . "')";
-
-        $inDB->query($sql);
+        $db->insert('cron_jobs', array(
+            'job_name'     => $job_name,
+            'job_interval' => $job['interval'],
+            'job_run_date' => date('Y-m-d H:i:s'),
+            'component'    => $job['component'],
+            'model_method' => $job['model_method'],
+            'custom_file'  => $job['custom_file'],
+            'is_enabled'   => $job['enabled'],
+            'is_new'       => 1,
+            'comment'      => $job['comment'],
+            'class_name'   => $job['class_name'],
+            'class_method' => $job['class_method']
+        ));
 
         return true;
     }
@@ -77,7 +80,9 @@ class cmsCron
      */
     public static function updateJob($job_id, $job)
     {
-        return cmsDatabase::getInstance()->update('cms_cron_jobs', $job, $job_id);
+        unset($job['id']);
+
+        return \cms\db::getInstance()->update('cron_jobs', (int) $job_id, $job);
     }
 
     /**
@@ -88,9 +93,21 @@ class cmsCron
      */
     public static function getJob($job_name, $only_enabled = true)
     {
-        $enabled = $only_enabled ? 'AND is_enabled=1' : '';
+        $db = \cms\db::getInstance();
 
-        return cmsDatabase::getInstance()->get_fields('cms_cron_jobs', "job_name='" . $job_name . "' " . $enabled, '*');
+        $db->resetFilters();
+
+        $db->filterEqual('job_name', $job_name);
+
+        if ( $only_enabled ) {
+            $db->filterEqual('is_enabled', 1);
+        }
+
+        $job = $db->getItem('cron_jobs');
+
+        $db->resetFilters();
+
+        return $job;
     }
 
     /**
@@ -100,7 +117,15 @@ class cmsCron
      */
     public static function getJobById($job_id)
     {
-        return cmsDatabase::getInstance()->get_fields('cms_cron_jobs', "id='" . $job_id . "'", '*');
+        $db = \cms\db::getInstance();
+
+        $db->resetFilters();
+
+        $job = $db->getItemById('cron_jobs', (int) $job_id);
+
+        $db->resetFilters();
+
+        return $job;
     }
 
     /**
@@ -111,45 +136,44 @@ class cmsCron
      */
     public static function getJobs($only_enabled = true, $only_custom = false)
     {
-        $inDB = cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
-        $enabled = $only_enabled ? 'AND is_enabled=1' : '';
+        $db->resetFilters();
 
-        $custom = $only_custom ? "AND component='' AND model_method='' AND class_name='' AND class_method=''" : '';
+        $db->select('i.id')
+                ->select('i.job_name', 'name')
+                ->select('i.job_interval')
+                ->select('i.job_run_date', 'run_date')
+                ->select('i.component')
+                ->select('i.model_method')
+                ->select('i.custom_file')
+                ->select('i.is_enabled')
+                ->select('i.is_new')
+                ->select('i.comment')
+                ->select('i.class_name')
+                ->select('i.class_method');
 
-        $sql = "SELECT id,
-                       job_name as name,
-                       job_interval,
-                       job_run_date as run_date,
-                       component,
-                       model_method,
-                       custom_file,
-                       is_enabled,
-                       is_new,
-                       comment,
-                       class_name,
-                       class_method
+        if ( $only_enabled ) {
+            $db->filterEqual('is_enabled', 1);
+        }
 
-                FROM cms_cron_jobs
+        if ( $only_custom ) {
+            $db->filterEqual('component', '')
+                    ->filterEqual('model_method', '')
+                    ->filterEqual('class_name', '')
+                    ->filterEqual('class_method', '');
+        }
 
-                WHERE 1=1 " . $enabled . " " . $custom . "
+        $db->orderBy('job_run_date', 'ASC');
 
-                ORDER BY job_run_date ASC
+        $jobs = $db->get('cron_jobs', false, '');
 
-                ";
-
-        $result = $inDB->query($sql);
-
-        if ( !$inDB->num_rows($result) ) {
+        if ( !$jobs ) {
             return false;
         }
 
-        $jobs = array();
-
-        while ( $job = $inDB->fetch_assoc($result) ) {
-            $job['hours_ago'] = round((time() - strtotime($job['run_date'])) / 3600, 2);
-
-            $jobs[] = $job;
+        foreach ( $jobs as $key => $job ) {
+            $jobs[$key]['hours_ago'] = round((time() - strtotime($job['run_date'])) / 3600, 2);
         }
 
         return $jobs;
@@ -162,7 +186,7 @@ class cmsCron
      */
     public static function removeJob($job_name)
     {
-        return cmsDatabase::getInstance()->delete('cms_cron_jobs', "job_name = '" . $job_name . "'", 1);
+        return \cms\db::getInstance()->filterEqual('job_name', $job_name)->deleteFiltered('cron_jobs');
     }
 
     /**
@@ -172,7 +196,7 @@ class cmsCron
      */
     public static function removeJobById($job_id)
     {
-        return cmsDatabase::getInstance()->delete('cms_cron_jobs', "id = '" . $job_id . "'", 1);
+        return \cms\db::getInstance()->delete('cron_jobs', (int) $job_id);
     }
 
     /**
@@ -185,11 +209,9 @@ class cmsCron
     {
         $is_enabled = (int) $is_enabled;
 
-        $inDB = cmsDatabase::getInstance();
-
-        $sql = "UPDATE cms_cron_jobs SET is_enabled = '" . $is_enabled . "' WHERE id = '" . $job_id . "'";
-
-        $inDB->query($sql);
+        \cms\db::getInstance()->update('cron_jobs', (int) $job_id, array(
+            'is_enabled' => $is_enabled
+        ));
 
         return true;
     }
@@ -201,11 +223,10 @@ class cmsCron
      */
     public static function jobSuccess($job_id)
     {
-        $inDB = cmsDatabase::getInstance();
-
-        $sql = "UPDATE cms_cron_jobs SET job_run_date = CURRENT_TIMESTAMP, is_new = 0 WHERE id = '" . $job_id . "'";
-
-        $inDB->query($sql);
+        \cms\db::getInstance()->update('cron_jobs', (int) $job_id, array(
+            'job_run_date' => date('Y-m-d H:i:s'),
+            'is_new'       => 0
+        ));
 
         return true;
     }

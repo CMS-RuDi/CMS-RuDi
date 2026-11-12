@@ -20,11 +20,12 @@ if ( !$q ) {
     cmsCore::halt();
 }
 
-$sql = "SELECT tag FROM cms_tags WHERE LOWER(tag) LIKE '" . $q . "%' GROUP BY tag";
+$tags = \cms\db::cloneOf($inDB)->selectOnly('tag')
+        ->filterLike('tag', $q . '%')
+        ->groupBy('tag')
+        ->get('tags', false, false);
 
-$rs = $inDB->query($sql);
-
-while ( $item = $inDB->fetch_assoc($rs) ) {
+foreach ($tags as $item) {
     echo $item['tag'] . "\n";
 }
 

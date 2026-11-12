@@ -19,9 +19,14 @@ class cms_model_comments
     public $is_can_add       = false;
     public $is_add_published = false;
 
+    /**
+     * @var \cms\db
+     */
+    public $inDB;
+
     public function __construct($labels = array())
     {
-        $this->inDB   = cmsDatabase::getInstance();
+        $this->inDB   = \cms\db::getInstance();
         $this->config = cmsCore::getInstance()->loadComponentConfig('comments');
         cmsCore::loadLanguage('components/comments');
         $this->labels = array_merge(self::getDefaultLabels(), $labels);
@@ -74,9 +79,7 @@ class cms_model_comments
             $item['pid'] = 0;
         }
 
-        $item['target_title'] = $this->inDB->escape_string($item['target_title']);
-
-        $comment_id = $this->inDB->insert('cms_comments', $item);
+        $comment_id = $this->inDB->insert('comments', $item);
 
         cmsCore::setIdUploadImage('comment', $comment_id);
 
@@ -89,51 +92,64 @@ class cms_model_comments
             return false;
         }
 
-        $this->inDB->update('cms_comments', $comment, $id);
+        unset($comment['id']);
+
+        $this->inDB->update('comments', (int) $id, $comment);
 
         return true;
     }
 
     public function getTargetAuthor($table, $target_id)
     {
-        $sql = "SELECT u.id, u.email
-                FROM cms_users u, {$table} p
-                WHERE p.user_id = u.id AND p.id = '{$target_id}' AND u.is_locked = 0 AND u.is_deleted = 0
-                LIMIT 1";
+        $db = clone $this->inDB;
 
-        $result = $this->inDB->query($sql);
+        // в cms_comment_targets имя таблицы хранится с физическим префиксом,
+        // а построитель сам добавляет префикс к именам таблиц
+        if ( $this->inDB->prefix && strpos($table, $this->inDB->prefix) === 0 ) {
+            $table = substr($table, strlen($this->inDB->prefix));
+        }
 
-        if ( $this->inDB->num_rows($result) !== 1 ) {
+        $user = $db->selectOnly('i.id')->
+                select('i.email')->
+                joinInner($table, 'p', 'p.user_id = i.id')->
+                filterEqual('p.id', (int) $target_id)->
+                filterEqual('i.is_locked', 0)->
+                filterEqual('i.is_deleted', 0)->
+                getItem('users');
+
+        if ( !$user ) {
             return false;
         }
 
-        return $this->inDB->fetch_assoc($result);
+        return $user;
     }
 
     public function getCommentAuthorId($comment_id)
     {
-        return $this->inDB->get_field('cms_comments', "id='$comment_id'", 'user_id');
+        $db = clone $this->inDB;
+
+        return $db->filterEqual('id', (int) $comment_id)->
+                        getFieldFiltered('comments', 'user_id');
     }
 
     public function isAuthorNeedMail($author_id)
     {
-        return $this->inDB->get_field('cms_user_profiles', "user_id='$author_id'", 'email_newmsg');
+        $db = clone $this->inDB;
+
+        return $db->filterEqual('user_id', (int) $author_id)->
+                        getFieldFiltered('user_profiles', 'email_newmsg');
     }
 
     private function getCommentChilds($comment_id)
     {
-        $sql = "SELECT id FROM cms_comments WHERE parent_id = '" . $comment_id . "'";
+        $db = clone $this->inDB;
 
-        $result = $this->inDB->query($sql);
+        $childs = $db->selectOnly('i.id')->
+                filterEqual('i.parent_id', (int) $comment_id)->
+                get('comments', false, false);
 
-        if ( !$this->inDB->num_rows($result) ) {
+        if ( !$childs ) {
             return false;
-        }
-
-        $childs = [];
-
-        while ( $child = $this->inDB->fetch_assoc($result) ) {
-            $childs[] = $child;
         }
 
         return $childs;
@@ -151,9 +167,9 @@ class cms_model_comments
             }
         }
 
-        $sql = "DELETE FROM cms_comments WHERE id = '" . $comment_id . "' LIMIT 1";
+        $db = clone $this->inDB;
 
-        $this->inDB->query($sql);
+        $db->delete('comments', (int) $comment_id);
 
         cmsCore::deleteRatings('comment', $comment_id);
         cmsActions::removeObjectLog('add_comment', $comment_id);
@@ -185,40 +201,33 @@ class cms_model_comments
      */
     public function whereUserIs($user_id)
     {
-        $this->inDB->where("c.user_id = '{$user_id}'");
+        $this->inDB->filterEqual('i.user_id', (int) $user_id);
     }
 
     public function whereOnlyUsers()
     {
-        $this->inDB->where("c.user_id > 0");
+        $this->inDB->filterGt('i.user_id', 0);
     }
 
     public function whereRatingOver($rating)
     {
-        $this->inDB->where("c.rating >= {$rating}");
+        $this->inDB->filterGtEqual('i.rating', (int) $rating);
     }
 
     public function whereTargetIs($target, $target_id)
     {
-        $this->inDB->where("c.target='$target' AND c.target_id = '$target_id'");
+        $this->inDB->filterEqual('i.target', $target)->
+                filterEqual('i.target_id', (int) $target_id);
     }
 
     public function whereTargetIn($targets)
     {
-        $t_list = '';
-
-        foreach ( $targets as $t ) {
-            $t_list .= "'$t',";
-        }
-
-        $t_list = rtrim($t_list, ',');
-
-        $this->inDB->where("c.target IN ({$t_list})");
+        $this->inDB->filterIn('i.target', (array) $targets);
     }
 
     public function whereIsShow()
     {
-        $this->inDB->where("c.is_hidden=0");
+        $this->inDB->filterEqual('i.is_hidden', 0);
     }
 
     /**
@@ -233,37 +242,38 @@ class cms_model_comments
 
         global $_LANG;
 
-        $published = $only_published ? 'c.published = 1' : '1=1';
+        $db = $this->inDB;
 
-        $sql = "SELECT c.*,
-                   IFNULL(u.nickname, 0) as nickname,
-                   IFNULL(u.login, 0) as login,
-                   IFNULL(u.is_deleted, 0) as is_deleted,
-                   IFNULL(p.imageurl, 0) as imageurl,
-                   IFNULL(p.gender, 0) as gender
-                FROM cms_comments c
-                    LEFT JOIN cms_users u ON u.id = c.user_id
-                    LEFT JOIN cms_user_profiles p ON p.user_id = u.id
-                WHERE {$published}
-                {$this->inDB->where}
-
-                {$this->inDB->group_by}
-
-                {$this->inDB->order_by}\n";
-
-        if ( $this->inDB->limit ) {
-            $sql .= "LIMIT {$this->inDB->limit}";
+        // legacy-условия сортировки/группировки используют алиас c,
+        // а построитель — алиас i
+        if ( $db->order_by ) {
+            $db->order_by = str_replace('c.', 'i.', $db->order_by);
         }
 
-        $result = $this->inDB->query($sql);
+        if ( $db->group_by ) {
+            $db->group_by = str_replace('c.', 'i.', $db->group_by);
+        }
 
-        $this->inDB->resetConditions();
+        $db->selectOnly('i.*')->
+                select('IFNULL(u.nickname, 0)', 'nickname')->
+                select('IFNULL(u.login, 0)', 'login')->
+                select('IFNULL(u.is_deleted, 0)', 'is_deleted')->
+                select('IFNULL(p.imageurl, 0)', 'imageurl')->
+                select('IFNULL(p.gender, 0)', 'gender')->
+                joinLeft('users', 'u', 'u.id = i.user_id')->
+                joinLeft('user_profiles', 'p', 'p.user_id = u.id');
 
-        if ( !$this->inDB->num_rows($result) ) {
+        if ( $only_published ) {
+            $db->filterEqual('i.published', 1);
+        }
+
+        $comments = $db->get('comments', false, false);
+
+        if ( !$comments ) {
             return array();
         }
 
-        while ( $comment = $this->inDB->fetch_assoc($result) ) {
+        foreach ( $comments as $index => $comment ) {
             $comment['level']       = 0;
             $comment['is_editable'] = $this->isEditable($comment['pubdate']);
             $comment['fpubdate']    = cmsCore::dateFormat($comment['pubdate'], true, true);
@@ -299,7 +309,7 @@ class cms_model_comments
                 $comment['is_voted'] = true;
             }
 
-            $comments[] = $comment;
+            $comments[$index] = $comment;
         }
 
         if ( $is_tree ) {
@@ -315,40 +325,30 @@ class cms_model_comments
      */
     public function getCommentsCount($only_published = true)
     {
-        $published = $only_published ? 'c.published = 1' : '1=1';
+        if ( $only_published ) {
+            $this->inDB->filterEqual('i.published', 1);
+        }
 
-        $sql = "SELECT 1
-                FROM cms_comments c
-				LEFT JOIN cms_users u ON u.id = c.user_id
-                WHERE {$published}
-                      {$this->inDB->where}
-                {$this->inDB->group_by}";
-
-        $result = $this->inDB->query($sql);
-
-        return $this->inDB->num_rows($result);
+        return $this->inDB->getCount('comments');
     }
 
     public function getComment($id)
     {
-        $sql = "SELECT c.*,
-                   IFNULL(u.nickname, 0) as nickname,
-                   IFNULL(u.login, 0) as login,
-                   IFNULL(u.is_deleted, 0) as is_deleted,
-                   IFNULL(p.imageurl, 0) as imageurl
-                FROM cms_comments c
-                    LEFT JOIN cms_users u ON u.id = c.user_id
-                    LEFT JOIN cms_user_profiles p ON p.user_id = u.id
-                WHERE c.id='{$id}'
-                LIMIT 1";
+        $db = clone $this->inDB;
 
-        $result = $this->inDB->query($sql);
+        $comment = $db->selectOnly('i.*')->
+                select('IFNULL(u.nickname, 0)', 'nickname')->
+                select('IFNULL(u.login, 0)', 'login')->
+                select('IFNULL(u.is_deleted, 0)', 'is_deleted')->
+                select('IFNULL(p.imageurl, 0)', 'imageurl')->
+                joinLeft('users', 'u', 'u.id = i.user_id')->
+                joinLeft('user_profiles', 'p', 'p.user_id = u.id')->
+                filterEqual('i.id', (int) $id)->
+                getItem('comments');
 
-        if ( !$this->inDB->num_rows($result) ) {
+        if ( !$comment ) {
             return false;
         }
-
-        $comment = $this->inDB->fetch_assoc($result);
 
         $comment['is_editable'] = $this->isEditable($comment['pubdate']);
 

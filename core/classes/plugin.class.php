@@ -26,7 +26,7 @@ class cmsPlugin extends \cms\plugin {
     public function __construct() {
         parent::__construct();
 
-        $this->inDB = cmsDatabase::getInstance();
+        $this->inDB = \cms\db::getInstance();
 
         $this->config = array_merge($this->config, self::loadConfig($this->name));
 

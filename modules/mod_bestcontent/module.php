@@ -12,7 +12,7 @@
 
 function mod_bestcontent($mod, $cfg)
 {
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
 
     $model = new cms_model_content();
 
@@ -28,7 +28,7 @@ function mod_bestcontent($mod, $cfg)
         $cfg['cat_id'] = 1;
     }
 
-    $inDB->where("con.canrate = 1");
+    $inDB->filterEqual('canrate', 1);
 
     if ( $cfg['cat_id'] ) {
         if ( !$cfg['subs'] ) {
@@ -37,7 +37,7 @@ function mod_bestcontent($mod, $cfg)
         }
         else {
             //выбираем из категории и подкатегорий
-            $rootcat = $inDB->getNsCategory('cms_category', $cfg['cat_id']);
+            $rootcat = $inDB->getNsCategory('category', $cfg['cat_id']);
 
             if ( !$rootcat ) {
                 return false;
@@ -47,7 +47,7 @@ function mod_bestcontent($mod, $cfg)
         }
     }
 
-    $inDB->orderBy('con.rating', 'DESC');
+    $inDB->orderBy('rating', 'DESC');
     $inDB->limitPage(1, $cfg['shownum']);
 
     $content_list = $model->getArticlesList();

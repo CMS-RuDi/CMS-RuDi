@@ -13,7 +13,7 @@
 function mod_photo($mod, $cfg)
 {
     $inPhoto = cmsPhoto::getInstance();
-    $inDB    = cmsDatabase::getInstance();
+    $inDB    = \cms\db::getInstance();
 
     $default_cfg = array(
         'is_full'     => 1,
@@ -31,15 +31,16 @@ function mod_photo($mod, $cfg)
     $cfg = array_merge($default_cfg, $cfg);
 
     // выбираем категории фото
-    $inDB->addJoin('INNER JOIN cms_photo_albums a ON a.id = f.album_id AND a.published = 1');
-    $inDB->addSelect('a.title as cat_title, a.NSDiffer');
+    $inDB->joinInner('photo_albums', 'a', 'a.id = i.album_id AND a.published = 1');
+    $inDB->select('a.title', 'cat_title');
+    $inDB->select('a.NSDiffer');
 
     // если категория задана, выбираем из нее
     if ( $cfg['album_id'] ) {
         // Если выбирать нужно включая вложенные
         if ( $cfg['is_subs'] ) {
             // получаем категорию
-            $album = $inDB->getNsCategory('cms_photo_albums', $cfg['album_id']);
+            $album = $inDB->getNsCategory('photo_albums', $cfg['album_id']);
             if ( !$album ) {
                 return false;
             }
@@ -53,14 +54,14 @@ function mod_photo($mod, $cfg)
 
     // если фото клубов не нужны
     if ( !$cfg['showclubs'] ) {
-        $inDB->where("f.owner = 'photos'");
+        $inDB->filterEqual('owner', 'photos');
     }
 
     // Задаем период
     $inPhoto->wherePeriodIs($cfg['whatphoto']);
 
     //устанавливаем сортировку
-    $inDB->orderBy('f.' . $cfg['sort'], 'DESC');
+    $inDB->orderBy('i.' . $cfg['sort'], 'DESC');
 
     //устанавливаем номер текущей страницы и кол-во фото на странице
     $inDB->limit($cfg['shownum']);

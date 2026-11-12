@@ -437,7 +437,8 @@ class cmsPage {
         $inUser = cmsUser::getInstance();
         $inPage = $this;
         $inConf = $this->site_cfg;
-        $inDB = cmsDatabase::getInstance();
+        $inDB = \cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
 
         // Формируем модули заранее
         $this->loadModulesForMenuItem();
@@ -463,7 +464,8 @@ class cmsPage {
         $inCore = cmsCore::getInstance();
         $inUser = cmsUser::getInstance();
         $inPage = self::getInstance();
-        $inDB = cmsDatabase::getInstance();
+        $inDB = \cmsDatabase::getInstance();
+        $db = \cms\db::getInstance();
         $inConf = cmsConfig::getInstance();
 
         extract($data);
@@ -526,32 +528,30 @@ class cmsPage {
         $modules = array();
 
         $inCore = cmsCore::getInstance();
-        $inDB = cmsDatabase::getInstance();
+        $db = clone \cms\db::getInstance();
 
         $is_strict = $inCore->isMenuIdStrict();
 
-        if (!$is_strict) {
-            $strict_sql = "AND (m.is_strict_bind = 0)";
-        } else {
-            $strict_sql = '';
-        }
-
         $menuid = $inCore->menuId();
 
-        $sql = "SELECT m.*, mb.position as mb_position
-            FROM cms_modules m
-            INNER JOIN cms_modules_bind mb ON mb.module_id = m.id AND mb.menu_id IN (" . $menuid . ", 0)
-            WHERE m.published = 1 " . $strict_sql . "
-            ORDER BY m.ordering ASC";
+        $db->selectOnly('i.*')
+                ->select('mb.position', 'mb_position')
+                ->joinInner('modules_bind', 'mb', 'mb.module_id = i.id AND mb.menu_id IN (' . (int) $menuid . ', 0)')
+                ->filterEqual('i.published', 1)
+                ->orderBy('i.ordering');
 
-        $result = $inDB->query($sql);
+        if (!$is_strict) {
+            $db->filterEqual('i.is_strict_bind', 0);
+        }
 
-        if (!$inDB->num_rows($result)) {
+        $rows = $db->get('modules', false, false);
+
+        if (!$rows) {
             $this->modules = $modules;
             return true;
         }
 
-        while ($mod = $inDB->fetch_assoc($result)) {
+        foreach ($rows as $mod) {
             if (!cmsCore::checkContentAccess($mod['access_list'], false)) {
                 continue;
             }
@@ -716,13 +716,16 @@ class cmsPage {
      * @return html
      */
     public function printModule($id) {
+        $db = clone \cms\db::getInstance();
+
         if (is_numeric($id)) {
-            $where = "id = '" . $id . "'";
+            $mod = $db->filterEqual('id', (int) $id)->getItem('modules');
         } else {
-            $where = "MATCH(content) AGAINST ('" . $id . "' IN BOOLEAN MODE)";
+            $mod = $db->filter("MATCH(i.content) AGAINST ('" . $db->escape($id) . "' IN BOOLEAN MODE)")->getItem('modules');
         }
 
-        $mod = cmsDatabase::getInstance()->get_fields('cms_modules', $where, '*');
+        // getItem() восстанавливает переданные ему фильтры, поэтому чистим состояние
+        $db->resetFilters();
 
         if (!$mod) {
             return false;

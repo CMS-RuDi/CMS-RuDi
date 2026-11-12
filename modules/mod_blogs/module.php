@@ -11,7 +11,7 @@
  */
 
 function mod_blogs($mod, $cfg) {
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
 
     $default_cfg = array(
         'sort' => 'pubdate',
@@ -29,15 +29,16 @@ function mod_blogs($mod, $cfg) {
 
     if ($cfg['owner'] == 'club') {
         $model = new cms_model_clubs();
-        $inDB->addSelect('b.user_id as bloglink');
+        $inDB->select('b.user_id', 'bloglink');
     } else {
         $model = new cms_model_blogs();
     }
 
     // получаем аватары владельцев
-    $inDB->addSelect('ANY_VALUE(up.imageurl) as imageurl, ANY_VALUE(img.fileurl) as fileurl');
-    $inDB->addJoin('LEFT JOIN cms_user_profiles up ON up.user_id = u.id');
-    $inDB->addJoin("LEFT JOIN cms_upload_images img ON img.target_id = p.id AND img.target = 'blog_post' AND img.component = 'blogs'");
+    $inDB->select('MIN(up.imageurl)', 'imageurl');
+    $inDB->select('MIN(img.fileurl)', 'fileurl');
+    $inDB->joinLeft('user_profiles', 'up', 'up.user_id = i.user_id');
+    $inDB->joinLeft('upload_images', 'img', "img.target_id = i.id AND img.target = 'blog_post' AND img.component = 'blogs'");
 
     $inBlog->whereOnlyPublic();
 
@@ -49,7 +50,7 @@ function mod_blogs($mod, $cfg) {
         $inBlog->whereBlogIs($cfg['blog_id']);
     }
 
-    $inDB->orderBy('p.' . $cfg['sort'], 'DESC')->groupBy('p.id');
+    $inDB->orderBy('i.' . $cfg['sort'], 'DESC')->groupBy('i.id');
     $inDB->limit($cfg['shownum']);
 
     $posts = $model->getPosts(false);

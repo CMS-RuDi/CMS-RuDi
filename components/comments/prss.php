@@ -16,7 +16,7 @@ function rss_comments($item_id, $cfg)
         return false;
     }
 
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
 
     global $_LANG;
 
@@ -32,7 +32,7 @@ function rss_comments($item_id, $cfg)
         $target_str = $target_array[0];
         $target_id  = (int) $target_array[1];
 
-        $target = $inDB->get_fields('cms_comment_targets', "target='{$target_str}'", '*');
+        $target = $inDB->filterEqual('target', $target_str)->getItem('comment_targets');
 
         if ( !$target ) {
             return false;
@@ -68,9 +68,9 @@ function rss_comments($item_id, $cfg)
 
     $model->whereIsShow();
 
-    $inDB->orderBy('c.pubdate', 'DESC');
+    $inDB->orderBy('i.pubdate', 'DESC');
 
-    $inDB->limit($cfg['maxitems']);
+    $inDB->limit((int) $cfg['maxitems']);
 
     $comments = $model->getComments(true, false, true);
 

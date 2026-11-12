@@ -12,7 +12,7 @@
 
 function mod_user_stats($mod, $cfg)
 {
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
     cmsCore::loadLanguage('components/users');
 
     global $_LANG;
@@ -38,34 +38,41 @@ function mod_user_stats($mod, $cfg)
     if ( $cfg['show_gender'] ) {
         $gender_stats            = array();
         //male
-        $gender_stats['male']    = $inDB->rows_count('cms_users u INNER JOIN cms_user_profiles p ON p.user_id = u.id', "u.is_locked = 0 AND u.is_deleted = 0 AND p.gender = 'm'");
+        $gender_stats['male']    = \cms\db::cloneOf($inDB)->joinInner('user_profiles', 'p', 'p.user_id = i.id')
+                ->filterEqual('i.is_locked', 0)
+                ->filterEqual('i.is_deleted', 0)
+                ->filterEqual('p.gender', 'm')
+                ->getCount('users');
         //female
-        $gender_stats['female']  = $inDB->rows_count('cms_users u INNER JOIN cms_user_profiles p ON p.user_id = u.id', "u.is_locked = 0 AND u.is_deleted = 0 AND p.gender = 'f'");
+        $gender_stats['female']  = \cms\db::cloneOf($inDB)->joinInner('user_profiles', 'p', 'p.user_id = i.id')
+                ->filterEqual('i.is_locked', 0)
+                ->filterEqual('i.is_deleted', 0)
+                ->filterEqual('p.gender', 'f')
+                ->getCount('users');
         //unknown
         $gender_stats['unknown'] = $total_usr - $gender_stats['male'] - $gender_stats['female'];
     }
 
     if ( $cfg['show_city'] ) {
-        $sql = "SELECT IF (p.city != '', p.city, '{$_LANG['NOT_DECIDE']}') city, COUNT( p.user_id ) count
-                FROM cms_users u
-                LEFT JOIN cms_user_profiles p ON p.user_id = u.id
-                WHERE u.is_locked =0 AND u.is_deleted =0
-                GROUP BY p.city";
-        $rs  = $inDB->query($sql);
+        $db = clone $inDB;
+        $db->select("IF (p.city != '', p.city, '" . $inDB->escape($_LANG['NOT_DECIDE']) . "')", 'city');
+        $db->select('COUNT(p.user_id)', 'count');
+        $db->joinLeft('user_profiles', 'p', 'p.user_id = i.id');
+        $db->filterEqual('i.is_locked', 0);
+        $db->filterEqual('i.is_deleted', 0);
+        $db->groupBy('p.city');
 
         $city_stats = array();
 
-        if ( $inDB->num_rows($rs) ) {
-            while ( $row = $inDB->fetch_assoc($rs) ) {
-                if ( $row['city'] != $_LANG['NOT_DECIDE'] ) {
-                    $row['href'] = '/users/city/' . urlencode($row['city']);
-                }
-                else {
-                    $row['href'] = '';
-                }
-                $row['city']  = icms_ucfirst(mb_strtolower($row['city']));
-                $city_stats[] = $row;
+        foreach ( $db->get('users', false, false) as $row ) {
+            if ( $row['city'] != $_LANG['NOT_DECIDE'] ) {
+                $row['href'] = '/users/city/' . urlencode($row['city']);
             }
+            else {
+                $row['href'] = '';
+            }
+            $row['city']  = icms_ucfirst(mb_strtolower($row['city']));
+            $city_stats[] = $row;
         }
     }
 

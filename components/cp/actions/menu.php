@@ -1,23 +1,31 @@
 <?php
 
+/*
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
+ *
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
+ *
+ *                      LICENSED BY GNU/GPL v2
+ */
+
 namespace components\cp\actions;
 
-class menu extends \cms\com_action
-{
-
+class menu extends \cms\com_action {
     protected $default_action = 'list';
 
-    public function doBefore($action_name)
-    {
-        if ( !\cmsUser::isAdminCan('admin/menu', $this->admin_access) ) {
+    public function doBefore($action_name) {
+        if (!\cmsUser::isAdminCan('admin/menu', $this->admin_access)) {
             \cms\backend::accessDenied();
         }
 
-        if ( $action_name == 'list' ) {
+        if ($action_name == 'list') {
             $id = $this->request()->get('id', 'int', -1);
             $do = $this->request()->get('do', 'str');
 
-            if ( in_array($do, [ 'move_up', 'move_down', 'show', 'hide', 'delete' ]) ) {
+            if (in_array($do, ['move_up', 'move_down', 'show', 'hide', 'delete'])) {
                 $method = \cms\helper\str::toCamel('_', 'act_' . $do);
 
                 $this->{$method}($id);
@@ -29,21 +37,20 @@ class menu extends \cms\com_action
         $this->page()->setTitle($this->lang->ad_menu);
         $this->page()->addPathway($this->lang->ad_menu, $this->genActionUrl('menu'));
 
-        if ( $action_name == 'list' ) {
+        if ($action_name == 'list') {
             self::addToolMenuItem($this->lang->ad_menu_point_add, $this->genActionUrl('menu', 'add'), 'new.gif');
             self::addToolMenuItem($this->lang->ad_menu_add, $this->genActionUrl('menu', 'addmenu'), 'newmenu.gif');
-            self::addToolMenuItem($this->lang->ad_edit_selected, "javascript:checkSel('" . $this->genActionUrl('menu', 'edit', [ 'multiple' => 1 ]) . "');", 'edit.gif');
-            self::addToolMenuItem($this->lang->ad_delete_selected, "javascript:checkSel('" . $this->genActionUrl('menu', 'delete', [ 'multiple' => 1 ]) . "');", 'delete.gif');
-            self::addToolMenuItem($this->lang->ad_allow_selected, "javascript:checkSel('" . $this->genActionUrl('menu', 'show', [ 'multiple' => 1 ]) . "');", 'show.gif');
-            self::addToolMenuItem($this->lang->ad_disallow_selected, "javascript:checkSel('" . $this->genActionUrl('menu', 'hide', [ 'multiple' => 1 ]) . "');", 'hide.gif');
+            self::addToolMenuItem($this->lang->ad_edit_selected, "javascript:checkSel('" . $this->genActionUrl('menu', 'edit', ['multiple' => 1]) . "');", 'edit.gif');
+            self::addToolMenuItem($this->lang->ad_delete_selected, "javascript:checkSel('" . $this->genActionUrl('menu', 'delete', ['multiple' => 1]) . "');", 'delete.gif');
+            self::addToolMenuItem($this->lang->ad_allow_selected, "javascript:checkSel('" . $this->genActionUrl('menu', 'show', ['multiple' => 1]) . "');", 'show.gif');
+            self::addToolMenuItem($this->lang->ad_disallow_selected, "javascript:checkSel('" . $this->genActionUrl('menu', 'hide', ['multiple' => 1]) . "');", 'hide.gif');
             self::addToolMenuItem($this->lang->ad_help, '/cp/help/menu', 'help.gif');
-        }
-        else {
+        } else {
             self::addToolMenuItem($this->lang->save, 'javascript:document.addform.submit();', 'save.gif');
             self::addToolMenuItem($this->lang->cancel, $this->genActionUrl('menu'), 'cancel.gif');
         }
 
-        if ( in_array($action_name, [ 'addmenu', 'add', 'edit' ]) ) {
+        if (in_array($action_name, ['addmenu', 'add', 'edit'])) {
             $this->page()->addHeadJS('admin/js/menu.js');
             $this->page()->addHeadJsLang('AD_SPECIFY_LINK_MENU');
         }
@@ -51,72 +58,67 @@ class menu extends \cms\com_action
 
     //========================================================================//
 
-    public function actList()
-    {
+    public function actList() {
         $fields = [
-            [ 'title' => 'Lt', 'field' => 'NSLeft', 'width' => '30' ],
+            ['title' => 'Lt', 'field' => 'NSLeft', 'width' => '30'],
             [
                 'title' => $this->lang->title,
-                'field' => [ 'title', 'titles' ], 'width' => '',
-                'link'  => $this->genActionUrl('menu', [ 'edit', '%id%' ]),
-                'prc'   => function ($i) {
+                'field' => ['title', 'titles'], 'width' => '',
+                'link' => $this->genActionUrl('menu', ['edit', '%id%']),
+                'prc' => function ($i) {
                     $i['titles'] = \cms\model::yamlToArray($i['titles']);
 
                     // переопределяем название пункта меню в зависимости от языка
-                    if ( !empty($i['titles'][\cmsConfig::getConfig('lang')]) ) {
+                    if (!empty($i['titles'][\cmsConfig::getConfig('lang')])) {
                         $i['title'] = $i['titles'][\cmsConfig::getConfig('lang')];
                     }
 
                     return $i['title'];
                 }
             ],
-            [ 'title' => $this->lang->show, 'field' => 'published', 'width' => '60' ],
-            [ 'title' => $this->lang->ad_order, 'field' => 'ordering', 'width' => '100' ],
-            [ 'title' => $this->lang->ad_link, 'field' => [ 'linktype', 'linkid', 'link' ], 'width' => '240', 'prc' => [ $this, 'typeById' ] ],
+            ['title' => $this->lang->show, 'field' => 'published', 'width' => '60'],
+            ['title' => $this->lang->ad_order, 'field' => 'ordering', 'width' => '100'],
+            ['title' => $this->lang->ad_link, 'field' => ['linktype', 'linkid', 'link'], 'width' => '240', 'prc' => [$this, 'typeById']],
             [
-                'title'      => $this->lang->ad_menu,
-                'field'      => 'menu',
-                'width'      => '70',
-                'filter'     => '10',
+                'title' => $this->lang->ad_menu,
+                'field' => 'menu',
+                'width' => '70',
+                'filter' => '10',
                 'filterlist' => cpGetList('menu'),
-                'prc'        => function($menu) {
+                'prc' => function ($menu) {
                     $m = \cms\model::yamlToArray($menu);
                     return implode(', ', $m);
                 }
             ],
-            [ 'title' => $this->lang->template, 'field' => 'template', 'width' => '70', 'prc' => 'cpTemplateById' ]
+            ['title' => $this->lang->template, 'field' => 'template', 'width' => '70', 'prc' => 'cpTemplateById']
         ];
 
         $actions = [
-            [ 'title' => $this->lang->edit, 'icon' => 'edit.gif', 'link' => $this->genActionUrl('menu', [ 'edit', '%id%' ]) ],
-            [ 'title' => $this->lang->delete, 'icon' => 'delete.gif', 'confirm' => $this->lang->ad_menu_point_confirm, 'link' => $this->genActionUrl('menu', [ 'delete', '%id%' ]) ]
+            ['title' => $this->lang->edit, 'icon' => 'edit.gif', 'link' => $this->genActionUrl('menu', ['edit', '%id%'])],
+            ['title' => $this->lang->delete, 'icon' => 'delete.gif', 'confirm' => $this->lang->ad_menu_point_confirm, 'link' => $this->genActionUrl('menu', ['delete', '%id%'])]
         ];
 
         cpListTable('cms_menu', $fields, $actions, 'parent_id>0', 'NSLeft, ordering');
     }
 
-    public function actMoveUp($id = 0)
-    {
-        \cmsDatabase::getInstance()->moveNsCategory('cms_menu', $id, 'up');
+    public function actMoveUp($id = 0) {
+        \cms\db::getInstance()->moveNsCategory('menu', $id, 'up');
         \cmsCore::redirectBack();
     }
 
-    public function actMoveDown($id = 0)
-    {
-        \cmsDatabase::getInstance()->moveNsCategory('cms_menu', $id, 'down');
+    public function actMoveDown($id = 0) {
+        \cms\db::getInstance()->moveNsCategory('menu', $id, 'down');
         \cmsCore::redirectBack();
     }
 
-    public function actShow($id = 0)
-    {
-        if ( !$this->request()->has('item') ) {
-            if ( $id >= 0 ) {
+    public function actShow($id = 0) {
+        if (!$this->request()->has('item')) {
+            if ($id >= 0) {
                 dbShow('cms_menu', $id);
             }
             echo '1';
             exit;
-        }
-        else {
+        } else {
             dbShowList('cms_menu', $this->request()->get('item', 'array_int', []));
 
             \cmsCore::addSessionMessage($this->lang->ad_do_success, 'success');
@@ -124,16 +126,14 @@ class menu extends \cms\com_action
         }
     }
 
-    public function actHide($id = 0)
-    {
-        if ( !$this->request()->has('item') ) {
-            if ( $id >= 0 ) {
+    public function actHide($id = 0) {
+        if (!$this->request()->has('item')) {
+            if ($id >= 0) {
                 dbHide('cms_menu', $id);
             }
             echo '1';
             exit;
-        }
-        else {
+        } else {
             dbHideList('cms_menu', $this->request()->get('item', 'array_int', []));
 
             \cmsCore::addSessionMessage($this->lang->ad_do_success, 'success');
@@ -141,18 +141,16 @@ class menu extends \cms\com_action
         }
     }
 
-    public function actDelete($id = 0)
-    {
-        if ( !$this->request()->has('item') ) {
-            if ( $id >= 0 ) {
-                \cmsDatabase::getInstance()->deleteNS('cms_menu', (int) $id);
+    public function actDelete($id = 0) {
+        if (!$this->request()->has('item')) {
+            if ($id >= 0) {
+                \cms\db::getInstance()->deleteNS('menu', (int) $id);
             }
-        }
-        else {
+        } else {
             $items = $this->request()->get('item', 'array_int', []);
 
-            foreach ( $items as $item_id ) {
-                \cmsDatabase::getInstance()->deleteNS('cms_menu', $item_id);
+            foreach ($items as $item_id) {
+                \cms\db::getInstance()->deleteNS('menu', $item_id);
             }
         }
 
@@ -162,8 +160,7 @@ class menu extends \cms\com_action
 
     //========================================================================//
 
-    public function actAddmenu()
-    {
+    public function actAddmenu() {
         $this->page()->setTitle($this->lang->ad_menu_add);
         $this->page()->addPathway($this->lang->ad_menu_add);
 
@@ -174,29 +171,25 @@ class menu extends \cms\com_action
                 display();
     }
 
-    public function actAdd()
-    {
+    public function actAdd() {
         $this->page()->addPathway($this->lang->ad_menu_point_add);
 
         return $this->actEdit(false, 'add');
     }
 
-    public function actEdit($item_id = false, $do = 'edit')
-    {
+    public function actEdit($item_id = false, $do = 'edit') {
         \cmsCore::includeFile('includes/jwtabs.php');
         $this->page()->addHead(jwHeader());
 
         $langs = \cmsCore::getDirsList('/languages');
 
-        if ( $do == 'add' ) {
-            $mod['menu'] = [ 'mainmenu' ];
-        }
-        else {
-            if ( $this->request()->has('multiple') ) {
-                if ( $this->request()->has('item') ) {
+        if ($do == 'add') {
+            $mod['menu'] = ['mainmenu'];
+        } else {
+            if ($this->request()->has('multiple')) {
+                if ($this->request()->has('item')) {
                     $_SESSION['editlist'] = $this->request()->get('item', 'array_int', []);
-                }
-                else {
+                } else {
                     \cmsCore::addSessionMessage($this->lang->ad_no_select_objects, 'error');
                     \cmsCore::redirectBack();
                 }
@@ -204,28 +197,27 @@ class menu extends \cms\com_action
 
             $ostatok = '';
 
-            if ( isset($_SESSION['editlist']) ) {
+            if (isset($_SESSION['editlist'])) {
                 $item_id = array_shift($_SESSION['editlist']);
 
-                if ( sizeof($_SESSION['editlist']) == 0 ) {
+                if (sizeof($_SESSION['editlist']) == 0) {
                     unset($_SESSION['editlist']);
-                }
-                else {
+                } else {
                     $ostatok = '(' . $this->lang->ad_next_in . sizeof($_SESSION['editlist']) . ')';
                 }
             }
 
-            if ( empty($item_id) ) {
+            if (empty($item_id)) {
                 $item_id = $this->request()->get('id', 'int', 0);
             }
 
-            $mod = $this->model->db->getFields('menu', "id = '" . $item_id . "'", '*');
+            $mod = \cms\db::getInstance()->getRow('menu', 'id = ' . (int) $item_id, '*');
 
-            if ( empty($mod) ) {
+            if (empty($mod)) {
                 \cmsCore::error404();
             }
 
-            $mod['menu']   = \cms\model::yamlToArray($mod['menu']);
+            $mod['menu'] = \cms\model::yamlToArray($mod['menu']);
             $mod['titles'] = \cms\model::yamlToArray($mod['titles']);
 
             $this->page()->addPathway($this->lang->ad_menu_point_edit . $ostatok . ' "' . $mod['title'] . '"');
@@ -238,17 +230,17 @@ class menu extends \cms\com_action
                 assign('langs_count', count($langs))->
                 assign('templates', \cmsCore::getDirsList('/templates'))->
                 assign('icon_list', $this->iconList())->
-                assign('rootid', $this->model->db->getField('menu', 'parent_id=0', 'id'))->
+                assign('rootid', $this->controller->model->db->filterEqual('parent_id', 0)->getFieldFiltered('menu', ' = 0', 'id'))->
                 assign('groups', \cmsUser::getGroups())->
                 assign('access_list', !empty($mod['access_list']) ? \cms\model::yamlToArray($mod['access_list']) : [])->
                 assign('menu_list', cpGetList('menu'))->
                 assign('parents_list', $this->core->getListItemsNS('cms_menu', isset($mod['parent_id']) ? $mod['parent_id'] : 0));
 
-        if ( \cms\controller::installed('video') ) {
+        if (\cms\controller::installed('video')) {
             $tpl->assign('video_cat_list', $this->core->getListItemsNS('cms_video_category', isset($mod['linktype']) && $mod['linktype'] == 'video_cat') ? $mod['linkid'] : 0);
         }
 
-        if ( \cms\controller::installed('catalog') ) {
+        if (\cms\controller::installed('catalog')) {
             $tpl->assign('uccat_list', $this->core->getListItems('cms_uc_cats', (isset($mod['linktype']) && $mod['linktype'] == 'uccat') ? $mod['linkid'] : 0));
         }
 
@@ -265,164 +257,160 @@ class menu extends \cms\com_action
 
     //========================================================================//
 
-    public function actSubmitmenu()
-    {
-        if ( !\cmsUser::checkCsrfToken() ) {
+    public function actSubmitmenu() {
+        if (!\cmsUser::checkCsrfToken()) {
             \cmsCore::error404();
         }
 
-        $maxorder = $this->model->db->getField('modules', '1', 'ordering', 'ordering DESC') + 1;
+        $maxorder = $this->controller->model->db->orderBy('ordering', 'DESC')->getFieldFiltered('modules', 'ordering') + 1;
 
         $is_public = $this->request()->get('is_public', 'int', '');
 
         $access_list = [];
 
-        if ( !$is_public ) {
+        if (!$is_public) {
             $access_list = $this->request()->get('allow_group', 'array_int');
         }
 
-        $cfg_str = \cms\model::arrayToYaml([ 'menu' => $this->request()->get('menu', 'str', '') ]);
+        $cfg_str = \cms\model::arrayToYaml(['menu' => $this->request()->get('menu', 'str', '')]);
 
-        $newid = $this->model->db->insert('modules', [
-            'position'    => $this->request()->get('position', 'str', ''),
-            'name'        => $this->lang->ad_menu,
-            'title'       => $this->request()->get('title', 'str', ''),
+        $newid = \cms\db::getInstance()->insert('modules', [
+            'position' => $this->request()->get('position', 'str', ''),
+            'name' => $this->lang->ad_menu,
+            'title' => $this->request()->get('title', 'str', ''),
             'is_external' => 1,
-            'content'     => 'mod_menu',
-            'ordering'    => $maxorder,
-            'showtitle'   => 1,
-            'published'   => $this->request()->get('published', 'int', 0),
-            'user'        => 0,
-            'config'      => $cfg_str,
-            'css_prefix'  => $this->request()->get('css_prefix', 'str', ''),
+            'content' => 'mod_menu',
+            'ordering' => $maxorder,
+            'showtitle' => 1,
+            'published' => $this->request()->get('published', 'int', 0),
+            'user' => 0,
+            'config' => $cfg_str,
+            'css_prefix' => $this->request()->get('css_prefix', 'str', ''),
             'access_list' => \cms\model::arrayToYaml($access_list)
         ]);
 
         \cmsCore::addSessionMessage($this->lang->ad_do_success, 'success');
 
-        $this->redirectToAction('modules', [ 'edit', $newid ]);
+        $this->redirectToAction('modules', ['edit', $newid]);
     }
 
-    public function actSubmit()
-    {
-        if ( !\cmsUser::checkCsrfToken() ) {
+    public function actSubmit() {
+        if (!\cmsUser::checkCsrfToken()) {
             \cmsCore::error404();
         }
 
         $item_id = $this->request()->get('item_id', 'int', 0);
 
-        $title     = $this->request()->get('title', 'str', '');
-        $titles    = \cms\model::arrayToYaml($this->request()->get('titles', 'array_str', []));
-        $menu      = \cms\model::arrayToYaml($this->request()->get('menu', 'array_str', ''));
-        $linktype  = $this->request()->get('mode', 'str', '');
-        $linkid    = $this->request()->get($linktype, 'str', '');
-        $link      = $this->core->getMenuLink($linktype, $linkid);
-        $target    = $this->request()->get('target', 'str', '');
+        $title = $this->request()->get('title', 'str', '');
+        $titles = \cms\model::arrayToYaml($this->request()->get('titles', 'array_str', []));
+        $menu = \cms\model::arrayToYaml($this->request()->get('menu', 'array_str', ''));
+        $linktype = $this->request()->get('mode', 'str', '');
+        $linkid = $this->request()->get($linktype, 'str', '');
+        $link = $this->core->getMenuLink($linktype, $linkid);
+        $target = $this->request()->get('target', 'str', '');
         $published = $this->request()->get('published', 'int', 0);
-        $template  = $this->request()->get('template', 'str', '');
-        $iconurl   = $this->request()->get('iconurl', 'str', '');
+        $template = $this->request()->get('template', 'str', '');
+        $iconurl = $this->request()->get('iconurl', 'str', '');
         $parent_id = $this->request()->get('parent_id', 'int', 0);
-        $is_lax    = $this->request()->get('is_lax', 'int', 0);
+        $is_lax = $this->request()->get('is_lax', 'int', 0);
         $css_class = $this->request()->get('css_class', 'str', '');
 
         $oldparent = $this->request()->get('oldparent', 'int', 0);
 
         $is_public = $this->request()->get('is_public', 'int', '');
-        if ( !$is_public ) {
+        if (!$is_public) {
             $access_list = \cms\model::arrayToYaml($this->request()->get('allow_group', 'array_int'));
         }
 
         $ns = $this->core->nestedSetsInit('cms_menu');
 
-        if ( empty($item_id) ) {
+        if (empty($item_id)) {
             $item_id = $ns->AddNode($parent_id);
-        }
-        else {
-            if ( $oldparent != $parent_id ) {
+        } else {
+            if ($oldparent != $parent_id) {
                 $ns->MoveNode($item_id, $parent_id);
             }
         }
 
-        $this->model->db->update('menu', 'id=' . $item_id, [
-            'title'       => $title,
-            'titles'      => $titles,
-            'css_class'   => $css_class,
-            'menu'        => $menu,
-            'link'        => $link,
-            'linktype'    => $linktype,
-            'linkid'      => $linkid,
-            'target'      => $target,
-            'published'   => $published,
-            'template'    => $template,
+        \cms\db::getInstance()->update('menu', (int) $item_id, [
+            'title' => $title,
+            'titles' => $titles,
+            'css_class' => $css_class,
+            'menu' => $menu,
+            'link' => $link,
+            'linktype' => $linktype,
+            'linkid' => $linkid,
+            'target' => $target,
+            'published' => $published,
+            'template' => $template,
             'access_list' => $access_list,
-            'is_lax'      => $is_lax,
-            'iconurl'     => $iconurl
+            'is_lax' => $is_lax,
+            'iconurl' => $iconurl
         ]);
 
         \cmsCore::addSessionMessage($this->lang->ad_do_success, 'success');
 
-        if ( !isset($_SESSION['editlist']) || @sizeof($_SESSION['editlist']) == 0 ) {
+        if (!isset($_SESSION['editlist']) || @sizeof($_SESSION['editlist']) == 0) {
             $this->redirectToAction('menu');
-        }
-        else {
+        } else {
             $this->redirectToAction('menu', 'edit');
         }
     }
 
     //========================================================================//
 
-    public function typeById($item)
-    {
+    public function typeById($item) {
         $maxlen = 35;
 
-        $type  = '';
+        $type = '';
         $title = '';
 
-        switch ( $item['linktype'] ) {
+        switch ($item['linktype']) {
             case 'link':
-                $type  = $this->lang->ad_type_link;
+                $type = $this->lang->ad_type_link;
                 $title = $item['linkid'];
                 break;
             case 'component':
-                $type  = $this->lang->ad_type_component;
-                $title = $this->model->db->getField('components', "link='" . $item['linkid'] . "'", 'title');
+                $type = $this->lang->ad_type_component;
+                $title = $this->controller->model->db->
+                        filterEqual('link', $item['linkid'])->
+                        getFieldFiltered('components', 'title');
                 break;
             case 'content':
-                $type  = $this->lang->ad_type_article;
-                $title = $this->model->db->getField('content', 'id=' . $item['linkid'], 'title');
+                $type = $this->lang->ad_type_article;
+                $title = $this->controller->model->db->getField('content', $item['linkid'], 'title');
                 break;
             case 'category':
-                $type  = $this->lang->ad_type_partition;
-                $title = $this->model->db->getField('category', 'id=' . $item['linkid'], 'title');
+                $type = $this->lang->ad_type_partition;
+                $title = $this->controller->model->db->getField('category', $item['linkid'], 'title');
                 break;
             case 'video_cat':
-                if ( \cms\controller::installed('video') ) {
-                    $type  = $this->lang->ad_type_video_partition;
-                    $title = $this->model->db->getField('video_category', 'id=' . $item['linkid'], 'title');
+                if (\cms\controller::installed('video')) {
+                    $type = $this->lang->ad_type_video_partition;
+                    $title = $this->controller->model->db->getField('video_category', $item['linkid'], 'title');
                 }
                 break;
             case 'uccat':
-                $type  = $this->lang->ad_type_category;
-                $title = $this->model->db->getField('uc_cats', 'id=' . $item['linkid'], 'title');
+                $type = $this->lang->ad_type_category;
+                $title = $this->controller->model->db->getField('uc_cats', $item['linkid'], 'title');
                 break;
             case 'blog':
-                $type  = $this->lang->ad_type_blog;
-                $title = $this->model->db->getField('blogs', 'id=' . $item['linkid'], 'title');
+                $type = $this->lang->ad_type_blog;
+                $title = $this->controller->model->db->getField('blogs', $item['linkid'], 'title');
                 break;
             case 'photoalbum':
-                $type  = $this->lang->ad_type_album;
-                $title = $this->model->db->getField('photo_albums', 'id=' . $item['linkid'], 'title');
+                $type = $this->lang->ad_type_album;
+                $title = $this->controller->model->db->getField('photo_albums', $item['linkid'], 'title');
                 break;
         }
 
-        if ( !empty($type) ) {
-            if ( mb_strlen($type . ' - ' . $title) > $maxlen ) {
+        if (!empty($type)) {
+            if (mb_strlen($type . ' - ' . $title) > $maxlen) {
                 $dif = mb_strlen($type . ' - ' . $title) - $maxlen;
 
-                if ( mb_strlen($title) > $dif ) {
+                if (mb_strlen($title) > $dif) {
                     $title = mb_substr($title, 0, mb_strlen($title) - $dif) . '...';
-                }
-                else {
+                } else {
                     $title = '...';
                 }
             }
@@ -437,16 +425,15 @@ class menu extends \cms\com_action
         return '';
     }
 
-    protected function iconList()
-    {
+    protected function iconList() {
         $icons = [];
 
-        if ( $handle = opendir(PATH . '/images/menuicons') ) {
-            while ( false !== ($file = readdir($handle)) ) {
-                if ( $file != '.' && $file != '..' && mb_strstr($file, '.gif') ) {
+        if ($handle = opendir(PATH . '/images/menuicons')) {
+            while (false !== ($file = readdir($handle))) {
+                if ($file != '.' && $file != '..' && mb_strstr($file, '.gif')) {
                     $icons[] = [
                         'name' => $file,
-                        'src'  => '/images/menuicons/' . $file
+                        'src' => '/images/menuicons/' . $file
                     ];
                 }
             }
@@ -458,5 +445,4 @@ class menu extends \cms\com_action
                         assign('icons', $icons)->
                         fetch();
     }
-
 }

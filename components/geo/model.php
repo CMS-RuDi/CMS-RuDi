@@ -16,7 +16,7 @@ class cms_model_geo
     public function __construct()
     {
         cmsCore::loadLanguage('components/geo');
-        $this->inDB = cmsDatabase::getInstance();
+        $this->inDB = \cms\db::getInstance();
     }
 
     public static function getDefaultConfig()
@@ -29,14 +29,11 @@ class cms_model_geo
 
     private function getItems($table, $first)
     {
-        $sql    = "SELECT id, name FROM " . $table . "
-                WHERE 1=1 " . $this->inDB->where . "
-                " . $this->inDB->order_by . "\n";
-        $result = $this->inDB->query($sql);
-
         $c[0] = $first;
 
-        while ( $data = $this->inDB->fetch_assoc($result) ) {
+        $items = $this->inDB->selectOnly('id')->select('name')->get($table);
+
+        foreach ( $items as $data ) {
             $c[$data['id']] = $data['name'];
         }
 
@@ -49,7 +46,7 @@ class cms_model_geo
 
         $this->inDB->orderBy('ordering, name');
 
-        return $this->getItems('cms_geo_countries', $_LANG['GEO_SELECT_COUNTRY']);
+        return $this->getItems('geo_countries', $_LANG['GEO_SELECT_COUNTRY']);
     }
 
     public function getRegions($country_id = false)
@@ -57,12 +54,12 @@ class cms_model_geo
         global $_LANG;
 
         if ( $country_id ) {
-            $this->inDB->where("country_id = '" . $country_id . "'");
+            $this->inDB->filterEqual('country_id', $country_id);
         }
 
         $this->inDB->orderBy('name');
 
-        return $this->getItems('cms_geo_regions', $_LANG['GEO_SELECT_REGION']);
+        return $this->getItems('geo_regions', $_LANG['GEO_SELECT_REGION']);
     }
 
     public function getCities($region_id = false)
@@ -70,12 +67,12 @@ class cms_model_geo
         global $_LANG;
 
         if ( $region_id ) {
-            $this->inDB->where("region_id = '" . $region_id . "'");
+            $this->inDB->filterEqual('region_id', $region_id);
         }
 
         $this->inDB->orderBy('name');
 
-        return $this->getItems('cms_geo_cities', $_LANG['GEO_SELECT_CITY']);
+        return $this->getItems('geo_cities', $_LANG['GEO_SELECT_CITY']);
     }
 
     public function getCityParents($city_id)
@@ -91,24 +88,26 @@ class cms_model_geo
             $city_id = $city['id'];
         }
 
-        $sql = "SELECT i.*, r.name as region_name, c.name as country_name, r.id as region_id, c.id as country_id
-                FROM cms_geo_cities i
-				INNER JOIN cms_geo_regions r ON r.id = i.region_id
-				INNER JOIN cms_geo_countries c ON c.id = r.country_id
-                WHERE i.id = '" . $city_id . "' LIMIT 1";
+        $city = \cms\db::cloneOf($this->inDB)->select('i.*')
+                ->select('r.name', 'region_name')
+                ->select('c.name', 'country_name')
+                ->select('r.id', 'region_id')
+                ->select('c.id', 'country_id')
+                ->joinInner('geo_regions', 'r', 'r.id = i.region_id')
+                ->joinInner('geo_countries', 'c', 'c.id = r.country_id')
+                ->filterEqual('i.id', (int) $city_id)
+                ->getItem('geo_cities');
 
-        $result = $this->inDB->query($sql);
-
-        if ( !$this->inDB->num_rows($result) ) {
-            return false;
-        }
-
-        return $this->inDB->fetch_assoc($result);
+        return $city ? $city : false;
     }
 
     public function getCity($id)
     {
-        return $this->inDB->get_fields('cms_geo_cities', (is_numeric($id) ? "id = '" . $id . "'" : "name LIKE '" . $id . "'"), '*');
+        if ( is_numeric($id) ) {
+            return $this->inDB->getItemById('geo_cities', (int) $id);
+        }
+
+        return $this->inDB->filterLike('name', $id)->getItem('geo_cities');
     }
 
 }

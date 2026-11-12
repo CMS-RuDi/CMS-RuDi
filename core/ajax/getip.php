@@ -24,7 +24,7 @@ if ( !$user_id ) {
     cmsCore::halt();
 }
 
-$last_ip = $inDB->get_field('cms_users', "id = '" . $user_id . "'", 'last_ip');
+$last_ip = \cms\db::cloneOf($inDB)->filterEqual('id', $user_id)->getFieldFiltered('users', 'last_ip');
 
 echo $last_ip;
 

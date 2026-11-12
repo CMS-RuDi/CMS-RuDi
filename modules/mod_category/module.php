@@ -12,7 +12,7 @@
 
 function mod_category($mod, $cfg)
 {
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
 
     $model = new cms_model_content();
 
@@ -28,7 +28,7 @@ function mod_category($mod, $cfg)
         $cfg['expand_all'] = 1;
     }
 
-    $rootcat = $inDB->getNsCategory('cms_category', $cfg['category_id']);
+    $rootcat = $inDB->getNsCategory('category', $cfg['category_id']);
 
     if ( !$rootcat ) {
         return false;

@@ -31,7 +31,7 @@ class model extends \cms\model {
     public $config = [];
 
     /**
-     * @var \cmsDatabase
+     * @var \cms\db
      */
     public $inDB;
 
@@ -39,7 +39,7 @@ class model extends \cms\model {
         parent::__construct();
 
         $this->config = \cms\controller::loadOptions($this->name);
-        $this->inDB = \cmsDatabase::getInstance();
+        $this->inDB = \cms\db::getInstance();
 
         \cms\lang::getInstance()->loadComponentLang($this->name);
 
@@ -71,7 +71,7 @@ class model extends \cms\model {
 
         switch ($target) {
             case 'article':
-                $article = $this->db->getFields(self::CONTENT_TABLE, "id='" . $target_id . "'", 'seolink, title');
+                $article = $this->filterEqual('id', (int) $target_id)->getItem(self::CONTENT_TABLE);
 
                 if (!$article) {
                     return false;
@@ -93,11 +93,10 @@ class model extends \cms\model {
 
         switch ($target) {
             case 'content':
-                $sql = "UPDATE {#}" . self::CONTENT_TABLE . " SET rating = rating + (" . $points . ") WHERE id = '" . $item_id . "'";
+                $this->db->filterEqual('id', (int) $item_id)->
+                        increment(self::CONTENT_TABLE, 'rating', (int) $points);
                 break;
         }
-
-        $this->db->query($sql);
 
         return true;
     }
@@ -107,7 +106,7 @@ class model extends \cms\model {
             return false;
         }
 
-        $cat = $this->inDB->getNsCategory($this->inDB->prefix . self::CATEGORY_TABLE, $id_or_link);
+        $cat = $this->db->getNsCategory(self::CATEGORY_TABLE, $id_or_link);
 
         return \cms\events::call('content.get_category', $cat);
     }
@@ -152,7 +151,9 @@ class model extends \cms\model {
         $count = $this->resetFilters()->
                 filterEqual('published', 1)->
                 filterEqual('is_arhive', 0)->
-                joinInner(self::CATEGORY_TABLE, 'cat', 'cat.id = i.category_id AND cat.NSLeft >= ' . $left_key . ' AND cat.NSRight <= ' . $right_key)->
+                joinInner(self::CATEGORY_TABLE, 'cat', 'cat.id = i.category_id')->
+                filterGtEqual('cat.NSLeft', $left_key)->
+                filterLtEqual('cat.NSRight', $right_key)->
                 getCount(self::CONTENT_TABLE);
 
         $this->resetFilters();
@@ -192,13 +193,13 @@ class model extends \cms\model {
         $inCore = \cmsCore::getInstance();
         $inUser = \cmsUser::getInstance();
 
-        $nested_sets = $inCore->nestedSetsInit($this->inDB->prefix . self::CATEGORY_TABLE);
-        $rootid = $this->inDB->getNsRootCatId($this->inDB->prefix . self::CATEGORY_TABLE);
+        $nested_sets = $inCore->nestedSetsInit(self::CATEGORY_TABLE);
+        $rootid = $this->db->getNsRootCatId(self::CATEGORY_TABLE);
 
         $rs_rows = $nested_sets->SelectSubNodes($rootid);
 
         if ($rs_rows) {
-            while ($node = $this->inDB->fetch_assoc($rs_rows)) {
+            while ($node = $this->db->fetch_assoc($rs_rows)) {
                 if ($inUser->is_admin || \cmsCore::checkUserAccess('category', $node['id']) &&
                         ($node['is_public'] ||
                         ($node['modgrp_id'] && $node['modgrp_id'] == $inUser->group_id && \cmsUser::isUserCan('content/autoadd')))) {
@@ -225,7 +226,10 @@ class model extends \cms\model {
 
     public function whereThisAndNestedCats($left_key, $right_key) {
         $this->joinCategory();
-        return $this->filter("cat.NSLeft >= '" . $left_key . "' AND cat.NSRight <= '" . $right_key . "' AND cat.parent_id > 0");
+
+        return $this->filterGtEqual('cat.NSLeft', $left_key)->
+                        filterLtEqual('cat.NSRight', $right_key)->
+                        filterGt('cat.parent_id', 0);
     }
 
     /**
@@ -311,7 +315,9 @@ class model extends \cms\model {
      * @return bool
      */
     public function moveArticlesToArchive() {
-        return $this->db->update(self::CONTENT_TABLE, 'is_end = 1 AND enddate < NOW()', ['is_arhive' => 1]);
+        return $this->db->filterEqual('is_end', 1)->
+                        filterDateOlder('enddate', 0, 'DAY')->
+                        updateFiltered(self::CONTENT_TABLE, ['is_arhive' => 1]);
     }
 
     /**
@@ -349,9 +355,8 @@ class model extends \cms\model {
      * @return bool
      */
     public function moveItem($item_id, $cat_id, $dir) {
-        $sign = $dir > 0 ? '+' : '-';
-
-        $current = $this->db->getField(self::CONTENT_TABLE, 'id = ' . $item_id, 'ordering');
+        $current = $this->db->filterEqual('id', (int) $item_id)->
+                getFieldFiltered(self::CONTENT_TABLE, 'ordering');
 
         if ($current === false) {
             return false;
@@ -360,15 +365,30 @@ class model extends \cms\model {
         if ($dir > 0) {
             // движение вверх
             // у элемента следующего за текущим нужно уменьшить порядковый номер
-            $this->db->query("UPDATE {#}" . self::CONTENT_TABLE . " SET ordering = ordering-1 WHERE category_id = '" . $cat_id . "' AND ordering = " . ($current + 1) . " LIMIT 1");
+            $neighbor = $this->db->filterEqual('category_id', (int) $cat_id)->
+                    filterEqual('ordering', $current + 1)->
+                    getItem(self::CONTENT_TABLE);
+
+            if ($neighbor) {
+                $this->db->filterEqual('id', (int) $neighbor['id'])->
+                        decrement(self::CONTENT_TABLE, 'ordering');
+            }
         }
         if ($dir < 0) {
             // движение вниз
             // у элемента предшествующего текущему нужно увеличить порядковый номер
-            $this->db->query("UPDATE {#}" . self::CONTENT_TABLE . " SET ordering = ordering+1 WHERE category_id = '" . $cat_id . "' AND ordering = " . ($current - 1) . " LIMIT 1");
+            $neighbor = $this->db->filterEqual('category_id', (int) $cat_id)->
+                    filterEqual('ordering', $current - 1)->
+                    getItem(self::CONTENT_TABLE);
+
+            if ($neighbor) {
+                $this->db->filterEqual('id', (int) $neighbor['id'])->
+                        increment(self::CONTENT_TABLE, 'ordering');
+            }
         }
 
-        $this->db->query('UPDATE {#}' . self::CONTENT_TABLE . ' SET ordering = ordering ' . $sign . ' 1 WHERE id = ' . $item_id . ' LIMIT 1');
+        $this->db->filterEqual('id', (int) $item_id)->
+                increment(self::CONTENT_TABLE, 'ordering', ($dir > 0 ? 1 : -1));
 
         return true;
     }
@@ -390,7 +410,7 @@ class model extends \cms\model {
         foreach ($items as $item) {
             $seolink = $this->getSeoLink($item);
 
-            $this->db->update(self::CONTENT_TABLE, 'id=' . $item['id'] . ' LIMIT 1', ['seolink' => $seolink], false);
+            $this->db->update(self::CONTENT_TABLE, (int) $item['id'], ['seolink' => $seolink]);
 
             $this->updateContentCommentsLink($item['id']);
         }
@@ -411,9 +431,9 @@ class model extends \cms\model {
     public function getSeoLink($article) {
         $seolink = '';
 
-        $cat = $this->inDB->getNsCategory($this->inDB->prefix . self::CATEGORY_TABLE, $article['category_id']);
+        $cat = $this->db->getNsCategory(self::CATEGORY_TABLE, $article['category_id']);
 
-        $path_list = $this->inDB->getNsCategoryPath($this->inDB->prefix . self::CATEGORY_TABLE, $cat['NSLeft'], $cat['NSRight'], 'id, title, NSLevel, seolink, url');
+        $path_list = $this->db->getNsCategoryPath(self::CATEGORY_TABLE, $cat['NSLeft'], $cat['NSRight'], 'id, title, NSLevel, seolink, url');
 
         if ($path_list) {
             foreach ($path_list as $pcat) {
@@ -423,13 +443,13 @@ class model extends \cms\model {
 
         $seolink .= \cmsCore::strToURL(($article['url'] ? $article['url'] : $article['title']), $this->config['is_url_cyrillic']);
 
+        $exists_query = $this->db->filterEqual('seolink', $seolink);
+
         if (!empty($article['id'])) {
-            $where = ' AND id<>' . $article['id'];
-        } else {
-            $where = '';
+            $exists_query->filterNotEqual('id', (int) $article['id']);
         }
 
-        $is_exists = $this->db->getField(self::CONTENT_TABLE, "seolink='" . $this->db->escape($seolink) . "'" . $where, 'id');
+        $is_exists = $exists_query->getFieldFiltered(self::CONTENT_TABLE, 'id');
 
         if ($is_exists) {
             $seolink .= '-' . (!empty($article['id']) ? $article['id'] : uniqid());
@@ -480,8 +500,10 @@ class model extends \cms\model {
     public function deleteArticle($item_id) {
         \cms\events::call('content.delete_item', $item_id);
 
-        $this->db->delete(self::CONTENT_TABLE, 'id=' . $item_id, 1);
-        $this->db->delete('tags', "target='content' AND item_id=" . $item_id);
+        $this->db->delete(self::CONTENT_TABLE, (int) $item_id);
+        $this->db->filterEqual('target', 'content')->
+                filterEqual('item_id', (int) $item_id)->
+                deleteFiltered('tags');
 
         \cmsCore::clearAccess($item_id, 'material');
 
@@ -528,7 +550,9 @@ class model extends \cms\model {
         }
 
         // получаем значение порядка последней статьи
-        $last_ordering = (int) $this->db->getField(self::CONTENT_TABLE, "category_id = '" . $article['category_id'] . "' ORDER BY ordering DESC", 'ordering');
+        $last_ordering = (int) $this->db->filterEqual('category_id', (int) $article['category_id'])->
+                        orderBy('ordering', 'desc')->
+                        getFieldFiltered(self::CONTENT_TABLE, 'ordering');
         $article['ordering'] = $last_ordering + 1;
 
         $article['id'] = $this->db->insert(self::CONTENT_TABLE, $article);
@@ -536,7 +560,7 @@ class model extends \cms\model {
         if ($article['id']) {
             $article['seolink'] = $this->getSeoLink($article);
 
-            $this->db->update(self::CONTENT_TABLE, 'id=' . $article['id'] . ' LIMIT 1', ['seolink' => $article['seolink']]);
+            $this->db->update(self::CONTENT_TABLE, (int) $article['id'], ['seolink' => $article['seolink']]);
 
             \cmsInsertTags($article['tags'], 'content', $article['id']);
 
@@ -573,7 +597,10 @@ class model extends \cms\model {
 
         $article = \cms\events::call('content.update_item', $article);
 
-        $this->db->update(self::CONTENT_TABLE, 'id=' . $item_id, $article);
+        $article_data = $article;
+        unset($article_data['id']);
+
+        $this->db->update(self::CONTENT_TABLE, (int) $item_id, $article_data);
 
         if (!$not_upd_seo) {
             $this->updateContentCommentsLink($id);
@@ -590,7 +617,30 @@ class model extends \cms\model {
      * @return bool
      */
     public function updateCatMenu() {
-        return $this->db->query("UPDATE cms_menu m, {#}" . self::CATEGORY_TABLE . " cat SET m.link = CONCAT('/', cat.seolink) WHERE m.linkid = cat.id AND m.linktype = 'category'");
+        $menus = $this->db->resetFilters()->
+                filterEqual('linktype', 'category')->
+                selectOnly('i.id, i.linkid')->
+                get('menu', false, false);
+
+        if (!$menus) {
+            return true;
+        }
+
+        $cats = $this->db->selectOnly('i.id, i.seolink')->get(self::CATEGORY_TABLE);
+
+        foreach ($menus as $menu) {
+            $cat_id = (int) $menu['linkid'];
+
+            if (!isset($cats[$cat_id])) {
+                continue;
+            }
+
+            $this->db->update('menu', (int) $menu['id'], [
+                'link' => '/' . $cats[$cat_id]['seolink']
+            ]);
+        }
+
+        return true;
     }
 
     /**
@@ -599,7 +649,30 @@ class model extends \cms\model {
      * @return bool
      */
     public function updateContentMenu() {
-        return $this->db->query("UPDATE cms_menu m, {#}" . self::CONTENT_TABLE . " con SET m.link = CONCAT('/', con.seolink, '.html') WHERE m.linkid = con.id AND m.linktype = 'content'");
+        $menus = $this->db->resetFilters()->
+                filterEqual('linktype', 'content')->
+                selectOnly('i.id, i.linkid')->
+                get('menu', false, false);
+
+        if (!$menus) {
+            return true;
+        }
+
+        $articles = $this->db->selectOnly('i.id, i.seolink')->get(self::CONTENT_TABLE);
+
+        foreach ($menus as $menu) {
+            $content_id = (int) $menu['linkid'];
+
+            if (!isset($articles[$content_id])) {
+                continue;
+            }
+
+            $this->db->update('menu', (int) $menu['id'], [
+                'link' => '/' . $articles[$content_id]['seolink'] . '.html'
+            ]);
+        }
+
+        return true;
     }
 
     /**
@@ -608,14 +681,33 @@ class model extends \cms\model {
      * @return true
      */
     public function updateContentCommentsLink($item_id) {
+        $article_seolink = $this->db->filterEqual('id', (int) $item_id)->
+                getFieldFiltered(self::CONTENT_TABLE, 'seolink');
+
         // Обновляем ссылки в комменатриях
-        $this->db->query("UPDATE {#}comments c, {#}" . self::CONTENT_TABLE . " a SET c.target_link = CONCAT('/', a.seolink, '.html') WHERE a.id = '" . $item_id . "' AND c.target = 'article' AND c.target_id = a.id");
+        if ($article_seolink !== false) {
+            $this->db->filterEqual('target', 'article')->
+                    filterEqual('target_id', (int) $item_id)->
+                    updateFiltered('comments', [
+                        'target_link' => '/' . $article_seolink . '.html'
+                    ]);
+        }
 
         // Обновляем ссылки в action
         $action = \cmsActions::getAction('add_comment');
 
         if ($action) {
-            $this->db->query("UPDATE {#}actions_log log, {#}" . self::CONTENT_TABLE . " a SET log.target_url = CONCAT('/', a.seolink, '.html'), log.object_url = CONCAT('/', a.seolink, '.html#c', log.object_id) WHERE a.id = '" . $item_id . "' AND log.action_id = '" . $action['id'] . "' AND log.target_id = '" . $item_id . "'");
+            $logs = $this->db->resetFilters()->
+                    filterEqual('action_id', (int) $action['id'])->
+                    filterEqual('target_id', (int) $item_id)->
+                    getRows('actions_log', '1', 'id, object_id');
+
+            foreach ($logs as $log) {
+                $this->db->update('actions_log', (int) $log['id'], [
+                    'target_url' => '/' . $article_seolink . '.html',
+                    'object_url' => '/' . $article_seolink . '.html#c' . (int) $log['object_id']
+                ]);
+            }
         }
 
         return true;
@@ -627,23 +719,18 @@ class model extends \cms\model {
      * @return array
      */
     public function getNestedArticles($category_id) {
-        $cat = $this->inDB->getNsCategory($this->inDB->prefix . self::CATEGORY_TABLE, $category_id);
+        $cat = $this->db->getNsCategory(self::CATEGORY_TABLE, $category_id);
 
-        $sql = "SELECT con.id, con.title, con.seolink, con.url, con.category_id
-FROM {#}" . self::CONTENT_TABLE . " con
-JOIN {#}" . self::CATEGORY_TABLE . " cat ON cat.id = con.category_id AND cat.NSLeft >= " . $cat['NSLeft'] . " AND cat.NSRight <= " . $cat['NSRight'];
-
-        $result = $this->db->query($sql);
-
-        if (!$this->db->numRows($result)) {
+        if (!$cat) {
             return false;
         }
 
-        $articles = array();
-
-        while ($article = $this->db->fetchAssoc($result)) {
-            $articles[] = $article;
-        }
+        $articles = $this->db->resetFilters()->
+                selectOnly('i.id, i.title, i.seolink, i.url, i.category_id')->
+                joinInner(self::CATEGORY_TABLE, 'cat', 'cat.id = i.category_id')->
+                filterGtEqual('cat.NSLeft', $cat['NSLeft'])->
+                filterLtEqual('cat.NSRight', $cat['NSRight'])->
+                get(self::CONTENT_TABLE);
 
         return $articles ? $articles : false;
     }
@@ -655,7 +742,7 @@ JOIN {#}" . self::CATEGORY_TABLE . " cat ON cat.id = con.category_id AND cat.NSL
      */
     public function deleteCategory($id, $is_with_content = false) {
         $articles = $this->getNestedArticles($id);
-        $rootid = $this->inDB->getNsRootCatId($this->inDB->prefix . self::CATEGORY_TABLE);
+        $rootid = $this->db->getNsRootCatId(self::CATEGORY_TABLE);
 
         if ($articles) {
             foreach ($articles as $article) {
@@ -663,14 +750,25 @@ JOIN {#}" . self::CATEGORY_TABLE . " cat ON cat.id = con.category_id AND cat.NSL
                 if ($is_with_content) {
                     $this->deleteArticle($article['id']);
                 } else { // или переносим в корень и в архив
-                    $this->db->query("UPDATE {#}" . self::CONTENT_TABLE . " SET category_id = '" . $rootid . "', is_arhive = 1, seolink = SUBSTRING_INDEX(seolink, '/', -1) WHERE id = '" . $article['id'] . "'");
+                    $seolink = $article['seolink'];
+                    $slash_pos = strrpos($seolink, '/');
+
+                    if ($slash_pos !== false) {
+                        $seolink = substr($seolink, $slash_pos + 1);
+                    }
+
+                    $this->db->update(self::CONTENT_TABLE, (int) $article['id'], [
+                        'category_id' => (int) $rootid,
+                        'is_arhive' => 1,
+                        'seolink' => $seolink
+                    ]);
                 }
             }
         }
 
         \translations::deleteTargetTranslation('content_category', $id);
 
-        return $this->inDB->deleteNS($this->inDB->prefix . self::CATEGORY_TABLE, $id);
+        return $this->db->deleteNS(self::CATEGORY_TABLE, $id);
     }
 
     /**
@@ -692,7 +790,7 @@ JOIN {#}" . self::CATEGORY_TABLE . " cat ON cat.id = con.category_id AND cat.NSL
 
         $inPhoto = \cmsPhoto::getInstance();
 
-        $p_a = $this->inDB->getNsCategory('cms_photo_albums', (int) $album['id']);
+        $p_a = $this->db->getNsCategory('photo_albums', (int) $album['id']);
         if (!$p_a) {
             return [];
         }
@@ -710,7 +808,11 @@ JOIN {#}" . self::CATEGORY_TABLE . " cat ON cat.id = con.category_id AND cat.NSL
             $album['orderto'] = 'desc';
         }
 
-        $this->inDB->orderBy('f.' . $album['orderby'], $album['orderto']);
+        /*
+         * cmsPhoto использует общий экземпляр \cms\db, поэтому сортировку
+         * и лимит альбома передаём ему же до вызова getPhotos().
+         */
+        $this->inDB->orderBy('i.' . $album['orderby'], $album['orderto']);
 
         $this->inDB->limit((int) $album['max']);
 
@@ -724,11 +826,11 @@ JOIN {#}" . self::CATEGORY_TABLE . " cat ON cat.id = con.category_id AND cat.NSL
     }
 
     public function moveToArhive($item_id) {
-        return $this->db->query("UPDATE {#}" . self::CONTENT_TABLE . " SET is_arhive = 1 WHERE id = '" . $item_id . "' LIMIT 1");
+        return $this->db->update(self::CONTENT_TABLE, (int) $item_id, ['is_arhive' => 1]);
     }
 
     public function moveFromArhive($item_id) {
-        return $this->db->query("UPDATE {#}" . self::CONTENT_TABLE . " SET is_arhive = 0 WHERE id = '" . $item_id . "' LIMIT 1");
+        return $this->db->update(self::CONTENT_TABLE, (int) $item_id, ['is_arhive' => 0]);
     }
 
     public function joinCategory() {
@@ -781,7 +883,13 @@ JOIN {#}" . self::CATEGORY_TABLE . " cat ON cat.id = con.category_id AND cat.NSL
 
         $this->old_indb_where_inserted = true;
 
-        return $this->filter('1 ' . str_replace('con.', 'i.', $this->inDB->where));
+        // $inDB->where() исторически пишет " AND (...)", builder-фильтры —
+        // "(...)"; убираем ведущий AND и подстраховываемся константой 1,
+        // чтобы условие осталось корректным в любом случае
+        $condition = trim(str_replace('con.', 'i.', $this->inDB->where));
+        $condition = preg_replace('/^AND\s+/i', '', $condition);
+
+        return $this->filter('1 AND ' . $condition);
     }
 
     public function resetFilters() {

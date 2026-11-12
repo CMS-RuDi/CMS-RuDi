@@ -273,14 +273,14 @@ class events {
      * @return bool
      */
     protected static function loadOldEventHooks() {
-        $db = \cmsDatabase::getInstance();
+        $db = db::getInstance();
 
-        if (!$db->isTableExists('cms_event_hooks') || !$db->isTableExists('cms_plugins')) {
+        if (!$db->isTableExists('event_hooks') || !$db->isTableExists('plugins')) {
             return false;
         }
 
-        $hooks = $db->get_table('cms_event_hooks');
-        $plugins = $db->get_table('cms_plugins');
+        $hooks = $db->getRows('event_hooks');
+        $plugins = $db->getRows('plugins');
 
         if (empty($hooks) || empty($plugins)) {
             return false;
@@ -308,18 +308,23 @@ class events {
      * в cms_events, если новая таблица ещё пустая.
      */
     protected static function migrateOldEventHooks() {
-        $db = \cmsDatabase::getInstance();
+        $db = clone db::getInstance();
 
-        if (!$db->isTableExists('cms_event_hooks') || !$db->isTableExists('cms_events') || !$db->isTableExists('cms_plugins')) {
+        if (!$db->isTableExists('event_hooks') || !$db->isTableExists('events') || !$db->isTableExists('plugins')) {
             return;
         }
 
-        if ($db->rows_count('cms_events', '1=1', 1)) {
+        $events_count = $db->getCount('events');
+
+        // getCount() оставляет наложенные фильтры в состоянии builder'а
+        $db->resetFilters();
+
+        if ($events_count) {
             return;
         }
 
-        $hooks = $db->get_table('cms_event_hooks');
-        $plugins = $db->get_table('cms_plugins');
+        $hooks = $db->getRows('event_hooks');
+        $plugins = $db->getRows('plugins');
 
         if (empty($hooks) || empty($plugins)) {
             return;
@@ -338,7 +343,7 @@ class events {
                 continue;
             }
 
-            $db->insert('cms_events', [
+            $db->insert('events', [
                 'type' => 'plugin',
                 'name' => $plugins_map[$hook['plugin_id']],
                 'event' => $hook['event'],

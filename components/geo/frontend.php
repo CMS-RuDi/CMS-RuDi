@@ -12,7 +12,7 @@
 
 function geo($do = null)
 {
-    $inDB   = cmsDatabase::getInstance();
+    $inDB   = \cms\db::getInstance();
     $inUser = cmsUser::getInstance();
     $model  = new cms_model_geo();
 
@@ -37,7 +37,7 @@ function geo($do = null)
 
         // определяем страну
         if ( isset($inUser->geo['country']) ) {
-            $country_id = $inDB->get_field('cms_geo_countries', "alpha2 = '" . $inUser->geo['country'] . "'", 'id');
+            $country_id = $inDB->filterEqual('alpha2', $inUser->geo['country'])->getFieldFiltered('geo_countries', 'id');
         }
         else {
             $country_id = false;

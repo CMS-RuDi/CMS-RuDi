@@ -23,7 +23,8 @@ class translations
 
     private function __construct($target)
     {
-        $this->inDB = cmsDatabase::getInstance();
+        // Отдельное состояние builder'а на каждый набор переводов
+        $this->inDB = clone \cms\db::getInstance();
         $this->loadFieldSet($target);
     }
 
@@ -42,7 +43,10 @@ class translations
 
     private function loadFieldSet($target)
     {
-        $f = $this->inDB->get_fields('cms_translations_fields', "target = '" . $target . "'");
+        $f = $this->inDB->filterEqual('target', $target)->getItem('translations_fields');
+
+        // getItem() восстанавливает переданные ему фильтры, поэтому чистим состояние
+        $this->inDB->resetFilters();
 
         if ( $f ) {
             $this->fieldsset_id = $f['id'];
@@ -57,10 +61,10 @@ class translations
      */
     public static function registerFields($target, $fields)
     {
-        cmsDatabase::getInstance()->insert('cms_translations_fields', array(
+        \cms\db::getInstance()->insert('translations_fields', array(
             'target' => $target,
             'fields' => cmsCore::arrayToYaml($fields)
-                ), true);
+                ), false, 'json', true);
     }
 
     public static function getFields($target)
@@ -110,14 +114,19 @@ class translations
             return false;
         }
 
-        $sql    = "SELECT * FROM cms_translations WHERE target_id = '" . $target_id . "' AND fieldsset_id = '" . $thisObj->fieldsset_id . "' AND lang = '" . $thisObj->lang . "' LIMIT 1";
-        $result = $thisObj->inDB->query($sql);
+        $d = $thisObj->inDB
+                ->filterEqual('target_id', $target_id)
+                ->filterEqual('fieldsset_id', $thisObj->fieldsset_id)
+                ->filterEqual('lang', $thisObj->lang)
+                ->getItem('translations');
 
-        if ( !$thisObj->inDB->num_rows($result) ) {
+        // getItem() восстанавливает переданные ему фильтры, поэтому чистим состояние
+        $thisObj->inDB->resetFilters();
+
+        if ( !$d ) {
             return false;
         }
 
-        $d         = $thisObj->inDB->fetch_assoc($result);
         $d['data'] = cmsCore::yamlToArray($d['data']);
 
         return $d;
@@ -131,7 +140,10 @@ class translations
             return false;
         }
 
-        $thisObj->inDB->query("DELETE FROM cms_translations WHERE target_id = '" . $target_id . "' AND fieldsset_id = '" . $thisObj->fieldsset_id . "'");
+        $thisObj->inDB
+                ->filterEqual('target_id', $target_id)
+                ->filterEqual('fieldsset_id', $thisObj->fieldsset_id)
+                ->deleteFiltered('translations');
     }
 
     private function get($item)
@@ -142,11 +154,14 @@ class translations
 
         // простой массив
         if ( !$is_multidimensional && !empty($item[$this->id_field]) ) {
-            $where = "target_id = '" . $item[$this->id_field] . "'";
+            $this->inDB->filterEqual('target_id', $item[$this->id_field]);
+            $has_filter = true;
         }
 
         // многомерный массив
         else {
+            $has_filter = false;
+
             foreach ( $item as $k => $i ) {
                 if ( !empty($i[$this->id_field]) ) {
                     $ids[$k] = $i[$this->id_field];
@@ -155,31 +170,39 @@ class translations
 
             if ( !empty($ids) ) {
                 $target_ids = array_unique($ids);
-                $where      = 'target_id IN(' . implode(',', $target_ids) . ')';
+
+                $this->inDB->filterIn('target_id', $target_ids);
+                $has_filter = true;
             }
         }
 
-        if ( empty($where) ) {
+        if ( !$has_filter ) {
             return $item;
         }
 
-        $sql    = "SELECT target_id, data FROM cms_translations WHERE " . $where . " AND fieldsset_id = '" . $this->fieldsset_id . "' AND lang = '" . $this->lang . "'";
-        $result = $this->inDB->query($sql);
+        $rows = $this->inDB
+                ->selectOnly('target_id')
+                ->select('data')
+                ->filterEqual('fieldsset_id', $this->fieldsset_id)
+                ->filterEqual('lang', $this->lang)
+                ->get('translations', false, false);
 
-        if ( !$this->inDB->num_rows($result) ) {
+        if ( !$rows ) {
             return $item;
         }
 
         // простой массив
         if ( !$is_multidimensional ) {
-            $d    = $this->inDB->fetch_assoc($result);
+            $d    = $rows[0];
             $data = $this->processData($d['data']);
 
             return array_merge($item, $data);
         }
         // многомерный массив
         else {
-            while ( $d = $this->inDB->fetch_assoc($result) ) {
+            $translations = array();
+
+            foreach ( $rows as $d ) {
                 $translations[$d['target_id']] = $this->processData($d['data']);
             }
 

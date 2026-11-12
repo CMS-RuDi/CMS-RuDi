@@ -59,9 +59,10 @@ if ( !method_exists($model, 'addWall') ) {
 cmsCore::loadLanguage('components/users');
 
 if ( $do == 'view' ) {
+    $inDB->resetFilters();
     $inDB->limitPage($page, $cfg['wall_perpage']);
 
-    echo cmsUser::getUserWall($target_id, $component, $my_profile, $is_admin);
+    echo cmsUser::getUserWall($target_id, $component, $my_profile, $is_admin, $inDB->limit);
 }
 
 if ( $do == 'add' ) {
@@ -84,7 +85,7 @@ if ( $do == 'add' ) {
         ));
     }
 
-    $message = $inDB->escape_string(cmsCore::parseSmiles(cmsCore::request('message', 'html', ''), true));
+    $message = cmsCore::parseSmiles(cmsCore::request('message', 'html', ''), true);
 
     if ( mb_strlen($message) < 2 ) {
         cmsCore::jsonOutput(array(
@@ -139,7 +140,7 @@ if ( $do == 'delete' ) {
         cmsCore::halt();
     }
 
-    $is_author = $inDB->rows_count('cms_user_wall', "id = '" . $record_id . "' AND author_id = '" . $inUser->id . "'");
+    $is_author = \cms\db::cloneOf($inDB)->filterEqual('id', $record_id)->filterEqual('author_id', $inUser->id)->getCount('user_wall');
 
     if ( $is_author || $is_admin || $my_profile ) {
         $model->deleteWallRecord($record_id);

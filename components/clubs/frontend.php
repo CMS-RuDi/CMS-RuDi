@@ -13,7 +13,7 @@
 function clubs() {
     $inCore = cmsCore::getInstance();
     $inPage = cmsPage::getInstance();
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
     $inUser = cmsUser::getInstance();
 
     global $_LANG;
@@ -64,12 +64,12 @@ function clubs() {
 
         // получаем клубы, в которых пользователь админ
         $model->whereAdminIs($user['id']);
-        $inDB->orderBy('c.pubdate', 'DESC');
+        $inDB->orderBy('i.pubdate', 'DESC');
         $clubs = $model->getClubs();
 
         // получаем клубы, в которых состоит пользователь
-        $inDB->addSelect('uc.role');
-        $inDB->addJoin("INNER JOIN cms_user_clubs uc ON uc.club_id = c.id AND uc.user_id = '{$user['id']}'");
+        $inDB->select('uc.role');
+        $inDB->joinInner('user_clubs', 'uc', 'uc.club_id = i.id AND uc.user_id = ' . (int) $user['id']);
         $inDB->orderBy('uc.role', 'DESC, uc.pubdate DESC');
         $inclubs = $model->getClubs();
 
@@ -185,9 +185,9 @@ function clubs() {
 
             $club['total_posts'] = $inBlog->getPostsCount($is_admin || $is_moder);
 
-            $inDB->addSelect('ANY_VALUE(b.user_id) as bloglink');
+            $inDB->select('b.user_id', 'bloglink');
 
-            $inDB->orderBy('p.pubdate', 'DESC');
+            $inDB->orderBy('i.pubdate', 'DESC');
 
             $inDB->limit($model->config['club_posts_perpage']);
 
@@ -199,12 +199,15 @@ function clubs() {
         /////////////////////////////////////////////
         if ($club['enabled_photos']) {
             // Общее количество альбомов
-            $club['all_albums'] = $inDB->rows_count('cms_photo_albums', "NSDiffer = 'club{$club['id']}' AND user_id = '{$club['id']}' AND parent_id > 0");
+            $club['all_albums'] = \cms\db::cloneOf($inDB)->filterEqual('NSDiffer', 'club' . $club['id'])
+                    ->filterEqual('user_id', $club['id'])
+                    ->filterGt('parent_id', 0)
+                    ->getCount('photo_albums');
 
             // получаем альбомы
             if ($club['all_albums']) {
                 $inDB->limit($model->config['club_album_perpage']);
-                $inDB->orderBy('ANY_VALUE(f.pubdate)', 'DESC');
+                $inDB->orderBy('MAX(f.pubdate)', 'DESC');
                 $club['photo_albums'] = $inPhoto->getAlbums(0, 'club' . $club['id']);
             } else {
                 $club['photo_albums'] = array();
@@ -265,7 +268,7 @@ function clubs() {
                 cmsCore::jsonOutput(array('error' => true, 'text' => $_LANG['CLUB_REQ_TITLE']));
             }
 
-            if ($inDB->get_field('cms_clubs', "LOWER(title) = '" . mb_strtolower($title) . "'", 'id')) {
+            if ($inDB->filterEqual('title', mb_strtolower($title))->getFieldFiltered('clubs', 'id')) {
                 cmsCore::jsonOutput(array('error' => true, 'text' => $_LANG['CLUB_EXISTS']));
             }
 
@@ -326,7 +329,7 @@ function clubs() {
             }
 
             $description = cmsCore::badTagClear(cmsCore::request('description', 'html', ''));
-            $new_club['description'] = $inDB->escape_string($description);
+            $new_club['description'] = $description;
             $new_club['title'] = cmsCore::request('title', 'str', $club['title']);
             $new_club['clubtype'] = cmsCore::request('clubtype', 'str', 'public');
             $new_club['maxsize'] = cmsCore::request('maxsize', 'int', 0);
@@ -822,7 +825,7 @@ function clubs() {
             return false;
         }
 
-        $inDB->orderBy('ANY_VALUE(f.pubdate)', 'DESC');
+        $inDB->orderBy('MAX(f.pubdate)', 'DESC');
         $club['photo_albums'] = $inPhoto->getAlbums(0, 'club' . $club['id']);
         if (!$club['photo_albums']) {
             return false;
@@ -850,7 +853,7 @@ function clubs() {
 
     if ($do == 'view_album') {
         // Получаем альбом
-        $album = $inDB->getNsCategory('cms_photo_albums', cmsCore::request('album_id', 'int', 0), null);
+        $album = $inDB->getNsCategory('photo_albums', cmsCore::request('album_id', 'int', 0), null);
         if (!$album) {
             return false;
         }
@@ -891,7 +894,7 @@ function clubs() {
         $total = $inPhoto->getPhotosCount($hidden);
 
         //устанавливаем сортировку
-        $inDB->orderBy('f.id', 'DESC');
+        $inDB->orderBy('i.id', 'DESC');
 
         //устанавливаем номер текущей страницы и кол-во фото на странице
         $inDB->limitPage($page, $model->config['photo_perpage']);
@@ -942,7 +945,7 @@ function clubs() {
             return false;
         }
 
-        $album = $inDB->getNsCategory('cms_photo_albums', cmsCore::request('album_id', 'int', 0), null);
+        $album = $inDB->getNsCategory('photo_albums', cmsCore::request('album_id', 'int', 0), null);
         if (!$album) {
             cmsCore::halt();
         }
@@ -1024,15 +1027,15 @@ function clubs() {
         }
 
         // ссылки вперед назад
-        $photo['nextid'] = $inDB->get_fields('cms_photo_files', 'id<' . $photo['id'] . ' AND album_id = ' . $photo['album_id'], 'id, file, title', 'id DESC');
-        $photo['previd'] = $inDB->get_fields('cms_photo_files', 'id>' . $photo['id'] . ' AND album_id = ' . $photo['album_id'], 'id, file, title', 'id ASC');
+        $photo['nextid'] = $inDB->getRow('photo_files', 'id < ' . (int) $photo['id'] . ' AND album_id = ' . (int) $photo['album_id'], 'id, file, title', 'id DESC');
+        $photo['previd'] = $inDB->getRow('photo_files', 'id > ' . (int) $photo['id'] . ' AND album_id = ' . (int) $photo['album_id'], 'id, file, title', 'id ASC');
 
         // кнопки голосования
         $photo['karma_buttons'] = cmsKarmaButtons('club_photo', $photo['id'], $photo['rating'], $is_author);
 
         // Обновляем кол-во просмотров
         if (!$is_author) {
-            $inDB->setFlag('cms_photo_files', $photo['id'], 'hits', $photo['hits'] + 1);
+            $inDB->setFlag('photo_files', $photo['id'], 'hits', $photo['hits'] + 1);
         }
 
         // выводим в шаблон
@@ -1234,7 +1237,7 @@ function clubs() {
 
         $do_photo = cmsCore::request('do_photo', 'str', 'addphoto');
 
-        $album = $inDB->getNsCategory('cms_photo_albums', cmsCore::request('album_id', 'int', 0), null);
+        $album = $inDB->getNsCategory('photo_albums', cmsCore::request('album_id', 'int', 0), null);
         if (!$album) {
             return false;
         }

@@ -5,9 +5,7 @@ namespace cms;
 /**
  * @package Classes
  */
-class debug
-{
-
+class debug {
     const DECIMALS = 5;
 
     /**
@@ -16,10 +14,10 @@ class debug
      * @var array
      */
     protected static $debug = [
-        'db'       => [],
-        'events'   => [],
-        'modules'  => [],
-        'notice'   => [],
+        'db' => [],
+        'events' => [],
+        'modules' => [],
+        'notice' => [],
         'includes' => []
     ];
 
@@ -42,11 +40,10 @@ class debug
      *
      * @return string
      */
-    public static function startTimer($key = null)
-    {
+    public static function startTimer($key = null) {
         $time = microtime(true);
 
-        if ( empty($key) ) {
+        if (empty($key)) {
             $key = substr(md5($time . mt_rand(0, 1000000)), 0, 8);
         }
 
@@ -63,11 +60,10 @@ class debug
      *
      * @return float
      */
-    public static function getTime($key, $decimals = self::DECIMALS)
-    {
+    public static function getTime($key, $decimals = self::DECIMALS) {
         $time = 0;
 
-        if ( isset(self::$timer[$key]) ) {
+        if (isset(self::$timer[$key])) {
             $time = number_format((microtime(true) - self::$timer[$key]), $decimals);
         }
 
@@ -84,56 +80,15 @@ class debug
      * метода/функции для указания в отладочной информации
      *
      */
-    public static function setDebugInfo($name, $text = false, $tkey = false, $offset = 2)
-    {
-        $backtrace = debug_backtrace();
-
-        while ( ($backtrace && !isset($backtrace[0]['line']) ) ) {
-            array_shift($backtrace);
-        }
-
-        if ( !isset($backtrace[$offset]) ) {
-            $offset -= 1;
-        }
-
-        $_offset = $offset + 1;
-
-        $call = $backtrace[$offset];
-
-        if ( empty($call['file']) ) {
-            $_offset = $offset;
-            $call    = $backtrace[$offset - 1];
-        }
-
-        if ( isset($backtrace[$_offset]) ) {
-            if ( isset($backtrace[$_offset]['class']) ) {
-                $call['function'] = $backtrace[$_offset]['class'] . $backtrace[$_offset]['type'] . $backtrace[$_offset]['function'] . '()';
-            }
-            else {
-                $call['function'] = $backtrace[$_offset]['function'] . '()';
-            }
-        }
-        else {
-            if ( isset($backtrace[$offset]['class']) ) {
-                $call['function'] = $backtrace[$offset]['class'] . $backtrace[$offset]['type'] . $backtrace[$offset]['function'] . '()';
-            }
-            elseif ( isset($backtrace[$offset]['function']) ) {
-                $call['function'] = $backtrace[$offset]['function'] . '()';
-            }
-            else {
-                $call['function'] = '';
-            }
-        }
-
-        $src = str_replace(PATH, '', $call['file']) . ' => ' . $call['line'] . ($call['function'] ? ' => ' . $call['function'] : '');
-
+    public static function setDebugInfo($name, $text = false, $tkey = false, $offset = 2) {
+        $src = self::getBacktraceSrc(debug_backtrace(), $offset);
         $time = false;
         $tkey = empty($tkey) ? $name : $tkey;
 
-        if ( !empty($tkey) ) {
+        if (!empty($tkey)) {
             $time = self::getTime($tkey);
 
-            if ( !isset(self::$total_time[$name]) ) {
+            if (!isset(self::$total_time[$name])) {
                 self::$total_time[$name] = 0;
             }
 
@@ -141,10 +96,51 @@ class debug
         }
 
         self::$debug[$name][] = [
-            'src'  => $src,
+            'src' => $src,
             'text' => $text,
             'time' => $time
         ];
+    }
+
+    public static function getBacktraceSrc($backtrace, $offset = 2) {
+        if (empty($backtrace)) {
+            return '';
+        }
+
+        while (($backtrace && !isset($backtrace[0]['line']))) {
+            array_shift($backtrace);
+        }
+
+        if (!isset($backtrace[$offset])) {
+            $offset -= 1;
+        }
+
+        $_offset = $offset + 1;
+
+        $call = $backtrace[$offset];
+
+        if (empty($call['file'])) {
+            $_offset = $offset;
+            $call = $backtrace[$offset - 1];
+        }
+
+        if (isset($backtrace[$_offset])) {
+            if (isset($backtrace[$_offset]['class'])) {
+                $call['function'] = $backtrace[$_offset]['class'] . $backtrace[$_offset]['type'] . $backtrace[$_offset]['function'] . '()';
+            } else {
+                $call['function'] = $backtrace[$_offset]['function'] . '()';
+            }
+        } else {
+            if (isset($backtrace[$offset]['class'])) {
+                $call['function'] = $backtrace[$offset]['class'] . $backtrace[$offset]['type'] . $backtrace[$offset]['function'] . '()';
+            } elseif (isset($backtrace[$offset]['function'])) {
+                $call['function'] = $backtrace[$offset]['function'] . '()';
+            } else {
+                $call['function'] = '';
+            }
+        }
+
+        return str_replace(PATH, '', $call['file']) . ' => ' . $call['line'] . ($call['function'] ? ' => ' . $call['function'] : '');
     }
 
     /**
@@ -154,13 +150,17 @@ class debug
      *
      * @return array|false
      */
-    public static function getDebugInfo($name = '')
-    {
-        self::loadIncludedFiles();
+    public static function getDebugInfo($name = '') {
+        if ($name == 'db') {
+            self::loadDBDebug();
+        }
 
-        if ( isset(self::$debug[$name]) ) {
+        if (isset(self::$debug[$name])) {
             return self::$debug[$name];
         }
+
+        self::loadIncludedFiles();
+        self::loadDBDebug();
 
         return self::$debug;
     }
@@ -170,18 +170,17 @@ class debug
      *
      * @return array
      */
-    public static function getDebagTargets()
-    {
+    public static function getDebagTargets() {
         $lang = \cms\lang::getInstance();
 
         $_targets = array_keys(self::$debug);
 
         $targets = [];
 
-        foreach ( $_targets as $target ) {
+        foreach ($_targets as $target) {
             $targets[$target] = [
                 'title' => $lang->e('DEBUG_TAB_' . strtoupper($target)),
-                'count' => count(self::$debug[$target])
+                'count' => $target != 'db' ? count(self::$debug[$target]) : count(\cms\db::getInstance()->getDebug()->getLog())
             ];
         }
 
@@ -195,10 +194,9 @@ class debug
      *
      * @return float
      */
-    public static function getTotalRunTime($name = '')
-    {
-        if ( !empty($name) ) {
-            if ( isset(self::$total_time[$name]) ) {
+    public static function getTotalRunTime($name = '') {
+        if (!empty($name)) {
+            if (isset(self::$total_time[$name])) {
                 return self::$total_time[$name];
             }
 
@@ -216,22 +214,21 @@ class debug
      * @param string $errfile
      * @param integer $errline
      */
-    public static function errorHandler($errno, $errstr, $errfile, $errline)
-    {
+    public static function errorHandler($errno, $errstr, $errfile, $errline) {
         $errortype = [
-            E_WARNING     => 'E_WARNING',
-            E_NOTICE      => 'E_NOTICE',
+            E_WARNING => 'E_WARNING',
+            E_NOTICE => 'E_NOTICE',
             E_USER_NOTICE => 'E_USER_NOTICE',
-            E_STRICT      => 'E_STRICT',
-            E_DEPRECATED  => 'E_DEPRECATED',
+            E_STRICT => 'E_STRICT',
+            E_DEPRECATED => 'E_DEPRECATED',
         ];
 
-        if ( !isset($errortype[$errno]) ) {
+        if (!isset($errortype[$errno])) {
             return false;
         }
 
         self::$debug['notice'][] = [
-            'src'  => $errfile . ' - LINE ' . $errline,
+            'src' => $errfile . ' - LINE ' . $errline,
             'text' => $errortype[$errno] . PHP_EOL . $errstr,
             'time' => false
         ];
@@ -239,21 +236,42 @@ class debug
         return true;
     }
 
+    public static function loadDBDebug() {
+        $logs = \cms\db::getInstance()->getDebug()->getLog();
+        self::$debug['db'] = [];
+
+        $total_time = 0;
+
+        foreach ($logs as $log) {
+            $text = $log['name'] .
+                    PHP_EOL .
+                    (isset($log['data']['msg']) ? $log['data']['msg'] . PHP_EOL : '') .
+                    (isset($log['data']['sql']) ? $log['data']['sql'] . PHP_EOL : '');
+            self::$debug['db'][] = [
+                'src' => self::getBacktraceSrc($log['backtrace']),
+                'text' => $text,
+                'time' => $log['execution_time']
+            ];
+
+            $total_time += $log['execution_time'];
+        }
+
+        self::$total_time['db'] = $total_time;
+    }
+
     /**
      * Загружает в массив с отладочной информацией, информацию об подключенных
      * файлах
      */
-    public static function loadIncludedFiles()
-    {
+    public static function loadIncludedFiles() {
         $_files = get_included_files();
 
-        foreach ( $_files as $path ) {
+        foreach ($_files as $path) {
             self::$debug['includes'][] = array(
-                'src'  => str_replace(PATH, '', $path),
+                'src' => str_replace(PATH, '', $path),
                 'text' => '',
                 'time' => false,
             );
         }
     }
-
 }

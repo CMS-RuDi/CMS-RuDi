@@ -42,9 +42,15 @@ class files
 
     public function get($key)
     {
-        $data = unserialize(file_get_contents($file));
+        list($path, $file) = $this->getPathAndFile($key);
 
-        if ( empty($data['value']) || time() > $data['time'] + $data['ttl'] ) {
+        if ( !is_file($file) ) {
+            return null;
+        }
+
+        $data = @unserialize(file_get_contents($file));
+
+        if ( !is_array($data) || !array_key_exists('value', $data) || empty($data['value']) || time() > $data['time'] + $data['ttl'] ) {
             $this->clean($key);
             return null;
         }

@@ -14,6 +14,8 @@ define('PATH', __DIR__ . '/../../..');
 
 include(PATH . '/core/ajax/ajax_core.php');
 
+$inDB = \cms\db::getInstance();
+
 $title   = cmsCore::request('title', 'str');
 $club_id = cmsCore::request('club_id', 'int');
 
@@ -47,9 +49,9 @@ $is_member = $model->checkUserRightsInClub('member');
 $is_karma_enabled = (($inUser->karma >= $club['album_min_karma']) && $is_member) ? true : false;
 
 if ( $is_admin || $is_moder || $is_karma_enabled ) {
-    $parent_id = $inDB->getNsRootCatId('cms_photo_albums', 'club' . $club['id']);
+    $parent_id = $inDB->getNsRootCatId('photo_albums', 'club' . $club['id']);
 
-    $album_id = $inDB->addNsCategory('cms_photo_albums', array(
+    $album_id = $inDB->addNsCategory('photo_albums', array(
         'parent_id' => $parent_id,
         'title'     => $title,
         'user_id'   => $club['id'],

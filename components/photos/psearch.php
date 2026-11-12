@@ -12,22 +12,25 @@
 
 function search_photos($query, $look)
 {
-    $inDB        = cmsDatabase::getInstance();
+    $inDB        = \cms\db::getInstance();
     $searchModel = cms_model_search::initModel();
 
-    $sql = "SELECT f.*, a.title as cat, a.id as cat_id
-			FROM cms_photo_files f
-			INNER JOIN cms_photo_albums a ON a.id = f.album_id AND a.published = 1 AND a.NSDiffer = ''
-			WHERE MATCH(f.title, f.description) AGAINST ('" . $query . "' IN BOOLEAN MODE) AND f.published = 1";
+    $db = clone $inDB;
+    $db->select('i.*');
+    $db->select('a.title', 'cat');
+    $db->select('a.id', 'cat_id');
+    $db->joinInner('photo_albums', 'a', "a.id = i.album_id AND a.published = 1 AND a.NSDiffer = ''");
+    $db->filter("MATCH(i.title, i.description) AGAINST ('" . $query . "' IN BOOLEAN MODE)");
+    $db->filterEqual('i.published', 1);
 
-    $result = $inDB->query($sql);
+    $items = $db->get('photo_files');
 
-    if ( $inDB->num_rows($result) ) {
+    if ( $items ) {
         global $_LANG;
 
         cmsCore::loadLanguage('components/photos');
 
-        while ( $item = $inDB->fetch_assoc($result) ) {
+        foreach ( $items as $item ) {
             $result_array = array();
 
             $result_array['link']        = "/photos/photo" . $item['id'] . ".html";

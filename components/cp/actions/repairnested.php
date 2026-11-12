@@ -121,7 +121,7 @@ class repairnested extends \cms\com_action
 
     public function repairNestedSet($table)
     {
-        $inDB = \cmsDatabase::getInstance();
+        $inDB = \cms\db::getInstance();
 
         $differ = $table['differ'];
         $title  = $table['title'];
@@ -129,40 +129,39 @@ class repairnested extends \cms\com_action
 
         $root_id = $inDB->getNsRootCatId($table, $differ);
 
-        $res = $inDB->query("SELECT id FROM " . $table . " WHERE NSDiffer = '" . $differ . "' AND NSLevel > 0 ORDER BY NSLeft");
+        $items = $inDB->getRows($table, "NSDiffer = '" . $inDB->escape($differ) . "' AND NSLevel > 0", 'id', 'NSLeft');
 
         if ( !$inDB->errno() ) {
-            $items_count = $inDB->num_rows($res);
+            $items_count = count($items);
             $max_right   = ($items_count + 1) * 2;
 
             //fix root node
-            $sql = "UPDATE " . $table . "
-				SET NSLeft = 1,
-					NSRight = " . $max_right . ",
-					parent_id = 0,
-					NSLevel = 0,
-					ordering = 1
-				WHERE id = " . $root_id;
-            $inDB->query($sql);
+            if ( $root_id ) {
+                $inDB->update($table, (int) $root_id, [
+                    'NSLeft'    => 1,
+                    'NSRight'   => $max_right,
+                    'parent_id' => 0,
+                    'NSLevel'   => 0,
+                    'ordering'  => 1
+                ]);
+            }
 
             //fix child nodes
             $pos = 0;
             $ord = 1;
 
-            while ( $item = $inDB->fetch_assoc($res) ) {
+            foreach ( $items as $item ) {
                 $level = 1;
                 $left  = $pos + 2;
                 $right = $pos + 3;
 
-                $sql = "UPDATE " . $table . "
-                            SET NSLeft=" . $left . ",
-                                    NSRight=" . $right . ",
-                                    parent_id = " . $root_id . ",
-                                    NSLevel = " . $level . ",
-                                    ordering = " . $ord . "
-                            WHERE id=" . $item['id'];
-
-                $inDB->query($sql);
+                $inDB->update($table, (int) $item['id'], [
+                    'NSLeft'    => $left,
+                    'NSRight'   => $right,
+                    'parent_id' => (int) $root_id,
+                    'NSLevel'   => $level,
+                    'ordering'  => $ord
+                ]);
 
                 $pos += 2;
                 $ord++;
@@ -174,21 +173,17 @@ class repairnested extends \cms\com_action
 
     public function treeAllNS($s_table, $i_value = 1, $k_parent = 0, $lvl = 0)
     {
-        $inDB = \cmsDatabase::getInstance();
+        $inDB = \cms\db::getInstance();
 
         if ( !is_numeric($k_parent) || !is_numeric($i_value) ) {
             return false;
         }
 
-        $r = $inDB->query("SELECT id FROM " . $s_table . " WHERE parent_id='" . $k_parent . "' ORDER BY NSLeft ASC, ordering ASC");
-
-        if ( !$r ) {
-            return false;
-        }
+        $rows = $inDB->getRows($s_table, 'parent_id = ' . (int) $k_parent, 'id', 'NSLeft ASC, ordering ASC');
 
         $o = 1;
 
-        while ( $f = $inDB->fetch_assoc($r) ) {
+        foreach ( $rows as $f ) {
             $k_item  = $f['id'];
             $i_right = tree_all_ns($s_table, $i_value + 1, $k_item, $lvl + 1);
 
@@ -196,7 +191,14 @@ class repairnested extends \cms\com_action
                 return false;
             }
 
-            if ( !$inDB->query("UPDATE " . $s_table . " SET NSLeft='" . $i_value . "', NSRight='" . $i_right . "', ordering = '" . $o++ . "', NSLevel = '" . $lvl . "' where id='" . $k_item . "'") ) {
+            $updated = $inDB->update($s_table, (int) $k_item, [
+                'NSLeft'   => $i_value,
+                'NSRight'  => $i_right,
+                'ordering' => $o++,
+                'NSLevel'  => $lvl
+            ]);
+
+            if ( !$updated ) {
                 return false;
             }
 
@@ -208,28 +210,39 @@ class repairnested extends \cms\com_action
 
     public function checkNestedSet($table)
     {
-        $inDB   = \cmsDatabase::getInstance();
+        $inDB   = \cms\db::getInstance();
         $differ = $table['differ'];
         $table  = $table['name'];
         $errors = [];
 
+        // имя таблицы для JOIN: builder сам добавляет префикс
+        $join_table = $table;
+
+        if ( $inDB->prefix && strpos($join_table, $inDB->prefix) === 0 ) {
+            $join_table = substr($join_table, strlen($inDB->prefix));
+        }
+
         // step 1
-        $sql = "SELECT id FROM " . $table . " WHERE NSLeft >= NSRight AND NSDiffer = '" . $differ . "'";
-        $res = $inDB->query($sql);
+        $res = $inDB->getRows($table, "NSLeft >= NSRight AND NSDiffer = '" . $inDB->escape($differ) . "'", 'id', '', true);
 
         if ( !$inDB->errno() ) {
-            $errors[] = ($inDB->num_rows($res) > 0);
+            $errors[] = (count($res) > 0);
         }
         else {
             $errors[] = true;
         }
 
         // step 2 and 3
-        $sql = "SELECT COUNT(id) as rows, MIN(NSLeft) as min_left, MAX(NSRight) as max_right FROM " . $table . " WHERE NSDiffer = '" . $differ . "'";
-        $res = $inDB->query($sql);
+        $res = $inDB->getRows(
+            $table,
+            "NSDiffer = '" . $inDB->escape($differ) . "'",
+            'COUNT(id) as rows, MIN(NSLeft) as min_left, MAX(NSRight) as max_right',
+            '',
+            true
+        );
 
         if ( !$inDB->errno() ) {
-            $data     = $inDB->fetch_assoc($res);
+            $data     = $res ? $res[0] : [ 'rows' => 0, 'min_left' => null, 'max_right' => null ];
             $errors[] = ($data['min_left'] != 1);
             $errors[] = ($data['max_right'] != 2 * $data['rows']);
         }
@@ -238,41 +251,62 @@ class repairnested extends \cms\com_action
         }
 
         // step 4
-        $sql = "SELECT id, NSRight, NSLeft FROM " . $table . " WHERE MOD((NSRight-NSLeft), 2) = 0 AND NSDiffer = '" . $differ . "'";
-
-        $res = $inDB->query($sql);
+        $res = $inDB->getRows($table, "MOD((NSRight-NSLeft), 2) = 0 AND NSDiffer = '" . $inDB->escape($differ) . "'", 'id, NSRight, NSLeft', '', true);
 
         if ( !$inDB->errno() ) {
-            $errors[] = ($inDB->num_rows($res) > 0);
+            $errors[] = (count($res) > 0);
         }
         else {
             $errors[] = true;
         }
 
         // step 5
-        $sql = "SELECT id FROM " . $table . " WHERE MOD((NSLeft-NSLevel+2), 2) = 0 AND NSDiffer = '" . $differ . "'";
-
-        $res = $inDB->query($sql);
+        $res = $inDB->getRows($table, "MOD((NSLeft-NSLevel+2), 2) = 0 AND NSDiffer = '" . $inDB->escape($differ) . "'", 'id', '', true);
 
         if ( !$inDB->errno() ) {
-            $errors[] = ($inDB->num_rows($res) > 0);
+            $errors[] = (count($res) > 0);
         }
         else {
             $errors[] = true;
         }
 
-        // step 6
-        $sql = "SELECT 	t1.id, COUNT(t1.id) AS rep, MAX(t3.NSRight) AS max_right
-				FROM " . $table . " AS t1, " . $table . " AS t2, " . $table . " AS t3
-				WHERE t1.NSLeft <> t2.NSLeft AND t1.NSLeft <> t2.NSRight AND t1.NSRight <> t2.NSLeft AND t1.NSRight <> t2.NSRight
-				AND t1.NSDiffer = '" . $differ . "' AND t2.NSDiffer = '" . $differ . "' AND t3.NSDiffer = '" . $differ . "'
-				GROUP BY t1.id
-				HAVING max_right <> SQRT(4 * rep + 1) + 1";
-
-        $res = $inDB->query($sql);
+        // step 6: для каждого узла считаем количество пересечений и сравниваем
+        // с максимальным NSRight дерева (прежний MAX(t3.NSRight) был константой)
+        $max_right_row = $inDB->getRows(
+            $table,
+            "NSDiffer = '" . $inDB->escape($differ) . "'",
+            'MAX(NSRight) as max_right',
+            '',
+            true
+        );
 
         if ( !$inDB->errno() ) {
-            $errors[] = ($inDB->num_rows($res) > 0);
+            $max_right = $max_right_row ? $max_right_row[0]['max_right'] : null;
+
+            $db = clone $inDB;
+            $db->select('i.id');
+            $db->select('COUNT(i.id)', 'rep');
+            $db->joinInner(
+                $join_table,
+                't2',
+                'i.NSLeft <> t2.NSLeft AND i.NSLeft <> t2.NSRight AND i.NSRight <> t2.NSLeft AND i.NSRight <> t2.NSRight'
+            );
+            $db->filterEqual('i.NSDiffer', $differ);
+            $db->filterEqual('t2.NSDiffer', $differ);
+            $db->groupBy('i.id');
+
+            $reps = $db->get($table, false, false);
+
+            $has_rep_error = false;
+
+            foreach ( $reps as $rep ) {
+                if ( $max_right != sqrt(4 * $rep['rep'] + 1) + 1 ) {
+                    $has_rep_error = true;
+                    break;
+                }
+            }
+
+            $errors[] = $has_rep_error;
         }
         else {
             $errors[] = true;

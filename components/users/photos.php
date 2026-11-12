@@ -138,20 +138,21 @@ if ( $pdo == 'submitphotos' ) {
             $imageurl    = $photos[$photo_id]['imageurl'];
             $title       = $title ? $title : $_LANG['PHOTO_WITHOUT_NAME'];
 
-            $photo_sql = "UPDATE cms_user_photos
-                          SET title='" . $title . "',
-                              description = '" . $description . "',
-                              album_id = '" . $album_id . "',
-                              allow_who = '" . $allow_who . "'
-                          WHERE id = '" . $photo_id . "' AND user_id = '" . $usr['id'] . "'
-                          LIMIT 1";
-
             if ( $is_edit ) {
                 cmsActions::updateLog('add_user_photo', array( 'object' => $title ), $photo_id);
                 cmsActions::updateLog('add_user_photo_multi', array( 'object' => $title ), $photo_id);
             }
 
-            $inDB->query($photo_sql);
+            $inDB->resetFilters();
+
+            $inDB->filterEqual('i.id', $photo_id)->
+                    filterEqual('i.user_id', $usr['id'])->
+                    updateFiltered('user_photos', array(
+                        'title' => $title,
+                        'description' => $description,
+                        'album_id' => $album_id,
+                        'allow_who' => $allow_who
+                    ));
 
             if ( $total_foto == 1 && !$is_edit ) {
                 $is_friends_only = $allow_who == 'friends' ? 1 : 0;
@@ -221,7 +222,13 @@ if ( $pdo == 'delphoto' ) {
             cmsCore::error404();
         }
 
-        $photo = $inDB->get_fields('cms_user_photos', "id = '" . $photo_id . "' AND user_id = '" . $id . "'", 'title, album_id');
+        $inDB->resetFilters();
+
+        $photo = $inDB->filterEqual('i.id', $photo_id)->
+                filterEqual('i.user_id', (int) $id)->
+                getItem('user_photos');
+
+        $inDB->resetFilters();
 
         if ( !$photo ) {
             cmsCore::error404();
@@ -246,7 +253,9 @@ if ( $pdo == 'delphoto' ) {
         else {
             $model->deletePhoto($photo_id);
 
-            $album_has_photos = $inDB->rows_count('cms_user_photos', "album_id = " . $photo['album_id'], 1);
+            $album_has_photos = $inDB->filterEqual('i.album_id', $photo['album_id'])->getCount('user_photos');
+
+            $inDB->resetFilters();
 
             if ( $album_has_photos ) {
                 $inCore->redirect('/users/' . $usr['login'] . '/photos/private' . $photo['album_id'] . '.html');
@@ -353,7 +362,9 @@ if ( $pdo == 'editphotolist' ) {
             $model->deletePhoto($photo_id);
         }
 
-        $album_has_photos = $inDB->rows_count('cms_user_photos', "album_id = " . $album_id, 1);
+        $album_has_photos = $inDB->filterEqual('i.album_id', $album_id)->getCount('user_photos');
+
+        $inDB->resetFilters();
 
         if ( $album_has_photos ) {
             cmsCore::redirectBack();
@@ -429,19 +440,22 @@ if ( $pdo == 'viewphoto' ) {
 
     cmsCore::loadLib('tags');
 
-    $sql = "SELECT p.*, a.title as album, pr.gender
-            FROM cms_user_photos p
-			INNER JOIN cms_user_albums a ON a.id = p.album_id
-			INNER JOIN cms_user_profiles pr ON pr.user_id = p.user_id
-            WHERE p.id = '" . $photoid . "' AND p.user_id = '" . $id . "' LIMIT 1";
+    $inDB->resetFilters();
 
-    $result = $inDB->query($sql);
+    $photo = $inDB->selectOnly('i.*')->
+            select('a.title', 'album')->
+            select('pr.gender')->
+            joinInner('user_albums', 'a', 'a.id = i.album_id')->
+            joinInner('user_profiles', 'pr', 'pr.user_id = i.user_id')->
+            filterEqual('i.id', $photoid)->
+            filterEqual('i.user_id', $id)->
+            getItem('user_photos');
 
-    if ( !$inDB->num_rows($result) ) {
+    $inDB->resetFilters();
+
+    if ( !$photo ) {
         cmsCore::error404();
     }
-
-    $photo = $inDB->fetch_assoc($result);
 
     $inPage->setTitle($photo['title']);
     $inPage->addPathway($usr['nickname'], cmsUser::getProfileURL($usr['login']));
@@ -454,15 +468,38 @@ if ( $pdo == 'viewphoto' ) {
     $photo['filesize']   = round(filesize(PATH . '/images/users/photos/medium/' . $photo['imageurl']) / 1024, 2);
 
     //ссылки на предыдущую и следующую фотографии
-    $previd = $inDB->get_fields('cms_user_photos', "id>'" . $photo['id'] . "' AND user_id = '" . $usr['id'] . "' AND album_id='" . $photo['album_id'] . "'", 'id, title, pubdate', 'id ASC');
-    $nextid = $inDB->get_fields('cms_user_photos', "id<'" . $photo['id'] . "' AND user_id = '" . $usr['id'] . "' AND album_id='" . $photo['album_id'] . "'", 'id, title, pubdate', 'id DESC');
+    $inDB->resetFilters();
+
+    $previd = $inDB->selectOnly('i.id')->
+            select('i.title')->
+            select('i.pubdate')->
+            filterGt('i.id', $photo['id'])->
+            filterEqual('i.user_id', $usr['id'])->
+            filterEqual('i.album_id', $photo['album_id'])->
+            orderBy('i.id', 'ASC')->
+            getItem('user_photos');
+
+    $inDB->resetFilters();
+
+    $nextid = $inDB->selectOnly('i.id')->
+            select('i.title')->
+            select('i.pubdate')->
+            filterLt('i.id', $photo['id'])->
+            filterEqual('i.user_id', $usr['id'])->
+            filterEqual('i.album_id', $photo['album_id'])->
+            orderBy('i.id', 'DESC')->
+            getItem('user_photos');
+
+    $inDB->resetFilters();
 
     // Проверяем права доступа
     $is_allow = cmsUser::checkUserContentAccess($photo['allow_who'], $id);
 
     // Если видим фото, обновляем просмотры
     if ( $is_allow ) {
-        $inDB->query("UPDATE cms_user_photos SET hits = hits + 1 WHERE id = " . $photo['id']);
+        $inDB->resetFilters();
+
+        $inDB->filterEqual('i.id', $photo['id'])->increment('user_photos', 'hits', 1);
     }
 
     cmsPage::initTemplate('components', 'com_users_photos_view')->

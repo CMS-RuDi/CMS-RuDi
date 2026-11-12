@@ -1,79 +1,79 @@
 <?php
 /*
- *                           InstantCMS v1.10.6
- *                        http://www.instantcms.ru/
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
  *
- *                   written by InstantCMS Team, 2007-2015
- *                produced by InstantSoft, (www.instantsoft.ru)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                        LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
-if ( !defined('VALID_CMS_ADMIN') ) {
+if (!defined('VALID_CMS_ADMIN')) {
     die('ACCESS DENIED');
 }
 
-$opt = cmsCore::request('opt', 'str', 'list');
+$opt = $inPut->get('opt', 'str', 'list');
 
-$toolmenu[] = array( 'icon' => 'save.gif', 'title' => $_LANG['SAVE'], 'link' => 'javascript:document.optform.submit();' );
-$toolmenu[] = array( 'icon' => 'cancel.gif', 'title' => $_LANG['CANCEL'], 'link' => '?view=components' );
+$toolmenu[] = array('icon' => 'save.gif', 'title' => $_LANG['SAVE'], 'link' => 'javascript:document.optform.submit();');
+$toolmenu[] = array('icon' => 'cancel.gif', 'title' => $_LANG['CANCEL'], 'link' => '/cp/components');
 
 cpToolMenu($toolmenu);
 
 $cfg = $inCore->loadComponentConfig('registration');
 
-if ( $opt == 'saveconfig' ) {
-    if ( !cmsUser::checkCsrfToken() ) {
+if ($opt == 'saveconfig') {
+    if (!cmsUser::checkCsrfToken()) {
         cmsCore::error404();
     }
 
-    $cfg['reg_type']   = cmsCore::request('reg_type', 'str', '');
-    $cfg['inv_count']  = cmsCore::request('inv_count', 'int', 0);
-    $cfg['inv_karma']  = cmsCore::request('inv_karma', 'int', 0);
-    $cfg['inv_period'] = cmsCore::request('inv_period', 'str', '');
+    $cfg['reg_type'] = $inPut->get('reg_type', 'str', '');
+    $cfg['inv_count'] = $inPut->get('inv_count', 'int', 0);
+    $cfg['inv_karma'] = $inPut->get('inv_karma', 'int', 0);
+    $cfg['inv_period'] = $inPut->get('inv_period', 'str', '');
 
-    $cfg['default_gid'] = cmsCore::request('default_gid', 'int', 0);
+    $cfg['default_gid'] = $inPut->get('default_gid', 'int', 0);
 
-    $cfg['is_on']  = cmsCore::request('is_on', 'int', 0);
-    $cfg['act']    = cmsCore::request('act', 'int', 0);
-    $cfg['send']   = cmsCore::request('send', 'int', 0);
-    $cfg['offmsg'] = cmsCore::request('offmsg', 'html', '');
+    $cfg['is_on'] = $inPut->get('is_on', 'int', 0);
+    $cfg['act'] = $inPut->get('act', 'int', 0);
+    $cfg['send'] = $inPut->get('send', 'int', 0);
+    $cfg['offmsg'] = $inPut->get('offmsg', 'html', '');
 
-    $cfg['first_auth_redirect'] = cmsCore::request('first_auth_redirect', 'str', '');
-    $cfg['auth_redirect']       = cmsCore::request('auth_redirect', 'str', '');
+    $cfg['first_auth_redirect'] = $inPut->get('first_auth_redirect', 'str', '');
+    $cfg['auth_redirect'] = $inPut->get('auth_redirect', 'str', '');
 
-    $cfg['name_mode']     = cmsCore::request('name_mode', 'str', '');
-    $cfg['badnickname']   = mb_strtolower(cmsCore::request('badnickname', 'html', ''));
-    $cfg['ask_icq']       = cmsCore::request('ask_icq', 'int', 0);
-    $cfg['ask_birthdate'] = cmsCore::request('ask_birthdate', 'int', 0);
-    $cfg['ask_city']      = cmsCore::request('ask_city', 'int', 0);
+    $cfg['name_mode'] = $inPut->get('name_mode', 'str', '');
+    $cfg['badnickname'] = mb_strtolower($inPut->get('badnickname', 'html', ''));
+    $cfg['ask_icq'] = $inPut->get('ask_icq', 'int', 0);
+    $cfg['ask_birthdate'] = $inPut->get('ask_birthdate', 'int', 0);
+    $cfg['ask_city'] = $inPut->get('ask_city', 'int', 0);
 
-    $cfg['send_greetmsg'] = cmsCore::request('send_greetmsg', 'int');
-    $cfg['greetmsg']      = cmsCore::request('greetmsg', 'html', '');
+    $cfg['send_greetmsg'] = $inPut->get('send_greetmsg', 'int');
+    $cfg['greetmsg'] = $inPut->get('greetmsg', 'html', '');
 
     cmsCore::addSessionMessage($_LANG['AD_CONFIG_SAVE_SUCCESS'], 'success');
 
     $inCore->saveComponentConfig('registration', $cfg);
 
-    if ( cmsCore::request('inv_now', 'int', 0) ) {
+    if ($inPut->get('inv_now', 'int', 0)) {
         $model = new cms_model_users();
 
         $inv_count = $cfg['inv_count'];
         $inv_karma = $cfg['inv_karma'];
 
-        if ( $inv_count ) {
+        if ($inv_count) {
             $invites_given = $model->giveInvites($inv_count, $inv_karma);
 
-            if ( $invites_given ) {
+            if ($invites_given) {
                 cmsCore::addSessionMessage($_LANG['AD_ISSUED_INVITES'] . ': ' . $invites_given, 'success');
-            }
-            else {
+            } else {
                 cmsCore::addSessionMessage($_LANG['AD_INVITES_NOT_ISSUED'], 'success');
             }
         }
     }
 
-    if ( cmsCore::request('inv_delete', 'int', 0) ) {
+    if ($inPut->get('inv_delete', 'int', 0)) {
         $model = new cms_model_users();
 
         $model->deleteInvites();
@@ -84,7 +84,7 @@ if ( $opt == 'saveconfig' ) {
     cmsCore::redirectBack();
 }
 ?>
-<form action="index.php?view=components&amp;do=config&amp;id=<?php echo $id ?>" method="post" name="optform" target="_self" id="optform">
+<form action="/cp/components/registration" method="post" name="optform" target="_self" id="optform">
     <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
     <div id="config_tabs" style="margin-top:12px;" class="uitabs">
 
@@ -105,19 +105,19 @@ if ( $opt == 'saveconfig' ) {
                                     $('.inv').hide();
                                 }">
                             <option value="open" <?php
-                            if ( $cfg['reg_type'] == 'open' ) {
+                            if ($cfg['reg_type'] == 'open') {
                                 echo 'selected';
                             }
                             ?>><?php echo $_LANG['AD_REGISTRATION_OPEN']; ?></option>
                             <option value="invite" <?php
-                            if ( $cfg['reg_type'] == 'invite' ) {
+                            if ($cfg['reg_type'] == 'invite') {
                                 echo 'selected';
                             }
                             ?>><?php echo $_LANG['AD_REGISTRATION_INVITES']; ?></option>
                         </select>
                     </td>
                 </tr>
-                <tr class="inv" <?php if ( $cfg['reg_type'] == 'open' ) { ?>style="display:none"<?php } ?>>
+                <tr class="inv" <?php if ($cfg['reg_type'] == 'open') { ?>style="display:none"<?php } ?>>
                     <td valign="top" style="padding-top:20px"><strong><?php echo $_LANG['AD_ISSUE_ON']; ?>:</strong></td>
                     <td>
                         <table cellpadding="4" cellspacing="0" border="0">
@@ -133,17 +133,17 @@ if ( $opt == 'saveconfig' ) {
                                 <td>
                                     <select name="inv_period">
                                         <option value="DAY" <?php
-                                        if ( $cfg['inv_period'] == 'DAY' ) {
+                                        if ($cfg['inv_period'] == 'DAY') {
                                             echo 'selected';
                                         }
                                         ?>><?php echo $_LANG['AD_DAY']; ?></option>
                                         <option value="WEEK" <?php
-                                        if ( $cfg['inv_period'] == 'WEEK' ) {
+                                        if ($cfg['inv_period'] == 'WEEK') {
                                             echo 'selected';
                                         }
                                         ?>><?php echo $_LANG['AD_WEEKLY']; ?></option>
                                         <option value="MONTH" <?php
-                                        if ( $cfg['inv_period'] == 'MONTH' ) {
+                                        if ($cfg['inv_period'] == 'MONTH') {
                                             echo 'selected';
                                         }
                                         ?>><?php echo $_LANG['AD_MONTH']; ?></option>
@@ -174,12 +174,12 @@ if ( $opt == 'saveconfig' ) {
                     <td width="308"><strong><?php echo $_LANG['AD_REGISTRATION_ON']; ?>: </strong></td>
                     <td width="313">
                         <label><input name="is_on" type="radio" value="1" <?php
-                            if ( $cfg['is_on'] ) {
+                            if ($cfg['is_on']) {
                                 echo 'checked="checked"';
                             }
                             ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="is_on" type="radio" value="0" <?php
-                            if ( !$cfg['is_on'] ) {
+                            if (!$cfg['is_on']) {
                                 echo 'checked="checked"';
                             }
                             ?>/> <?php echo $_LANG['NO']; ?></label>
@@ -193,12 +193,12 @@ if ( $opt == 'saveconfig' ) {
                     <td><strong><?php echo $_LANG['AD_ACTIVATION_MAIL']; ?>: </strong></td>
                     <td>
                         <label><input name="act" type="radio" value="1" <?php
-                            if ( $cfg['act'] ) {
+                            if ($cfg['act']) {
                                 echo 'checked="checked"';
                             }
                             ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="act" type="radio" value="0" <?php
-                            if ( !$cfg['act'] ) {
+                            if (!$cfg['act']) {
                                 echo 'checked="checked"';
                             }
                             ?>/> <?php echo $_LANG['NO']; ?></label>
@@ -213,8 +213,8 @@ if ( $opt == 'saveconfig' ) {
                     <td>
                         <?php $groups = cmsUser::getGroups(true); ?>
                         <select name="default_gid" id="default_gid" style="width:300px">
-                            <?php foreach ( $groups as $group ) { ?>
-                                <option value="<?php echo $group['id']; ?>" <?php if ( $cfg['default_gid'] == $group['id'] ) { ?>selected="selected"<?php } ?>><?php echo $group['title']; ?></option>
+                            <?php foreach ($groups as $group) { ?>
+                                <option value="<?php echo $group['id']; ?>" <?php if ($cfg['default_gid'] == $group['id']) { ?>selected="selected"<?php } ?>><?php echo $group['title']; ?></option>
                             <?php } ?>
                         </select>
                     </td>
@@ -224,22 +224,22 @@ if ( $opt == 'saveconfig' ) {
                     <td>
                         <select name="first_auth_redirect" id="first_auth_redirect" style="width:300px">
                             <option value="none" <?php
-                            if ( $cfg['first_auth_redirect'] == 'none' ) {
+                            if ($cfg['first_auth_redirect'] == 'none') {
                                 echo 'selected';
                             }
                             ?>><?php echo $_LANG['AD_DO_NOTHING']; ?></option>
                             <option value="index" <?php
-                            if ( $cfg['first_auth_redirect'] == 'index' ) {
+                            if ($cfg['first_auth_redirect'] == 'index') {
                                 echo 'selected';
                             }
                             ?>><?php echo $_LANG['AD_OPEN_HOME']; ?></option>
                             <option value="profile" <?php
-                            if ( $cfg['first_auth_redirect'] == 'profile' ) {
+                            if ($cfg['first_auth_redirect'] == 'profile') {
                                 echo 'selected';
                             }
                             ?>><?php echo $_LANG['AD_OPEN_PROFILE']; ?></option>
                             <option value="editprofile" <?php
-                            if ( $cfg['first_auth_redirect'] == 'editprofile' ) {
+                            if ($cfg['first_auth_redirect'] == 'editprofile') {
                                 echo 'selected';
                             }
                             ?>><?php echo $_LANG['AD_OPEN_PROFILE_SETTIGS']; ?></option>
@@ -251,22 +251,22 @@ if ( $opt == 'saveconfig' ) {
                     <td>
                         <select name="auth_redirect" id="auth_redirect" style="width:300px">
                             <option value="none" <?php
-                            if ( $cfg['auth_redirect'] == 'none' ) {
+                            if ($cfg['auth_redirect'] == 'none') {
                                 echo 'selected';
                             }
                             ?>><?php echo $_LANG['AD_DO_NOTHING']; ?></option>
                             <option value="index" <?php
-                            if ( $cfg['auth_redirect'] == 'index' ) {
+                            if ($cfg['auth_redirect'] == 'index') {
                                 echo 'selected';
                             }
                             ?>><?php echo $_LANG['AD_OPEN_HOME']; ?></option>
                             <option value="profile" <?php
-                            if ( $cfg['auth_redirect'] == 'profile' ) {
+                            if ($cfg['auth_redirect'] == 'profile') {
                                 echo 'selected';
                             }
                             ?>><?php echo $_LANG['AD_OPEN_PROFILE']; ?></option>
                             <option value="editprofile" <?php
-                            if ( $cfg['auth_redirect'] == 'editprofile' ) {
+                            if ($cfg['auth_redirect'] == 'editprofile') {
                                 echo 'selected';
                             }
                             ?>><?php echo $_LANG['AD_OPEN_PROFILE_SETTIGS']; ?></option>
@@ -283,12 +283,12 @@ if ( $opt == 'saveconfig' ) {
                     <td>
                         <select name="name_mode" id="name_mode" style="width:300px">
                             <option value="nickname" <?php
-                            if ( $cfg['name_mode'] == 'nickname' ) {
+                            if ($cfg['name_mode'] == 'nickname') {
                                 echo 'selected';
                             }
                             ?>><?php echo $_LANG['AD_NICKNAME']; ?></option>
                             <option value="realname" <?php
-                            if ( $cfg['name_mode'] == 'realname' ) {
+                            if ($cfg['name_mode'] == 'realname') {
                                 echo 'selected';
                             }
                             ?>><?php echo $_LANG['AD_NAME_SURNAME']; ?></option>
@@ -303,12 +303,12 @@ if ( $opt == 'saveconfig' ) {
                     <td><strong><?php echo $_LANG['AD_REQUIRE_ICQ']; ?>:</strong> </td>
                     <td>
                         <label><input name="ask_icq" type="radio" value="1" <?php
-                            if ( $cfg['ask_icq'] ) {
+                            if ($cfg['ask_icq']) {
                                 echo 'checked="checked"';
                             }
                             ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="ask_icq" type="radio" value="0" <?php
-                            if ( !$cfg['ask_icq'] ) {
+                            if (!$cfg['ask_icq']) {
                                 echo 'checked="checked"';
                             }
                             ?>/> <?php echo $_LANG['NO']; ?></label>
@@ -318,12 +318,12 @@ if ( $opt == 'saveconfig' ) {
                     <td><strong><?php echo $_LANG['AD_REQUIRE_BIRD']; ?>:</strong> </td>
                     <td>
                         <label><input name="ask_birthdate" type="radio" value="1" <?php
-                            if ( $cfg['ask_birthdate'] ) {
+                            if ($cfg['ask_birthdate']) {
                                 echo 'checked="checked"';
                             }
                             ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="ask_birthdate" type="radio" value="0" <?php
-                            if ( !$cfg['ask_birthdate'] ) {
+                            if (!$cfg['ask_birthdate']) {
                                 echo 'checked="checked"';
                             }
                             ?>/> <?php echo $_LANG['NO']; ?></label>
@@ -333,12 +333,12 @@ if ( $opt == 'saveconfig' ) {
                     <td><strong><?php echo $_LANG['AD_REQUIRE_CITY']; ?>:</strong> </td>
                     <td>
                         <label><input name="ask_city" type="radio" value="1" <?php
-                            if ( $cfg['ask_city'] ) {
+                            if ($cfg['ask_city']) {
                                 echo 'checked="checked"';
                             }
                             ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="ask_city" type="radio" value="0" <?php
-                            if ( !$cfg['ask_city'] ) {
+                            if (!$cfg['ask_city']) {
                                 echo 'checked="checked"';
                             }
                             ?>/> <?php echo $_LANG['NO']; ?></label>
@@ -353,12 +353,12 @@ if ( $opt == 'saveconfig' ) {
                     <td width="308"><strong><?php echo $_LANG['AD_SEND_MASSAGE']; ?>:</strong></td>
                     <td>
                         <label><input name="send_greetmsg" type="radio" value="1" <?php
-                            if ( $cfg['send_greetmsg'] ) {
+                            if ($cfg['send_greetmsg']) {
                                 echo 'checked="checked"';
                             }
                             ?>/> <?php echo $_LANG['YES']; ?></label>
                         <label><input name="send_greetmsg" type="radio" value="0" <?php
-                            if ( !$cfg['send_greetmsg'] ) {
+                            if (!$cfg['send_greetmsg']) {
                                 echo 'checked="checked"';
                             }
                             ?>/> <?php echo $_LANG['NO']; ?></label>
@@ -373,6 +373,6 @@ if ( $opt == 'saveconfig' ) {
     <p>
         <input name="opt" type="hidden" value="saveconfig" />
         <input name="save" type="submit" id="save" value="<?php echo $_LANG['SAVE']; ?>" />
-        <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components';"/>
+        <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = '/cp/components';"/>
     </p>
 </form>

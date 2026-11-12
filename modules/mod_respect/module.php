@@ -11,7 +11,7 @@
  */
 
 function mod_respect($mod, $cfg) {
-    $inDB = cmsDatabase::getInstance();
+    $inDB = \cms\db::getInstance();
 
     if (!isset($cfg['view_aw'])) {
         $cfg['view_aw'] = 0;
@@ -29,47 +29,46 @@ function mod_respect($mod, $cfg) {
         $cfg['show_awards'] = 1;
     }
 
+    $db = clone $inDB;
+    $db->select('MAX(i.id)', 'id');
+    $db->select('MIN(i.nickname)', 'nickname');
+    $db->select('MIN(i.login)', 'login');
+    $db->select('COUNT(a.id)', 'awards_count');
+    $db->select('MIN(p.imageurl)', 'imageurl');
+    $db->select('MIN(i.is_deleted)', 'is_deleted');
+    $db->joinInner('user_profiles', 'p', 'p.user_id = i.id');
+    $db->joinInner('user_awards', 'a', 'a.user_id = i.id');
+    $db->filterEqual('i.is_deleted', 0);
+    $db->filterEqual('i.is_locked', 0);
+
+    if ($cfg['view_aw']) {
+        $db->filterEqual('a.title', $cfg['view_aw']);
+    }
+
+    $db->groupBy('a.user_id');
+
     if ($cfg['order'] == 'rand') {
-        $order_sql = 'RAND()';
+        $db->orderBy('RAND()');
     } else {
-        $order_sql = 'awards_count DESC';
+        $db->orderBy('awards_count', 'DESC');
     }
 
-    if (!$cfg['view_aw']) {
-        $view_sql = '';
-    } else {
-        $view_sql = " AND a.title = '{$cfg['view_aw']}'";
-    }
+    $db->limit(0, (int) $cfg['limit']);
 
-    $sql = "SELECT u.id,
-                    ANY_VALUE(u.nickname) as nickname,
-                    ANY_VALUE(u.login) as login,
-                    COUNT(a.id) as awards_count,
-                    ANY_VALUE(p.imageurl) as imageurl,
-                    ANY_VALUE(u.is_deleted) as is_deleted
-             FROM cms_users u
-             INNER JOIN cms_user_profiles p ON p.user_id = u.id
-             INNER JOIN cms_user_awards a ON a.user_id = u.id
-             WHERE u.is_deleted = 0
-               AND u.is_locked = 0 {$view_sql}
-             GROUP BY a.user_id
-             ORDER BY {$order_sql}
-             LIMIT {$cfg['limit']}";
+    $users = $db->get('users', false, false);
 
-    $result = $inDB->query($sql);
-
-    if (!$inDB->num_rows($result)) {
+    if (!$users) {
         return false;
     }
 
-    while ($user = $inDB->fetch_assoc($result)) {
+    foreach ($users as $key => $user) {
         $user['avatar'] = cmsUser::getUserAvatarUrl($user['id'], 'small', $user['imageurl'], $user['is_deleted']);
 
         if ($cfg['show_awards']) {
-            $user['awards'] = $inDB->get_table('cms_user_awards', 'user_id=' . $user['id'], 'id, title');
+            $user['awards'] = $inDB->getRows('user_awards', 'user_id = ' . (int) $user['id'], 'id, title');
         }
 
-        $users[] = $user;
+        $users[$key] = $user;
     }
 
     cmsPage::initTemplate('modules', $cfg['tpl'])->

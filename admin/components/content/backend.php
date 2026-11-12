@@ -1,58 +1,59 @@
 <?php
 /*
- *                           InstantCMS v1.10.6
- *                        http://www.instantcms.ru/
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
  *
- *                   written by InstantCMS Team, 2007-2015
- *                produced by InstantSoft, (www.instantsoft.ru)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                        LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
-if ( !defined('VALID_CMS_ADMIN') ) {
+if (!defined('VALID_CMS_ADMIN')) {
     die('ACCESS DENIED');
 }
 
-$opt = cmsCore::request('opt', 'str', 'list');
+$opt = $inPut->get('opt', 'str', 'list');
 
 echo '<h3>' . $_LANG['AD_SETTINGS'] . '</h3>';
 
 $cfg = $inCore->loadComponentConfig('content');
 
-if ( $opt == 'saveconfig' ) {
-    if ( !cmsUser::checkCsrfToken() ) {
+if ($opt == 'saveconfig') {
+    if (!cmsUser::checkCsrfToken()) {
         cmsCore::error404();
     }
 
-    $cfg                       = array();
-    $cfg['readdesc']           = cmsCore::request('readdesc', 'int', 0);
-    $cfg['is_url_cyrillic']    = cmsCore::request('is_url_cyrillic', 'int', 0);
-    $cfg['rating']             = cmsCore::request('rating', 'int', 0);
-    $cfg['perpage']            = cmsCore::request('perpage', 'int', 0);
-    $cfg['pt_show']            = cmsCore::request('pt_show', 'int', 0);
-    $cfg['pt_disp']            = cmsCore::request('pt_disp', 'int', 0);
-    $cfg['pt_hide']            = cmsCore::request('pt_hide', 'int', 0);
-    $cfg['autokeys']           = cmsCore::request('autokeys', 'int', 0);
-    $cfg['hide_root']          = cmsCore::request('hide_root', 'int', 0);
-    $cfg['img_small_w']        = cmsCore::request('img_small_w', 'int', 100);
-    $cfg['img_big_w']          = cmsCore::request('img_big_w', 'int', 200);
-    $cfg['img_sqr']            = cmsCore::request('img_sqr', 'int', 1);
-    $cfg['img_users']          = cmsCore::request('img_users', 'int', 1);
-    $cfg['watermark']          = cmsCore::request('watermark', 'int', 0);
-    $cfg['watermark_only_big'] = cmsCore::request('watermark_only_big', 'int', 0);
+    $cfg = array();
+    $cfg['readdesc'] = $inPut->get('readdesc', 'int', 0);
+    $cfg['is_url_cyrillic'] = $inPut->get('is_url_cyrillic', 'int', 0);
+    $cfg['rating'] = $inPut->get('rating', 'int', 0);
+    $cfg['perpage'] = $inPut->get('perpage', 'int', 0);
+    $cfg['pt_show'] = $inPut->get('pt_show', 'int', 0);
+    $cfg['pt_disp'] = $inPut->get('pt_disp', 'int', 0);
+    $cfg['pt_hide'] = $inPut->get('pt_hide', 'int', 0);
+    $cfg['autokeys'] = $inPut->get('autokeys', 'int', 0);
+    $cfg['hide_root'] = $inPut->get('hide_root', 'int', 0);
+    $cfg['img_small_w'] = $inPut->get('img_small_w', 'int', 100);
+    $cfg['img_big_w'] = $inPut->get('img_big_w', 'int', 200);
+    $cfg['img_sqr'] = $inPut->get('img_sqr', 'int', 1);
+    $cfg['img_users'] = $inPut->get('img_users', 'int', 1);
+    $cfg['watermark'] = $inPut->get('watermark', 'int', 0);
+    $cfg['watermark_only_big'] = $inPut->get('watermark_only_big', 'int', 0);
 
     $inCore->saveComponentConfig('content', $cfg);
 
     cmsCore::addSessionMessage($_LANG['AD_CONFIG_SAVE_SUCCESS'], 'success');
 
-    cmsCore::redirect('?view=components&do=config&id=' . $id . '&opt=config');
+    cmsCore::redirect('/cp/components/content?opt=config');
 }
 
 require('../includes/jwtabs.php');
 $GLOBALS['cp_page_head'][] = jwHeader();
 ?>
 
-<form action="index.php?view=components&do=config&id=<?php echo $id; ?>" method="post" name="optform" target="_self" id="form1">
+<form action="/cp/components/content" method="post" name="optform" target="_self" id="form1">
     <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
     <?php ob_start(); ?>
     {tab=<?php echo $_LANG['AD_OVERALL']; ?>}
@@ -61,12 +62,12 @@ $GLOBALS['cp_page_head'][] = jwHeader();
             <td><strong><?php echo $_LANG['AD_GENERATE_CYRYLLIC_URL']; ?>: </strong></td>
             <td width="110">
                 <label><input name="is_url_cyrillic" type="radio" value="1" <?php
-                    if ( $cfg['is_url_cyrillic'] ) {
+                    if ($cfg['is_url_cyrillic']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="is_url_cyrillic" type="radio" value="0" <?php
-                    if ( !$cfg['is_url_cyrillic'] ) {
+                    if (!$cfg['is_url_cyrillic']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['NO']; ?> </label>
@@ -76,12 +77,12 @@ $GLOBALS['cp_page_head'][] = jwHeader();
             <td><strong><?php echo $_LANG['AD_OUTPUT_ANNOUNCEMENTS']; ?>: </strong></td>
             <td width="110">
                 <label><input name="readdesc" type="radio" value="1" <?php
-                    if ( $cfg['readdesc'] ) {
+                    if ($cfg['readdesc']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="readdesc" type="radio" value="0" <?php
-                    if ( !$cfg['readdesc'] ) {
+                    if (!$cfg['readdesc']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['NO']; ?> </label>
@@ -91,12 +92,12 @@ $GLOBALS['cp_page_head'][] = jwHeader();
             <td><strong><?php echo $_LANG['ARTICLES_RATING']; ?>: </strong></td>
             <td>
                 <label><input name="rating" type="radio" value="1" <?php
-                    if ( $cfg['rating'] ) {
+                    if ($cfg['rating']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="rating" type="radio" value="0" <?php
-                    if ( !$cfg['rating'] ) {
+                    if (!$cfg['rating']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['NO']; ?></label>
@@ -108,12 +109,12 @@ $GLOBALS['cp_page_head'][] = jwHeader();
             </td>
             <td valign="top">
                 <label><input name="autokeys" type="radio" value="1" <?php
-                    if ( $cfg['autokeys'] ) {
+                    if ($cfg['autokeys']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="autokeys" type="radio" value="0" <?php
-                    if ( !$cfg['autokeys'] ) {
+                    if (!$cfg['autokeys']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['NO']; ?> </label>
@@ -125,12 +126,12 @@ $GLOBALS['cp_page_head'][] = jwHeader();
             </td>
             <td valign="top">
                 <label><input name="hide_root" type="radio" value="1" <?php
-                    if ( $cfg['hide_root'] ) {
+                    if ($cfg['hide_root']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="hide_root" type="radio" value="0" <?php
-                    if ( !$cfg['hide_root'] ) {
+                    if (!$cfg['hide_root']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['NO']; ?> </label>
@@ -146,12 +147,12 @@ $GLOBALS['cp_page_head'][] = jwHeader();
             <td><strong><?php echo $_LANG['AD_SHOW_CONTENT']; ?>: </strong></td>
             <td width="110">
                 <label><input name="pt_show" type="radio" value="1" <?php
-                    if ( $cfg['pt_show'] ) {
+                    if ($cfg['pt_show']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="pt_show" type="radio" value="0" <?php
-                    if ( !$cfg['pt_show'] ) {
+                    if (!$cfg['pt_show']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['NO']; ?> </label>
@@ -161,12 +162,12 @@ $GLOBALS['cp_page_head'][] = jwHeader();
             <td><strong><?php echo $_LANG['AD_DEPLOY_CONTENT']; ?>: </strong></td>
             <td>
                 <label><input name="pt_disp" type="radio" value="1" <?php
-                    if ( $cfg['pt_disp'] ) {
+                    if ($cfg['pt_disp']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="pt_disp" type="radio" value="0" <?php
-                    if ( !$cfg['pt_disp'] ) {
+                    if (!$cfg['pt_disp']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['NO']; ?> </label>
@@ -176,12 +177,12 @@ $GLOBALS['cp_page_head'][] = jwHeader();
             <td><strong><?php echo $_LANG['AD_HIDE CONTENT']; ?>: </strong></td>
             <td>
                 <label><input name="pt_hide" type="radio" value="1" <?php
-                    if ( $cfg['pt_hide'] ) {
+                    if ($cfg['pt_hide']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="pt_hide" type="radio" value="0" <?php
-                    if ( !$cfg['pt_hide'] ) {
+                    if (!$cfg['pt_hide']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['NO']; ?> </label>
@@ -206,12 +207,12 @@ $GLOBALS['cp_page_head'][] = jwHeader();
             <td><strong><?php echo $_LANG['AD_PHOTO_SQUARE']; ?>:</strong></td>
             <td>
                 <label><input name="img_sqr" type="radio" value="1" <?php
-                    if ( $cfg['img_sqr'] ) {
+                    if ($cfg['img_sqr']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="img_sqr" type="radio" value="0" <?php
-                    if ( !$cfg['img_sqr'] ) {
+                    if (!$cfg['img_sqr']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['NO']; ?> </label>
@@ -224,12 +225,12 @@ $GLOBALS['cp_page_head'][] = jwHeader();
             </td>
             <td>
                 <label><input name="img_users" type="radio" value="1" <?php
-                    if ( $cfg['img_users'] ) {
+                    if ($cfg['img_users']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="img_users" type="radio" value="0" <?php
-                    if ( !$cfg['img_users'] ) {
+                    if (!$cfg['img_users']) {
                         echo 'checked="checked"';
                     }
                     ?>/> <?php echo $_LANG['NO']; ?> </label>
@@ -240,12 +241,12 @@ $GLOBALS['cp_page_head'][] = jwHeader();
                 <span class="hinttext"><?php echo $_LANG['AD_WATERMARK_HINT']; ?> "<a href="/images/watermark.png" target="_blank">/images/watermark.png</a>"</span></td>
             <td width="260">
                 <label><input name="watermark" type="radio" value="1" <?php
-                    if ( $cfg['watermark'] ) {
+                    if ($cfg['watermark']) {
                         echo 'checked="checked"';
                     }
                     ?> /> <?php echo $_LANG['YES']; ?> </label>
                 <label><input name="watermark" type="radio" value="0"  <?php
-                    if ( !$cfg['watermark'] ) {
+                    if (!$cfg['watermark']) {
                         echo 'checked="checked"';
                     }
                     ?> /> <?php echo $_LANG['NO']; ?> </label>
@@ -257,6 +258,6 @@ $GLOBALS['cp_page_head'][] = jwHeader();
     <p>
         <input name="opt" type="hidden" value="saveconfig" />
         <input name="save" type="submit" id="save" value="<?php echo $_LANG['SAVE']; ?>" />
-        <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = 'index.php?view=components';"/>
+        <input name="back" type="button" id="back" value="<?php echo $_LANG['CANCEL']; ?>" onclick="window.location.href = '/cp/components';"/>
     </p>
 </form>

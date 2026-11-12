@@ -1,5 +1,16 @@
 <?php
 
+/*
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
+ *
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
+ *
+ *                      LICENSED BY GNU/GPL v2
+ */
+
 namespace cms;
 
 class model {
@@ -21,22 +32,6 @@ class model {
     const NATURAL_RIGHT_JOIN = 'NATURAL RIGHT JOIN';
     const NATURAL_RIGHT_OUTER_JOIN = 'NATURAL RIGHT OUTER JOIN';
 
-    // условия для выборок
-    public $table = '';
-    public $select = ['i.*'];
-    public $distinct = '';
-    public $straight_join = '';
-    public $join = '';
-    public $where = '';
-    public $where_separator = 'AND';
-    public $group_by = '';
-    public $order_by = '';
-    public $index_action = '';
-    public $limit = 1000;
-    public $perpage = 50;
-    //
-    public $keep_filters = false;
-    public $filter_on = false;
     //
     protected $privacy_filter_disabled = false;
     protected $privacy_filtered = false;
@@ -63,7 +58,101 @@ class model {
             }
         }
 
-        $this->db = db::getInstance();
+        // Отдельное состояние builder'а на модель, общее соединение с БД.
+        $this->db = clone db::getInstance();
+        $this->db->select = 'i.*';
+    }
+
+    public function __get($name) {
+        if ($name === 'table_prefix') {
+            return $this->db->prefix;
+        }
+
+        return $this->db->$name;
+    }
+
+    public function __set($name, $value) {
+        $this->db->$name = $value;
+    }
+
+    public function __isset($name) {
+        return isset($this->db->$name);
+    }
+
+    /**
+     * Колбэки исторически получают модель, а не cms\db.
+     */
+    protected function modelCallback($callback) {
+        if (!is_callable($callback)) {
+            return $callback;
+        }
+
+        return function ($item, $db) use ($callback) {
+            return call_user_func($callback, $item, $this);
+        };
+    }
+
+    public function get($table_name, $item_callback = false, $key_field = 'id') {
+        $result = $this->db->get($table_name, $this->modelCallback($item_callback), $key_field);
+
+        $this->db->select = 'i.*';
+
+        return $result;
+    }
+
+    public function getItem($table_name, $item_callback = false) {
+        $result = $this->db->getItem($table_name, $this->modelCallback($item_callback));
+
+        $this->db->select = 'i.*';
+
+        return $result;
+    }
+
+    public function getItemById($table_name, $id, $item_callback = false) {
+        $result = $this->db->getItemById($table_name, $id, $this->modelCallback($item_callback));
+
+        $this->db->select = 'i.*';
+
+        return $result;
+    }
+
+    public function getItemByField($table_name, $field_name, $field_value, $item_callback = false) {
+        $result = $this->db->getItemByField(
+                $table_name, $field_name, $field_value, $this->modelCallback($item_callback)
+        );
+
+        $this->db->select = 'i.*';
+
+        return $result;
+    }
+
+    public function insert($table_name, $data) {
+        return $this->db->insert($table_name, $data);
+    }
+
+    public function update($table_name, $id, $data, $skip_check_fields = false) {
+        if (is_numeric($id)) {
+            return $this->db->update($table_name, (int) $id, $data);
+        }
+
+        return $this->db->filter($id)->updateFiltered($table_name, $data);
+    }
+
+    public function delete($table_name, $id, $by_field = 'id') {
+        return $this->db->delete($table_name, $id, $by_field);
+    }
+
+    /**
+     * Builder-методы выполняет cms\db; модель возвращает себя для цепочек.
+     */
+    public function __call($name, $arguments) {
+        if (!is_callable([$this->db, $name])) {
+            trigger_error('Call to undefined method cms\\model::' . $name . '()', E_USER_ERROR);
+        }
+
+        $result = call_user_func_array([$this->db, $name], $arguments);
+
+        return $result === $this->db ? $this : $result;
     }
 
 //============================================================================//
@@ -255,10 +344,10 @@ class model {
             $this->filterGt('parent_id', 0);
         }
 
-        $this->orderBy('ns_left');
+        $this->orderBy('NSLeft');
 
         return $this->get($table_name, function ($node, $model) {
-                    if ($node['ns_level'] == 0) {
+                    if ($node['NSLevel'] == 0) {
                         $node['title'] = \cms\lang::getInstance()->root_category;
                     }
 
@@ -284,7 +373,7 @@ class model {
         }
 
         $this->filterEqual('parent_id', $parent_id);
-        $this->orderBy('ns_left');
+        $this->orderBy('NSLeft');
 
         return $this->get($table_name);
     }
@@ -302,14 +391,14 @@ class model {
 
         $parent = $this->getCategory($ctype_name, $parent_id);
 
-        $this->filterGt('ns_left', $parent['ns_left'])->
-                filterLt('ns_right', $parent['ns_right']);
+        $this->filterGt('NSLeft', $parent['NSLeft'])->
+                filterLt('NSRight', $parent['NSRight']);
 
         if ($level) {
-            $this->filterLtEqual('ns_level', $parent['ns_level'] + $level);
+            $this->filterLtEqual('NSLevel', $parent['NSLevel'] + $level);
         }
 
-        $this->orderBy('ns_left');
+        $this->orderBy('NSLeft');
 
         return $this->get($table_name);
     }
@@ -327,15 +416,15 @@ class model {
             $this->useCache($this->name . '.' . $table_name);
         }
 
-        if (!isset($category['ns_left'])) {
+        if (!isset($category['NSLeft'])) {
             $category = $this->getCategory($ctype_name, $category['id']);
         }
 
-        $this->filterLtEqual('ns_left', $category['ns_left'])->
-                filterGtEqual('ns_right', $category['ns_right'])->
-                filterLtEqual('ns_level', $category['ns_level'])->
-                filterGt('ns_level', 0)->
-                orderBy('ns_left');
+        $this->filterLtEqual('NSLeft', $category['NSLeft'])->
+                filterGtEqual('NSRight', $category['NSRight'])->
+                filterLtEqual('NSLevel', $category['NSLevel'])->
+                filterGt('NSLevel', 0)->
+                orderBy('NSLeft');
 
         return $this->get($table_name);
     }
@@ -438,8 +527,8 @@ class model {
         $this->updateCategoryTreeNodeSlugs($ctype_name, $tree);
 
         $root_keys = [
-            'ns_left' => 1,
-            'ns_right' => 1 + ($categories_count * 2) + 1
+            'NSLeft' => 1,
+            'NSRight' => 1 + ($categories_count * 2) + 1
         ];
 
         $this->update($table_name, 1, $root_keys);
@@ -457,9 +546,9 @@ class model {
         foreach ($tree as $node) {
             $this->update($table_name, $node['key'], [
                 'parent_id' => $node['parent_key'],
-                'ns_left' => $node['left'],
-                'ns_right' => $node['right'],
-                'ns_level' => $node['level'],
+                'NSLeft' => $node['left'],
+                'NSRight' => $node['right'],
+                'NSLevel' => $node['level'],
             ]);
 
             if (!empty($node['children'])) {
@@ -481,9 +570,9 @@ class model {
             $path = $this->getCategoryPath($ctype_name, [
                 'id' => $node['key'],
                 'parent_id' => $node['parent_key'],
-                'ns_left' => $node['left'],
-                'ns_right' => $node['right'],
-                'ns_level' => $node['level']
+                'NSLeft' => $node['left'],
+                'NSRight' => $node['right'],
+                'NSLevel' => $node['level']
             ]);
 
             $slug = $this->getCategorySLUG([
@@ -530,419 +619,37 @@ class model {
     }
 
 //============================================================================//
-
-    public function delete($table_name, $id, $by_field = 'id') {
-        $this->filterEqual($by_field, $id);
-        return $this->deleteFiltered($table_name);
-    }
-
-    public function deleteFiltered($table_name) {
-        $where = $this->where;
-        $this->resetFilters();
-        return $this->db->delete($table_name, $where);
-    }
-
+//============================================================================//
+//============================================================================//
 //============================================================================//
 
-    public function update($table_name, $id, $data, $skip_check_fields = false) {
-        $this->filterEqual('id', $id);
-        return $this->updateFiltered($table_name, $data, $skip_check_fields);
-    }
-
-    public function updateFiltered($table_name, $data, $skip_check_fields = false) {
-        $where = $this->where;
-        $this->resetFilters();
-        return $this->db->update($table_name, $where, $data, $skip_check_fields);
-    }
-
-//============================================================================//
-
-    public function insert($table_name, $data) {
-        return $this->db->insert($table_name, $data);
-    }
-
-    public function insertOrUpdate($table_name, $insert_data, $update_data = false) {
-        return $this->db->insertOrUpdate($table_name, $insert_data, $update_data);
-    }
-
-//============================================================================//
-
-    public function lockFilters() {
-        $this->keep_filters = true;
-        return $this;
-    }
-
-    public function unlockFilters() {
-        $this->keep_filters = false;
-        return $this;
-    }
-
-    public function resetFilters() {
-        $this->select = ['i.*'];
-        $this->group_by = '';
-        $this->order_by = '';
-        $this->index_action = '';
-        $this->limit = '';
-        $this->join = '';
-        $this->distinct = '';
-        $this->straight_join = '';
-
-        if ($this->keep_filters) {
-            return $this;
-        }
-
-        $this->filter_on = false;
-        $this->where = '';
-        $this->privacy_filtered = false;
-        $this->approved_filtered = false;
-
-        return $this;
-    }
-
-    public function setStraightJoin() {
-        $this->straight_join = self::STRAIGHT_JOIN;
-        return $this;
-    }
-
-    public function distinctSelect() {
-        $this->distinct = 'DISTINCT';
-        return $this;
-    }
-
-    public function filter($condition) {
-        if ($this->filter_on) {
-            $this->where .= ' ' . $this->where_separator . ' (' . $condition . ')';
-        } else {
-            $this->where .= '(' . $condition . ')';
-            $this->filter_on = true;
-        }
-
-        $this->where_separator = ' AND ';
-
-        return $this;
-    }
-
-    public function filterStart() {
-        if ($this->filter_on) {
-            $this->where .= ' ' . $this->where_separator . ' (';
-        } else {
-            $this->where .= '(';
-        }
-
-        $this->filter_on = false;
-
-        return $this;
-    }
-
-    public function filterEnd() {
-        $this->where .= ' ) ';
-        return $this;
-    }
-
-    public function filterAnd() {
-        $this->where_separator = ' AND ';
-        return $this;
-    }
-
-    public function filterOr() {
-        $this->where_separator = ' OR ';
-        return $this;
-    }
 
-    public function filterNotNull($field) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
 
-        $this->filter($field . ' IS NOT NULL');
 
-        return $this;
-    }
 
-    public function filterIsNull($field) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
 
-        $this->filter($field . ' IS NULL');
 
-        return $this;
-    }
 
-    public function filterEqual($field, $value) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
 
-        if (is_null($value)) {
-            $this->filter($field . ' IS NULL');
-        } else {
-            $value = $this->db->escape($value);
-            $this->filter($field . " = '" . $value . "'");
-        }
 
-        return $this;
-    }
 
-    public function filterFunc($field, $value, $sign = '=') {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
 
-        $this->filter($field . ' ' . $sign . ' ' . $value);
 
-        return $this;
-    }
 
-    public function filterNotEqual($field, $value) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
 
-        if (is_null($value)) {
-            $this->filter($field . ' IS NOT NULL');
-        } else {
-            $value = $this->db->escape($value);
-            $this->filter($field . " <> '" . $value . "'");
-        }
 
-        return $this;
-    }
 
-    public function filterGt($field, $value) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
 
-        $value = $this->db->escape($value);
 
-        $this->filter($field . " > '" . $value . "'");
 
-        return $this;
-    }
 
-    public function filterLt($field, $value) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
 
-        $value = $this->db->escape($value);
 
-        $this->filter($field . " < '" . $value . "'");
 
-        return $this;
-    }
 
-    public function filterGtEqual($field, $value) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
 
-        $value = $this->db->escape($value);
 
-        $this->filter($field . " >= '" . $value . "'");
 
-        return $this;
-    }
-
-    public function filterLtEqual($field, $value) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
-
-        $value = $this->db->escape($value);
-
-        $this->filter($field . " <= '" . $value . "'");
-
-        return $this;
-    }
-
-    public function filterLike($field, $value) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
-
-        $value = $this->db->escape($value);
-
-        $this->filter($field . " LIKE '" . $value . "'");
-
-        return $this;
-    }
-
-    public function filterBetween($field, $start, $end) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
-
-        $start = $this->db->escape($start);
-        $end = $this->db->escape($end);
-
-        $this->filter($field . " BETWEEN '" . $start . "' AND '" . $end . "'");
-
-        return $this;
-    }
-
-    public function filterDateYounger($field, $value, $interval = 'DAY') {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
-
-        $value = $this->db->escape($value);
-        $interval = $this->db->escape($interval);
-
-        $this->filter($field . ' >= DATE_SUB(NOW(), INTERVAL ' . $value . ' ' . $interval . ')');
-
-        return $this;
-    }
-
-    public function filterDateOlder($field, $value, $interval = 'DAY') {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
-
-        $value = $this->db->escape($value);
-        $interval = $this->db->escape($interval);
-
-        $this->filter($field . ' < DATE_SUB(NOW(), INTERVAL ' . $value . ' ' . $interval . ')');
-
-        return $this;
-    }
-
-    public function filterTimestampGt($field, $value) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
-
-        $field = 'UNIX_TIMESTAMP(' . $field . ')';
-        $value = $this->db->escape($value);
-
-        $this->filter($field . " > '" . $value . "'");
-
-        return $this;
-    }
-
-    public function filterTimestampLt($field, $value) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
-
-        $field = 'UNIX_TIMESTAMP(' . $field . ')';
-        $value = $this->db->escape($value);
-
-        $this->filter($field . " < '" . $value . "'");
-
-        return $this;
-    }
-
-    public function filterIn($field, $value) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
-
-        if (is_array($value)) {
-            foreach ($value as $k => $v) {
-                $v = $this->db->escape($v);
-                $value[$k] = "'" . $v . "'";
-            }
-
-            $value = implode(',', $value);
-        } else {
-            $value = $this->db->escape($value);
-            $value = "'" . $value . "'";
-        }
-
-        $this->filter($field . ' IN (' . $value . ')');
-
-        return $this;
-    }
-
-    public function filterNotIn($field, $value) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
-
-        if (is_array($value)) {
-            foreach ($value as $k => $v) {
-                $v = $this->db->escape($v);
-                $value[$k] = "'" . $v . "'";
-            }
-
-            $value = implode(',', $value);
-        } else {
-            $value = $this->db->escape($value);
-            $value = "'" . $value . "'";
-        }
-
-        $this->filter($field . ' NOT IN (' . $value . ')');
-
-        return $this;
-    }
-
-    public function filterRelated($field, $value, $lang = false) {
-
-        if (mb_strlen($value) <= 3) {
-            return $this->filterLike($field, $this->db->escape($value) . '%');
-        }
-
-        $query = [];
-
-        $words = explode(' ', str_replace(['"', '\'', '+', '*', '-', '%', ')', '(', '.', ',', '!', '?'], ' ', $value));
-
-        $stopwords = string_get_stopwords($lang ? $lang : \cmsConfig::getConfig('lang'));
-
-        foreach ($words as $word) {
-            $word = mb_strtolower(trim($word));
-
-            if (mb_strlen($word) < 3 || is_numeric($word)) {
-                continue;
-            }
-
-            if ($stopwords && in_array($word, $stopwords)) {
-                continue;
-            }
-
-            if (mb_strlen($word) == 3) {
-                $query[] = $this->db->escape($word);
-                continue;
-            }
-
-            if (mb_strlen($word) >= 12) {
-                $word = mb_substr($word, 0, mb_strlen($word) - 3) . '*';
-            } else if (mb_strlen($word) >= 10) {
-                $word = mb_substr($word, 0, mb_strlen($word) - 2) . '*';
-            } else if (mb_strlen($word) >= 6) {
-                $word = mb_substr($word, 0, mb_strlen($word) - 1) . '*';
-            }
-
-            $query[] = $this->db->escape($word);
-        }
-
-        if (empty($query)) {
-            $ft_query = '\"' . $this->db->escape($value) . '\"';
-        } else {
-
-            usort($query, function ($a, $b) {
-                return mb_strlen($b) - mb_strlen($a);
-            });
-
-            $query = array_slice($query, 0, 5);
-
-            $ft_query = '>\"' . $this->db->escape($value) . '\" <';
-            $ft_query .= implode(' ', $query);
-        }
-
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
-
-        $search_param = 'MATCH(' . $field . ") AGAINST ('" . $ft_query . "' IN BOOLEAN MODE)";
-
-        $this->select($search_param, 'fsort');
-
-        $this->order_by = 'fsort desc';
-
-        return $this->filter($search_param);
-    }
 
     public function filterCategory($ctype_name, $category, $is_recursive = false) {
         if (empty($this::CATEGORY_TABLE)) {
@@ -973,8 +680,8 @@ class model {
 
             $this->joinInner($bind_table_name, 'b FORCE INDEX (item_id)', 'b.item_id = i.id');
             $this->joinInner($table_name, 'c', 'c.id = b.category_id');
-            $this->filterGtEqual('c.ns_left', $category['ns_left']);
-            $this->filterLtEqual('c.ns_right', $category['ns_right']);
+            $this->filterGtEqual('c.NSLeft', $category['NSLeft']);
+            $this->filterLtEqual('c.NSRight', $category['NSRight']);
         }
 
         return $this;
@@ -1153,6 +860,9 @@ class model {
     public function selectList($fields, $is_this_only = false) {
         if ($is_this_only) {
             $this->select = [];
+        } elseif ($this->select === '' || $this->select === []) {
+            // как в старом cms\model: базовый набор полей сохраняется
+            $this->select = 'i.*';
         }
 
         foreach ($fields as $field => $alias) {
@@ -1163,57 +873,6 @@ class model {
             }
         }
 
-        return $this;
-    }
-
-    public function select($field, $as = false) {
-        $this->select[] = $as ? $field . ' as ' . $as : $field;
-        return $this;
-    }
-
-    public function selectOnly($field, $as = false) {
-        $this->select = [$as ? $field . ' as ' . $as : $field];
-        return $this;
-    }
-
-    public function join($table_name, $as, $on) {
-        return $this->joinInner($table_name, $as, $on);
-    }
-
-    public function joinInner($table_name, $as, $on) {
-        $this->join .= self::INNER_JOIN . ' {#}' . $table_name . ' as ' . $as . ' ON ' . $on . PHP_EOL;
-        return $this;
-    }
-
-    public function joinLeft($table_name, $as, $on) {
-        $this->join .= self::LEFT_JOIN . ' {#}' . $table_name . ' as ' . $as . ' ON ' . $on . PHP_EOL;
-        return $this;
-    }
-
-    public function joinExcludingLeft($table_name, $as, $right_key, $left_key, $join_where = '') {
-        $this->join .= self::LEFT_JOIN . ' {#}' . $table_name . ' as ' . $as . ' ON ' . $left_key . '=' . $right_key . ($join_where ? ' AND ' . $join_where : '') . PHP_EOL;
-        $this->filter($right_key . ' IS NULL');
-        return $this;
-    }
-
-    public function joinRight($table_name, $as, $on) {
-        $this->join .= self::RIGHT_JOIN . ' {#}' . $table_name . ' as ' . $as . ' ON ' . $on . PHP_EOL;
-        return $this;
-    }
-
-    public function joinExcludingRight($table_name, $as, $right_key, $left_key, $join_where = '') {
-        $this->join .= self::RIGHT_JOIN . ' {#}' . $table_name . ' as ' . $as . ' ON ' . $left_key . '=' . $right_key . ($join_where ? ' AND ' . $join_where : '') . PHP_EOL;
-        $this->filter($left_key . ' IS NULL');
-        return $this;
-    }
-
-    public function joinLeftOuter($table_name, $as, $on) {
-        $this->join .= self::LEFT_OUTER_JOIN . ' {#}' . $table_name . ' as ' . $as . ' ON ' . $on . PHP_EOL;
-        return $this;
-    }
-
-    public function joinRightOuter($table_name, $as, $on) {
-        $this->join .= self::RIGHT_OUTER_JOIN . ' {#}' . $table_name . ' as ' . $as . ' ON ' . $on . PHP_EOL;
         return $this;
     }
 
@@ -1252,16 +911,6 @@ class model {
         return $this->joinUser($on_field, $user_fields, 'right');
     }
 
-    public function groupBy($field) {
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
-
-        $this->group_by = $field;
-
-        return $this;
-    }
-
     /**
      * Управляет индексами в запросе
      *
@@ -1271,57 +920,6 @@ class model {
      *
      * @return self
      */
-    protected function indexHint($index_name, $action, $for = '') {
-        switch ($for) {
-            case 1:
-                $for_action = 'FOR JOIN';
-                break;
-            case 2:
-                $for_action = 'FOR ORDER BY';
-                break;
-            case 3:
-                $for_action = 'FOR GROUP BY';
-                break;
-            default:
-                $for_action = '';
-                break;
-        }
-
-        $this->index_action .= $action . ' INDEX ' . $for_action . ' (' . $index_name . ')' . PHP_EOL;
-
-        return $this;
-    }
-
-    public function forceIndex($index_name, $for = '') {
-        return $this->indexHint($index_name, 'FORCE', $for);
-    }
-
-    public function ignoreIndex($index_name, $for = '') {
-        return $this->indexHint($index_name, 'IGNORE', $for);
-    }
-
-    public function useIndex($index_name, $for = '') {
-        return $this->indexHint($index_name, 'USE', $for);
-    }
-
-    public function orderBy($field, $direction = '', $is_force_index_by_field = false) {
-        if (strpos($field, '(') !== false) {
-            return $this;
-        } // в названии поля не может быть функции
-
-        if ($direction) {
-            $direction = strtolower($direction) === 'desc' ? 'desc' : 'asc';
-        }
-
-        if (strpos($field, '.') === false) {
-            $field = 'i.' . $field;
-        }
-
-        $this->order_by = $field . ' ' . $direction;
-
-        return $this;
-    }
-
     public function orderByList($list) {
         $this->order_by = '';
 
@@ -1349,341 +947,16 @@ class model {
         return $this;
     }
 
-    public function limit($from, $howmany = 0) {
-        $this->limit = (int) $from;
-        $howmany = (int) $howmany;
-
-        if ($this->limit < 0) {
-            $this->limit = 0;
-        }
-
-        if ($howmany) {
-            if ($howmany <= 0) {
-                $howmany = 15;
-            }
-
-            $this->limit .= ', ' . $howmany;
-        }
-
-        return $this;
-    }
-
-    public function limitPage($page, $perpage = 0) {
-        $page = (int) $page;
-        $perpage = (int) $perpage;
-
-        if ($perpage <= 0) {
-            $perpage = $this->perpage;
-        }
-
-        $this->limit(($page - 1) * $perpage, $perpage);
-
-        return $this;
-    }
-
-    public function limitPagePlus($page, $perpage = 0) {
-        $page = (int) $page;
-        $perpage = (int) $perpage;
-
-        if ($perpage <= 0) {
-            $perpage = $this->perpage;
-        }
-
-        $this->limit(($page - 1) * $perpage, $perpage + 1);
-
-        return $this;
-    }
-
-    public function setPerPage($perpage) {
-        $this->perpage = (int) $perpage;
-        return $this;
-    }
-
 //============================================================================//
-
-    public function getField($table_name, $row_id, $field_name) {
-        $this->filterEqual('id', $row_id);
-        return $this->getFieldFiltered($table_name, $field_name);
-    }
-
-    public function getFieldFiltered($table_name, $field_name) {
-        $this->select = ['i.' . $field_name . ' as ' . $field_name];
-
-        $this->table = $table_name;
-
-        $this->limit(1);
-
-        $sql = $this->getSQL();
-
-        $this->resetFilters();
-
-        $result = $this->db->query($sql);
-
-        if (!$this->db->numRows($result)) {
-            return false;
-        }
-
-        $item = $this->db->fetchAssoc($result);
-
-        $this->db->freeResult($result);
-
-        return $item[$field_name];
-    }
-
 //============================================================================//
-
-    public function getItem($table_name, $item_callback = false) {
-        $select = implode(', ', $this->select);
-
-        $sql = "SELECT " . $select . "
-                FROM {#}" . $table_name . " i
-                " . $this->index_action;
-
-        if ($this->join) {
-            $sql .= $this->join;
-        }
-
-        if ($this->where) {
-            $sql .= 'WHERE ' . $this->where . PHP_EOL;
-        }
-
-        if ($this->order_by) {
-            $sql .= 'ORDER BY ' . $this->order_by . PHP_EOL;
-        }
-
-        $sql .= 'LIMIT 1';
-
-        $this->resetFilters();
-
-        // если указан ключ кеша для этого запроса
-        // то пробуем получить результаты из кеша
-        if ($this->cache_key) {
-            $cache_key = $this->cache_key . '.' . md5($sql);
-            $cache = cache::getInstance();
-
-            if (false !== ($item = $cache->get($cache_key))) {
-                $this->stopCache();
-                return $item;
-            }
-        }
-
-        $result = $this->db->query($sql);
-
-        if (!$this->db->numRows($result)) {
-            return false;
-        }
-
-        $item = $this->db->fetchAssoc($result);
-
-        if (is_callable($item_callback)) {
-            $item = call_user_func_array($item_callback, [$item, $this]);
-        }
-
-        // если указан ключ кеша для этого запроса
-        // то сохраняем результаты в кеше
-        if ($this->cache_key) {
-            $cache->set($cache_key, $item);
-            $this->stopCache();
-        }
-
-        $this->db->freeResult($result);
-
-        return $item;
-    }
-
-    public function getItemById($table_name, $id, $item_callback = false) {
-        $this->filterEqual('id', $id);
-        return $this->getItem($table_name, $item_callback);
-    }
-
-    public function getItemByField($table_name, $field_name, $field_value, $item_callback = false) {
-        $this->filterEqual($field_name, $field_value);
-        return $this->getItem($table_name, $item_callback);
-    }
-
 //============================================================================//
-
-    public function getCount($table_name, $by_field = 'id') {
-        $sql = "SELECT " . $this->distinct . " " . $this->straight_join . " COUNT(i." . $by_field . ") as count
-                FROM {#}" . $table_name . " i
-                " . $this->index_action;
-
-        if ($this->join) {
-            $sql .= $this->join;
-        }
-
-        if ($this->where) {
-            $sql .= 'WHERE ' . $this->where . PHP_EOL;
-        }
-
-        if ($this->group_by) {
-            $sql .= 'GROUP BY ' . $this->group_by . PHP_EOL;
-        }
-
-        // если указан ключ кеша для этого запроса
-        // то пробуем получить результаты из кеша
-        if ($this->cache_key) {
-            $cache_key = $this->cache_key . '.' . md5($sql);
-            $cache = cache::getInstance();
-
-            if (false !== ($result = $cache->get($cache_key))) {
-                $this->stopCache();
-                return $result;
-            }
-        }
-
-        $result = $this->db->query($sql);
-
-        if (!$this->db->numRows($result)) {
-            $count = 0;
-        } else {
-            $item = $this->db->fetchAssoc($result);
-            $count = (int) $item['count'];
-        }
-
-        // если указан ключ кеша для этого запроса
-        // то сохраняем результаты в кеше
-        if ($this->cache_key) {
-            $cache->set($cache_key, $count);
-            $this->stopCache();
-        }
-
-        $this->db->freeResult($result);
-
-        return $count;
-    }
-
 //============================================================================//
 
     /**
      * Возвращает записи из базы, применяя все наложенные ранее фильтры
      * @return array
      */
-    public function get($table_name, $item_callback = false, $key_field = 'id') {
-        $this->table = $table_name;
-
-        $items = $_items = [];
-
-        $sql = $this->getSQL();
-
-        // сбрасываем фильтры
-        $this->resetFilters();
-
-        // если указан ключ кеша для этого запроса
-        // то пробуем получить результаты из кеша
-        if ($this->cache_key) {
-            $cache_key = $this->cache_key . '.' . md5($sql);
-
-            $cache = cache::getInstance();
-
-            $_items = $cache->get($cache_key);
-
-            if ($_items !== false) {
-                $this->stopCache();
-
-                // обрабатываем коллбэком
-                if (is_callable($item_callback)) {
-                    foreach ($_items as $key => $item) {
-                        $item = call_user_func_array($item_callback, [$item, $this]);
-
-                        if ($item === false) {
-                            continue;
-                        }
-
-                        $items[$key] = $item;
-                    }
-                } else {
-                    return $_items;
-                }
-
-                return $items;
-            }
-        }
-
-        $result = $this->db->query($sql);
-
-        // если запрос ничего не вернул, возвращаем ложь
-        if (!$this->db->numRows($result)) {
-            return false;
-        }
-
-        // перебираем все вернувшиеся строки
-        while ($item = $this->db->fetchAssoc($result)) {
-            $key = $key_field ? $item[$key_field] : false;
-
-            // для кеша формируем массив без обработки коллбэком
-            if ($this->cache_key) {
-                if ($key) {
-                    $_items[$key] = $item;
-                } else {
-                    $_items[] = $item;
-                }
-            }
-
-            // если задан коллбек для обработки строк,
-            // то пропускаем строку через него
-            if (is_callable($item_callback)) {
-                $item = call_user_func_array($item_callback, [$item, $this]);
-
-                if ($item === false) {
-                    continue;
-                }
-            }
-
-            // добавляем обработанную строку в результирующий массив
-            if ($key) {
-                $items[$key] = $item;
-            } else {
-                $items[] = $item;
-            }
-        }
-
-        // если указан ключ кеша для этого запроса
-        // то сохраняем результаты в кеше
-        // сохраняем не обработанный коллбэком массив
-        if ($this->cache_key) {
-            $cache->set($cache_key, $_items);
-            $this->stopCache();
-        }
-
-        $this->db->freeResult($result);
-
-        // возвращаем строки
-        return $items;
-    }
-
 //============================================================================//
-
-    public function getSQL() {
-        $select = implode(', ', $this->select);
-
-        $sql = "SELECT " . $this->distinct . " " . $this->straight_join . " " . $select . "
-                FROM {#}" . $this->table . " i
-                " . $this->index_action;
-
-        if ($this->join) {
-            $sql .= $this->join;
-        }
-
-        if ($this->where) {
-            $sql .= 'WHERE ' . $this->where . PHP_EOL;
-        }
-
-        if ($this->group_by) {
-            $sql .= 'GROUP BY ' . $this->group_by . PHP_EOL;
-        }
-
-        if ($this->order_by) {
-            $sql .= 'ORDER BY ' . $this->order_by . PHP_EOL;
-        }
-
-        if ($this->limit) {
-            $sql .= 'LIMIT ' . $this->limit . PHP_EOL;
-        }
-
-        return $sql;
-    }
-
 //============================================================================//
 
     public function getMax($table, $field, $default = 0) {
@@ -1868,26 +1141,7 @@ class model {
 
 //============================================================================//
 
-    public function increment($table, $field, $step = 1) {
-        $sign = $step > 0 ? '+' : '-';
-        $step = abs($step);
 
-        $sql = "UPDATE {#}" . $table . " i
-                SET i." . $field . " = i." . $field . " " . $sign . " " . $step . "
-                ";
-
-        if ($this->where) {
-            $sql .= 'WHERE ' . $this->where;
-        }
-
-        $this->resetFilters();
-
-        return $this->db->query($sql);
-    }
-
-    public function decrement($table, $field, $step = 1) {
-        return $this->increment($table, $field, $step * -1);
-    }
 
     public function deleteController($id) {
         if (is_numeric($id)) {

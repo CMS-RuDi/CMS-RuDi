@@ -4,10 +4,11 @@
  *                        CMS RuDi v1.10.9
  *                      https://cmsrudi.ru/
  *
- *              Written by CMS RuDi Team, 2026
- *           produced by DagIT, (https://dagit.su)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                    LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
 namespace components\cp\actions;
@@ -149,19 +150,20 @@ class modules extends \cms\com_action {
     }
 
     public function actAutoorder() {
-        $result = $this->model->db->query('SELECT id, position FROM {#}modules ORDER BY position');
+        $db = \cms\db::getInstance();
+        $items = $db->getRows('modules', '1', 'id, position', 'position');
 
-        if ($result->num_rows) {
+        if ($items) {
             $ord = 1;
 
-            while ($item = $result->fetch_assoc()) {
+            foreach ($items as $item) {
                 if (isset($latest_pos)) {
                     if ($latest_pos != $item['position']) {
                         $ord = 1;
                     }
                 }
 
-                $this->model->db->query("UPDATE {#}modules SET ordering = " . $ord . " WHERE id='" . $item['id'] . "'");
+                $db->update('modules', (int) $item['id'], ['ordering' => $ord]);
 
                 $ord++;
                 $latest_pos = $item['position'];
@@ -177,7 +179,7 @@ class modules extends \cms\com_action {
             $ids = $this->request()->get('ids', 'array_int', []);
 
             foreach ($ord as $id => $ordering) {
-                $this->model->db->query("UPDATE {#}modules SET ordering = '" . (int) $ordering . "' WHERE id = '" . (int) $ids[$id] . "'");
+                \cms\db::getInstance()->update('modules', (int) $ids[$id], ['ordering' => (int) $ordering]);
             }
         }
 
@@ -236,7 +238,7 @@ class modules extends \cms\com_action {
                 $item_id = $this->request()->get('id', 'int', 0);
             }
 
-            $mod = $this->model->db->getFields('modules', "id = '" . $item_id . "'", '*');
+            $mod = \cms\db::getInstance()->getRow('modules', 'id = ' . (int) $item_id, '*');
 
             if (empty($mod)) {
                 \cmsCore::error404();
@@ -245,7 +247,7 @@ class modules extends \cms\com_action {
             $mod['hidden_menu_ids'] = \cms\model::yamlToArray($mod['hidden_menu_ids']);
             $mod['titles'] = \cms\model::yamlToArray($mod['titles']);
 
-            if ($this->model->db->getField('modules_bind', 'module_id=' . $item_id . ' AND menu_id=0', 'id')) {
+            if (\cms\db::getInstance()->filterEqual('module_id', (int) $item_id)->filterEqual('menu_id', 0)->getFieldFiltered('modules_bind', 'id')) {
                 $show_all = true;
             } else {
                 $show_all = false;
@@ -255,9 +257,9 @@ class modules extends \cms\com_action {
 
             $this->page()->addPathway($mod['name']);
 
-            $bind_res = $this->model->db->query('SELECT * FROM cms_modules_bind WHERE module_id = ' . $mod['id']);
+            $bind_rows = \cms\db::getInstance()->getRows('modules_bind', 'module_id = ' . (int) $mod['id'], '*');
 
-            while ($r = $this->model->db->fetchAssoc($bind_res)) {
+            foreach ($bind_rows as $r) {
                 $bind[] = $r['menu_id'];
                 $bind_pos[$r['menu_id']] = $r['position'];
             }
@@ -364,13 +366,13 @@ class modules extends \cms\com_action {
         $cacheint = $this->request()->get('cacheint', 'str', '');
 
         if (empty($item_id)) {
-            $maxorder = $this->model->db->getField('modules', 1, 'ordering', 'ordering DESC') + 1;
+            $maxorder = $this->controller->model->db->orderBy('ordering', 'DESC')->getFieldFiltered('modules', 'ordering') + 1;
 
             $operate = $this->request()->get('operate', 'str', ['user', 'clone']);
 
             if ($operate == 'user') {
                 // Пользовательский модуль
-                $item_id = $this->model->db->insert('modules', [
+                $item_id = \cms\db::getInstance()->insert('modules', [
                     'position' => $position,
                     'name' => $name,
                     'title' => $title,
@@ -391,7 +393,7 @@ class modules extends \cms\com_action {
             } else {
                 // Дубликат модуля
                 $mod_id = $this->request()->get('clone_id', 'int', 0);
-                $original = $this->model->db->getFields('modules', 'id=' . $mod_id);
+                $original = \cms\db::getInstance()->getRow('modules', 'id = ' . (int) $mod_id);
 
                 if (empty($original)) {
                     \cmsCore::error404();
@@ -399,7 +401,7 @@ class modules extends \cms\com_action {
 
                 $is_original = (int) $this->request()->get('del_orig', 'bool');
 
-                $item_id = $this->model->db->insert('modules', [
+                $item_id = \cms\db::getInstance()->insert('modules', [
                     'position' => $position,
                     'name' => $original['name'],
                     'title' => $title,
@@ -424,7 +426,7 @@ class modules extends \cms\com_action {
                 ]);
 
                 if ($is_original) {
-                    $this->model->db->delete('modules', 'id=' . $mod_id, 1);
+                    \cms\db::getInstance()->delete('modules', (int) $mod_id);
                 }
             }
 
@@ -454,9 +456,9 @@ class modules extends \cms\com_action {
                 $data['content'] = $content;
             }
 
-            $this->model->db->update('modules', 'id=' . $item_id, $data);
+            \cms\db::getInstance()->update('modules', (int) $item_id, $data);
 
-            $this->model->db->delete('modules_bind', 'module_id=' . $item_id);
+            \cms\db::getInstance()->filterEqual('module_id', (int) $item_id)->deleteFiltered('modules_bind');
 
             \cmsCore::addSessionMessage($this->lang->ad_do_success, 'success');
 
@@ -468,7 +470,7 @@ class modules extends \cms\com_action {
         }
 
         if ($this->request()->get('show_all', 'bool')) {
-            $this->model->db->insert('modules_bind', [
+            \cms\db::getInstance()->insert('modules_bind', [
                 'module_id' => $item_id,
                 'menu_id' => 0,
                 'position' => $position
@@ -477,7 +479,7 @@ class modules extends \cms\com_action {
             $hidden_menu_ids = $this->request()->get('hidden_menu_ids', 'array_int', []);
 
             if (!empty($hidden_menu_ids)) {
-                $this->model->db->update('modules', 'id=' . $item_id, [
+                \cms\db::getInstance()->update('modules', (int) $item_id, [
                     'hidden_menu_ids' => $hidden_menu_ids
                 ]);
             }
@@ -487,7 +489,7 @@ class modules extends \cms\com_action {
 
             if (!empty($showin)) {
                 foreach ($showin as $key => $value) {
-                    $this->model->db->insert('modules_bind', [
+                    \cms\db::getInstance()->insert('modules_bind', [
                         'module_id' => $item_id,
                         'menu_id' => $value,
                         'position' => $showpos[$value]
@@ -513,13 +515,13 @@ class modules extends \cms\com_action {
         if (!file_exists($xml_file)) {
             if (file_exists($php_file)) {
                 // Совместимость с PHP-бэкендами модулей InstantCMS 1.10.x
-                $mod = cmsDatabase::getInstance()->get_fields('cms_modules', 'id=' . (int) $item_id, '*');
+                $mod = \cms\db::getInstance()->getRow('modules', 'id = ' . (int) $item_id, '*');
                 $cfg = $this->core->loadModuleConfig($item_id);
                 $id = $item_id;
                 $inCore = $this->core;
                 $inPage = $this->page();
                 $inUser = $this->user();
-                $inDB = cmsDatabase::getInstance();
+                $inDB = \cms\db::getInstance();
                 $inConf = cmsConfig::getInstance();
                 $adminAccess = $this->admin_access;
                 global $_LANG;
@@ -573,7 +575,7 @@ class modules extends \cms\com_action {
                 $data['css_prefix'] = $this->request()->get('css_prefix', 'str', '');
             }
 
-            $this->model->db->update('modules', 'id=' . $item_id, $data);
+            \cms\db::getInstance()->update('modules', (int) $item_id, $data);
         }
 
         if ($this->request()->has('title_only')) {
