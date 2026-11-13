@@ -15,26 +15,93 @@ class cmsDatabase {
 
     use \Singeltone;
 
+    /**
+     * @deprecated
+     * @var string
+     */
     public $join = '';
+
+    /**
+     * @deprecated
+     * @var string
+     */
     public $select = '';
+
+    /**
+     * @deprecated
+     * @var string
+     */
     public $where = '';
+
+    /**
+     * @deprecated
+     * @var string
+     */
     public $group_by = '';
+
+    /**
+     * @deprecated
+     * @var string
+     */
     public $order_by = '';
+
+    /**
+     * @deprecated
+     * @var int
+     */
     public $limit = '1000';
+
+    /**
+     * @deprecated
+     * @var int
+     */
     public $page = 1;
+
+    /**
+     * @deprecated
+     * @var int
+     */
     public $perpage = 10;
+
+    /**
+     * @deprecated
+     * @var array
+     */
     private $cache = []; // кеш некоторых запросов
+
+    /**
+     * @deprecated
+     * @var string
+     */
     public $prefix;
 
     /**
-     * ========= DEPRECATED =========
+     * @deprecated
+     * @var array
      */
     public $q_dump = [];
+
+    /**
+     * Класс обработки запросов к БД
+     * @var \cms\db
+     */
     private $db;
 
     protected function __construct() {
         $this->db = \cms\db::getInstance();
-        $this->prefix = cmsConfig::getConfig('db_prefix') . '_';
+        $this->prefix = $this->db->prefix;
+    }
+
+    /**
+     * Прозрачно отдаёт сторонним компонентам методы нового cms\db,
+     * которых ещё нет в историческом cmsDatabase.
+     */
+    public function __call($name, $arguments) {
+        if (is_callable([$this->db, $name])) {
+            return call_user_func_array([$this->db, $name], $arguments);
+        }
+
+        trigger_error('Call to undefined method cmsDatabase::' . $name . '()', E_USER_ERROR);
     }
 
     /**
@@ -45,10 +112,10 @@ class cmsDatabase {
     }
 
     public function reconnect($is_force = false) {
-        $this->db->setOptions(cmsConfig::getInstance()->getConfig());
-        $this->prefix = cmsConfig::getConfig('db_prefix') . '_';
+        $result = $this->db->reconnect($is_force);
+        $this->prefix = $this->db->prefix;
 
-        return $this->db->reconnect($is_force);
+        return $result;
     }
 
     public function ready() {
@@ -80,70 +147,81 @@ class cmsDatabase {
      * Сбрасывает условия
      */
     public function resetConditions() {
-        $this->where = '';
-        $this->select = '';
         $this->join = '';
+        $this->select = '';
+        $this->where = '';
         $this->group_by = '';
         $this->order_by = '';
         $this->limit = '1000';
+
+        $this->db->resetFilters();
 
         return $this;
     }
 
     public function addJoin($join) {
         $this->join .= $join . PHP_EOL;
+
         return $this;
     }
 
     public function addSelect($condition) {
         $this->select .= ', ' . $condition;
+
         return $this;
     }
 
     public function where($condition) {
         $this->where .= ' AND (' . $condition . ')' . PHP_EOL;
+
         return $this;
     }
 
     public function groupBy($field) {
         $this->group_by = 'GROUP BY ' . $field;
+
         return $this;
     }
 
     public function orderBy($field, $direction = 'ASC') {
         $this->order_by = 'ORDER BY ' . $field . ' ' . $direction;
+
         return $this;
     }
 
     public function limit($howmany) {
-        return $this->limitIs(0, $howmany);
+        $this->limit = (int) $howmany;
+
+        return $this;
     }
 
     public function limitIs($from, $howmany = '') {
-        $this->limit = (int) $from;
-
-        if ($howmany) {
-            $this->limit .= ', ' . $howmany;
-        }
+        $this->limit = (int) $from . ', ' . (int) $howmany;
 
         return $this;
     }
 
     public function limitPage($page, $perpage) {
-        $this->page = $page;
-        $this->perpage = $perpage;
+        $page = (int) $page;
+        $perpage = (int) $perpage;
 
-        return $this->limitIs(($page - 1) * $perpage, $perpage);
+        if ($perpage <= 0) {
+            $perpage = 10;
+        }
+
+        $this->limit = (($page - 1) * $perpage) . ', ' . $perpage;
+
+        return $this;
     }
 
     protected function replacePrefix($sql, $prefix = 'cms_') {
-        if ($prefix == $this->prefix) {
-            return trim($sql);
-        }
-
-        return trim(str_replace($prefix, $this->prefix, $sql));
+        return $this->db->replacePrefix($sql);
     }
 
+    /**
+     * @deprecated
+     * @var string
+     */
     protected static function replacePrefixTable($table) {
         $part = explode(' ', trim($table));
 
@@ -159,45 +237,31 @@ class cmsDatabase {
     }
 
     public function query($sql, $ignore_errors = false, $replace_prefix = true) {
-        if (empty($sql)) {
-            return false;
-        }
-
-        $sql = $replace_prefix ? $this->replacePrefix($sql) : $sql;
-
         return $this->db->query($sql, false, !(\cmsConfig::getInstance()->debug && !$ignore_errors));
     }
 
     public function num_rows($result) {
-        return $this->db->numRows($result);
+        return $result ? $result->rowsCount() : 0;
     }
 
     public function fetch_assoc($result) {
-        return $this->db->fetchAssoc($result);
+        return $result ? $result->fetchAssoc() : false;
     }
 
     public function fetch_row($result) {
-        return $this->db->fetchRow($result);
+        return $result ? $result->fetchRow() : false;
     }
 
     public function free_result($result) {
-        return $this->db->freeResult();
+        unset($result);
     }
 
     public function fetch_all($result) {
-        $array = [];
-
-        if ($this->num_rows($result)) {
-            while ($object = $result->fetch_object()) {
-                $array[] = $object;
-            }
-        }
-
-        return $array;
+        return $result ? $result->fetchAll() : [];
     }
 
     public function affected_rows() {
-        return $this->affectedRows();
+        return $this->db->affectedRows();
     }
 
     public function get_last_id($table = '') {
@@ -205,18 +269,26 @@ class cmsDatabase {
             return $this->db->lastId();
         }
 
-        $result = $this->query('SELECT LAST_INSERT_ID() as lastid FROM ' . $table . ' LIMIT 1');
+        $table = '`' . str_replace('`', '``', $table) . '`';
 
-        if ($this->num_rows($result)) {
-            $data = $this->fetch_assoc($result);
-            return $data['lastid'];
-        } else {
-            return 0;
+        $result = $this->db->query('SELECT MAX(id) as lastid FROM ' . $table);
+
+        if ($result && $result->rowsCount()) {
+            $data = $result->fetchAssoc();
+            return isset($data['lastid']) ? (int) $data['lastid'] : 0;
         }
+
+        return 0;
     }
 
     public function rows_count($table, $where, $limit = false) {
-        return $this->db->getRowsCount(self::replacePrefixTable($table), $where, $limit);
+        if ($limit) {
+            $this->db->limit(0, $limit);
+        }
+        if (!empty($where)) {
+            $this->db->filterStart()->filter($where)->filterEnd();
+        }
+        return $this->db->getCount($table);
     }
 
     public function get_field($table, $where = '1', $field = 'id') {
@@ -248,7 +320,8 @@ class cmsDatabase {
     public function escape_string($value) {
         if (is_array($value)) {
             foreach ($value as $key => $string) {
-                $value[$this->escape_string((string) $key)] = $this->escape_string($string);
+                // Ключи — это имена полей, их нельзя менять экранированием.
+                $value[$key] = $this->escape_string($string);
             }
 
             return $value;
@@ -262,15 +335,7 @@ class cmsDatabase {
     }
 
     public function isFieldType($table, $field, $type) {
-        $sql = 'SHOW COLUMNS FROM ' . $table . " WHERE Field = '" . $field . "' AND Type = '" . $type . "'";
-
-        $result = $this->query($sql);
-
-        if ($this->errno()) {
-            return false;
-        }
-
-        return (bool) $this->num_rows($result);
+        return $this->db->isFieldType(self::replacePrefixTable($table), $field, $type);
     }
 
     public function isTableExists($table) {
@@ -308,93 +373,87 @@ class cmsDatabase {
     }
 
     /**
-     * Добавляет массив записей в таблицу
-     * ключи массива должны совпадать с полями в таблице
+     * Добавляет массив записей в таблицу.
+     * Все значения готовит cms\db::prepareValue(), запрос строит DSSoft\DB.
      */
     public function insert($table, $insert_array, $ignore = false) {
-        // убираем из массива ненужные ячейки
-        $insert_array = $this->removeTheMissingCell($table, $insert_array);
-        $set = '';
-
-        // формируем запрос на вставку в базу
-        foreach ($insert_array as $field => $value) {
-            $set .= "`" . $field . "` = '" . $value . "',";
-        }
-
-        // убираем последнюю запятую
-        $set = rtrim($set, ',');
-
-        $i = $ignore ? 'IGNORE' : '';
-
-        $this->query('INSERT ' . $i . ' INTO ' . $table . ' SET ' . $set);
-
-        if ($this->errno()) {
-            return false;
-        }
-
-        return $this->get_last_id($table);
+        return $this->db->insert(
+            self::replacePrefixTable($table),
+            $this->stripSlashesRecursive($insert_array),
+            false,
+            'yaml',
+            $ignore
+        );
     }
 
     /**
-     * Обновляет данные в таблице
-     * ключи массива должны совпадать с полями в таблице
+     * Обновляет данные в таблице.
+     *
+     * Исторический порядок CMS: update($table, $data, $id|where).
      */
     public function update($table, $update_array, $id) {
+        // Поддержка обеих сигнатур:
+        // cmsDatabase: update($table, $data, $id|where)
+        // cms\db:      update($table, $where, $data)
+        if (is_string($update_array) && is_array($id)) {
+            $tmp = $update_array;
+            $update_array = $id;
+            $id = $tmp;
+        }
+
+        if (!is_array($update_array)) {
+            return false;
+        }
+
         if (isset($update_array['id'])) {
             unset($update_array['id']);
         }
 
-        // id или where
+        $table = self::replacePrefixTable($table);
+        $data = $this->stripSlashesRecursive($update_array);
+
         if (is_numeric($id)) {
-            $where = "id = '" . $id . "' LIMIT 1";
-        } else {
-            $where = $id;
+            return $this->db->update($table, (int) $id, $data, false, 'yaml');
         }
 
-        // убираем из массива ненужные ячейки
-        $update_array = $this->removeTheMissingCell($table, $update_array);
-
-        $set = '';
-
-        // формируем запрос на вставку в базу
-        foreach ($update_array as $field => $value) {
-            $set .= '`' . $field . "` = '" . $value . "',";
-        }
-
-        // убираем последнюю запятую
-        $set = rtrim($set, ',');
-
-        $this->query('UPDATE ' . $table . ' SET ' . $set . ' WHERE ' . $where);
-
-        if ($this->errno()) {
-            return false;
-        }
-
-        return true;
+        return $this->db->_update($table, $id, $data, false, 'yaml');
     }
 
     /**
-     * Убирает из массива ячейки, которых нет в таблице назначения
-     * используется при вставке/обновлении значений таблицы
+     * Исторические компоненты экранировали значения через escape_string(),
+     * после чего insert/update экранировали их повторно. Перед передачей
+     * в DSSoft снимаем старые слеши.
+     */
+    private function stripSlashesRecursive($value) {
+        if (is_array($value)) {
+            foreach ($value as $key => $item) {
+                $value[$key] = $this->stripSlashesRecursive($item);
+            }
+
+            return $value;
+        }
+
+        if (is_string($value)) {
+            return stripslashes($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * @deprecated Оставлено для сторонних компонентов InstantCMS 1.x.
      */
     public function removeTheMissingCell($table, $array) {
-        $result = $this->query('SHOW COLUMNS FROM `' . $table . '`');
-
-        $list = [];
-
-        while ($data = $this->fetch_assoc($result)) {
-            $list[$data['Field']] = '';
+        if (!is_array($array)) {
+            return [];
         }
 
-        // убираем ненужные ячейки массива
+        $fields = $this->db->getTableFields(self::replacePrefixTable($table));
+
         foreach ($array as $k => $v) {
-            if (!isset($list[$k])) {
+            if (!in_array($k, $fields, true)) {
                 unset($array[$k]);
             }
-        }
-
-        if (!$array || !is_array($array)) {
-            return [];
         }
 
         return $array;
@@ -420,7 +479,9 @@ class cmsDatabase {
             }
         }
 
-        $this->db->changeValue(self::replacePrefixTable($table), $flag, $value, 'id IN (' . implode(',', $ids) . ')', count($ids));
+        if ($ids) {
+            $this->db->changeValue(self::replacePrefixTable($table), $flag, $value, 'id IN (' . implode(',', $ids) . ')', count($ids));
+        }
 
         return $this;
     }

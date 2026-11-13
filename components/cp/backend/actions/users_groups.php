@@ -1,15 +1,23 @@
 <?php
 
-namespace components\cp\actions;
+/*
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
+ *
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
+ *
+ *                      LICENSED BY GNU/GPL v2
+ */
 
-class users_groups extends \cms\com_action
-{
+namespace components\cp\backend\actions;
 
+class users_groups extends \cms\com_action {
     protected $default_action = 'list';
 
-    public function doBefore($action_name)
-    {
-        if ( !\cmsUser::isAdminCan('admin/users', $this->admin_access) ) {
+    public function doBefore($action_name) {
+        if (!\cmsUser::isAdminCan('admin/users', $this->admin_access)) {
             self::accessDenied();
         }
 
@@ -18,34 +26,31 @@ class users_groups extends \cms\com_action
         $this->page()->addPathway($this->lang->ad_users_group, $this->genActionUrl('users_groups'));
     }
 
-    public function actList()
-    {
+    public function actList() {
         self::addToolMenuItem($this->lang->ad_create_group, $this->genActionUrl('users_groups', 'add'), 'usergroupadd.gif');
-        self::addToolMenuItem($this->lang->ad_edit_selected, "javascript:checkSel('" . $this->genActionUrl('users_groups', 'edit', [ 'multiple' => 1 ]) . "');", 'edit.gif');
-        self::addToolMenuItem($this->lang->ad_delete_selected, "javascript:if(confirm('" . $this->lang->ad_remove_group . "')) { checkSel('" . $this->genActionUrl('users_groups', 'delete', [ 'multiple' => 1 ]) . "'); }", 'delete.gif');
+        self::addToolMenuItem($this->lang->ad_edit_selected, "javascript:checkSel('" . $this->genActionUrl('users_groups', 'edit', ['multiple' => 1]) . "');", 'edit.gif');
+        self::addToolMenuItem($this->lang->ad_delete_selected, "javascript:if(confirm('" . $this->lang->ad_remove_group . "')) { checkSel('" . $this->genActionUrl('users_groups', 'delete', ['multiple' => 1]) . "'); }", 'delete.gif');
 
         $fields = [
-            [ 'title' => 'id', 'field' => 'id', 'width' => '30' ],
-            [ 'title' => $this->lang->title, 'field' => 'title', 'width' => '', 'link' => $this->genActionUrl('users_groups', [ 'edit', '%id%' ]), 'filter' => '12' ],
-            [ 'title' => $this->lang->ad_from_users, 'field' => 'id', 'width' => '100', 'prc' => [ $this, 'getCountUsers' ] ],
-            [ 'title' => $this->lang->ad_if_admin, 'field' => 'is_admin', 'width' => '110', 'prc' => [ $this, 'yesno' ] ],
-            [ 'title' => $this->lang->ad_alias, 'field' => 'alias', 'width' => '75', 'filter' => '12' ]
+            ['title' => 'id', 'field' => 'id', 'width' => '30'],
+            ['title' => $this->lang->title, 'field' => 'title', 'width' => '', 'link' => $this->genActionUrl('users_groups', ['edit', '%id%']), 'filter' => '12'],
+            ['title' => $this->lang->ad_from_users, 'field' => 'id', 'width' => '100', 'prc' => [$this, 'getCountUsers']],
+            ['title' => $this->lang->ad_if_admin, 'field' => 'is_admin', 'width' => '110', 'prc' => [$this, 'yesno']],
+            ['title' => $this->lang->ad_alias, 'field' => 'alias', 'width' => '75', 'filter' => '12']
         ];
 
         $actions = [
-            [ 'title' => $this->lang->edit, 'icon' => 'edit.gif', 'link' => $this->genActionUrl('users_groups', [ 'edit', '%id%' ]) ],
-            [ 'title' => $this->lang->delete, 'icon' => 'delete.gif', 'confirm' => $this->lang->ad_remove_group, 'link' => $this->genActionUrl('users_groups', [ 'delete', '%id%' ]) ]
+            ['title' => $this->lang->edit, 'icon' => 'edit.gif', 'link' => $this->genActionUrl('users_groups', ['edit', '%id%'])],
+            ['title' => $this->lang->delete, 'icon' => 'delete.gif', 'confirm' => $this->lang->ad_remove_group, 'link' => $this->genActionUrl('users_groups', ['delete', '%id%'])]
         ];
 
         cpListTable('cms_user_groups', $fields, $actions);
     }
 
-    public function actDelete($group_id = false)
-    {
-        if ( $group_id === false ) {
+    public function actDelete($group_id = false) {
+        if ($group_id === false) {
             $this->model('users')->deleteGroup($this->request()->get('item', 'array_int', []));
-        }
-        else if ( $group_id > 1 ) {
+        } else if ($group_id > 1) {
             $this->model('users')->deleteGroup($group_id);
         }
 
@@ -54,25 +59,22 @@ class users_groups extends \cms\com_action
         \cmsCore::redirectBack();
     }
 
-    public function actAdd()
-    {
+    public function actAdd() {
         $this->page()->addPathway($this->lang->ad_create_group);
         \cms\backend::setTitle($this->lang->ad_create_group);
 
         return $this->actEdit(false, 'add');
     }
 
-    public function actEdit($item_id, $do = 'edit')
-    {
+    public function actEdit($item_id, $do = 'edit') {
         self::addToolMenuItem($this->lang->save, 'javascript:document.addform.submit();', 'save.gif');
         self::addToolMenuItem($this->lang->cancel, 'javascript:history.go(-1);', 'cancel.gif');
 
-        if ( $do == 'edit' ) {
-            if ( $this->request()->has('multiple') ) {
-                if ( $this->request()->has('item') ) {
+        if ($do == 'edit') {
+            if ($this->request()->has('multiple')) {
+                if ($this->request()->has('item')) {
                     $_SESSION['editlist'] = $this->request()->get('item', 'array_int', []);
-                }
-                else {
+                } else {
                     \cmsCore::addSessionMessage($this->lang->ad_no_select_objects, 'error');
                     \cmsCore::redirectBack();
                 }
@@ -80,42 +82,39 @@ class users_groups extends \cms\com_action
 
             $ostatok = '';
 
-            if ( isset($_SESSION['editlist']) ) {
+            if (isset($_SESSION['editlist'])) {
                 $item_id = array_shift($_SESSION['editlist']);
 
-                if ( sizeof($_SESSION['editlist']) == 0 ) {
+                if (sizeof($_SESSION['editlist']) == 0) {
                     unset($_SESSION['editlist']);
-                }
-                else {
+                } else {
                     $ostatok = '(' . $this->lang->ad_next_in . sizeof($_SESSION['editlist']) . ')';
                 }
             }
 
-            if ( empty($item_id) ) {
+            if (empty($item_id)) {
                 $item_id = $this->request()->get('id', 'int', 0);
             }
 
             $item = $this->model->getFields('groups', 'id=' . $item_id);
 
-            if ( empty($item) ) {
+            if (empty($item)) {
                 \cmsCore::error404();
             }
 
             $this->page()->addPathway($this->lang->ad_edit_group . $item['title']);
             \cms\backend::setTitle($this->lang->ad_edit_group . $ostatok);
-        }
-        else {
+        } else {
             $item = [
                 'title' => '',
                 'alias' => '',
             ];
         }
 
-        if ( isset($item['access']) ) {
+        if (isset($item['access'])) {
             $item['access'] = str_replace(', ', ',', $item['access']);
             $item['access'] = explode(',', $item['access']);
-        }
-        else {
+        } else {
             $item['access'] = [];
         }
 
@@ -124,38 +123,36 @@ class users_groups extends \cms\com_action
                 assign('do', $do)->
                 assign('item', $item)->
                 assign('components', $this->getAllComponents())->
-                assign('group_access', $this->model->db->getRows('user_groups_access', 1, '*', 'access_type'))->
+                assign('group_access', \cms\db::getInstance()->getRows('user_groups_access', '1', '*', 'access_type'))->
                 display();
     }
 
-    public function actSubmit()
-    {
-        if ( !\cmsUser::checkCsrfToken() ) {
+    public function actSubmit() {
+        if (!\cmsUser::checkCsrfToken()) {
             \cmsCore::error404();
         }
 
         $types = [
-            'title'    => [ 'title', 'str', '' ],
-            'alias'    => [ 'alias', 'str', '' ],
-            'is_admin' => [ 'is_admin', 'int', 0 ],
-            'access'   => [ 'access', 'array_str', [], function($a_list) {
+            'title' => ['title', 'str', ''],
+            'alias' => ['alias', 'str', ''],
+            'is_admin' => ['is_admin', 'int', 0],
+            'access' => ['access', 'array_str', [], function ($a_list) {
                     return implode(', ', $a_list);
-                } ]
+                }]
         ];
 
         $item = $this->request()->getArrayFromRequest($types);
 
         $item_id = $this->request()->get('item_id', 'int');
 
-        if ( empty($item_id) ) {
-            $this->model->db->insert('user_groups', $item);
+        if (empty($item_id)) {
+            \cms\db::getInstance()->insert('user_groups', $item);
 
             \cmsCore::addSessionMessage($this->lang->ad_do_success, 'success');
 
             $this->redirectToAction('users_groups');
-        }
-        else {
-            $this->model->db->update('user_groups', 'id=' . $id, $item);
+        } else {
+            \cms\db::getInstance()->update('user_groups', (int) $item_id, $item);
 
             \cmsCore::addSessionMessage($this->lang->ad_do_success, 'success');
 
@@ -165,21 +162,19 @@ class users_groups extends \cms\com_action
 
     //========================================================================//
 
-    public function getCountUsers($id)
-    {
-        $count = $this->model->db->getRowsCount('users', 'group_id=' . $id);
+    public function getCountUsers($id) {
+        $count = \cms\db::cloneOf(\cms\db::getInstance())->filterEqual('group_id', (int) $id)->getCount('users');
 
-        return '<a href="' . $this->genActionUrl('users', '', [ 'filter[group_id]' => $id ]) . '">' . $count . '</a>';
+        return '<a href="' . $this->genActionUrl('users', '', ['filter[group_id]' => $id]) . '">' . $count . '</a>';
     }
 
-    public function getAllComponents()
-    {
+    public function getAllComponents() {
         $items = [];
 
         $components = \cms\controller::getAllComponents();
 
-        foreach ( $components as $component ) {
-            if ( !self::componentHasNewBackend($component) || !self::componentHasOldBackend($component) ) {
+        foreach ($components as $component) {
+            if (!self::componentHasNewBackend($component) || !self::componentHasOldBackend($component)) {
                 continue;
             }
 
@@ -188,5 +183,4 @@ class users_groups extends \cms\com_action
 
         return $items;
     }
-
 }

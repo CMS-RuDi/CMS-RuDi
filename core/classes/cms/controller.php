@@ -374,6 +374,7 @@ class controller {
             return false;
         }
 
+        $this->current_action = $action_name;
         $this->current_params = $params;
 
         $action_name = $this->routeAction($action_name);
@@ -951,7 +952,7 @@ class controller {
      */
     public static function getModel($component, $reinit = false) {
         if (!isset(self::$factory['models'][$component]) || $reinit === true) {
-            $class_name = self::getModelClassName($component);
+            $class_name = static::getModelClassName($component);
 
             if (class_exists($class_name)) {
                 if (method_exists($class_name, 'getInstance')) {

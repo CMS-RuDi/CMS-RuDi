@@ -28,6 +28,7 @@ class cmsCore {
     protected $is_menu_id_strict;
     protected $uri;
     protected $real_uri;
+    protected $uri_query;
     public $component;
     public $do;
     public $components;
@@ -434,6 +435,10 @@ class cmsCore {
 
     public function getUri() {
         return $this->uri;
+    }
+
+    public function getUriQuery() {
+        return $this->uri_query;
     }
 
     /**
@@ -1381,12 +1386,12 @@ class cmsCore {
      */
     public static function registerRatingsTarget($target, $component, $target_title, $is_user_affect = true, $user_weight = 1, $target_table = '') {
         \cms\db::getInstance()->insert('rating_targets', array(
-            'target'         => $target,
-            'component'      => $component,
+            'target' => $target,
+            'component' => $component,
             'is_user_affect' => (int) $is_user_affect,
-            'user_weight'    => $user_weight,
-            'target_table'   => $target_table,
-            'target_title'   => $target_title
+            'user_weight' => $user_weight,
+            'target_table' => $target_table,
+            'target_title' => $target_title
                 ), false, 'json', true);
 
         return true;
@@ -1429,11 +1434,11 @@ class cmsCore {
      */
     public static function registerCommentsTarget($target, $component, $title, $target_table, $subj) {
         \cms\db::getInstance()->insert('comment_targets', array(
-            'target'       => $target,
-            'component'    => $component,
-            'title'        => $title,
+            'target' => $target,
+            'component' => $component,
+            'title' => $title,
             'target_table' => $target_table,
-            'subj'         => $subj
+            'subj' => $subj
                 ), false, 'json', true);
 
         return true;
@@ -1710,9 +1715,9 @@ class cmsCore {
         }
 
         $access = \cms\db::cloneOf(\cms\db::getInstance())->selectOnly('group_id')
-                        ->filterEqual('content_type', $content_type)
-                        ->filterEqual('content_id', $content_id)
-                        ->get('content_access', false, false);
+                ->filterEqual('content_type', $content_type)
+                ->filterEqual('content_id', $content_id)
+                ->get('content_access', false, false);
 
         if (!$access || !is_array($access)) {
             return true;
@@ -1973,11 +1978,11 @@ class cmsCore {
      */
     public static function registerUploadImages($target_id, $target, $fileurl, $component) {
         return \cms\db::getInstance()->insert('upload_images', array(
-                    'target_id'  => $target_id,
+                    'target_id' => $target_id,
                     'session_id' => session_id(),
-                    'fileurl'    => $fileurl,
-                    'component'  => $component,
-                    'target'     => $target
+                    'fileurl' => $fileurl,
+                    'component' => $component,
+                    'target' => $target
         ));
     }
 
@@ -2084,9 +2089,9 @@ class cmsCore {
      */
     public static function isCached($target, $target_id, $cachetime = 1, $cacheint = 'MINUTE') {
         $cachefile = \cms\db::cloneOf(\cms\db::getInstance())->filterEqual('target', $target)
-                        ->filterEqual('target_id', $target_id)
-                        ->filterDateYounger('cachedate', (int) $cachetime, empty($cacheint) ? 'MINUTE' : $cacheint)
-                        ->getFieldFiltered('cache', 'cachefile');
+                ->filterEqual('target_id', $target_id)
+                ->filterDateYounger('cachedate', (int) $cachetime, empty($cacheint) ? 'MINUTE' : $cacheint)
+                ->getFieldFiltered('cache', 'cachefile');
 
         if ($cachefile) {
             $cachefile = PATH . '/cache/' . $cachefile;
@@ -2110,8 +2115,8 @@ class cmsCore {
      */
     public static function getCache($target, $target_id) {
         $cachefile = \cms\db::cloneOf(\cms\db::getInstance())->filterEqual('target', $target)
-                        ->filterEqual('target_id', $target_id)
-                        ->getFieldFiltered('cache', 'cachefile');
+                ->filterEqual('target_id', $target_id)
+                ->getFieldFiltered('cache', 'cachefile');
 
         if ($cachefile) {
             $cachefile = PATH . '/cache/' . $cachefile;
@@ -2136,7 +2141,7 @@ class cmsCore {
         $filename = md5($target . $target_id) . '.html';
 
         \cms\db::getInstance()->insert('cache', array(
-            'target'    => $target,
+            'target' => $target,
             'target_id' => $target_id,
             'cachedate' => date('Y-m-d H:i:s'),
             'cachefile' => $filename

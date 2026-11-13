@@ -11,7 +11,7 @@
  *                      LICENSED BY GNU/GPL v2
  */
 
-namespace components\cp\actions;
+namespace components\cp\backend\actions;
 
 class menu extends \cms\com_action {
     protected $default_action = 'list';

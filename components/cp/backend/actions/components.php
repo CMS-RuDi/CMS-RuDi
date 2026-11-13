@@ -1,16 +1,16 @@
 <?php
 
 /*
- *                        CMS RuDi v1.10.9
- *                      https://cmsrudi.ru/
+ *                      CMS RuDi v1.10.9
+ *                    https://cmsrudi.ru/
  *
  *              Written by CMS RuDi Team, 2026
  *           produced by DagIT, (https://dagit.su)
  *
- *                    LICENSED BY GNU/GPL v2
+ *                  LICENSED BY GNU/GPL v2
  */
 
-namespace components\cp\actions;
+namespace components\cp\backend\actions;
 
 class components extends \cms\com_action {
     protected static $com_title_tpl;
@@ -24,10 +24,10 @@ class components extends \cms\com_action {
         $this->page()->addPathway($this->lang->ad_components, $this->genActionUrl('components'));
 
         if (empty($params)) {
-            $do = $this->request->get('do', 'str');
+            $do = $this->request()->get('do', 'str');
 
             if (!empty($do)) {
-                $id = $this->request->get('id', 'int', -1);
+                $id = $this->request()->get('id', 'int', -1);
 
                 if ($do == 'show') {
                     dbShow('cms_components', $id);

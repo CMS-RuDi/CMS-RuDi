@@ -4,11 +4,10 @@
  *                        CMS RuDi v1.10.9
  *                      https://cmsrudi.ru/
  *
- *              Based on InstantCMS v1.10.7 by InstantSoft
- *          (Original code © InstantCMS Team, 2007-2016)
- *          (Modifications © CMS RuDi Team / DagIT, 2026)
+ *              Written by CMS RuDi Team, 2026
+ *           produced by DagIT, (https://dagit.su)
  *
- *                      LICENSED BY GNU/GPL v2
+ *                    LICENSED BY GNU/GPL v2
  */
 
 namespace components\cp;
@@ -66,10 +65,13 @@ class model extends \cms\model {
     }
 
     public function getModuleContentById($id) {
-        return \cms\db::getInstance()->getField('modules', 'id=' . $id . ' AND is_external = 1', 'content');
+        return $this->db->
+                        filterEqual('id', $id)->
+                        filterEqual('is_external', 1)->
+                        getFieldFiltered('modules', 'content');
     }
 
     public function getModuleNameById($id) {
-        return \cms\db::getInstance()->getField('modules', 'id=' . $id, 'name');
+        return $this->db->getField('modules', $id, 'name');
     }
 }

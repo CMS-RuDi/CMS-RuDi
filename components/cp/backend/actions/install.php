@@ -4,13 +4,14 @@
  *                        CMS RuDi v1.10.9
  *                      https://cmsrudi.ru/
  *
- *              Written by CMS RuDi Team, 2026
- *           produced by DagIT, (https://dagit.su)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                    LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
-namespace components\cp\actions;
+namespace components\cp\backend\actions;
 
 class install extends \cms\com_action {
 

@@ -1,13 +1,22 @@
 <?php
 
-namespace components\cp\actions;
+/*
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
+ *
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
+ *
+ *                      LICENSED BY GNU/GPL v2
+ */
 
-class plugins extends \cms\com_action
-{
+namespace components\cp\backend\actions;
 
-    public function doBefore($action_name)
-    {
-        if ( !\cmsUser::isAdminCan('admin/plugins', $this->admin_access) ) {
+class plugins extends \cms\com_action {
+
+    public function doBefore($action_name) {
+        if (!\cmsUser::isAdminCan('admin/plugins', $this->admin_access)) {
             self::accessDenied();
         }
 
@@ -15,28 +24,24 @@ class plugins extends \cms\com_action
         $this->page()->addPathway($this->lang->ad_plugins, $this->genActionUrl('plugins'));
     }
 
-    public function run(...$params)
-    {
-        if ( empty($params) ) {
+    public function run(...$params) {
+        if (empty($params)) {
             $do = $this->request()->get('do', 'str');
 
-            if ( !empty($do) ) {
+            if (!empty($do)) {
                 $id = $this->request()->get('id', 'int', -1);
 
-                if ( $do == 'show' ) {
+                if ($do == 'show') {
                     dbShow('cms_plugins', $id);
-                }
-                else if ( $do == 'hide' ) {
+                } else if ($do == 'hide') {
                     dbHide('cms_plugins', $id);
-                }
-                else {
+                } else {
                     \cmsCore::error404();
                 }
 
-                if ( $this->request()->isAjax() ) {
+                if ($this->request()->isAjax()) {
                     \cmsCore::halt('1');
-                }
-                else {
+                } else {
                     $this->redirectToAction('plugins');
                 }
             }
@@ -45,33 +50,31 @@ class plugins extends \cms\com_action
         parent::run(...$params);
     }
 
-    public function actView()
-    {
+    public function actView() {
         self::addToolMenuItem($this->lang->ad_install_plugins, $this->genActionUrl('install', 'plugin'), 'install.gif');
 
         $fields = [
-            [ 'title' => 'id', 'field' => 'id', 'width' => '20' ],
-            [ 'title' => $this->lang->title, 'field' => 'title', 'link' => $this->genActionUrl('plugins', [ 'config', '%plugin%' ]), 'width' => '250' ],
-            [ 'title' => $this->lang->description, 'field' => 'description', 'width' => '' ],
-            [ 'title' => $this->lang->ad_author, 'field' => 'author', 'width' => '160' ],
-            [ 'title' => $this->lang->ad_version, 'field' => 'version', 'width' => '50' ],
-            [ 'title' => $this->lang->ad_folder, 'field' => 'plugin', 'width' => '100' ],
-            [ 'title' => $this->lang->ad_enable, 'field' => 'published', 'width' => '60' ]
+            ['title' => 'id', 'field' => 'id', 'width' => '20'],
+            ['title' => $this->lang->title, 'field' => 'title', 'link' => $this->genActionUrl('plugins', ['config', '%plugin%']), 'width' => '250'],
+            ['title' => $this->lang->description, 'field' => 'description', 'width' => ''],
+            ['title' => $this->lang->ad_author, 'field' => 'author', 'width' => '160'],
+            ['title' => $this->lang->ad_version, 'field' => 'version', 'width' => '50'],
+            ['title' => $this->lang->ad_folder, 'field' => 'plugin', 'width' => '100'],
+            ['title' => $this->lang->ad_enable, 'field' => 'published', 'width' => '60']
         ];
 
         $actions = [
-            [ 'title' => $this->lang->ad_config, 'icon' => 'config.gif', 'link' => $this->genActionUrl('plugins', [ 'config', '%plugin%' ]) ],
-            [ 'title' => $this->lang->delete, 'icon' => 'delete.gif', 'link' => [ $this, 'genUninstallLink' ], 'confirm' => $this->lang->ad_remove_plugin_from ]
+            ['title' => $this->lang->ad_config, 'icon' => 'config.gif', 'link' => $this->genActionUrl('plugins', ['config', '%plugin%'])],
+            ['title' => $this->lang->delete, 'icon' => 'delete.gif', 'link' => [$this, 'genUninstallLink'], 'confirm' => $this->lang->ad_remove_plugin_from]
         ];
 
         cpListTable('cms_plugins', $fields, $actions);
     }
 
-    public function actConfig($plugin_name)
-    {
+    public function actConfig($plugin_name) {
         $plugin = \cms\plugin::load($plugin_name);
 
-        if ( empty($plugin) ) {
+        if (empty($plugin)) {
             \cmsCore::error404();
         }
 
@@ -85,39 +88,37 @@ class plugins extends \cms\com_action
 
         $formGenHtml = $plugin->getConfigFormHtml();
 
-        if ( !empty($config) || !empty($xml_file) || !empty($json_file) || !empty($formGenHtml) ) {
+        if (!empty($config) || !empty($xml_file) || !empty($json_file) || !empty($formGenHtml)) {
             self::addToolMenuItem($this->lang->save, 'javascript:document.addform.submit();', 'save.gif');
             self::addToolMenuItem($this->lang->cancel, $this->genActionUrl('plugins'), 'cancel.gif');
         }
 
-        if ( empty($formGenHtml) ) {
+        if (empty($formGenHtml)) {
             //$fields = $plugin->getConfigFormFields();
 
-            if ( !empty($fields) || !empty($json_file) ) {
+            if (!empty($fields) || !empty($json_file)) {
 
-            }
-            else if ( $xml_file ) {
-                $formGen     = new \cmsFormGen(PATH . '/plugins/' . $plugin_name . '/backend.xml', $config);
+            } else if ($xml_file) {
+                $formGen = new \cmsFormGen(PATH . '/plugins/' . $plugin_name . '/backend.xml', $config);
                 $formGenHtml = $formGen->getHTML();
             }
         }
 
         $this->page()->initTemplate('cp/applets', 'plugin_config')->
-                assign('submit_uri', $this->genActionUrl('plugins', [ 'save_config', $plugin_name ]))->
+                assign('submit_uri', $this->genActionUrl('plugins', ['save_config', $plugin_name]))->
                 assign('form_html', !empty($formGenHtml) ? $formGenHtml : '')->
                 assign('config', $config)->
                 display();
     }
 
-    public function actSaveConfig($plugin_name)
-    {
-        if ( !\cmsUser::checkCsrfToken() ) {
+    public function actSaveConfig($plugin_name) {
+        if (!\cmsUser::checkCsrfToken()) {
             \cmsCore::error404();
         }
 
         $plugin = \cms\plugin::load($plugin_name);
 
-        if ( empty($plugin) ) {
+        if (empty($plugin)) {
             \cmsCore::error404();
         }
 
@@ -125,15 +126,15 @@ class plugins extends \cms\com_action
 
         $xml_file = file_exists(PATH . '/plugins/' . $plugin_name . '/backend.xml');
 
-        if ( $xml_file ) {
+        if ($xml_file) {
             $data = simplexml_load_file(PATH . '/plugins/' . $plugin_name . '/backend.xml');
 
-            foreach ( $data->params->param as $param ) {
-                $name    = (string) $param['name'];
-                $type    = (string) $param['type'];
+            foreach ($data->params->param as $param) {
+                $name = (string) $param['name'];
+                $type = (string) $param['type'];
                 $default = (string) $param['default'];
 
-                switch ( $param['type'] ) {
+                switch ($param['type']) {
                     case 'number':
                         $value = $this->request()->get($name, 'int', $default);
                         break;
@@ -159,12 +160,11 @@ class plugins extends \cms\com_action
 
                 $config[$name] = $value;
             }
-        }
-        else {
+        } else {
             $config = $this->request()->get('config', 'array_str');
         }
 
-        if ( empty($config) ) {
+        if (empty($config)) {
             \cmsCore::redirectBack();
         }
 
@@ -175,9 +175,7 @@ class plugins extends \cms\com_action
         $this->redirectToAction('plugins');
     }
 
-    public function genUninstallLink($item)
-    {
-        return $this->genActionUrl('install', [ 'uninstall_plugin', $item['plugin'] ], [ 'csrf_token' => \cms\csrf_token::get() ]);
+    public function genUninstallLink($item) {
+        return $this->genActionUrl('install', ['uninstall_plugin', $item['plugin']], ['csrf_token' => \cms\csrf_token::get()]);
     }
-
 }
