@@ -1057,4 +1057,28 @@ class controller {
 
         return $this->page->initTemplate('components/' . $this->name . (count($parts) > 0 ? '/' . implode('/', $parts) : ''), $file);
     }
+
+    public function __get($name) {
+        switch (strtolower($name)) {
+            case 'input':
+                return $this->request;
+            case 'core':
+                return $this->core;
+            case 'user':
+                return $this->user;
+        }
+    }
+
+    public function __isset($name) {
+        switch (strtolower($name)) {
+            case 'input':
+                return true;
+            case 'core':
+                return true;
+            case 'user':
+                return true;
+            default:
+                return isset($this->{$name});
+        }
+    }
 }

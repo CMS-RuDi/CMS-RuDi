@@ -75,22 +75,20 @@ class components extends \cms\com_action {
             ['title' => $this->lang->delete, 'icon' => 'delete.gif', 'link' => [$this, 'genUninstallLink'], 'condition' => [$this, 'canRemove'], 'confirm' => $this->lang->ad_deleted_component_from],
         ];
 
-        $where = '';
-
-        if ($this->user()->id > 1) {
+        if ($this->user->id > 1) {
+            $this->model->db->filterStart()
+                    ->filterOr();
             foreach ($this->admin_access as $key => $value) {
                 if (mb_strstr($value, 'admin/com_')) {
-                    if ($where) {
-                        $where .= ' OR ';
-                    }
-
                     $value = str_replace('admin/com_', '', $value);
-                    $where .= "link = '" . $value . "'";
+                    $this->model->db->filterEqual('link', $value)
+                            ->filterOr();
                 }
             }
+            $this->model->db->filterEnd();
         }
 
-        cpListTable('cms_components', $fields, $actions, !empty($where) ? $where : 1);
+        $this->initListTable('components', $fields, $actions);
     }
 
     //========================================================================//
@@ -117,8 +115,6 @@ class components extends \cms\com_action {
         } else {
             $action_name = array_shift($params);
         }
-
-        \cmsCore::includeFile('components/' . $component . '/backend.php');
 
         $class_name = '\\components\\' . $component . '\\backend';
 

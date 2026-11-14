@@ -13,7 +13,8 @@
 
 defined('VALID_CMS_ADMIN') or die();
 
-$inDB = cmsDatabase::getInstance();
+$inDB = \cmsDatabase::getInstance();
+$db = \cms\db::getInstance();
 ?>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
@@ -61,7 +62,7 @@ $inDB = cmsDatabase::getInstance();
                                             $msg_link = '<span>' . $_LANG['NO'] . ' ' . $_LANG['NEW_MESSAGES'] . '</span>';
                                         }
                                         ?>
-                                        <div class="juser"><?php echo $_LANG['AD_YOU']; ?> &mdash; <a href="<?php echo cmsUser::getProfileURL($inUser->login); ?>" target="_blank" title="<?php echo $_LANG['AD_GO_PROFILE']; ?>"><?php echo $inDB->get_field('cms_users', 'id=' . $inUser->id, 'nickname'); ?></a>, ip: <?php echo $inUser->ip ?></div>
+                                        <div class="juser"><?php echo $_LANG['AD_YOU']; ?> &mdash; <a href="<?php echo cmsUser::getProfileURL($inUser->login); ?>" target="_blank" title="<?php echo $_LANG['AD_GO_PROFILE']; ?>"><?php echo $db->getField('users', $inUser->id, 'nickname'); ?></a>, ip: <?php echo $inUser->ip ?></div>
                                         <div class="jmessages"><?php echo $msg_link; ?></div>
                                     </td>
                                     <td width="120">

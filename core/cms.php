@@ -244,7 +244,7 @@ class cmsCore {
      * @param string $class
      */
     public static function addSessionMessage($message, $class = 'info') {
-        $_SESSION['core_message'][] = '<div class="message_' . $class . '">' . $message . '</div>';
+        \cms\session::set('core_message', '<div class="message_' . $class . '">' . $message . '</div>');
     }
 
     /*
@@ -252,15 +252,11 @@ class cmsCore {
      */
 
     public static function getSessionMessages() {
-        if (isset($_SESSION['core_message'])) {
-            $messages = $_SESSION['core_message'];
-        } else {
-            $messages = false;
-        }
+        $messages = \cms\session::get('core_message');
 
         self::clearSessionMessages();
 
-        return $messages;
+        return $messages ? $messages : false;
     }
 
     /*
@@ -268,7 +264,7 @@ class cmsCore {
      */
 
     public static function clearSessionMessages() {
-        unset($_SESSION['core_message']);
+        \cms\session::delete('core_message');
     }
 
     /**

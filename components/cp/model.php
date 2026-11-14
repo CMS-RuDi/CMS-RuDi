@@ -74,4 +74,18 @@ class model extends \cms\model {
     public function getModuleNameById($id) {
         return $this->db->getField('modules', $id, 'name');
     }
+
+    public function getCountComponents() {
+        return $this->db->getCount('components');
+    }
+
+    public function getComponents() {
+        return $this->db->selectOnly('i.id')
+                        ->select('i.title')
+                        ->select('i.link')
+                        ->select('i.version')
+                        ->select('i.published')
+                        ->select('i.author')
+                        ->get('components');
+    }
 }

@@ -67,7 +67,9 @@ class backend extends controller {
 
         $this->model = self::getModel($this->name, true);
         $this->root_path .= 'backend/';
-        $this->root_url = 'cp/components/' . $this->root_url;
+        if ($this->name != 'cp') {
+            $this->root_url = 'cp/components/' . $this->root_url;
+        }
         $this->lang->load('admin/components/' . $this->name);
     }
 
@@ -351,7 +353,7 @@ class backend extends controller {
                             $data = call_user_func($field['prc'], $item[$field['field']]);
                         }
                     } else {
-                        $data = $item[$field['field']];
+                        $data = $item[is_array($field['field']) ? $field['field'][0] : $field['field']];
                         if (isset($field['maxlen'])) {
                             if (mb_strlen($data) > $field['maxlen']) {
                                 $data = mb_substr($data, 0, $field['maxlen']) . '...';
@@ -359,7 +361,7 @@ class backend extends controller {
                         }
                     }
 
-                    $items[$id][$field['field']] = $data;
+                    $items[$id][$key] = $data;
 
                     //nested sets otstup
                     if (isset($item['NSLevel']) && ($field['field'] == 'title' || (is_array($field['field']) && in_array('title', $field['field'])))) {
@@ -403,7 +405,7 @@ class backend extends controller {
                                     $data = call_user_func($field['prc'], $item[$field['field']]);
                                 }
                             } else {
-                                $data = $item[$field['field']];
+                                $data = $item[is_array($field['field']) ? $field['field'][0] : $field['field']];
                                 if (isset($field['maxlen'])) {
                                     if (mb_strlen($data) > $field['maxlen']) {
                                         $data = mb_substr($data, 0, $field['maxlen']) . '...';
@@ -411,7 +413,7 @@ class backend extends controller {
                                 }
                             }
 
-                            $items[$id][$field['field']] = $data;
+                            $items[$id][$key] = $data;
 
                             //nested sets otstup
                             if (isset($item['NSLevel']) && ($field['field'] == 'title' || (is_array($field['field']) && in_array('title', $field['field'])))) {
@@ -425,8 +427,6 @@ class backend extends controller {
 
                             $items[$id]['_f_otstup_'][$key] = $otstup;
                         }
-                    } else {
-
                     }
                 }
             }
@@ -457,7 +457,7 @@ class backend extends controller {
             \cmsCore::redirect('/' . $this->genActionUrl() . '?' . $query_str);
         }
 
-        $this->page->initTemplate('cp', 'cp_list')
+        $this->page->initTemplate('cp', 'list_table')
                 ->assign('component', $this->name)
                 ->assign('uri', $this->genActionUrl())
                 ->assign('query_uri', $this->genActionUrl() . '?' . $query_clear)

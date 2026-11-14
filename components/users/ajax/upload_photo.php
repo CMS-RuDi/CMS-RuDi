@@ -22,7 +22,7 @@ header('Content-Type: text/html; charset=utf-8');
 include_once(PATH . '/core/cms.php');
 $inCore = cmsCore::getInstance();
 
-$inDB   = cmsDatabase::getInstance();
+$inDB   = \cms\db::getInstance();
 $inConf = cmsConfig::getInstance();
 $inUser = cmsUser::getInstance();
 
@@ -57,7 +57,7 @@ if ( ( $model->config['photosize'] > 0 ) && ( $model->getUserPhotoCount($user_id
 include_once( PATH . '/includes/graphic.inc.php' );
 
 $uploaddir = PATH . '/images/users/photos/';
-$realfile  = $inDB->escape_string($_FILES['Filedata']['name']);
+$realfile  = $_FILES['Filedata']['name'];
 
 $path_parts = pathinfo($realfile);
 $ext        = mb_strtolower($path_parts['extension']);
@@ -66,8 +66,11 @@ if ( !$ext || !in_array($ext, array( 'jpg', 'jpeg', 'gif', 'png', 'bmp' )) ) {
     exit(0);
 }
 
-$lid      = $inDB->get_fields('cms_user_photos', ' id > 0 ', 'id', 'id DESC');
-$lastid   = $lid['id'] + 1;
+$last_photo = $inDB->selectOnly('i.id')->orderBy('i.id', 'DESC')->getItem('user_photos');
+
+$inDB->resetFilters();
+
+$lastid   = $last_photo ? $last_photo['id'] + 1 : 1;
 $filename = md5($lastid . $realfile) . '.' . $ext;
 
 $uploadphoto = $uploaddir . $filename;

@@ -15,7 +15,7 @@ class cms_model_files
 
     public function __construct()
     {
-        $this->inDB                 = cmsDatabase::getInstance();
+        $this->inDB                 = \cms\db::getInstance();
         $this->config               = cmsCore::getInstance()->loadComponentConfig('files');
         $this->config['white_list'] = explode(',', $this->config['white_list']);
     }
@@ -35,13 +35,11 @@ class cms_model_files
         $downloads = cmsCore::fileDownloadCount($fileurl);
 
         if ( $downloads == 0 ) {
-            $sql = "INSERT INTO cms_downloads (fileurl, hits) VALUES ('$fileurl', '1')";
+            $this->inDB->insert('downloads', array( 'fileurl' => $fileurl, 'hits' => 1 ));
         }
         else {
-            $sql = "UPDATE cms_downloads SET hits = hits + 1 WHERE fileurl = '$fileurl'";
+            $this->inDB->filterEqual('fileurl', $fileurl)->increment('downloads', 'hits', 1);
         }
-
-        $this->inDB->query($sql);
 
         return true;
     }

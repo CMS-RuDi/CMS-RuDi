@@ -24,7 +24,9 @@ class cmsForm
 
     private function __construct($form_id, $values = array(), $is_admin = false)
     {
-        $this->form_id  = cmsDatabase::getInstance()->escape_string($form_id);
+        // Значение попадает в фильтры БД и в пути к файлам, поэтому храним его
+        // в исходном виде, без предварительного экранирования
+        $this->form_id  = $form_id;
         $this->values   = $values;
         $this->is_admin = $is_admin;
 
@@ -278,14 +280,19 @@ class cmsForm
             return self::$cached_form_data[$form_id];
         }
 
+        $db = clone \cms\db::getInstance();
+
         if ( is_numeric($form_id) ) {
-            $where = "id = '{$form_id}'";
+            $form = $db->filterEqual('id', $form_id)->getItem('forms');
         }
         else {
-            $where = "title LIKE '{$form_id}'";
+            $form = $db->filterLike('title', $form_id)->getItem('forms');
         }
 
-        return \cms\events::call('forms.get_form', cmsDatabase::getInstance()->get_fields('cms_forms', $where, '*'));
+        // getItem() восстанавливает переданные ему фильтры, поэтому чистим состояние
+        $db->resetFilters();
+
+        return \cms\events::call('forms.get_form', $form);
     }
 
     /**
@@ -301,13 +308,12 @@ class cmsForm
 
         $form_fields = array();
 
-        $inDB = cmsDatabase::getInstance();
+        $rows = \cms\db::cloneOf(\cms\db::getInstance())->filterEqual('form_id', $form_id)
+                        ->orderBy('ordering')
+                        ->get('form_fields', false, false);
 
-        $sql = "SELECT * FROM cms_form_fields WHERE form_id = '" . $form_id . "' ORDER BY ordering ASC";
-        $res = $inDB->query($sql);
-
-        if ( $inDB->num_rows($res) ) {
-            while ( $form_field = $inDB->fetch_assoc($res) ) {
+        if ( $rows ) {
+            foreach ( $rows as $form_field ) {
                 $form_field['config']         = cmsCore::yamlToArray($form_field['config']);
                 $form_field['show_for_group'] = cmsCore::yamlToArray($form_field['show_for_group']);
 

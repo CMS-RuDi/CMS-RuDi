@@ -146,20 +146,22 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
     list($table, $_fields, $_actions, $where, $orderby) = \cms\events::call($event, array($table, $_fields, $_actions, $where, $orderby));
 
     global $_LANG;
-    $inDB = cmsDatabase::getInstance();
+
+    $db = \cms\db::getInstance();
 
     $perpage = 60;
 
-    $sql = 'SELECT *';
     $is_actions = sizeof($_actions);
+
+    // Поля выборки: * плюс отформатированные даты
+    $db->resetFilters();
+    $db->selectOnly('*');
 
     foreach ($_fields as $key => $value) {
         if (isset($_fields[$key]['fdate'])) {
-            $sql .= ", DATE_FORMAT(" . $_fields[$key]['field'] . ", '" . $_fields[$key]['fdate'] . "') as `" . $_fields[$key]['field'] . "`";
+            $db->select("DATE_FORMAT(" . $_fields[$key]['field'] . ", '" . $_fields[$key]['fdate'] . "')", $_fields[$key]['field']);
         }
     }
-
-    $sql .= ' FROM ' . $table;
 
     if (isset($_SESSION['filter_table']) && $_SESSION['filter_table'] != $table) {
         unset($_SESSION['filter']);
@@ -182,18 +184,23 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
     $f = 0;
 
     if ($filter) {
-        $sql .= ' WHERE 1=1';
-
         foreach ($filter as $key => $value) {
-            if ($filter[$key] && $filter[$key] != -100) {
-                $sql .= ' AND ';
-                if (!is_numeric($filter[$key])) {
-                    $sql .= $key . " LIKE '%" . $filter[$key] . "%'";
-                } else {
-                    $sql .= $key . " = '" . $filter[$key] . "'";
-                }
-                $f++;
+            if (!$value || $value == '-100') {
+                continue;
             }
+
+            // фильтровать можно только по именам полей таблицы
+            if (!preg_match('/^[a-zA-Z0-9_\.]+$/', (string) $key)) {
+                continue;
+            }
+
+            if (!is_numeric($value)) {
+                $db->filterLike($key, '%' . $value . '%');
+            } else {
+                $db->filterEqual($key, $value);
+            }
+
+            $f++;
         }
 
         if (!isset($_SESSION['filter'])) {
@@ -202,11 +209,7 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
     }
 
     if (mb_strlen($where) > 3) {
-        if (mb_strstr($sql, 'WHERE')) {
-            $sql .= ' AND ' . $where;
-        } else {
-            $sql .= ' WHERE ' . $where;
-        }
+        $db->filter($where);
     }
 
     $sort = cmsCore::request('sort', 'str', '');
@@ -224,25 +227,40 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
         }
     }
 
+    $order = '';
+
     if ($sort) {
-        $sql .= ' ORDER BY ' . $sort;
-        if (cmsCore::inRequest('so')) {
-            $sql .= ' ' . cmsCore::request('so', 'str', '');
+        // допускаем только список полей с необязательным направлением сортировки
+        if (preg_match('/^[a-zA-Z0-9_\.]+(?:\s+(?:asc|desc))?(?:\s*,\s*[a-zA-Z0-9_\.]+(?:\s+(?:asc|desc))?)*$/i', trim($sort))) {
+            $order = trim($sort);
+
+            if (cmsCore::inRequest('so')) {
+                $so = strtolower(trim(cmsCore::request('so', 'str', '')));
+
+                if (($so === 'asc' || $so === 'desc') && !preg_match('/\s+(asc|desc)$/i', $order)) {
+                    $order .= ' ' . $so;
+                }
+            }
         }
     }
 
     $page = cmsCore::request('page', 'int', 1);
 
-    $total_rs = $inDB->query($sql);
-    $total = $inDB->num_rows($total_rs);
+    $db_table = cpDbTableName($table);
 
-    $sql .= " LIMIT " . ($page - 1) * $perpage . ", $perpage";
+    $total = $db->getCount($db_table, 'id');
 
-    $result = $inDB->query($sql);
+    $db->limitPage($page, $perpage);
+
+    if ($order) {
+        $db->order_by = $order;
+    }
+
+    $items = $db->get($db_table);
 
     $_SESSION['filter_table'] = $table;
 
-    if ($inDB->error()) {
+    if ($db->error()) {
         unset($_SESSION['filter']);
         cmsCore::redirect('/' . cmsCore::getInstance()->getUri() . '?' . $_SERVER['QUERY_STRING']);
     }
@@ -289,7 +307,7 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
         echo '</div>';
     }
 
-    if ($inDB->num_rows($result)) {
+    if ($items) {
         //DRAW LIST TABLE
         echo '<form name="selform" action="/' . cmsCore::getInstance()->getUri() . '?view=' . $GLOBALS['applet'] . '&do=saveorder" method="post">';
         echo '<table id="listTable" border="0" class="tablesorter" width="100%" cellpadding="0" cellspacing="0">';
@@ -309,7 +327,7 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
         echo '</thead><tbody>' . "\n";
         //TABLE BODY
         $r = 0;
-        while ($item = $inDB->fetch_assoc($result)) {
+        foreach ($items as $item) {
             $r++;
             if ($r % 2) {
                 $row_class = 'lt_row1';
@@ -508,12 +526,9 @@ function cpListTable($table, $_fields, $_actions, $where = '', $orderby = 'title
 
 function cpForumCatById($id) {
     if (\cms\controller::installed('forum')) {
-        $inDB = cmsDatabase::getInstance();
+        $cat = \cms\db::getInstance()->getItemById('forum_cats', (int) $id);
 
-        $result = $inDB->query("SELECT title FROM cms_forum_cats WHERE id = $id");
-
-        if ($inDB->num_rows($result)) {
-            $cat = $inDB->fetch_assoc($result);
+        if ($cat) {
             return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a> (' . $id . ')';
         }
     }
@@ -523,12 +538,9 @@ function cpForumCatById($id) {
 
 function cpFaqCatById($id) {
     if (\cms\controller::installed('faq')) {
-        $inDB = cmsDatabase::getInstance();
+        $cat = \cms\db::getInstance()->getItemById('faq_cats', (int) $id);
 
-        $result = $inDB->query("SELECT title FROM cms_faq_cats WHERE id = $id");
-
-        if ($inDB->num_rows($result)) {
-            $cat = $inDB->fetch_assoc($result);
+        if ($cat) {
             return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a>';
         }
     }
@@ -538,12 +550,9 @@ function cpFaqCatById($id) {
 
 function cpCatalogCatById($id) {
     if (\cms\controller::installed('catalog')) {
-        $inDB = cmsDatabase::getInstance();
+        $cat = \cms\db::getInstance()->getItemById('uc_cats', (int) $id);
 
-        $result = $inDB->query("SELECT title, parent_id FROM cms_uc_cats WHERE id = $id");
-
-        if ($inDB->num_rows($result)) {
-            $cat = $inDB->fetch_assoc($result);
+        if ($cat) {
             if ($cat['parent_id']) {
                 return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a> (' . $id . ')';
             } else {
@@ -557,12 +566,9 @@ function cpCatalogCatById($id) {
 
 function cpBoardCatById($id) {
     if (\cms\controller::installed('board')) {
-        $inDB = cmsDatabase::getInstance();
+        $cat = \cms\db::getInstance()->getItemById('board_cats', (int) $id);
 
-        $result = $inDB->query("SELECT title FROM cms_board_cats WHERE id = $id");
-
-        if ($inDB->num_rows($result)) {
-            $cat = $inDB->fetch_assoc($result);
+        if ($cat) {
             return '<a href="index.php?view=components&do=config&id=' . (int) $_REQUEST['id'] . '&opt=edit_cat&item_id=' . $id . '">' . $cat['title'] . '</a> (' . $id . ')';
         }
     }
@@ -582,12 +588,9 @@ function cpGroupById($id) {
 }
 
 function cpCatById($id) {
-    $inDB = cmsDatabase::getInstance();
+    $cat = \cms\db::getInstance()->getItemById('category', (int) $id);
 
-    $result = $inDB->query("SELECT title, parent_id FROM cms_category WHERE id = $id");
-
-    if ($inDB->num_rows($result)) {
-        $cat = $inDB->fetch_assoc($result);
+    if ($cat) {
         if ($cat['parent_id']) {
             return '<a href="' . \cms\backend::getBackend('content')->genActionUrl('edit_category', $id) . '">' . $cat['title'] . '</a> (' . $id . ')';
         } else {
@@ -619,14 +622,10 @@ function cpTemplateById($template_id) {
 function cpUserNick($user_id = 0) {
     global $_LANG;
 
-    $inDB = cmsDatabase::getInstance();
-
     if ($user_id) {
-        $sql = "SELECT nickname FROM cms_users WHERE id = $user_id";
-        $result = $inDB->query($sql);
+        $usr = \cms\db::getInstance()->getItemById('users', (int) $user_id);
 
-        if ($inDB->num_rows($result)) {
-            $usr = $inDB->fetch_assoc($result);
+        if ($usr) {
             return $usr['nickname'];
         } else {
             return false;
@@ -647,131 +646,152 @@ function cpYesNo($option) {
 }
 
 //////////////////////////////////////////////// DATABASE //////////////////////////////////////////////////////////
+
+/**
+ * Убирает префикс таблиц CMS: методы \cms\db ожидают имя таблицы без префикса.
+ * Исторический код передаёт как реальный префикс из конфига, так и жёстко
+ * зашитый "cms_".
+ */
+function cpDbTableName($table) {
+    $db = \cms\db::getInstance();
+
+    if ($db->prefix && strpos($table, $db->prefix) === 0) {
+        return substr($table, strlen($db->prefix));
+    }
+
+    if (strpos($table, 'cms_') === 0) {
+        return substr($table, 4);
+    }
+
+    return $table;
+}
+
 function dbMoveUp($table, $id, $current_ord) {
-    $inDB = cmsDatabase::getInstance();
+    $db = \cms\db::getInstance();
     $id = (int) $id;
     $current_ord = (int) $current_ord;
-    $sql = "UPDATE $table SET ordering = ordering + 1 WHERE ordering = ($current_ord-1) LIMIT 1";
-    $inDB->query($sql);
-    $sql = "UPDATE $table SET ordering = ordering - 1 WHERE id = $id LIMIT 1";
-    $inDB->query($sql);
+    $table = cpDbTableName($table);
+
+    // исторический запрос менял только одну строку (LIMIT 1)
+    $neighbor_id = $db->resetFilters()->filterEqual('ordering', $current_ord - 1)->getFieldFiltered($table, 'id');
+
+    if ($neighbor_id !== false) {
+        $db->resetFilters()->filterEqual('id', $neighbor_id)->increment($table, 'ordering', 1);
+    }
+
+    $db->resetFilters()->filterEqual('id', $id)->increment($table, 'ordering', -1);
 }
 
 function dbMoveDown($table, $id, $current_ord) {
-    $inDB = cmsDatabase::getInstance();
+    $db = \cms\db::getInstance();
     $id = (int) $id;
     $current_ord = (int) $current_ord;
-    $sql = "UPDATE $table SET ordering = ordering - 1 WHERE ordering = ($current_ord+1) LIMIT 1";
-    $inDB->query($sql);
-    $sql = "UPDATE $table SET ordering = ordering + 1 WHERE id = $id LIMIT 1";
-    $inDB->query($sql);
+    $table = cpDbTableName($table);
+
+    // исторический запрос менял только одну строку (LIMIT 1)
+    $neighbor_id = $db->resetFilters()->filterEqual('ordering', $current_ord + 1)->getFieldFiltered($table, 'id');
+
+    if ($neighbor_id !== false) {
+        $db->resetFilters()->filterEqual('id', $neighbor_id)->increment($table, 'ordering', -1);
+    }
+
+    $db->resetFilters()->filterEqual('id', $id)->increment($table, 'ordering', 1);
 }
 
 function dbShow($table, $id) {
-    $inDB = cmsDatabase::getInstance();
-
-    $id = (int) $id;
-
-    $sql = "UPDATE $table SET published = 1 WHERE id = $id";
-
-    $inDB->query($sql);
+    $db = \cms\db::getInstance();
+    $table = cpDbTableName($table);
+    $db->resetFilters()->filterEqual('id', (int) $id)->updateFiltered($table, array('published' => 1));
 }
 
 function dbShowList($table, $list) {
-    $inDB = cmsDatabase::getInstance();
-
-    if (is_array($list)) {
-        $sql = "UPDATE $table SET published = 1 WHERE ";
-        $item = 0;
-
-        foreach ($list as $key => $value) {
-            $item++;
-            $sql .= 'id = ' . (int) $value;
-            if ($item < sizeof($list)) {
-                $sql .= ' OR ';
-            }
-        }
-
-        $sql .= ' LIMIT ' . sizeof($list);
-        $inDB->query($sql);
+    if (!is_array($list) || !$list) {
+        return;
     }
+
+    $ids = array();
+
+    foreach ($list as $value) {
+        $ids[] = (int) $value;
+    }
+
+    $db = \cms\db::getInstance();
+    $table = cpDbTableName($table);
+    $db->resetFilters()->filterIn('id', $ids)->updateFiltered($table, array('published' => 1));
 }
 
 function dbHide($table, $id) {
-    $inDB = cmsDatabase::getInstance();
-    $id = (int) $id;
-    $sql = "UPDATE $table SET published = 0 WHERE id = $id";
-    $inDB->query($sql);
+    $db = \cms\db::getInstance();
+    $table = cpDbTableName($table);
+    $db->resetFilters()->filterEqual('id', (int) $id)->updateFiltered($table, array('published' => 0));
 }
 
 function dbHideList($table, $list) {
-    $inDB = cmsDatabase::getInstance();
-
-    if (is_array($list)) {
-        $sql = "UPDATE $table SET published = 0 WHERE ";
-        $item = 0;
-        foreach ($list as $key => $value) {
-            $item++;
-            $sql .= 'id = ' . (int) $value;
-            if ($item < sizeof($list)) {
-                $sql .= ' OR ';
-            }
-        }
-        $sql .= ' LIMIT ' . sizeof($list);
-        $inDB->query($sql);
+    if (!is_array($list) || !$list) {
+        return;
     }
+
+    $ids = array();
+
+    foreach ($list as $value) {
+        $ids[] = (int) $value;
+    }
+
+    $db = \cms\db::getInstance();
+    $table = cpDbTableName($table);
+    $db->resetFilters()->filterIn('id', $ids)->updateFiltered($table, array('published' => 0));
 }
 
 function dbDelete($table, $id) {
     $inCore = cmsCore::getInstance();
-    $inDB = cmsDatabase::getInstance();
+    $db = \cms\db::getInstance();
     $id = (int) $id;
-    $sql = "DELETE FROM $table WHERE id = $id LIMIT 1";
-    $inDB->query($sql);
+    $table = cpDbTableName($table);
 
-    if ($table == 'cms_content') {
+    $db->resetFilters()->delete($table, $id);
+
+    if ($table == 'content') {
         cmsClearTags('content', $id);
         $inCore->deleteRatings('content', $id);
         $inCore->deleteComments('article', $id);
-        $inDB->query("DELETE FROM cms_tags WHERE target='content' AND item_id=$id");
+        $db->filterEqual('target', 'content')->filterEqual('item_id', $id)->deleteFiltered('tags');
     }
 
-    if ($table == 'cms_modules') {
-        $inDB->query("DELETE FROM cms_modules_bind WHERE module_id=$id");
+    if ($table == 'modules') {
+        $db->filterEqual('module_id', $id)->deleteFiltered('modules_bind');
     }
 }
 
 function dbDeleteList($table, $list) {
-    $inDB = cmsDatabase::getInstance();
+    if (!is_array($list) || !$list) {
+        return;
+    }
 
-    if (is_array($list)) {
-        $sql = "DELETE FROM $table WHERE ";
-        $item = 0;
+    $db = \cms\db::getInstance();
+    $table = cpDbTableName($table);
 
-        foreach ($list as $key => $value) {
-            $item++;
-            $value = (int) $value;
-            $sql .= 'id = ' . $value;
+    $db->resetFilters();
 
-            if ($item < sizeof($list)) {
-                $sql .= ' OR ';
-            }
+    $ids = array();
 
-            if ($table == 'cms_content') {
-                cmsClearTags('content', $value);
-                $inDB->query("DELETE FROM cms_comments WHERE target='article' AND target_id=$value");
-                $inDB->query("DELETE FROM cms_ratings WHERE target='content' AND item_id=$value");
-                $inDB->query("DELETE FROM cms_tags WHERE target='content' AND item_id=$value");
-            }
+    foreach ($list as $value) {
+        $value = (int) $value;
+        $ids[] = $value;
 
-            if ($table == 'cms_modules') {
-                $inDB->query("DELETE FROM cms_modules_bind WHERE module_id=$value");
-            }
+        if ($table == 'content') {
+            cmsClearTags('content', $value);
+            $db->filterEqual('target', 'article')->filterEqual('target_id', $value)->deleteFiltered('comments');
+            $db->filterEqual('target', 'content')->filterEqual('item_id', $value)->deleteFiltered('ratings');
+            $db->filterEqual('target', 'content')->filterEqual('item_id', $value)->deleteFiltered('tags');
         }
 
-        $sql .= ' LIMIT ' . sizeof($list);
+        if ($table == 'modules') {
+            $db->filterEqual('module_id', $value)->deleteFiltered('modules_bind');
+        }
+    }
 
-        $inDB->query($sql);
+    if ($ids) {
+        $db->filterIn('id', $ids)->deleteFiltered($table);
     }
 }
 
@@ -833,38 +853,40 @@ function cpGetList($listtype, $field_name = 'title') {
     }
 
     //...или записи из таблицы
-    $inDB = cmsDatabase::getInstance();
-    $sql = "SELECT id, {$field_name} FROM $listtype ORDER BY {$field_name} ASC";
-    $result = $inDB->query($sql);
+    $db_table = cpDbTableName($listtype);
+    $rows = \cms\db::getInstance()->getRows($db_table, '1', 'id, ' . $field_name, $field_name . ' ASC');
 
-    if ($inDB->num_rows($result) > 0) {
-        while ($item = $inDB->fetch_assoc($result)) {
-            $next = sizeof($list);
-            $list[$next]['title'] = $item[$field_name];
-            $list[$next]['id'] = $item['id'];
-        }
+    foreach ($rows as $item) {
+        $list[] = array('title' => $item[$field_name], 'id' => $item['id']);
     }
 
     return $list;
 }
 
 function getFullAwardsList() {
-    $inDB = cmsDatabase::getInstance();
+    $db = \cms\db::getInstance();
 
     $awards = array();
 
-    $rs = $inDB->query("SELECT title FROM cms_user_awards GROUP BY title");
+    $db->resetFilters();
+    $db->selectOnly('title');
+    $db->groupBy('title');
 
-    if ($inDB->num_rows($rs)) {
-        while ($aw = $inDB->fetch_assoc($rs)) {
+    $rows = $db->get('user_awards');
+
+    if ($rows) {
+        foreach ($rows as $aw) {
             $awards[] = $aw;
         }
     }
 
-    $rs = $inDB->query("SELECT title FROM cms_user_autoawards GROUP BY title");
+    $db->selectOnly('title');
+    $db->groupBy('title');
 
-    if ($inDB->num_rows($rs)) {
-        while ($aw = $inDB->fetch_assoc($rs)) {
+    $rows = $db->get('user_autoawards');
+
+    if ($rows) {
+        foreach ($rows as $aw) {
             if (!in_array(array('title' => $aw['title']), $awards)) {
                 $awards[] = $aw;
             }

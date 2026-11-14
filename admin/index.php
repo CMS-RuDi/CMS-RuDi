@@ -25,8 +25,25 @@ define('PATH', $_SERVER['DOCUMENT_ROOT']);
 
 require(PATH . '/core/classes/autoload.php');
 
-// Нужно для cmsDatabase::getInstance() ниже (префикс таблиц)
-cmsConfig::getInstance();
+$inCore = cmsCore::getInstance(false, true);
+$inConf = cmsConfig::getInstance();
+
+// Проверяем, что система установлена
+if (!$inConf->isReady()) {
+    die();
+}
+
+$inUser = cmsUser::getInstance();
+if (!$inUser->update()) {
+    cmsCore::error404();
+}
+
+if (!$inUser->is_admin) {
+    include PATH . '/admin/login.php';
+    cmsCore::halt();
+}
+
+$db = \cms\db::getInstance();
 
 //===================== Переадресуем на новую админку ========================//
 
@@ -44,10 +61,10 @@ if ($view == 'components') {
         $id = $r->get('id', 'int');
 
         if ($id) {
-            $component = cmsDatabase::getInstance()->get_fields('cms_components', 'id=' . (int) $id, '*');
+            $link = $db->getField('components', $id, 'link');
 
-            if ($component) {
-                $do = $component['link'];
+            if ($link) {
+                $do = $link;
             }
         }
     }
@@ -57,7 +74,7 @@ if ($view == 'components') {
         $id = $r->get('id', 'int');
 
         if ($id) {
-            $plugin = cmsDatabase::getInstance()->get_field('cms_plugins', 'id=' . (int) $id, 'plugin');
+            $plugin = $db->getField('plugins', $id, 'plugin');
 
             if ($plugin) {
                 $opt = $plugin;
@@ -72,60 +89,3 @@ if ($view == 'clearcache') {
 }
 
 cmsCore::redirect('/cp/' . $view . (!empty($do) ? '/' . $do : '') . (!empty($opt) ? '/' . $opt : '') . '?' . http_build_query($_GET));
-
-//============================================================================//
-
-require(PATH . '/admin/includes/cp.php');
-require(PATH . '/includes/tools.inc.php');
-
-$inCore = cmsAdmin::getInstance();
-
-$inPage = cmsPage::getInstance();
-$inConf = cmsConfig::getInstance();
-$inDB = cmsDatabase::getInstance();
-$inUser = cmsUser::getInstance();
-
-if (!$inUser->update()) {
-    cmsCore::error404();
-}
-
-// проверяем доступ по Ip
-if (!cmsCore::checkAccessByIp($inConf->allow_ip)) {
-    cmsCore::error404();
-}
-
-cmsCore::loadLanguage('admin/lang');
-
-//-------CHECK AUTHENTICATION--------------------------------------//
-if (!$inUser->is_admin) {
-    include PATH . '/admin/login.php';
-    cmsCore::halt();
-}
-//--------LOAD ACCESS OPTIONS LIST---------------------------------//
-
-$adminAccess = cmsUser::getAdminAccess();
-
-//------------------------------------------------------------------//
-
-$inUser->onlineStats();
-
-$GLOBALS['component'] = '';
-$GLOBALS['applet'] = cmsCore::request('view', 'str', 'main');
-if (!preg_match('/^[a-z0-9]+$/i', $GLOBALS['applet'])) {
-    cmsCore::error404();
-}
-
-$GLOBALS['cp_page_title'] = '';
-$GLOBALS['cp_page_head'] = array();
-$GLOBALS['cp_page_body'] = '';
-
-$GLOBALS['cp_pathway'] = array(
-    array(
-        'title' => $_LANG['PATH_HOME'],
-        'link' => '/admin/',
-    )
-);
-
-cpProceedBody();
-
-include(PATH . '/admin/template.php');

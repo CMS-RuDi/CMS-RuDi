@@ -237,7 +237,7 @@ class cmsFormGen
 
     private function renderListDB($param)
     {
-        $inDB = cmsDatabase::getInstance();
+        $db = clone \cms\db::getInstance();
 
         $src_title = isset($param['src_title']) ? $param['src_title'] : 'title';
         $src_id    = isset($param['src_value']) ? $param['src_value'] : 'id';
@@ -246,21 +246,19 @@ class cmsFormGen
 
         $tree     = isset($param['tree']) ? (int) $param['tree'] : 0;
         $order_by = ($tree ? 'NSLeft' : $src_order);
-        $select   = $src_id . " as value, " . $src_title . " as title";
+
+        $db->selectOnly($src_id, 'value')->select($src_title, 'title');
 
         if ( $tree ) {
-            $select .= ", NSLevel as level";
+            $db->select('NSLevel', 'level');
         }
 
-        $where = ($src_where) ? "WHERE " . $src_where : '';
+        // условие выборки приходит из XML-описания настроек модуля/плагина
+        if ( $src_where ) {
+            $db->filter($src_where);
+        }
 
-        $sql = "SELECT " . $select . "
-                       FROM " . $param['src'] . "
-                       " . $where . "
-                       ORDER BY " . $order_by . "
-                       LIMIT 1000";
-
-        $result = $inDB->query($sql);
+        $options = $db->orderBy($order_by)->limit(0, 1000)->get($param['src'], false, false);
 
         if ( !isset($param['multiple']) ) {
             $html = '<select id="' . $param['name'] . '" name="' . $param['name'] . '" class="param-list">' . "\n";
@@ -271,13 +269,11 @@ class cmsFormGen
                 }
             }
 
-            if ( $inDB->num_rows($result) ) {
-                while ( $option = $inDB->fetch_assoc($result) ) {
-                    if ( isset($option['level']) && $option['level'] >= 1 ) {
-                        $option['title'] = str_repeat('--', $option['level'] - 1) . ' ' . $option['title'];
-                    }
-                    $html .= "\t" . '<option value="' . htmlspecialchars($option['value']) . '" ' . ($param['value'] == $option['value'] ? 'selected="selected"' : '') . '>' . $option['title'] . '</option>' . "\n";
+            foreach ( $options as $option ) {
+                if ( isset($option['level']) && $option['level'] >= 1 ) {
+                    $option['title'] = str_repeat('--', $option['level'] - 1) . ' ' . $option['title'];
                 }
+                $html .= "\t" . '<option value="' . htmlspecialchars($option['value']) . '" ' . ($param['value'] == $option['value'] ? 'selected="selected"' : '') . '>' . $option['title'] . '</option>' . "\n";
             }
 
             $html .= '</select>' . "\n";
@@ -288,13 +284,11 @@ class cmsFormGen
 
             $html = '<table cellpadding="0" cellspacing="0">' . "\n";
 
-            if ( $inDB->num_rows($result) ) {
-                while ( $option = $inDB->fetch_assoc($result) ) {
-                    $html .= '<tr>' . "\n" .
-                            "\t" . '<td><input type="checkbox" id="' . $param['name'] . '_' . $option['value'] . '" name="' . $param['name'] . '[' . $option['value'] . ']" value="' . htmlspecialchars($option['value']) . '" ' . (in_array($option['value'], $values) ? 'checked="checked"' : '') . ' />' . "\n" .
-                            "\t" . '<td><label for="' . $param['name'] . '_' . $option['value'] . '">' . $option['title'] . '</label></td>' . "\n" .
-                            '</tr>';
-                }
+            foreach ( $options as $option ) {
+                $html .= '<tr>' . "\n" .
+                        "\t" . '<td><input type="checkbox" id="' . $param['name'] . '_' . $option['value'] . '" name="' . $param['name'] . '[' . $option['value'] . ']" value="' . htmlspecialchars($option['value']) . '" ' . (in_array($option['value'], $values) ? 'checked="checked"' : '') . ' />' . "\n" .
+                        "\t" . '<td><label for="' . $param['name'] . '_' . $option['value'] . '">' . $option['title'] . '</label></td>' . "\n" .
+                        '</tr>';
             }
 
             $html .= '</table>' . "\n";
