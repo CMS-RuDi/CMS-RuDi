@@ -36,7 +36,7 @@ class cache extends \cms\com_action {
         \cmsCore::addSessionMessage($this->lang->ad_clear_cache_success, 'success');
     }
 
-    public function doAfter($action_name) {
+    public function doAfter() {
         \cmsCore::redirectBack();
     }
 }

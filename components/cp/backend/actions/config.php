@@ -15,7 +15,7 @@ namespace components\cp\backend\actions;
 
 class config extends \cms\com_action {
 
-    public function doBefore($action_name) {
+    public function doBefore() {
         if (!\cmsUser::isAdminCan('admin/config', $this->admin_access)) {
             self::accessDenied();
         }

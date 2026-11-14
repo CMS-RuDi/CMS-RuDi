@@ -582,7 +582,7 @@ class cmsCore {
                 if (isset($segments[1])) {
                     $action_name = $segments[1];
                 } else {
-                    $action_name = 'index';
+                    $action_name = 'view';
                 }
 
                 $params = [];

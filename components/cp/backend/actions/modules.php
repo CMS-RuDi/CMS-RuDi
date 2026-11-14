@@ -16,12 +16,12 @@ namespace components\cp\backend\actions;
 class modules extends \cms\com_action {
     protected $default_action = 'list';
 
-    public function doBefore($action_name) {
+    public function doBefore() {
         if (!\cmsUser::isAdminCan('admin/modules', $this->admin_access)) {
             \cms\backend::accessDenied();
         }
 
-        if ($action_name == 'list') {
+        if ($this->action == 'list') {
             $id = $this->request()->get('id', 'int', -1);
             $do = $this->request()->get('do', 'str');
 

@@ -27,9 +27,22 @@ class com_action {
      */
     protected $lang;
 
+    /**
+     * Название главного действия
+     * @var string
+     */
+    protected $main_action;
+
+    /**
+     * Название текущего действия
+     * @var string
+     */
+    protected $action;
+
     public function __construct($controller, $params = []) {
         $this->controller = $controller;
         $this->params = $params;
+        $this->main_action = $this->controller->current_action;
 
         if (method_exists($controller, 'core')) {
             $this->core = $controller->core();
@@ -41,14 +54,10 @@ class com_action {
     }
 
     public function run(...$params) {
-        if (empty($params)) {
+        if (empty($params) || !preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $params[0])) {
             $action_name = isset($this->default_action) ? $this->default_action : 'view';
         } else {
             $action_name = array_shift($params);
-        }
-
-        if ($this->doBefore($action_name) === false) {
-            return false;
         }
 
         $method = \cms\helper\str::toCamel('_', 'act_' . $action_name);
@@ -57,16 +66,32 @@ class com_action {
             \cmsCore::error404();
         }
 
+        $pcount = !empty($params) ? count($params) : 0;
+        $reflection = new \ReflectionMethod($this, $method);
+
+        $required = $reflection->getNumberOfRequiredParameters();
+        $total = $reflection->getNumberOfParameters();
+
+        if ($pcount > $total || $pcount < $required) {
+            \cmsCore::error404();
+        }
+
+        $this->action = $action_name;
+
+        if ($this->doBefore() === false) {
+            return false;
+        }
+
         $this->{$method}(...$params);
 
-        $this->doAfter($action_name);
+        $this->doAfter();
     }
 
-    public function doBefore($action_name) {
+    public function doBefore() {
         return true;
     }
 
-    public function doAfter($action_name) {
+    public function doAfter() {
         return true;
     }
 

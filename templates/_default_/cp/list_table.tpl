@@ -58,13 +58,13 @@
                     </td>
                 {foreach $fields as $key => $field}
                     {if $field.link}
-                        <td class="{$row_class}" valign="middle">{$item._f_otstup_.$key}<a class="lt_link" href="{$item._f_links_.$key}">{$item[$field.field]}</a></td>
+                        <td class="{$row_class}" valign="middle">{$item._f_otstup_.$key}<a class="lt_link" href="{$item._f_links_.$key}">{$item.$key}</a></td>
                     {else}
                         {if $field.field != 'ordering'}
                             {if $field.field == 'published'}
                                 <td class="{$row_class}" valign="middle"><a title="{$lang->hide}" class="uittip" id="publink{$item.id}" href="javascript:pub({$item.id},'{$item._f_links_.qs}', '{$item._f_links_.qs2}', {if $item.published}'off', 'on'{else}'on', 'off'{/if});"><img id="pub{$item.id}" src="/admin/images/actions/{if $item.published}on{else}off{/if}.gif" border="0"/></a></td>
                             {else}
-                                <td class="{$row_class}" valign="middle">{$item._f_otstup_.$key} {$item[$field.field]}</td>
+                                <td class="{$row_class}" valign="middle">{$item._f_otstup_.$key} {$item[$key]}</td>
                             {/if}
                         {else}
                             {if $field.do_suffix}
@@ -88,7 +88,7 @@
                     {/if}
                 {/foreach}
                 {if $actions}
-                    <td width="110" class="' . $row_class . '" align="right" valign="middle">
+                    <td width="110" class="{$row_class}" align="right" valign="middle">
                         <div style="padding-right:8px">
                         {foreach $actions as $key => $action}
                             {if $item._a_print_.$key}

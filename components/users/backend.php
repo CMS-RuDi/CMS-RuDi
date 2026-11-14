@@ -16,7 +16,7 @@ class backend extends \cms\backend {
      */
     public $model;
 
-    public function actionIndex() {
+    public function actionView() {
         if (!\cmsUser::isAdminCan('admin/users', $this->admin_access)) {
             self::accessDenied();
         }
@@ -37,7 +37,7 @@ class backend extends \cms\backend {
             ['title' => $this->lang->ad_nickname, 'field' => 'nickname', 'width' => '', 'link' => '/cp/components/users/edit/%id%', 'filter' => 12],
             ['title' => $this->lang->ad_rating, 'field' => 'rating', 'width' => '60', 'link' => '/cp/components/users/recalculate_rating/%id%'],
             ['title' => $this->lang->ad_group, 'field' => 'group_title', 'width' => '110', 'link' => '/cp/components/users/group_edit/%group_id%', 'filter' => 1, 'filter_name' => 'group_id', 'filterlist' => cpGetList('user_groups')],
-            ['title' => $this->lang->email, 'field' => 'email', 'width' => '120'],
+            ['title' => $this->lang->ad_email, 'field' => 'email', 'width' => '120'],
             ['title' => $this->lang->ad_registration_date, 'field' => 'regdate', 'width' => '100'],
             ['title' => $this->lang->ad_last_login, 'field' => 'logdate', 'width' => '100'],
             ['title' => $this->lang->ad_last_ip, 'field' => 'last_ip', 'width' => '90', 'link' => 'https://geoiplookup.io/geoip/%last_ip%'],

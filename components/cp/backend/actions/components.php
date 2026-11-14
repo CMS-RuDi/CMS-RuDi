@@ -111,7 +111,7 @@ class components extends \cms\com_action {
 
     protected function initNewBacked($component, $params) {
         if (empty($params)) {
-            $action_name = 'index';
+            $action_name = 'view';
         } else {
             $action_name = array_shift($params);
         }

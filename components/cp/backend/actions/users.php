@@ -16,7 +16,7 @@ namespace components\cp\backend\actions;
 class users extends \cms\com_action {
     protected $default_action = 'list';
 
-    public function doBefore($action_name) {
+    public function doBefore() {
         if (!\cmsUser::isAdminCan('admin/users', $this->admin_access)) {
             self::accessDenied();
         }

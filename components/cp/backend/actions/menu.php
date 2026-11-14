@@ -16,12 +16,12 @@ namespace components\cp\backend\actions;
 class menu extends \cms\com_action {
     protected $default_action = 'list';
 
-    public function doBefore($action_name) {
+    public function doBefore() {
         if (!\cmsUser::isAdminCan('admin/menu', $this->admin_access)) {
             \cms\backend::accessDenied();
         }
 
-        if ($action_name == 'list') {
+        if ($this->action == 'list') {
             $id = $this->request()->get('id', 'int', -1);
             $do = $this->request()->get('do', 'str');
 
@@ -37,7 +37,7 @@ class menu extends \cms\com_action {
         $this->page()->setTitle($this->lang->ad_menu);
         $this->page()->addPathway($this->lang->ad_menu, $this->genActionUrl('menu'));
 
-        if ($action_name == 'list') {
+        if ($this->action == 'list') {
             self::addToolMenuItem($this->lang->ad_menu_point_add, $this->genActionUrl('menu', 'add'), 'new.gif');
             self::addToolMenuItem($this->lang->ad_menu_add, $this->genActionUrl('menu', 'addmenu'), 'newmenu.gif');
             self::addToolMenuItem($this->lang->ad_edit_selected, "javascript:checkSel('" . $this->genActionUrl('menu', 'edit', ['multiple' => 1]) . "');", 'edit.gif');
@@ -50,7 +50,7 @@ class menu extends \cms\com_action {
             self::addToolMenuItem($this->lang->cancel, $this->genActionUrl('menu'), 'cancel.gif');
         }
 
-        if (in_array($action_name, ['addmenu', 'add', 'edit'])) {
+        if (in_array($this->action, ['addmenu', 'add', 'edit'])) {
             $this->page()->addHeadJS('admin/js/menu.js');
             $this->page()->addHeadJsLang('AD_SPECIFY_LINK_MENU');
         }

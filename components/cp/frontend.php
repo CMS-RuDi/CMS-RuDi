@@ -40,7 +40,7 @@ class frontend extends \cms\backend {
     /**
      * Главная страница CP
      */
-    public function actionIndex() {
+    public function actionView() {
         $content_counts = [
             'content' => false,
             'photos' => false,

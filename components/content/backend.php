@@ -46,7 +46,7 @@ class backend extends \cms\backend {
 
     //========================================================================//
 
-    public function actionIndex($category_id = 0) {
+    public function actionView($category_id = 0) {
         $this->page->setTitle($this->lang->ad_articles);
         $this->page->addPathway($this->lang->ad_articles);
 
@@ -134,8 +134,8 @@ class backend extends \cms\backend {
 
         if ($items && $to_cat_id) {
             $last_ordering = (int) $this->model->db->filterEqual('category_id', (int) $to_cat_id)->
-                    orderBy('ordering', 'desc')->
-                    getFieldFiltered(\components\content\model::CONTENT_TABLE, 'ordering');
+                            orderBy('ordering', 'desc')->
+                            getFieldFiltered(\components\content\model::CONTENT_TABLE, 'ordering');
 
             foreach ($items as $item_id) {
                 $article = $this->model->getArticle($item_id);

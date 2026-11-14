@@ -15,7 +15,7 @@ namespace components\cp\backend\actions;
 
 class install extends \cms\com_action {
 
-    public function doBefore($action_name) {
+    public function doBefore() {
         $this->page()->setTitle($this->lang->ad_setup_extension);
         \cms\backend::setTitle($this->lang->ad_setup_extension);
 

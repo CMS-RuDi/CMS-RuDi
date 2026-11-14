@@ -16,7 +16,7 @@ class backend extends \cms\backend {
      */
     public $model;
 
-    public function actionIndex() {
+    public function actionView() {
         self::addToolMenuItem($this->lang->ad_settings, $this->genActionUrl('config'), 'config.gif');
         self::addToolMenuItem($this->lang->ad_delete_selected, "javascript:checkSel('" . self::getBackend('content')->genActionUrl('delete', false, ['multiple' => 1]) . "');", 'delete.gif');
 

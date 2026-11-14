@@ -78,7 +78,7 @@ class controller {
     protected $options = [];
 
     /**
-     * Флаг наличия SEO параметров для index экшена
+     * Флаг наличия SEO параметров для главной страницы
      *
      * @var boolean
      */
@@ -318,7 +318,7 @@ class controller {
      * Вызывается до начала работы экшена
      */
     public function before($action_name) {
-        if ($this->use_seo_options && $action_name == 'index') {
+        if ($this->use_seo_options && $action_name == 'view') {
             if (!empty($this->options['seo_keys'])) {
                 $this->page->setKeywords($this->options['seo_keys']);
             }
@@ -424,9 +424,7 @@ class controller {
         if (!is_readable($action_file)) {
             if ($exit_if_error) {
                 \cmsCore::halt($this->lang->file_not_found . ': ' . str_replace(PATH, '', $action_file));
-//            \cmsCore::error($this->lang->file_not_found . ': ' . str_replace(PATH, '', $action_file));
             }
-
             return false;
         }
 
@@ -435,7 +433,6 @@ class controller {
         if (!class_exists($class_name, false)) {
             if ($exit_if_error) {
                 \cmsCore::halt($this->lang->vsprintf('class_not_defined', str_replace(PATH, '', $action_file), $class_name));
-//            cmsCore::error($this->lang->vsprintf('class_not_defined', str_replace(PATH, '', $action_file), $class_name));
             }
             return false;
         }
@@ -1009,7 +1006,7 @@ class controller {
     public function genActionUrl($action = '', $params = [], $query = []) {
         $location = '/' . $this->root_url;
 
-        if (!empty($action) && $action != 'index') {
+        if (!empty($action) && $action != 'view') {
             $location .= '/' . $action;
         }
 
