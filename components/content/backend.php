@@ -304,7 +304,7 @@ class backend extends \cms\backend {
     }
 
     public function actionSubmit() {
-        if (!\cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             \cmsCore::error404();
         }
 
@@ -496,7 +496,7 @@ class backend extends \cms\backend {
     }
 
     public function actionSubmitCategory() {
-        if (!\cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             \cmsCore::error404();
         }
 

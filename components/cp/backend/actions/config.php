@@ -61,7 +61,7 @@ class config extends \cms\com_action {
     }
 
     public function actSave() {
-        if (!\cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             \cmsCore::error404();
         }
 

@@ -33,7 +33,7 @@ cpToolMenu($toolmenu);
 
 if ($opt == 'show_award') {
     if (!$inPut->has('item')) {
-        if (isset($inPut->has('item_id'))) {
+        if ($inPut->has('item_id')) {
             dbShow('cms_user_autoawards', $inPut->get('item_id', 'int', 0));
         }
         echo '1';
@@ -47,7 +47,7 @@ if ($opt == 'show_award') {
 
 if ($opt == 'hide_award') {
     if (!$inPut->has('item')) {
-        if (isset($inPut->has('item_id'))) {
+        if ($inPut->has('item_id')) {
             dbHide('cms_user_autoawards', $inPut->get('item_id', 'int', 0));
         }
         echo '1';
@@ -60,7 +60,7 @@ if ($opt == 'hide_award') {
 }
 
 if ($opt == 'submit' || $opt == 'update') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -227,7 +227,7 @@ if ($opt == 'add' || $opt == 'edit') {
         }
     </style>
     <form action="/cp/components/autoawards" method="post" enctype="multipart/form-data" name="addform" id="addform">
-        <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+        <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
         <table width="625" border="0" cellspacing="5" class="proptable">
             <tr>
                 <td width="298" valign="top"><strong><?php echo $_LANG['AD_AWARD_TITLE']; ?></strong><br /></td>

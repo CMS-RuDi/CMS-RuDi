@@ -216,7 +216,7 @@ class backend extends controller {
 
         foreach ($fields as $key => $value) {
             if (isset($fields[$key]['fdate'])) {
-                $this->model->db->select("DATE_FORMAT(" . $fields[$key]['field'] . ", '" . $fields[$key]['fdate'] . "')", $fields[$key]['field']);
+                $this->model->db->select("DATE_FORMAT(i.`" . $fields[$key]['field'] . "`, '" . $fields[$key]['fdate'] . "')", $fields[$key]['field']);
             }
         }
 
@@ -318,14 +318,14 @@ class backend extends controller {
 
         $page = $this->request->get('page', 'int', 1);
 
-        $total = $this->model->{'getCount' . ucfirst($table)}();
+        $total = $this->model->{\cms\helper\str::toCamel('_', 'get_count_' . $table)}();
         $this->model->db->limitPage($page, $perpage);
 
         if ($order) {
             $this->model->db->orderBy(...array_pad(explode(' ', $order), 2, ''));
         }
 
-        $items = $this->model->{'get' . ucfirst($table)}();
+        $items = $this->model->{\cms\helper\str::toCamel('_', 'get_' . $table)}();
 
         foreach ($items as $id => $item) {
             $items[$id]['_f_links_'] = [];
@@ -470,6 +470,48 @@ class backend extends controller {
                 ->assign('items', $items)
                 ->assign('pagebar', $this->page->getPagebar($total, $page, $perpage, $this->genActionUrl() . '?' . cpAddParam($query_clear, 'page', '%page%')))
                 ->display();
+    }
+
+    /**
+     * Возвращает id текущего элемента для редактирования
+     * @param string $key
+     * @return int
+     */
+    public function getMultipleItem($key = 'editlist', $exit = true) {
+        if ($this->input->has('item')) {
+            \cms\session::set($key, $this->input->get('item', 'array_int', []));
+        }
+
+        $items = \cms\session::get($key);
+
+        if ($items) {
+            $item_id = array_shift($items);
+
+            if (count($items) == 0) {
+                \cms\session::delete($key);
+            } else {
+                \cms\session::set($key, $items);
+            }
+
+            return $item_id;
+        }
+
+        if ($exit) {
+            \cmsCore::addSessionMessage($this->lang->ad_no_select_objects, 'error');
+            return \cmsCore::redirectBack();
+        }
+
+        return false;
+    }
+
+    public function yesNo($value) {
+        if (!empty($value)) {
+            $value = '<span style="color:green;">' . $this->lang->yes . '</span>';
+        } else {
+            $value = '<span style="color:red;">' . $this->lang->no . '</span>';
+        }
+
+        return $value;
     }
 
     //========================================================================//

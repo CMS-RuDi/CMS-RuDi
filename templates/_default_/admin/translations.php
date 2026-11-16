@@ -1,5 +1,5 @@
 <form action="<?php echo $action; ?>" method="post" target="_self" id="lang_form">
-    <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+    <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
     <input type="hidden" name="save" value="1" />
     <?php if ( $type == 'html' ) { ?>
         <?php cmsCore::insertEditor('field_data', $value, '500', '99%'); ?>

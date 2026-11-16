@@ -272,7 +272,7 @@ function clubs() {
                 cmsCore::jsonOutput(array('error' => true, 'text' => $_LANG['CLUB_EXISTS']));
             }
 
-            if (!cmsUser::checkCsrfToken()) {
+            if (!\cms\csrf_token::checkPost()) {
                 return false;
             }
 
@@ -324,7 +324,7 @@ function clubs() {
         }
 
         if (cmsCore::inRequest('save')) {
-            if (!cmsUser::checkCsrfToken()) {
+            if (!\cms\csrf_token::checkPost()) {
                 return false;
             }
 
@@ -472,7 +472,7 @@ function clubs() {
         }
 
         if (cmsCore::inRequest('confirm')) {
-            if (!cmsUser::checkCsrfToken()) {
+            if (!\cms\csrf_token::checkPost()) {
                 cmsCore::halt();
             }
 
@@ -646,7 +646,7 @@ function clubs() {
                 cmsCore::jsonOutput(array('error' => true, 'text' => $_LANG['ERR_SEND_MESS_NO_MEMBERS']));
             }
 
-            if (!cmsUser::checkCsrfToken()) {
+            if (!\cms\csrf_token::checkPost()) {
                 return false;
             }
 
@@ -941,7 +941,7 @@ function clubs() {
             return false;
         }
 
-        if (!cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             return false;
         }
 
@@ -1066,7 +1066,7 @@ function clubs() {
             return false;
         }
 
-        if (!cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             return false;
         }
 

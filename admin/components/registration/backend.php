@@ -24,7 +24,7 @@ cpToolMenu($toolmenu);
 $cfg = $inCore->loadComponentConfig('registration');
 
 if ($opt == 'saveconfig') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -85,7 +85,7 @@ if ($opt == 'saveconfig') {
 }
 ?>
 <form action="/cp/components/registration" method="post" name="optform" target="_self" id="optform">
-    <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+    <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
     <div id="config_tabs" style="margin-top:12px;" class="uitabs">
 
         <ul id="tabs">

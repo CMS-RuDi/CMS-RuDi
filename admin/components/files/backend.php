@@ -24,7 +24,7 @@ cpToolMenu($toolmenu);
 $cfg = $inCore->loadComponentConfig('files');
 
 if ($opt == 'saveconfig') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -43,7 +43,7 @@ if ($opt == 'saveconfig') {
 }
 ?>
 <form action="/cp/components/files" method="post" name="optform" id="form1">
-    <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+    <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
     <table width="650" border="0" cellpadding="10" cellspacing="0" class="proptable">
         <tr>
             <td><strong><?php echo $_LANG['AD_FILES_CHECK_LINK']; ?>:</strong></td>

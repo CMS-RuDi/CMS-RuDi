@@ -4,12 +4,20 @@
             <table width="250">
                 <tr>
                     {foreach $fields as $key => $field}
-                        {if $field.filter}
-                            {$filter_name = $field.filter_name|default:$field.field}
+                        {if !empty($field.filter)}
+                            {if isset($field.filter_name)}
+                                {$filter_name = $field.filter_name}
+                            {else}
+                                {$filter_name = $field.field}
+                            {/if}
                             <td width="">{$field['title']}: </td>
-                            {$initval = $filter.$filter_name|default:''}
+                            {if isset($filter[$filter_name])}
+                                {$initval = $filter[$filter_name]}
+                            {else}
+                                {$initval = ''}
+                            {/if}
                             <td width="">
-                            {if !$field.filterlist}
+                            {if empty($field.filterlist)}
                                 <input name="filter[{$filter_name|escape:'html'}]" type="text" size="{$filter_name|escape:'html'}" class="filter_input" value="{$initval}"/>
                             {else}
                                 <select name="filter[{$filter_name|escape:'html'}]" id="filter[{$filter_name|escape:'html'}]">
@@ -57,7 +65,7 @@
                         <input type="checkbox" name="item[]" value="{$item.id}" />
                     </td>
                 {foreach $fields as $key => $field}
-                    {if $field.link}
+                    {if !empty($field.link)}
                         <td class="{$row_class}" valign="middle">{$item._f_otstup_.$key}<a class="lt_link" href="{$item._f_links_.$key}">{$item.$key}</a></td>
                     {else}
                         {if $field.field != 'ordering'}
@@ -95,7 +103,7 @@
                                 {if !isset($action['confirm'])}
                                     <a href="{$item._a_links_.$key}" class="uittip" title="{$action.title}"><img hspace="2" src="/admin/images/actions/{$action.icon}" border="0" alt="{$action.title}"/></a>
                                 {else}
-                                    <a href="#" class="uittip" onclick="jsmsg('{$action.confirm}', '{$item._a_links_.$key}')" title="{$action.title}"><img hspace="2" src="/admin/images/actions/{$action.icon}" border="0" alt="{$action.title}"/></a>
+                                    <a href="#" class="uittip" onclick="jsmsg('{$action.confirm}', '{$item._a_links_.$key}');" title="{$action.title}"><img hspace="2" src="/admin/images/actions/{$action.icon}" border="0" alt="{$action.title}"/></a>
                                 {/if}
                             {/if}
                         {/foreach}

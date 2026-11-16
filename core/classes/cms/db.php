@@ -447,28 +447,6 @@ class db extends \DSSoft\DB {
         return $this;
     }
 
-    public function resetFilters() {
-        parent::resetFilters();
-
-        $this->select = '';
-
-        return $this;
-    }
-
-    public function select($field, $as = false) {
-        if (!is_array($this->select)) {
-            $this->select = $this->select === '' ? [] : [$this->select];
-        }
-
-        return parent::select($field, $as);
-    }
-
-    public function selectOnly($field, $as = false) {
-        $this->select = [];
-
-        return parent::selectOnly($field, $as);
-    }
-
     /**
      * Legacy-сборка SQL для компонентов, которые ещё читают свойства
      * where/join/select/group_by/order_by напрямую.
@@ -501,24 +479,6 @@ class db extends \DSSoft\DB {
 
     public function groupBy($field) {
         $this->group_by = 'GROUP BY ' . $field;
-
-        return $this;
-    }
-
-    public function orderBy($field, $direction = 'ASC') {
-        $order = trim((string) $field);
-        $direction = trim((string) $direction);
-
-        // если направление уже входит в $field ('pubdate DESC'), не добавляем его
-        if ($direction !== '' && !preg_match('/\s+(asc|desc)\b/i', $order)) {
-            $order .= ' ' . $direction;
-        }
-
-        if (!preg_match('/\s+(asc|desc)\b/i', $order)) {
-            $order .= ' ASC';
-        }
-
-        $this->order_by = 'ORDER BY ' . $order;
 
         return $this;
     }

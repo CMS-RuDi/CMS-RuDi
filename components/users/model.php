@@ -25,6 +25,7 @@ class cms_model_users {
 
     function __construct() {
         $this->inDB = \cms\db::getInstance();
+        $this->db = $this->inDB;
         $this->inCore = cmsCore::getInstance();
         $this->config = $this->inCore->loadComponentConfig('users');
         cmsCore::loadLanguage('components/users');

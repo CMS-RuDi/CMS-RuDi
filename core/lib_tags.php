@@ -303,7 +303,7 @@ function cmsTagsList()
 
     $db->resetFilters();
 
-    $tags = $db->select('i.tag')
+    $tags = $db->selectOnly('i.tag')
             ->select('COUNT(i.tag)', 'num')
             ->groupBy('i.tag')
             ->orderBy('i.tag', 'ASC')

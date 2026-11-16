@@ -23,7 +23,7 @@ $opt = $inPut->get('opt', 'str', 'list_albums');
 //============================================================================//
 
 if ($opt == 'saveconfig') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -75,7 +75,7 @@ if ($opt == 'config') {
     ?>
 
     <form action="/cp/components/photos" method="post" enctype="multipart/form-data" name="addform">
-        <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+        <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
         <table width="" border="0" cellpadding="10" cellspacing="0" class="proptable" style="width: 550px;">
             <tr>
                 <td width="300"><strong><?php echo $_LANG['AD_SHOW_LINKS_ORIGINAL']; ?>: </strong></td>
@@ -236,7 +236,7 @@ if ($opt == 'hide_album') {
 //=================================================================================================//
 
 if ($opt == 'submit_album') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -295,7 +295,7 @@ if ($opt == 'delete_album') {
 //=================================================================================================//
 
 if ($opt == 'update_album') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -422,7 +422,7 @@ if ($opt == 'add_album' || $opt == 'edit_album') {
     </script>
 
     <form id="addform" name="addform" method="post" action="/cp/components/photos">
-        <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+        <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
         <table width="610" border="0" cellspacing="5" class="proptable">
             <tr>
                 <td width="300"><?php echo $_LANG['AD_ALBUM_TITLE']; ?>:</td>

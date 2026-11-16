@@ -434,7 +434,7 @@ class cms_model_clubs {
      * @return bool
      */
     public function setClubRating($club_id) {
-        $members_rating = \cms\db::cloneOf($this->db)->select('SUM(u.rating)', 'rating')
+        $members_rating = \cms\db::cloneOf($this->db)->selectOnly('SUM(u.rating)', 'rating')
                 ->joinLeft('users', 'u', 'u.id = i.user_id')
                 ->filterEqual('i.club_id', (int) $club_id)
                 ->getItem('user_clubs');

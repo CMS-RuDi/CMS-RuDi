@@ -1063,16 +1063,14 @@ class controller {
                 return $this->core;
             case 'user':
                 return $this->user;
+            case 'page':
+                return $this->page;
         }
     }
 
     public function __isset($name) {
         switch (strtolower($name)) {
             case 'input':
-                return true;
-            case 'core':
-                return true;
-            case 'user':
                 return true;
             default:
                 return isset($this->{$name});

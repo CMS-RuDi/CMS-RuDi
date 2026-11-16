@@ -259,7 +259,7 @@ function blogs() {
                 }
             }
 
-            if (!cmsUser::checkCsrfToken()) {
+            if (!\cms\csrf_token::checkPost()) {
                 cmsCore::halt();
             }
 
@@ -766,7 +766,7 @@ function blogs() {
                 cmsCore::jsonOutput(array('error' => true, 'text' => $_LANG['CAT_ERR_TITLE']));
             }
 
-            if (!cmsUser::checkCsrfToken()) {
+            if (!\cms\csrf_token::checkPost()) {
                 cmsCore::halt();
             }
 
@@ -812,7 +812,7 @@ function blogs() {
             cmsCore::halt();
         }
 
-        if (!cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             cmsCore::halt();
         }
 
@@ -939,7 +939,7 @@ function blogs() {
             cmsCore::halt();
         }
 
-        if (!cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             cmsCore::halt();
         }
 
@@ -1030,7 +1030,7 @@ function blogs() {
             cmsCore::halt();
         }
 
-        if (!cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             cmsCore::halt();
         }
 

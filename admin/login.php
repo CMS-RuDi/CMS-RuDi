@@ -89,7 +89,7 @@ if ( !defined('VALID_CMS_ADMIN') ) {
     <body>
         <div id="body">
             <form action="/login" method="post">
-                <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+                <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
                 <input type="hidden" name="is_admin" value="1" />
                 <h2><?php echo $_LANG['AD_AUTH']; ?></h2>
                 <input required="true" autofocus="true" tabindex="1" name="login" type="text" id="login" placeholder="<?php echo $_LANG['AD_AUTH_LOGIN']; ?>" />

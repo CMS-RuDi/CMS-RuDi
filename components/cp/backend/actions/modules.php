@@ -335,7 +335,7 @@ class modules extends \cms\com_action {
     }
 
     public function actSubmit() {
-        if (!\cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             \cmsCore::error404();
         }
 
@@ -553,7 +553,7 @@ class modules extends \cms\com_action {
     }
 
     public function actSaveAutoConfig($item_id) {
-        if (!\cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             \cmsCore::error404();
         }
 

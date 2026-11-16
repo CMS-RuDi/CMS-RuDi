@@ -112,7 +112,7 @@ class plugins extends \cms\com_action {
     }
 
     public function actSaveConfig($plugin_name) {
-        if (!\cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             \cmsCore::error404();
         }
 

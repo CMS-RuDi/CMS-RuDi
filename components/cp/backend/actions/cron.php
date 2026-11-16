@@ -67,7 +67,7 @@ class cron extends \cms\com_action {
     }
 
     public function actSubmit() {
-        if (!\cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             \cmsCore::error404();
         }
 

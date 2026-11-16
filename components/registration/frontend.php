@@ -41,7 +41,7 @@ function registration()
                     display('com_registration_sendremind.tpl');
         }
         else {
-            if ( !cmsUser::checkCsrfToken() ) {
+            if ( !\cms\csrf_token::checkPost() ) {
                 cmsCore::error404();
             }
 
@@ -121,7 +121,7 @@ function registration()
         }
 
         if ( cmsCore::inRequest('submit') ) {
-            if ( !cmsUser::checkCsrfToken() ) {
+            if ( !\cms\csrf_token::checkPost() ) {
                 cmsCore::error404();
             }
 
@@ -180,7 +180,7 @@ function registration()
     }
 
     if ( $do == 'register' ) {
-        if ( !cmsUser::checkCsrfToken() ) {
+        if ( !\cms\csrf_token::checkPost() ) {
             cmsCore::error404();
         }
 
@@ -542,7 +542,7 @@ function registration()
                 return;
             }
 
-            if ( !cmsUser::checkCsrfToken() ) {
+            if ( !\cms\csrf_token::checkPost() ) {
                 cmsCore::error404();
             }
 

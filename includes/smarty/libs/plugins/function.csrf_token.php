@@ -11,5 +11,5 @@
 //                                                                            //
 /******************************************************************************/
 function smarty_function_csrf_token($params, &$smarty){
-    return cmsUser::getCsrfToken();
+    return \cms\csrf_token::get();
 }

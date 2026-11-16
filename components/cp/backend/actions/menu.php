@@ -258,7 +258,7 @@ class menu extends \cms\com_action {
     //========================================================================//
 
     public function actSubmitmenu() {
-        if (!\cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             \cmsCore::error404();
         }
 
@@ -295,7 +295,7 @@ class menu extends \cms\com_action {
     }
 
     public function actSubmit() {
-        if (!\cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             \cmsCore::error404();
         }
 

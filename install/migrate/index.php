@@ -24,6 +24,9 @@ $inCore = cmsAdmin::getInstance();
 $inConf = cmsConfig::getInstance();
 $inDB = \cms\db::getInstance();
 
+// Очищаем старый токен
+\cms\csrf_token::clear();
+
 // принудительно включаем дебаг
 $inConf->debug = 1;
 

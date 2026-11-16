@@ -2423,7 +2423,7 @@ class cmsCore {
     }
 
     public static function validateForm() {
-        return cmsUser::checkCsrfToken();
+        return \cms\csrf_token::checkPost();
     }
 
     public static function getFilters() {

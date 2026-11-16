@@ -56,7 +56,7 @@ if ($translation && isset($translation['data'][$field])) {
 }
 
 if ($inPut->has('save')) {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::halt();
     }
 

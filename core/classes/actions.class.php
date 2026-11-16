@@ -479,7 +479,7 @@ class cmsActions {
 
         $db->resetFilters();
 
-        return $db->select('MIN(i.title)', 'title')
+        return $db->selectOnly('MIN(i.title)', 'title')
                         ->select('i.link')
                         ->joinInner('actions', 'act', 'act.component = i.link')
                         ->filterEqual('i.internal', 0)

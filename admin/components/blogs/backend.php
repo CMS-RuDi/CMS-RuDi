@@ -61,7 +61,7 @@ if ($opt == 'list_blogs') {
 }
 
 if ($opt == 'saveconfig') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -98,7 +98,7 @@ if ($opt == 'delete_blog') {
 }
 
 if ($opt == 'update_blog') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -140,7 +140,7 @@ if ($opt == 'config') {
     cpToolMenu($toolmenu);
     ?>
     <form action="/cp/components/blogs" method="post" name="optform" target="_self" style="margin-top:10px" id="form1">
-        <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+        <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
         <?php ob_start(); ?>
         {tab=<?php echo $_LANG['AD_BLOG_VIEW']; ?>}
         <table width="609" border="0" cellpadding="10" cellspacing="0" class="proptable">
@@ -387,7 +387,7 @@ if ($opt == 'edit_blog') {
     cpAddPathway($mod['title']);
     ?>
     <form action="/cp/components/blogs?opt=update_blog&item_id=<?php echo $mod['id']; ?>" method="post" name="optform" target="_self" id="form1">
-        <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+        <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
         <table width="609" border="0" cellpadding="10" cellspacing="0" class="proptable">
             <tr>
                 <td width="120"><strong><?php echo $_LANG['AD_BLOG_NAME']; ?>: </strong></td>

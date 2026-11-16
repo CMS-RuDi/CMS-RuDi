@@ -54,7 +54,7 @@ $model = new cms_model_comments();
 $cfg = $model->config;
 
 if ($opt == 'saveconfig') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -97,7 +97,7 @@ if ($opt == 'hide_comment') {
 }
 
 if ($opt == 'update') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -166,7 +166,7 @@ if ($opt == 'edit') {
     ?>
 
     <form id="addform" name="addform" method="post" action="/cp/components/comments">
-        <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+        <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
         <table width="662" border="0" cellspacing="5" class="proptable">
             <tr>
                 <td width="200"><strong><?php echo $_LANG['AD_COMENT_AUTHOR']; ?> </strong></td>
@@ -207,7 +207,7 @@ if ($opt == 'config') {
     ?>
 
     <form action="/cp/components/comments" method="post" name="optform" target="_self" id="form1">
-        <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+        <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
         <div id="config_tabs" style="margin-top:12px;" class="uitabs">
 
             <ul id="tabs">

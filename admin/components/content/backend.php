@@ -21,7 +21,7 @@ echo '<h3>' . $_LANG['AD_SETTINGS'] . '</h3>';
 $cfg = $inCore->loadComponentConfig('content');
 
 if ($opt == 'saveconfig') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -54,7 +54,7 @@ $GLOBALS['cp_page_head'][] = jwHeader();
 ?>
 
 <form action="/cp/components/content" method="post" name="optform" target="_self" id="form1">
-    <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+    <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
     <?php ob_start(); ?>
     {tab=<?php echo $_LANG['AD_OVERALL']; ?>}
     <table width="550" border="0" cellpadding="10" cellspacing="0" class="proptable">

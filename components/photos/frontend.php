@@ -417,7 +417,7 @@ function photos() {
             cmsCore::halt();
         }
 
-        if (!cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             cmsCore::halt();
         }
 
@@ -441,7 +441,7 @@ function photos() {
 
         cmsCore::addSessionMessage($_LANG['PHOTO_DELETED'], 'success');
 
-        cmsUser::clearCsrfToken();
+        \cms\csrf_token::clear();
 
         cmsCore::jsonOutput(array('error' => false, 'redirect' => '/photos/' . $photo['album_id']));
     }

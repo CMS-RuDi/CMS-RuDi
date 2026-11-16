@@ -1,75 +1,79 @@
 <?php
 
+/*
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
+ *
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
+ *
+ *                      LICENSED BY GNU/GPL v2
+ */
+
 namespace cms;
 
-class request
-{
+class request {
 
     use \Singeltone;
 
     const CTX_AUTO_DETECT = 0;
-    const CTX_STANDARD    = 1;
-    const CTX_INTERNAL    = 2;
-    const CTX_AJAX        = 3;
+    const CTX_STANDARD = 1;
+    const CTX_INTERNAL = 2;
+    const CTX_AJAX = 3;
 
     protected $context;
-    protected $request            = [];
+    protected $request = [];
     protected static $device_type = null;
-    public static $device_types   = [ 'desktop', 'mobile', 'tablet' ];
+    public static $device_types = ['desktop', 'mobile', 'tablet'];
 
-    public function __construct($request = false)
-    {
-        if ( is_array($request) ) {
+    public function __construct($request = false) {
+        if (is_array($request)) {
             $this->setData($request);
         }
     }
 
     //========================================================================//
 
-    public static function getScheme()
-    {
+    public static function getScheme() {
         $cscheme = \cmsConfig::getConfig('scheme');
 
-        if ( PHP_SAPI == 'cli' ) {
+        if (PHP_SAPI == 'cli') {
             return !empty($cscheme) ? $cscheme : 'http';
         }
 
-        if ( isset($_SERVER['HTTP_SCHEME']) ) {
+        if (isset($_SERVER['HTTP_SCHEME'])) {
             $scheme = $_SERVER['HTTP_SCHEME'];
-        }
-        else if ( isset($_SERVER['HTTP_X_FORWARDED_PROTO']) ) {
+        } else if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
             $scheme = $_SERVER['HTTP_X_FORWARDED_PROTO'];
-        }
-        else if ( (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443 ) {
+        } else if ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443) {
             $scheme = 'https';
-        }
-        else {
+        } else {
             $scheme = 'http';
         }
 
-        if ( $scheme != 'https' && $scheme != 'http' ) {
+        if ($scheme != 'https' && $scheme != 'http') {
             $scheme = 'http';
         }
 
-        if ( $cscheme == 'https' && $cscheme != $scheme ) {
+        if ($cscheme == 'https' && $cscheme != $scheme) {
             \cmsCore::redirect($cscheme . '://' . self::getHost() . '/' . ltrim($_SERVER['REQUEST_URI'], '/'), 301);
         }
 
         return $scheme;
     }
 
-    public static function getHost()
-    {
+    public static function getHost() {
         // если вызван из командной строки
         // ожидаем параметр с именем домена, например команда для CRON
         // php -f /path_to_site/cron.php site.ru
-        if ( PHP_SAPI == 'cli' ) {
+        if (PHP_SAPI == 'cli') {
             global $argv;
             return isset($argv[1]) ? $argv[1] : '';
         }
 
         // если интернационализованный домен
-        if ( mb_strpos($_SERVER['HTTP_HOST'], 'xn--') !== false ) {
+        if (mb_strpos($_SERVER['HTTP_HOST'], 'xn--') !== false) {
             $IDN = new \idna_convert();
 
             return $IDN->decode($_SERVER['HTTP_HOST']);
@@ -85,12 +89,10 @@ class request
      *
      * @param int $context Контекст (если не указан, определяется автоматически)
      */
-    public function setContext($context = self::CTX_AUTO_DETECT)
-    {
-        if ( $context == self::CTX_AUTO_DETECT ) {
+    public function setContext($context = self::CTX_AUTO_DETECT) {
+        if ($context == self::CTX_AUTO_DETECT) {
             $this->context = $this->detectContext();
-        }
-        else {
+        } else {
             $this->context = $context;
         }
     }
@@ -100,13 +102,11 @@ class request
      *
      * @return int
      */
-    protected function detectContext()
-    {
-        if ( isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-                $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest' ) {
+    protected function detectContext() {
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+                $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') {
             return self::CTX_AJAX;
-        }
-        else {
+        } else {
             return self::CTX_STANDARD;
         }
     }
@@ -116,8 +116,7 @@ class request
      *
      * @return int
      */
-    public function getContext()
-    {
+    public function getContext() {
         return $this->context;
     }
 
@@ -126,8 +125,7 @@ class request
      *
      * @return bool
      */
-    public function isStandard()
-    {
+    public function isStandard() {
         return ($this->context == self::CTX_STANDARD);
     }
 
@@ -136,8 +134,7 @@ class request
      *
      * @return bool
      */
-    public function isInternal()
-    {
+    public function isInternal() {
         return ($this->context == self::CTX_INTERNAL);
     }
 
@@ -146,8 +143,7 @@ class request
      *
      * @return bool
      */
-    public function isAjax()
-    {
+    public function isAjax() {
         return ($this->context == self::CTX_AJAX);
     }
 
@@ -160,28 +156,23 @@ class request
      *
      * @return \self
      */
-    public static function init($request)
-    {
+    public static function init($request) {
         return new self($request);
     }
 
-    public function __set($name, $value)
-    {
+    public function __set($name, $value) {
         return $this->set($name, $value);
     }
 
-    public function __get($name)
-    {
+    public function __get($name) {
         return $this->get($name);
     }
 
-    public function __isset($name)
-    {
+    public function __isset($name) {
         return isset($this->request[$name]) ? $this->request[$name] : false;
     }
 
-    public function __unset($name)
-    {
+    public function __unset($name) {
         $this->delete($name);
     }
 
@@ -191,8 +182,7 @@ class request
      * @param string $name
      * @param mixed $value
      */
-    public function set($name, $value)
-    {
+    public function set($name, $value) {
         $this->request[$name] = $value;
     }
 
@@ -201,9 +191,8 @@ class request
      *
      * @param type $name
      */
-    public function delete($name)
-    {
-        if ( isset($this->request[$name]) ) {
+    public function delete($name) {
+        if (isset($this->request[$name])) {
             unset($this->request[$name]);
         }
     }
@@ -214,13 +203,12 @@ class request
      * @param string $name
      * @param mixed $value
      */
-    public function addData($data)
-    {
-        if ( !is_array($data) ) {
-            $data = [ $data ];
+    public function addData($data) {
+        if (!is_array($data)) {
+            $data = [$data];
         }
 
-        foreach ( $data as $k => $v ) {
+        foreach ($data as $k => $v) {
             $this->request[$k] = $v;
         }
     }
@@ -230,16 +218,14 @@ class request
      *
      * @param array $data
      */
-    public function setData($data)
-    {
+    public function setData($data) {
         $this->request = $data;
     }
 
     /**
      * Очищает внутренний список
      */
-    public function clear()
-    {
+    public function clear() {
         $this->request = [];
     }
 
@@ -253,17 +239,16 @@ class request
      *
      * @return boolean
      */
-    public function has($name, $r = 'request', $only_real_request = true)
-    {
+    public function has($name, $r = 'request', $only_real_request = true) {
         $r = mb_strtolower($r);
 
-        switch ( $r ) {
+        switch ($r) {
             case 'post': $result = isset($_POST[$name]);
             case 'get': $result = isset($_GET[$name]);
             default: $result = isset($_REQUEST[$name]);
         }
 
-        if ( $only_real_request !== true && $result !== true && !empty($this->request) ) {
+        if ($only_real_request !== true && $result !== true && !empty($this->request)) {
             $result = isset($this->request[$name]);
         }
 
@@ -281,11 +266,10 @@ class request
      *
      * @return mixed
      */
-    public function get($name, $type = 'str', $default = false, $r = 'request', $options = [])
-    {
+    public function get($name, $type = 'str', $default = false, $r = 'request', $options = []) {
         $r = mb_strtolower($r);
 
-        switch ( $r ) {
+        switch ($r) {
             case 'post':
                 $value = isset($_POST[$name]) ? $_POST[$name] : null;
                 break;
@@ -297,14 +281,13 @@ class request
                 break;
         }
 
-        if ( $value === null && !empty($this->request) ) {
+        if ($value === null && !empty($this->request)) {
             $value = isset($this->request[$name]) ? $this->request[$name] : null;
         }
 
-        if ( $value !== null ) {
+        if ($value !== null) {
             return self::cleanVar($value, $type, $default, $options);
-        }
-        else {
+        } else {
             return $default;
         }
     }
@@ -317,27 +300,30 @@ class request
      *
      * @return array
      */
-    public function getArrayFromRequest($types)
-    {
+    public function getArrayFromRequest($types) {
         $items = [];
 
-        foreach ( $types as $field => $type_list ) {
-            $items[$field] = $this->get($type_list[0], $type_list[1], $type_list[2], !empty($type_list[4]) ? $type_list[4] : 'request', !empty($type_list[5]) ? $type_list[5] : []);
+        foreach ($types as $field => $typeList) {
+            if (!is_array($typeList)) {
+                continue;
+            }
 
-            // если передана функция обработки (ее название), обрабатываем
-            // полная поддержка анонимных функций невозможна из-за поддержки php 5.2.x
-            if ( isset($type_list[3]) ) {
-                // если пришел массив, считаем что передан объект/название класса и метод
-                if ( is_array($type_list[3]) ) {
-                    if ( class_exists($type_list[3][0]) && method_exists($type_list[3][0], $type_list[3][1]) ) {
-                        $items[$field] = call_user_func($type_list[3], $items[$field]);
-                    }
-                }
+            $type = isset($typeList[0]) ? $typeList[0] : null;
+            $default = isset($typeList[1]) ? $typeList[1] : null;
+            $filter = isset($typeList[2]) ? $typeList[2] : null;
+            $source = (isset($typeList[4]) && $typeList[4] !== '') ? $typeList[4] : 'request';
+            $options = (isset($typeList[5]) && is_array($typeList[5])) ? $typeList[5] : array();
 
-                // в остальных случаях считаем, что пришло название функции
-                elseif ( function_exists($type_list[3]) ) {
-                    $items[$field] = call_user_func($type_list[3], $items[$field]);
-                }
+            $items[$field] = $this->get($type, $default, $filter, $source, $options);
+
+            if (!isset($typeList[3]) || $typeList[3] === null) {
+                continue;
+            }
+
+            $callback = $this->resolveCallback($typeList[3]);
+
+            if ($callback !== null) {
+                $items[$field] = call_user_func($callback, $items[$field]);
             }
         }
 
@@ -345,15 +331,41 @@ class request
     }
 
     /**
+     * Приводит описание обработчика к виду, пригодному для call_user_func().
+     *
+     * Поддерживает: замыкание, имя функции, 'Class::method',
+     * array('Class', 'method'), array($object, 'method'), объект с __invoke().
+     *
+     * @param mixed $callback
+     * @return callable|null null, если обработчик не найден или недоступен
+     */
+    protected function resolveCallback($callback) {
+        if (is_string($callback) && strpos($callback, '::') !== false) {
+            list($class, $method) = explode('::', $callback, 2);
+            $callback = array($class, $method);
+        }
+
+        if (is_array($callback) && isset($callback[0], $callback[1])) {
+            $target = $callback[0];
+            $class = is_object($target) ? get_class($target) : $target;
+
+            if (!is_string($class) || !class_exists($class) || !method_exists($class, $callback[1])) {
+                return null;
+            }
+        }
+
+        return is_callable($callback) ? $callback : null;
+    }
+
+    /**
      * Возвращает массив с данными переданными методом json post
      *
      * @return array | bool
      */
-    public static function getJsonPostData()
-    {
+    public static function getJsonPostData() {
         $data = file_get_contents('php://input');
 
-        if ( !empty($data) ) {
+        if (!empty($data)) {
             return json_decode($data, true);
         }
 
@@ -363,14 +375,12 @@ class request
     /**
      * Смотрите описание get
      */
-    public static function cleanVar($value, $type = 'str', $default = false, $options = [])
-    {
+    public static function cleanVar($value, $type = 'str', $default = false, $options = []) {
         // массив возможных параметров
-        if ( is_array($type) ) {
-            if ( in_array($value, $type) ) {
+        if (is_array($type)) {
+            if (in_array($value, $type)) {
                 return self::strClear((string) $value);
-            }
-            else {
+            } else {
                 return $default;
             }
         }
@@ -379,7 +389,7 @@ class request
             'default' => $default
         ];
 
-        switch ( $type ) {
+        switch ($type) {
             case 'bool':
             case 'boolean':
                 return (boolean) filter_var($value, FILTER_VALIDATE_BOOLEAN, $options);
@@ -402,49 +412,84 @@ class request
             case 'array':
                 return is_array($value) ? $value : $default;
             case 'array_int':
-                if ( is_array($value) ) {
+                if (is_array($value)) {
                     $arr = [];
 
-                    foreach ( $value as $k => $i ) {
-                        $i = filter_var($i, FILTER_VALIDATE_INT, [ 'default' => false ]);
+                    foreach ($value as $k => $i) {
+                        $i = filter_var($i, FILTER_VALIDATE_INT, ['default' => false]);
 
-                        if ( $i !== false ) {
+                        if ($i !== false) {
                             $arr[$k] = $i;
                         }
                     }
 
                     return $arr;
-                }
-                else {
+                } else {
                     return $default;
                 }
             case 'array_str':
-                if ( is_array($value) ) {
+                if (is_array($value)) {
                     $arr = [];
 
-                    foreach ( $value as $k => $s ) {
+                    foreach ($value as $k => $s) {
                         $arr[$k] = self::strClear($s);
                     }
 
                     return $arr;
-                }
-                else {
+                } else {
                     return $default;
                 }
         }
     }
 
-    public static function strClear($input, $flags = null)
-    {
-        if ( is_array($input) ) {
-            foreach ( $input as $key => $string ) {
+    public static function strClear($input, $flags = null) {
+        if (is_array($input)) {
+            $value = array();
+            foreach ($input as $key => $string) {
                 $value[$key] = self::strClear($string, $flags);
             }
-
             return $value;
         }
 
-        return trim(filter_var($input, FILTER_SANITIZE_STRING, $flags !== null ? $flags : !FILTER_FLAG_STRIP_LOW));
+        // нормализация входа: null, объекты, ресурсы
+        if ($input === null) {
+            return '';
+        } elseif (is_object($input)) {
+            if (!method_exists($input, '__toString')) {
+                return '';
+            }
+            $input = (string) $input;
+        } elseif (!is_scalar($input)) {
+            return '';
+        }
+
+        // flags может прийти как int, null или массив в стиле filter_var
+        if (is_array($flags)) {
+            $flags = isset($flags['flags']) ? (int) $flags['flags'] : 0;
+        } elseif (is_scalar($flags)) {
+            $flags = (int) $flags;
+        } else {
+            $flags = 0;
+        }
+
+        $input = strip_tags($input);
+        $input = htmlspecialchars($input, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8');
+
+        if ($flags & FILTER_FLAG_STRIP_LOW) {
+            $clean = preg_replace('/[\x00-\x1F\x7F]/u', '', $input);
+            if ($clean !== null) {
+                $input = $clean;
+            }
+        }
+
+        if ($flags & FILTER_FLAG_STRIP_HIGH) {
+            $clean = preg_replace('/[^\x00-\x7F]/u', '', $input);
+            if ($clean !== null) {
+                $input = $clean;
+            }
+        }
+
+        return preg_replace('/^[\s\x{00A0}]+|[\s\x{00A0}]+$/u', '', $input);
     }
 
     //========================================================================//
@@ -456,8 +501,7 @@ class request
      *
      * @return boolean
      */
-    public function hasFile($name)
-    {
+    public function hasFile($name) {
         return empty($_FILES[$name]['size']) ? false : true;
     }
 
@@ -470,18 +514,17 @@ class request
      *
      * @return boolean|array|string
      */
-    public function getFile($name, $multiple = false, $fn = null)
-    {
-        if ( $this->hasFile($name) ) {
-            if ( is_array($_FILES[$name]['tmp_name']) ) {
-                if ( $multiple ) {
+    public function getFile($name, $multiple = false, $fn = null) {
+        if ($this->hasFile($name)) {
+            if (is_array($_FILES[$name]['tmp_name'])) {
+                if ($multiple) {
                     $contents = [];
 
-                    foreach ( $_FILES[$name]['error'] as $k => $v ) {
-                        if ( $v === UPLOAD_ERR_OK && is_uploaded_file($_FILES[$name]['tmp_name'][$k]) ) {
+                    foreach ($_FILES[$name]['error'] as $k => $v) {
+                        if ($v === UPLOAD_ERR_OK && is_uploaded_file($_FILES[$name]['tmp_name'][$k])) {
                             $content = file_get_contents($_FILES[$name]['tmp_name'][$k]);
 
-                            if ( !empty($fn) ) {
+                            if (!empty($fn)) {
                                 $content = $fn($content);
                             }
 
@@ -493,15 +536,14 @@ class request
                 }
 
                 $src = $_FILES[$name]['tmp_name'][0];
-            }
-            else {
+            } else {
                 $src = $_FILES[$name]['tmp_name'];
             }
 
-            if ( is_uploaded_file($src) ) {
+            if (is_uploaded_file($src)) {
                 $content = file_get_contents($src);
 
-                if ( !empty($fn) ) {
+                if (!empty($fn)) {
                     $content = $fn($content);
                 }
 
@@ -522,17 +564,16 @@ class request
      *
      * @return boolean|array|string
      */
-    public function moveFile($name, $folder, $file_name = false, $multiple = false)
-    {
+    public function moveFile($name, $folder, $file_name = false, $multiple = false) {
         $folder = rtrim($folder, '/\\');
 
-        if ( $this->hasFile($name) ) {
-            if ( is_array($_FILES[$name]['tmp_name']) ) {
-                if ( $multiple ) {
+        if ($this->hasFile($name)) {
+            if (is_array($_FILES[$name]['tmp_name'])) {
+                if ($multiple) {
                     $files = [];
 
-                    foreach ( $_FILES[$name]['error'] as $k => $v ) {
-                        if ( $v === UPLOAD_ERR_OK && is_uploaded_file($_FILES[$name]['tmp_name'][$k]) ) {
+                    foreach ($_FILES[$name]['error'] as $k => $v) {
+                        if ($v === UPLOAD_ERR_OK && is_uploaded_file($_FILES[$name]['tmp_name'][$k])) {
                             $fname = basename($_FILES[$name]['name'][$k]);
 
                             $dist = realpath($folder) . '/' . (!empty($file_name) ? $k . '_' . $file_name : $fname);
@@ -546,15 +587,14 @@ class request
                     return $files;
                 }
 
-                $src   = $_FILES[$name]['tmp_name'][0];
+                $src = $_FILES[$name]['tmp_name'][0];
                 $fname = basename($_FILES[$name]['name'][0]);
-            }
-            else {
-                $src   = $_FILES[$name]['tmp_name'];
+            } else {
+                $src = $_FILES[$name]['tmp_name'];
                 $fname = basename($_FILES[$name]['name']);
             }
 
-            if ( is_uploaded_file($src) ) {
+            if (is_uploaded_file($src)) {
                 $dist = realpath($folder) . '/' . (!empty($file_name) ? $file_name : $fname);
 
                 move_uploaded_file($src, $dist);
@@ -568,11 +608,10 @@ class request
 
     //========================================================================//
 
-    protected static function loadDeviceType()
-    {
+    protected static function loadDeviceType() {
         $device_type = (string) cookie::get('device_type');
 
-        if ( !$device_type || !in_array($device_type, self::$device_types, true) ) {
+        if (!$device_type || !in_array($device_type, self::$device_types, true)) {
             $detect = new \Mobile_Detect();
 
             $device_type = ($detect->isMobile() ? ($detect->isTablet() ? 'tablet' : 'mobile') : 'desktop');
@@ -583,13 +622,11 @@ class request
         self::$device_type = $device_type;
     }
 
-    public static function getDeviceType()
-    {
-        if ( self::$device_type === null ) {
+    public static function getDeviceType() {
+        if (self::$device_type === null) {
             self::loadDeviceType();
         }
 
         return self::$device_type;
     }
-
 }

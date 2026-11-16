@@ -258,7 +258,7 @@ function users()
 
 // Если сохраняем профиль
         if ( $opt == 'save' ) {
-            if ( !cmsUser::checkCsrfToken() ) {
+            if ( !\cms\csrf_token::checkPost() ) {
                 cmsCore::error404();
             }
 
@@ -686,7 +686,7 @@ function users()
                 cmsCore::jsonOutput(array( 'error' => true, 'text' => $_LANG['ERR_SEND_MESS'] ));
             }
 
-            if ( !cmsUser::checkCsrfToken() ) {
+            if ( !\cms\csrf_token::checkPost() ) {
                 cmsCore::error404();
             }
 
@@ -1331,7 +1331,7 @@ function users()
         }
 
         if ( isset($_POST['csrf_token']) ) {
-            if ( !cmsUser::checkCsrfToken() ) {
+            if ( !\cms\csrf_token::checkPost() ) {
                 cmsCore::error404();
             }
 
@@ -1420,7 +1420,7 @@ function users()
         }
 
         if ( cmsCore::inRequest('send_invite') ) {
-            if ( !cmsUser::checkCsrfToken() ) {
+            if ( !\cms\csrf_token::checkPost() ) {
                 cmsCore::error404();
             }
 

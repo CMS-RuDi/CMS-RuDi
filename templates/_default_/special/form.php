@@ -9,7 +9,7 @@
 <?php if ( !$formObj->form['only_fields'] ) { ?>
     <form name="userform" enctype="multipart/form-data" action="<?php echo $formObj->form['form_action'] ?>" method="POST">
         <input type="hidden" name="form_id" value="<?php echo $formObj->form['id'] ?>">
-        <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+        <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
     <?php } ?>
 
     <table class="userform_table" cellpadding="3">

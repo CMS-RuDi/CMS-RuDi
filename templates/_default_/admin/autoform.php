@@ -4,7 +4,7 @@ extract($tpl_data);
 ?>
 
 <input type="hidden" name="do" value="save_auto_config" />
-<input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+<input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
 
 <div class="params-form">
     <table width="100%" cellpadding="3" cellspacing="0" border="0">

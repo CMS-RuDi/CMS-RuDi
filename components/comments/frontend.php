@@ -272,7 +272,7 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
         $comment['published'] = ($inUser->is_admin || $model->is_can_moderate || $model->is_add_published) ? 1 : 0;
 
         // Проверяем токен перед самым добавлением комментария
-        if ( !cmsUser::checkCsrfToken() ) {
+        if ( !\cms\csrf_token::checkPost() ) {
             cmsCore::error404();
         }
 
@@ -394,7 +394,7 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
             cmsCore::jsonOutput(array( 'error' => true, 'text' => $_LANG['ERR_COMMENT_TEXT'] ));
         }
 
-        if ( !cmsUser::checkCsrfToken() ) {
+        if ( !\cms\csrf_token::checkPost() ) {
             cmsCore::error404();
         }
 
@@ -443,7 +443,7 @@ function comments($target = '', $target_id = 0, $labels = array(), $can_delete =
             cmsCore::jsonOutput(array( 'error' => true, 'text' => $_LANG['ERR_UNKNOWN_TARGET'] . ' #1' ));
         }
 
-        if ( !cmsUser::checkCsrfToken() ) {
+        if ( !\cms\csrf_token::checkPost() ) {
             cmsCore::error404();
         }
 

@@ -72,7 +72,7 @@ function forms()
             }
         }
 
-        if ( !cmsUser::checkCsrfToken() ) {
+        if ( !\cms\csrf_token::checkPost() ) {
             cmsCore::error404();
         }
 

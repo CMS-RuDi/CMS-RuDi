@@ -197,7 +197,7 @@ class components extends \cms\com_action {
     }
 
     public function canRemove($item) {
-        if ($item['system']) {
+        if (!empty($item['system'])) {
             return false;
         }
 

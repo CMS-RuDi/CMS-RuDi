@@ -40,7 +40,7 @@ function mod_invite($mod, $cfg)
         }
 
         if ( !$errors ) {
-            if ( !cmsUser::checkCsrfToken() ) {
+            if ( !\cms\csrf_token::checkPost() ) {
                 cmsCore::error404();
             }
 

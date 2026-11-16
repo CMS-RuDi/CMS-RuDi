@@ -34,7 +34,7 @@ if (in_array($opt, array('add', 'edit', 'config'))) {
 }
 
 if ($opt == 'saveconfig') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -102,7 +102,7 @@ if ($opt == 'hide_club') {
 }
 
 if ($opt == 'submit') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -138,7 +138,7 @@ if ($opt == 'submit') {
 }
 
 if ($opt == 'update') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -255,7 +255,7 @@ if ($opt == 'add' || $opt == 'edit') {
     ?>
 
     <form action="/cp/components/clubs" method="post" enctype="multipart/form-data" name="addform" id="addform">
-        <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+        <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
         {tab=<?php echo $_LANG['AD_OVERALL']; ?>}
         <table width="625" border="0" cellspacing="5" class="proptable">
             <tr>
@@ -435,7 +435,7 @@ if ($opt == 'add' || $opt == 'edit') {
                    ?>
 
     <form action="/cp/components/clubs" method="post" name="addform" id="addform">
-        <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+        <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
         <div id="config_tabs" style="margin-top:12px;" class="uitabs">
 
             <ul id="tabs">

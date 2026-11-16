@@ -354,7 +354,7 @@ class cmsUser {
 
             $db->resetFilters();
 
-            $data = $db->select('SUM(i.total_rating)', 'rating')
+            $data = $db->selectOnly('SUM(i.total_rating)', 'rating')
                     ->joinInner($target_table, $target['target'], $target['target'] . '.id = i.item_id')
                     ->filterEqual('i.target', $target['target'])
                     ->filterEqual($target['target'] . '.user_id', $user_id)
@@ -378,7 +378,7 @@ class cmsUser {
 
         $db->resetFilters();
 
-        $data = $db->select('SUM(i.points)', 'karma')
+        $data = $db->selectOnly('SUM(i.points)', 'karma')
                 ->filterEqual('i.user_id', (int) $user_id)
                 ->groupBy('i.user_id')
                 ->getItem('user_karma');
@@ -2011,7 +2011,15 @@ class cmsUser {
             return $default_back_url;
         }
 
+        // Новый идентификатор сессии и новый CSRF-токен после смены
+        // уровня доверия (защита от session fixation и переиспользования
+        // гостевого токена).
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
+
         $_SESSION['user'] = $user;
+        \cms\csrf_token::rotate();
 
         \cms\events::call('users.login', $_SESSION['user']);
 
@@ -2277,7 +2285,7 @@ class cmsUser {
     }
 
     public static function clearCsrfToken() {
-        return true;
+        return \cms\csrf_token::clear();
     }
 
     /**

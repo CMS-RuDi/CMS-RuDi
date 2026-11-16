@@ -30,7 +30,7 @@ class fenomTpl extends tplMainClass {
             self::$tpl = \Fenom::factory(self::$provider, PATH . '/cache');
 
             self::$tpl->addFunction('csrf_token', function () {
-                return \cmsUser::getCsrfToken();
+                return \cms\csrf_token::get();
             });
 
             self::$tpl->addFunction('add_js', function ($params) {

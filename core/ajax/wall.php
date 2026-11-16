@@ -94,7 +94,7 @@ if ( $do == 'add' ) {
         ));
     }
 
-    if ( !cmsUser::checkCsrfToken() ) {
+    if ( !\cms\csrf_token::checkPost() ) {
         cmsCore::halt();
     }
 
@@ -130,7 +130,7 @@ if ( $do == 'delete' ) {
         cmsCore::halt();
     }
 
-    if ( !cmsUser::checkCsrfToken() ) {
+    if ( !\cms\csrf_token::checkPost() ) {
         cmsCore::halt();
     }
 

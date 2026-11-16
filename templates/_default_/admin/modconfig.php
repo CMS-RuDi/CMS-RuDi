@@ -40,7 +40,7 @@
             </div>
         <?php }
         else { ?>
-            <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+            <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
             <?php $inCore->insertEditor('content', $mod['content'], '500', '99%'); ?>
             <div class="params-buttons">
                 <input type="submit" name="save" value="<?php echo $_LANG['SAVE']; ?>" />

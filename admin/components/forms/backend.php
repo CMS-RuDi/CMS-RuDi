@@ -188,7 +188,7 @@ if (in_array($opt, array('add_field', 'update_field'))) {
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 if (in_array($opt, array('submit', 'update'))) {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -277,7 +277,7 @@ if (in_array($opt, array('add', 'edit'))) {
     ?>
 
     <form id="addform" name="addform" method="post" action="/cp/components/forms">
-        <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+        <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
         <table width="605" border="0" cellspacing="5" class="proptable">
             <tr>
                 <td width="200"><strong><?php echo $_LANG['AD_FORM_NAME']; ?>: </strong></td>
@@ -433,7 +433,7 @@ if (in_array($opt, array('add', 'edit'))) {
                             } else {
                                 ?><?php echo $_LANG['AD_FIELD_EDIT']; ?><?php } ?></b></h4>
                     <form id="fieldform" name="fieldform" method="post" action="index.php?view=components&do=config&id=<?php echo $id; ?>">
-                        <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+                        <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
                         <input type="hidden" name="opt" value="<?php if (!@$field) { ?>add_field<?php
                         } else {
                             ?>update_field<?php } ?>"/>

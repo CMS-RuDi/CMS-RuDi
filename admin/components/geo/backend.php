@@ -145,7 +145,7 @@ if ($opt == 'config') {
     ?>
 
     <form action="/cp/components/geo" method="post" name="optform">
-        <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+        <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
         <table width="100%" border="0" cellpadding="10" cellspacing="0" class="proptable">
             <tr>
                 <td width="400"><?php echo $_LANG['AD_AUTODETECT']; ?></td>
@@ -183,7 +183,7 @@ if ($opt == 'config') {
 //=================================================================================================//
 
 if ($opt == 'saveconfig') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -201,7 +201,7 @@ if ($opt == 'saveconfig') {
 //=================================================================================================//
 
 if (mb_strstr($opt, 'do_')) {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -287,7 +287,7 @@ if ($opt == 'add' || $opt == 'edit') {
     ?>
 
     <form action="/cp/components/geo" method="post" name="optform">
-        <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+        <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
         <table width="100%" border="0" cellpadding="10" cellspacing="0" class="proptable">
             <tr>
                 <td width="150"><strong><?php echo $_LANG['TITLE']; ?></strong></td>

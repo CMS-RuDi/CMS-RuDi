@@ -211,14 +211,4 @@ class frontend extends \cms\backend {
 
         return \cms\events::call('admin.main_menu', $html);
     }
-
-    public function yesno($value) {
-        if (empty($value)) {
-            $value = '<span style="color:green;">' . $this->lang->yes . '</span>';
-        } else {
-            $value = '<span style="color:red;">' . $this->lang->no . '</span>';
-        }
-
-        return $value;
-    }
 }

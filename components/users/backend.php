@@ -4,11 +4,21 @@ namespace components\users;
 
 class backend extends \cms\backend {
 
+    public function __construct($request = null) {
+        parent::__construct($request);
+
+        if (!\cmsUser::isAdminCan('admin/users', $this->admin_access)) {
+            self::accessDenied();
+        }
+
+        $this->lang->loadComponentLang('registration');
+        $this->page->addPathway($this->lang->ad_users, $this->genActionUrl());
+    }
+
     public function before($action_name) {
         parent::before($action_name);
 
         $this->page->setTitle($this->lang->ad_users);
-        $this->page->addPathway($this->lang->ad_users, $this->genActionUrl());
     }
 
     /**
@@ -17,26 +27,22 @@ class backend extends \cms\backend {
     public $model;
 
     public function actionView() {
-        if (!\cmsUser::isAdminCan('admin/users', $this->admin_access)) {
-            self::accessDenied();
-        }
-
         self::addToolMenuItems([
-            ['title' => $this->lang->ad_user_add, 'link' => $this->genActionUrl('add'), 'icon' => 'useradd.gif'],
-            ['title' => $this->lang->ad_edit_selected, 'link' => "javascript:checkSel('" . $this->genActionUrl('edit', [], ['multiple' => 1]) . "');", 'icon' => 'useredit.gif'],
-            ['title' => $this->lang->ad_edit_selected, 'link' => "javascript:if(confirm('{$this->lang->ad_if_users_select_remove}')) { checkSel('{$this->genActionUrl('delete', [], ['multiple' => 1])}'); };", 'icon' => 'userdelete.gif'],
-            ['title' => $this->lang->ad_users_group, 'link' => $this->genActionUrl('usergroups'), 'icon' => 'usergroup.gif'],
-            ['title' => $this->lang->ad_banlist, 'link' => $this->genActionUrl('userbanlist'), 'icon' => 'userbanlist.gif'],
-            ['title' => $this->lang->ad_users_select_activate, 'link' => "javascript:if(confirm('{$this->lang->ad_users_select_activate}')) { checkSel('{$this->genActionUrl('activate', [], ['multiple' => 1])}'); }", 'icon' => 'user_go.png'],
-            ['title' => $this->lang->ad_help, 'link' => "javascript:if(confirm('{$this->lang->ad_users_select_activate}')) { checkSel('https://cmsrudi.ru/help/com_users'); }", 'icon' => 'help.gif']
+            ['title' => $this->lang->ad_user_add, 'link' => $this->genActionUrl('add', 'user'), 'icon' => 'useradd.gif'],
+            ['title' => $this->lang->ad_edit_selected, 'link' => "javascript:checkSel('" . $this->genActionUrl('edit', 'users') . "');", 'icon' => 'useredit.gif'],
+            ['title' => $this->lang->ad_delete_selected, 'link' => "javascript:if(confirm('" . $this->lang->ad_if_users_select_remove . "')) { checkSel('" . $this->genActionUrl('delete', 'users') . "'); };", 'icon' => 'userdelete.gif'],
+            ['title' => $this->lang->ad_users_group, 'link' => $this->genActionUrl('groups'), 'icon' => 'usergroup.gif'],
+            ['title' => $this->lang->ad_banlist, 'link' => $this->genActionUrl('banlist'), 'icon' => 'userbanlist.gif'],
+            ['title' => $this->lang->ad_users_select_activate, 'link' => "javascript:if(confirm('" . $this->lang->ad_users_select_activate . "')) { checkSel('" . $this->genActionUrl('activate', 'users') . "'); }", 'icon' => 'user_go.png'],
+            ['title' => $this->lang->ad_help, 'link' => "https://cmsrudi.ru/help/com_users", 'icon' => 'help.gif']
         ]);
 
         $fields = [
             ['title' => 'id', 'field' => 'id', 'width' => '20'],
-            ['title' => $this->lang->ad_login, 'field' => 'login', 'width' => '100', 'link' => '/cp/components/users/edit/%id%', 'filter' => 12],
-            ['title' => $this->lang->ad_nickname, 'field' => 'nickname', 'width' => '', 'link' => '/cp/components/users/edit/%id%', 'filter' => 12],
-            ['title' => $this->lang->ad_rating, 'field' => 'rating', 'width' => '60', 'link' => '/cp/components/users/recalculate_rating/%id%'],
-            ['title' => $this->lang->ad_group, 'field' => 'group_title', 'width' => '110', 'link' => '/cp/components/users/group_edit/%group_id%', 'filter' => 1, 'filter_name' => 'group_id', 'filterlist' => cpGetList('user_groups')],
+            ['title' => $this->lang->ad_login, 'field' => 'login', 'width' => '100', 'link' => $this->genActionUrl('edit', ['user', '%id%']), 'filter' => 12],
+            ['title' => $this->lang->ad_nickname, 'field' => 'nickname', 'width' => '', 'link' => $this->genActionUrl('edit', ['user', '%id%']), 'filter' => 12],
+            ['title' => $this->lang->ad_rating, 'field' => 'rating', 'width' => '60', 'link' => $this->genActionUrl('rerating', '%id%')],
+            ['title' => $this->lang->ad_group, 'field' => 'group_title', 'width' => '110', 'link' => $this->genActionUrl('edit', ['group', '%group_id%']), 'filter' => 1, 'filter_name' => 'group_id', 'filterlist' => cpGetList('user_groups')],
             ['title' => $this->lang->ad_email, 'field' => 'email', 'width' => '120'],
             ['title' => $this->lang->ad_registration_date, 'field' => 'regdate', 'width' => '100'],
             ['title' => $this->lang->ad_last_login, 'field' => 'logdate', 'width' => '100'],
@@ -47,9 +53,9 @@ class backend extends \cms\backend {
 
         $actions = [
             ['title' => $this->lang->ad_profile, 'icon' => 'profile.gif', 'link' => '/users/%login%'],
-            ['title' => $this->lang->ad_banned, 'icon' => 'ban.gif', 'link' => '/cp/components/users/add_ban/%id%'],
-            ['title' => $this->lang->delete, 'icon' => 'delete.gif', 'confirm' => $this->lang->ad_is_user_delete, 'link' => '/cp/components/users/delete/%id%'],
-            ['title' => $this->lang->ad_forever_user_delete, 'icon' => 'off.gif', 'confirm' => $this->lang->ad_if_forever_user_delete, 'link' => '/cp/components/users/delete_full/%id%'],
+            ['title' => $this->lang->ad_banned, 'icon' => 'ban.gif', 'link' => $this->genActionUrl('banlist', ['add', '%id%'])],
+            ['title' => $this->lang->delete, 'icon' => 'delete.gif', 'confirm' => $this->lang->ad_is_user_delete, 'link' => $this->genActionUrl('delete', ['user', '%id%'])],
+            ['title' => $this->lang->ad_forever_user_delete, 'icon' => 'off.gif', 'confirm' => $this->lang->ad_if_forever_user_delete, 'link' => $this->genActionUrl('delete', ['user_forever', '%id%'])],
         ];
 
         $this->initListTable('users', $fields, $actions);
@@ -80,7 +86,7 @@ class backend extends \cms\backend {
     }
 
     public function actionSaveConfig() {
-        if (!\cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             \cmsCore::error404();
         }
 
@@ -129,7 +135,7 @@ class backend extends \cms\backend {
 
     #================================================================
 
-    function viewAct($value) {
+    public function viewAct($value) {
         if (!$value) {
             return '<span style="color:green;">' . $this->lang->yes . '</span>';
         }
@@ -137,7 +143,7 @@ class backend extends \cms\backend {
         return '<span style="color:red;">' . $this->lang->no . '</span>';
     }
 
-    function viewDel($value) {
+    public function viewDel($value) {
         if ($value) {
             return '<span style="color:red;">' . $this->lang->yes . '</span>';
         }

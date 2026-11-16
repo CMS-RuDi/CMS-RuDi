@@ -326,7 +326,7 @@ if ( $bdo == 'post' ) {
 //============================== УДАЛЕНИЕ ПОСТА ==============================//
 
 if ( $bdo == 'delpost' ) {
-    if ( !cmsUser::checkCsrfToken() ) {
+    if ( !\cms\csrf_token::checkPost() ) {
         cmsCore::halt();
     }
 
@@ -579,7 +579,7 @@ if ( in_array($bdo, array( 'newcat', 'editcat' )) ) {
     }
 
     if ( cmsCore::inRequest('goadd') ) {
-        if ( !cmsUser::checkCsrfToken() ) {
+        if ( !\cms\csrf_token::checkPost() ) {
             cmsCore::halt();
         }
 
@@ -643,7 +643,7 @@ if ( $bdo == 'delcat' ) {
         cmsCore::halt();
     }
 
-    if ( !cmsUser::checkCsrfToken() ) {
+    if ( !\cms\csrf_token::checkPost() ) {
         cmsCore::halt();
     }
 

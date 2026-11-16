@@ -45,7 +45,7 @@ $toolmenu[] = array('icon' => 'cancel.gif', 'title' => $_LANG['CANCEL'], 'link' 
 cpToolMenu($toolmenu);
 
 if ($opt == 'save') {
-    if (!cmsUser::checkCsrfToken()) {
+    if (!\cms\csrf_token::checkPost()) {
         cmsCore::error404();
     }
 
@@ -70,7 +70,7 @@ if ($opt == 'dropcache') {
 }
 ?>
 <form action="/cp/components/search" name="optform" method="post" target="_self">
-    <input type="hidden" name="csrf_token" value="<?php echo cmsUser::getCsrfToken(); ?>" />
+    <input type="hidden" name="csrf_token" value="<?php echo \cms\csrf_token::get(); ?>" />
     <table border="0" cellpadding="10" cellspacing="0" class="proptable">
         <tr>
             <td width="215"><strong><?php echo $_LANG['AD_RESULTS_PAGE']; ?>: </strong></td>

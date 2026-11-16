@@ -55,7 +55,7 @@ class backend extends \cms\backend {
     }
 
     public function actionSaveConfig() {
-        if (!\cmsUser::checkCsrfToken()) {
+        if (!\cms\csrf_token::checkPost()) {
             \cmsCore::error404();
         }
 
