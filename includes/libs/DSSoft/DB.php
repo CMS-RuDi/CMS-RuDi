@@ -497,8 +497,9 @@ class DB {
      * @return mixed Значение поля или FALSE, если запись не найдена
      */
     public function getField($table_name, $row_id, $field_name) {
-        $this->filterEqual('id', $row_id);
-        return $this->getFieldFiltered($table_name, $field_name);
+        return $this->resetFilters()
+                        ->filterEqual('id', $row_id)
+                        ->getFieldFiltered($table_name, $field_name);
     }
 
     /**
@@ -592,8 +593,9 @@ class DB {
      * @return array|false
      */
     public function getItemById($table_name, $id, $item_callback = false) {
-        $this->filterEqual('id', $id);
-        return $this->getItem($table_name, $item_callback);
+        return $this->resetFilters()
+                        ->filterEqual('id', $id)
+                        ->getItem($table_name, $item_callback);
     }
 
     /**
@@ -606,8 +608,9 @@ class DB {
      * @return array|false
      */
     public function getItemByField($table_name, $field_name, $field_value, $item_callback = false) {
-        $this->filterEqual($field_name, $field_value);
-        return $this->getItem($table_name, $item_callback);
+        return $this->resetFilters()
+                        ->filterEqual($field_name, $field_value)
+                        ->getItem($table_name, $item_callback);
     }
 
     //========================================================================//
@@ -705,9 +708,9 @@ class DB {
      * @return boolean
      */
     public function delete($table_name, $id, $by_field = 'id') {
-        $this->filterEqual($by_field, $id);
-
-        return $this->deleteFiltered($table_name);
+        return $this->resetFilters()
+                        ->filterEqual($by_field, $id)
+                        ->deleteFiltered($table_name);
     }
 
     /**
@@ -719,13 +722,8 @@ class DB {
     public function deleteFiltered($table_name) {
         $where = $this->where;
 
-        $this->resetFilters();
-
-        if (!$where) {
-            return false;
-        }
-
-        return $this->_delete($table_name, $where);
+        return $this->resetFilters()
+                        ->_delete($table_name, $where);
     }
 
     /**
@@ -737,7 +735,7 @@ class DB {
     public function _delete($table_name, $where) {
         $where = (string) $where;
 
-        if ($where === '') {
+        if (empty($where)) {
             return false;
         }
 
@@ -760,11 +758,9 @@ class DB {
      * @return boolean
      */
     public function update($table_name, $id, $data, $skip_check_fields = false, $array_as = 'json') {
-        $this->resetFilters();
-
-        $this->filterEqual('id', $id);
-
-        return $this->updateFiltered($table_name, $data, $skip_check_fields, $array_as);
+        return $this->resetFilters()
+                        ->filterEqual('id', $id)
+                        ->updateFiltered($table_name, $data, $skip_check_fields, $array_as);
     }
 
     /**
@@ -779,13 +775,8 @@ class DB {
     public function updateFiltered($table_name, $data, $skip_check_fields = false, $array_as = 'json') {
         $where = $this->where;
 
-        $this->resetFilters();
-
-        if (!$where) {
-            return false;
-        }
-
-        return $this->_update($table_name, $where, $data, $skip_check_fields, $array_as);
+        return $this->resetFilters()
+                        ->_update($table_name, $where, $data, $skip_check_fields, $array_as);
     }
 
     /**
@@ -804,7 +795,7 @@ class DB {
             return false;
         }
 
-        if (!$where) {
+        if (empty($where)) {
             return false;
         }
 
@@ -1279,9 +1270,7 @@ class DB {
             return $this->filterNotNull($field);
         }
 
-        $value = $this->db->escape($value);
-
-        return $this->filter($this->prepareFieldName($field) . " <> '" . $value . "'");
+        return $this->filter($this->prepareFieldName($field) . " <> '" . $this->db->escape($value) . "'");
     }
 
     /**
@@ -2314,10 +2303,7 @@ class DB {
      * @return boolean
      */
     public function isFieldExists($table_name, $field) {
-
-        $table_fields = $this->getTableFields($table_name);
-
-        return in_array($field, $table_fields, true);
+        return in_array($field, $this->getTableFields($table_name), true);
     }
 
     /**
@@ -2411,7 +2397,6 @@ class DB {
      * @return boolean FALSE если индекс с таким названием уже есть
      */
     public function addIndex($table, $fields, $index_name = '', $index_type = 'INDEX') {
-
         if (is_string($fields)) {
             $fields = array($fields);
         }
