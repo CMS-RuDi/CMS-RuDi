@@ -47,7 +47,7 @@ function moveItem(item_id, dir) {
     });
 }
 
-function deleteCat(cat_name, cat_id) {
+function deleteCat(cat_name, cat_id, csrf_token) {
     var sure = confirm(LANG_AD_CATEGORY_DELETE + ' "' + cat_name + '" ' + LANG_AD_AND_SUB_CATS);
 
     if (!sure) {
@@ -56,11 +56,11 @@ function deleteCat(cat_name, cat_id) {
 
     var is_with_content = confirm(LANG_AD_DELETE_SUB_ARTICLES);
 
-    var link = '?view=cats&do=delete&id=' + cat_id;
+    var link = '/cp/components/content/delete/category/' + cat_id;
 
-    if (!is_with_content) {
-        window.location.href = link;
-    } else {
-        window.location.href = link + '&content=1';
+    if (is_with_content) {
+        link = link + '/content';
     }
+    
+    window.location.href = link +'?csrf_token='+csrf_token;
 }

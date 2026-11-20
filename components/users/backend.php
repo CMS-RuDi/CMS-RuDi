@@ -21,11 +21,6 @@ class backend extends \cms\backend {
         $this->page->setTitle($this->lang->ad_users);
     }
 
-    /**
-     * @var \components\users\model
-     */
-    public $model;
-
     public function actionView() {
         self::addToolMenuItems([
             ['title' => $this->lang->ad_user_add, 'link' => $this->genActionUrl('add', 'user'), 'icon' => 'useradd.gif'],

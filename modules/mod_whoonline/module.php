@@ -29,7 +29,7 @@ function mod_whoonline($mod, $cfg)
 
     if ( $online_count['users'] ) {
         $db = clone $inDB;
-        $db->select('i.user_id', 'id');
+        $db->selectOnly('i.user_id', 'id');
         $db->select('MAX(u.login)', 'login');
         $db->select('MAX(u.nickname)', 'nickname');
         $db->select('MAX(p.gender)', 'gender');
@@ -46,7 +46,7 @@ function mod_whoonline($mod, $cfg)
         $today = date("Y-m-d");
 
         $db = clone $inDB;
-        $db->select('i.id', 'id');
+        $db->selectOnly('i.id', 'id');
         $db->select('i.nickname', 'nickname');
         $db->select('i.login', 'login');
         $db->select('p.gender', 'gender');

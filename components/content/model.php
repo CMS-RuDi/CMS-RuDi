@@ -167,13 +167,15 @@ class model extends \cms\model {
      * @return array
      */
     public function getCatsTree() {
-        $this->selectList(['id', 'title', 'NSLeft', 'NSRight', 'NSLevel', 'seolink']);
-
-        $this->filterGt('NSLevel', 0);
-
-        $this->orderBy('NSLeft');
-
-        $items = $this->get(self::CATEGORY_TABLE);
+        $items = $this->db->selectOnly('id')
+                ->select('title')
+                ->select('NSLeft')
+                ->select('NSRight')
+                ->select('NSLevel')
+                ->select('seolink')
+                ->filterGt('NSLevel', 0)
+                ->orderBy('NSLeft')
+                ->get(self::CATEGORY_TABLE);
 
         if (!empty($items)) {
             $items = \cms\events::call('content.get_categories_tree', $items);
@@ -256,7 +258,12 @@ class model extends \cms\model {
         }
 
         if (!empty($this->inDB->order_by) && empty($this->order_by)) {
-            $this->orderBy(trim(str_replace(['ORDER BY', 'con.'], ['', 'i.'], $this->inDB->order_by)));
+            $order = trim(str_replace(['ORDER BY', 'con.'], ['', 'i.'], $this->inDB->order_by));
+            $order_parts = preg_split('/\s+/', $order, 2);
+
+            if (!empty($order_parts[0])) {
+                $this->orderBy($order_parts[0], isset($order_parts[1]) ? $order_parts[1] : '');
+            }
         }
 
         if (!empty($this->inDB->group_by) && empty($this->group_by)) {
@@ -690,7 +697,7 @@ class model extends \cms\model {
                     filterEqual('target_id', (int) $item_id)->
                     updateFiltered('comments', [
                         'target_link' => '/' . $article_seolink . '.html'
-                    ]);
+            ]);
         }
 
         // Обновляем ссылки в action

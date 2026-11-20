@@ -232,7 +232,7 @@ class controller {
      * @return array
      */
     public function getOptions() {
-        return (array) self::loadOptions($this->name);
+        return self::loadOptions($this->name);
     }
 
     public function setOption($key, $val) {
@@ -1061,10 +1061,10 @@ class controller {
                 return $this->request;
             case 'core':
                 return $this->core;
-            case 'user':
-                return $this->user;
             case 'page':
                 return $this->page;
+            default:
+                return $this->{$name};
         }
     }
 

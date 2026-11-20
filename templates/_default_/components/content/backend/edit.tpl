@@ -14,10 +14,10 @@
                                 <table width="100%" cellpadding="0" cellspacing="0" border="0">
                                     <tr>
                                         <td>
-                                            <input name="title" type="text" id="title" style="width:100%" value="{$item.title}" />
+                                            <input name="title" type="text" id="title" style="width:100%" value="{$item.title|escape:'html'}" />
                                         </td>
                                         <td style="width:15px;padding-left:10px;padding-right:10px;">
-                                            <input type="checkbox" title="{$lang->ad_view_title}" name="showtitle"{if !empty($item.showtitle) || $do == 'add'} checked="checked"{/if} value="1" />
+                                            <input type="checkbox" title="{$lang->ad_view_title}" name="showtitle"{if !empty($item.showtitle) || $item.id == 0} checked="checked"{/if} value="1" />
                                         </td>
                                     </tr>
                                 </table>
@@ -33,7 +33,7 @@
                         </td>
                         
                         <td width="16" valign="bottom" style="padding-bottom:10px">
-                            <input type="checkbox" name="showdate" id="showdate" title="{$lang->ad_view_date_and_author}" value="1"{if !empty($item.showdate) || $do == 'add'} checked="checked"{/if}/>
+                            <input type="checkbox" name="showdate" id="showdate" title="{$lang->ad_view_date_and_author}" value="1"{if !empty($item.showdate) || $item.id == 0} checked="checked"{/if}/>
                         </td>
                         
                         <td width="160" valign="top">
@@ -56,7 +56,7 @@
                 <table width="100%" cellpadding="0" cellspacing="0" border="0" class="checklist">
                     <tr>
                         <td width="20">
-                            <input type="radio" name="autokeys" id="autokeys1"{if $do == 'add' && !empty($options.autokeys)} checked="checked"{/if} value="1" />
+                            <input type="radio" name="autokeys" id="autokeys1"{if $item.id == 0 && !empty($options.autokeys)} checked="checked"{/if} value="1" />
                         </td>
                         <td>
                             <label for="autokeys1"><strong>{$lang->ad_auto_gen_key}</strong></label>
@@ -72,13 +72,13 @@
                     </tr>
                     <tr>
                         <td width="20">
-                            <input type="radio" name="autokeys" id="autokeys3"{if $do == 'edit' || empty($options.autokeys)} checked="checked"{/if} value="3" />
+                            <input type="radio" name="autokeys" id="autokeys3"{if $item.id > 0 || empty($options.autokeys)} checked="checked"{/if} value="3" />
                         </td>
                         <td>
                             <label for="autokeys3"><strong>{$lang->ad_manual_key}</strong></label>
                         </td>
                     </tr>
-                    {if $options.af_on && $do == 'add'}
+                    {if !empty($options.af_on) && $item.id == 0}
                         <tr>
                             <td width="20"><input type="checkbox" name="noforum" id="noforum" value="1" /></td>
                             <td><label for="noforum"><strong>{$lang->ad_no_create_theme}</strong></label></td>
@@ -94,7 +94,7 @@
 
                 <table width="100%" cellpadding="0" cellspacing="0" border="0" class="checklist">
                     <tr>
-                        <td width="20"><input type="checkbox" name="published" id="published"{if $do == 'add' || !empty($item.published)} checked="checked"{/if} value="1" /></td>
+                        <td width="20"><input type="checkbox" name="published" id="published"{if $item.id == 0 || !empty($item.published)} checked="checked"{/if} value="1" /></td>
                         <td><label for="published"><strong>{$lang->ad_public_article}</strong></label></td>
                     </tr>
                 </table>
@@ -137,7 +137,7 @@
 
                 <div style="margin-top:12px"><strong>{$lang->ad_photo}</strong></div>
                 <div style="margin-bottom:10px">
-                    {if $do == 'edit'}
+                    {if $item.id > 0}
                         {if $photo_exist}
                             <div style="margin-top:3px;margin-bottom:3px;padding:10px;border:solid 1px gray;text-align:center">
                                 <img src="/images/photos/small/article{$item.id}.jpg" border="0" />
@@ -157,13 +157,13 @@
                 <table width="100%" cellpadding="0" cellspacing="0" border="0" class="checklist">
                     <tr>
                         <td width="20">
-                            <input type="checkbox" name="showlatest" id="showlatest"{if $do == 'add' || !empty($item.showlatest)} checked="checked"{/if} value="1" />
+                            <input type="checkbox" name="showlatest" id="showlatest"{if $item.id == 0 || !empty($item.showlatest)} checked="checked"{/if} value="1" />
                         </td>
                         <td><label for="showlatest">{$lang->ad_view_new_articles}</label></td>
                     </tr>
                     <tr>
                         <td width="20">
-                            <input type="checkbox" name="comments" id="comments"{if $do == 'add' || !empty($item.comments)} checked="checked"{/if} value="1" />
+                            <input type="checkbox" name="comments" id="comments"{if $item.id == 0 || !empty($item.comments)} checked="checked"{/if} value="1" />
                         </td>
                         <td><label for="comments">{$lang->ad_enable_comments}</label></td>
                     </tr>
@@ -175,7 +175,7 @@
                     </tr>
                 </table>
                 
-                {if $do == 'add'}
+                {if $item.id == 0}
                     <div style="margin-top:25px">
                         <strong>{$lang->ad_create_link}</strong>
                     </div>
@@ -240,7 +240,7 @@
                 <table width="100%" cellpadding="0" cellspacing="0" border="0" class="checklist" style="margin-top:5px">
                     <tr>
                         <td width="20">
-                            {if $do == 'edit' && !empty($access)}
+                            {if $item.id > 0 && !empty($access)}
                                 {assign var=style value=''}
                                 {assign var=public value=''}
                             {else}
@@ -280,11 +280,7 @@
     </table>
 
     <p>
-        <input name="add_mod" type="submit" id="add_mod" value="{if $do == 'add'}{$lang->ad_create_content}{else}{$lang->ad_save_content}{/if}" />
+        <input name="add_mod" type="submit" id="add_mod" value="{if $item.id == 0}{$lang->ad_create_content}{else}{$lang->ad_save_content}{/if}" />
         <input name="back" type="button" id="back" value="{$lang->cancel}" onclick="window.history.back();"/>
-        
-        {if $do == 'edit'}
-            <input name="item_id" type="hidden" value="{$item.id}" />
-        {/if}
     </p>
 </form>

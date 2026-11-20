@@ -71,7 +71,7 @@
                                     <a class="uittip" title="{$lang->ad_edit_section}" href="{$edit_cat_uri}/{$category_id}">
                                         <img border="0" hspace="2" alt="{$lang->ad_edit_section}" src="/admin/images/actions/edit.gif"/>
                                     </a>
-                                    <a class="uittip" title="{$lang->ad_category_delete}" onclick="deleteCat('{$current_cat}', {$category_id})" href="#">
+                                    <a class="uittip" title="{$lang->ad_category_delete}" onclick="deleteCat('{$current_cat}', {$category_id}, '{csrf_token}');" href="#">
                                         <img border="0" hspace="2" alt="{$lang->ad_category_delete}" src="/admin/images/actions/delete.gif"/>
                                     </a>
                                 {/if}
@@ -108,6 +108,7 @@
             </form>
 
             <form name="selform" action="{$base_uri}" method="post">
+                <input type="hidden" name="csrf_token" value="{csrf_token}" />
                 <table id="listTable" class="tablesorter" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top:0px">
                     <thead>
                         <tr>
@@ -180,7 +181,7 @@
                                             <a class="uittip" title="{$lang->ad_to_arhive}" href="{$arhive_on_uri}/{$item.id}">
                                                 <img border="0" hspace="2" alt="{$lang->ad_to_arhive}" src="/admin/images/actions/arhive_on.gif">
                                             </a>
-                                            <a class="uittip" title="{$lang->delete}" onclick="jsmsg('{$lang->delete} {$item.title}?', '{$delete_uri}/{$item.id}')" href="#">
+                                            <a class="uittip" title="{$lang->delete}" onclick="jsmsg('{$lang->delete} {$item.title}?', '{$delete_uri}/{$item.id}?csrf_token={csrf_token}');" href="#">
                                                 <img border="0" hspace="2" alt="{$lang->delete}" src="/admin/images/actions/delete.gif"/>
                                             </a>
                                         </div>
@@ -200,7 +201,7 @@
                                     <strong style="color:#09C">{$lang->selected_items}:</strong>
                                 </td>
                                 <td width="" class="sel_pub">
-                                    <input type="button" name="" value="{$lang->edit}" onclick="sendContentForm('edit');" />
+                                    <input type="button" name="" value="{$lang->edit}" onclick="sendContentForm('edit/contents');" />
                                     <input type="button" name="" value="{$lang->ad_move_to}" onclick="$('.sel_move').toggle();$('.sel_pub').toggle();" />
                                 </td>
                                 <td class="sel_move" style="display:none">{$lang->ad_move_to_category}</td>
@@ -219,7 +220,7 @@
                                     <input type="button" name="" value="{$lang->hide}" onclick="sendContentForm('hide');" />
                                 </td>
                                 <td class="sel_pub">
-                                    <input type="button" name="" value="{$lang->delete}" onclick="sendContentForm('delete');" />
+                                    <input type="button" name="" value="{$lang->delete}" onclick="sendContentForm('delete/content');" />
                                 </td>
                             </tr>
                         </table>

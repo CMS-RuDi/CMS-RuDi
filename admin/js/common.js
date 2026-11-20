@@ -123,16 +123,29 @@ function pub(id, qs, qs2, action, action2) {
 }
 
 function showIns() {
-    document.getElementById('frm').style.display = 'none';
-    document.getElementById('filelink').style.display = 'none';
-    document.getElementById('include').style.display = 'none';
-    document.getElementById('banpos').style.display = 'none';
-    document.getElementById('pagebreak').style.display = 'none';
-    document.getElementById('pagetitle').style.display = 'none';
+    var ids = ['frm', 'filelink', 'include', 'banpos', 'pagebreak', 'pagetitle'];
 
-    needDiv = document.addform.ins.options[document.addform.ins.selectedIndex].value;
+    for (var i = 0; i < ids.length; i++) {
+        var el = document.getElementById(ids[i]);
+        if (el) {
+            el.style.display = 'none';
+        }
+    }
 
-    document.getElementById(needDiv).style.display = "table-row";
+    var form = document.addform;
+    if (!form || !form.ins || form.ins.selectedIndex < 0) {
+        return;
+    }
+
+    var needDiv = form.ins.options[form.ins.selectedIndex].value;
+    if (!needDiv) {
+        return;
+    }
+
+    var target = document.getElementById(needDiv);
+    if (target) {
+        target.style.display = 'table-row';
+    }
 }
 
 function insertTag(kind) {

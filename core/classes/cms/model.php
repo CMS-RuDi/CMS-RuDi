@@ -60,7 +60,6 @@ class model {
 
         // Отдельное состояние builder'а на модель, общее соединение с БД.
         $this->db = clone db::getInstance();
-        $this->db->select = 'i.*';
     }
 
     public function __get($name) {
@@ -93,11 +92,7 @@ class model {
     }
 
     public function get($table_name, $item_callback = false, $key_field = 'id') {
-        $result = $this->db->get($table_name, $this->modelCallback($item_callback), $key_field);
-
-        $this->db->select = 'i.*';
-
-        return $result;
+        return $this->db->get($table_name, $this->modelCallback($item_callback), $key_field);
     }
 
     public function getItem($table_name, $item_callback = false) {

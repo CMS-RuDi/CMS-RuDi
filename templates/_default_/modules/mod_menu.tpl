@@ -13,7 +13,7 @@
                 </span>
             </a>
 
-            {if $child_items[$item.id]}
+            {if isset($child_items[$item.id]) && $child_items[$item.id]}
                 {include file='modules/mod_submenu.tpl' mitems=$child_items[$item.id]}
             {/if}
         </li>

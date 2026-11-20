@@ -1,13 +1,14 @@
 <?php
 
 /*
- *                           InstantCMS v1.10.7
- *                        http://www.instantcms.ru/
+ *                        CMS RuDi v1.10.9
+ *                      https://cmsrudi.ru/
  *
- *                   written by InstantCMS Team, 2007-2016
- *                produced by InstantSoft, (www.instantsoft.ru)
+ *              Based on InstantCMS v1.10.7 by InstantSoft
+ *          (Original code © InstantCMS Team, 2007-2016)
+ *          (Modifications © CMS RuDi Team / DagIT, 2026)
  *
- *                        LICENSED BY GNU/GPL v2
+ *                      LICENSED BY GNU/GPL v2
  */
 
 $_LANG['AD_GENERATE_CYRYLLIC_URL'] = 'Генерировать кириллические url категорий и статей';
@@ -16,7 +17,7 @@ $_LANG['AD_GENERATE_KEY_DESCR'] = 'Автоматически генериров
 $_LANG['AD_NUMBER_PER_PAGE'] = 'Количество статей на странице';
 $_LANG['AD_SHOW_CONTENT'] = 'Показывать содержание статей';
 $_LANG['AD_DEPLOY_CONTENT'] = 'Разворачивать содержание';
-$_LANG['AD_HIDE CONTENT'] = 'Ссылка &quot;Скрыть содержание&quot;';
+$_LANG['AD_HIDE_CONTENT'] = 'Ссылка &quot;Скрыть содержание&quot;';
 $_LANG['AD_PHOTO_ART'] = 'Фото статей';
 $_LANG['AD_PHOTO_SMALL'] = 'Ширина маленькой копии, px';
 $_LANG['AD_PHOTO_BIG'] = 'Ширина большой копии, px';

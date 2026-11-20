@@ -50,7 +50,7 @@ function mod_respect($mod, $cfg) {
     if ($cfg['order'] == 'rand') {
         $db->orderBy('RAND()');
     } else {
-        $db->orderBy('awards_count', 'DESC');
+        $db->orderBy('COUNT(a.id)', 'DESC');
     }
 
     $db->limit(0, (int) $cfg['limit']);

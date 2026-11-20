@@ -30,7 +30,7 @@
                     <div class="parent_notice" style="color:red;margin:4px 0px;display:none">{$lang->ad_another_parent}</div>
                     
                     <select name="parent_id" size="12" id="parent_id" style="width:100%" onchange="if ($('option:selected', this).data('nsleft') >= '{$item.NSLeft}' && $('option:selected', this).data('nsright') <= '{$item.NSRight}') { $('.parent_notice').show(); $('#add_mod').prop('disabled', true); } else { $('.parent_notice').hide(); $('#add_mod').prop('disabled', false); }">
-                        <option value="{$root_id}"{if !isset($item.parent_id) || $item.parent_id == $rootid} selected="selected"{/if}>{$lang->ad_section}</option>
+                        <option value="{$root_id}"{if !isset($item.parent_id) || $item.parent_id == $root_id} selected="selected"{/if}>{$lang->ad_section}</option>
                         {$cats_list}
                     </select>
                 </div>
@@ -48,12 +48,12 @@
 
                 <table width="100%" cellpadding="0" cellspacing="0" border="0" class="checklist">
                     <tr>
-                        <td width="20"><input type="checkbox" name="published" id="published"{if $do == 'add' || $item.published} checked="checked"{/if} value="1" /></td>
+                        <td width="20"><input type="checkbox" name="published" id="published"{if $item.id == 0 || $item.published} checked="checked"{/if} value="1" /></td>
                         <td><label for="published"><strong>{$lang->ad_public_section}</strong></label></td>
                     </tr>
                 </table>
 
-                <div {if $do == 'edit'}style="display:none;"{/if} class="url_cat">
+                <div {if $item.id > 0}style="display:none;"{/if} class="url_cat">
                     <div style="margin-top:15px">
                         <strong>{$lang->ad_section_url}</strong><br/>
                         <div style="color:gray">{$lang->ad_from_title}</div>
@@ -63,7 +63,7 @@
                     </div>
                 </div>
 
-                {if $do == 'edit'}
+                {if $item.id > 0}
                     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:15px">
                         <tr>
                             <td width="20">
@@ -101,28 +101,28 @@
                 <div style="margin-top:20px"><strong>{$lang->ad_how_publish_set}</strong></div>
                 <table width="100%" cellpadding="0" cellspacing="0" border="0" class="checklist">
                     <tr>
-                        <td width="20"><input type="checkbox" name="showdesc" id="showdesc"{if $do == 'add' || !empty($item.showdesc)} checked="checked"{/if} value="1" /></td>
+                        <td width="20"><input type="checkbox" name="showdesc" id="showdesc"{if $item.id == 0 || !empty($item.showdesc)} checked="checked"{/if} value="1" /></td>
                         <td><label for="showdesc">{$lang->ad_preview}</label></td>
                     </tr>
                     <tr>
-                        <td width="20"><input type="checkbox" name="showdate" id="showdate"{if $do == 'add' || !empty($item.showdate)} checked="checked"{/if} value="1" /></td>
+                        <td width="20"><input type="checkbox" name="showdate" id="showdate"{if $item.id == 0 || !empty($item.showdate)} checked="checked"{/if} value="1" /></td>
                         <td><label for="showdate">{$lang->ad_calendar_view}</label></td>
                     </tr>
                     <tr>
-                        <td width="20"><input type="checkbox" name="showcomm" id="showcomm"{if $do == 'add' || !empty($item.showcomm)} checked="checked"{/if} value="1" /></td>
+                        <td width="20"><input type="checkbox" name="showcomm" id="showcomm"{if $item.id == 0 || !empty($item.showcomm)} checked="checked"{/if} value="1" /></td>
                         <td><label for="showcomm">{$lang->ad_how_many_coments}</label></td>
                     </tr>
                     <tr>
-                        <td width="20"><input type="checkbox" name="showtags" id="showtags"{if $do == 'add' || !empty($item.showtags)} checked="checked"{/if} value="1" /></td>
+                        <td width="20"><input type="checkbox" name="showtags" id="showtags"{if $item.id == 0 || !empty($item.showtags)} checked="checked"{/if} value="1" /></td>
                         <td><label for="showtags">{$lang->ad_how_many_tags}</label></td>
                     </tr>
                     <tr>
-                        <td width="20"><input type="checkbox" name="showrss" id="showrss"{if $do == 'add' || !empty($item.showrss)} checked="checked"{/if} value="1" /></td>
+                        <td width="20"><input type="checkbox" name="showrss" id="showrss"{if $item.id == 0 || !empty($item.showrss)} checked="checked"{/if} value="1" /></td>
                         <td><label for="showrss">{$lang->ad_rss_view}</label></td>
                     </tr>
                 </table>
 
-                {if $do == 'add'}
+                {if $item.id == 0}
                     <div style="margin-top:25px">
                         <strong>{$lang->ad_create_link}</strong>
                     </div>
@@ -253,7 +253,7 @@
                 <table width="100%" cellpadding="0" cellspacing="0" border="0" class="checklist" style="margin-top:5px">
                     <tr>
                         <td width="20">
-                            {if $do == 'edit' && !empty($access)}
+                            {if $item.id > 0 && !empty($access)}
                                 {assign var=style value=''}
                                 {assign var=public value=''}
                             {else}
@@ -294,10 +294,8 @@
         </tr>
     </table>
     <p>
-        <input name="add_mod" type="submit" id="add_mod" value="{if $do == 'add'}{$lang->ad_save_section}{else}{$lang->ad_save_section}{/if}" />
+        <input name="add_mod" type="submit" id="add_mod" value="{if $item.id == 0}{$lang->ad_save_section}{else}{$lang->ad_save_section}{/if}" />
         <input name="back" type="button" id="back" value="{$lang->cancel}" onclick="window.history.back();"/>
-
-        {if $do == 'edit'}<input name="item_id" type="hidden" value="{$item.id}" />{/if}
     </p>
 </form>
 <script type="text/javascript">

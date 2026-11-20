@@ -1912,8 +1912,6 @@ class cmsUser {
 
         $rs = $db->get('user_groups', false, '');
 
-        $db->resetFilters();
-
         return $rs ? $rs : $groups;
     }
 
